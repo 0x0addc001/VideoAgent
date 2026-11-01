@@ -19,6 +19,7 @@ export default async function HomePage({
 
   return (
     <LandingPage
+      accountHref={`/${locale}/projects`}
       appHref={`/${locale}/register`}
       docsBase={DOCS_BASE_URL}
       githubHref={GITHUB_URL}

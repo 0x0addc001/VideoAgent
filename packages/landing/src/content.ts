@@ -9,6 +9,8 @@ export const landingContent = {
       workflow: "Experience",
       docs: "Docs",
       language: "Change language",
+      credits: "credits",
+      account: "Account",
     },
     hero: {
       eyebrow: "AI VIDEO CREATION WORKSPACE",
@@ -64,6 +66,12 @@ export const landingContent = {
       { path: "software-implementation.html", label: "Implementation Guide" },
       { path: "software-test-plan.html", label: "Testing & TDD" },
     ],
+    preview: {
+      title: "Preview only",
+      body: "This page is a design preview. Use the full VideoAgent product to create projects, manage shots, and generate videos.",
+      action: "Got it",
+      close: "Close preview notice",
+    },
   },
   "zh-CN": {
     localeLabel: "简体中文",
@@ -73,6 +81,8 @@ export const landingContent = {
       workflow: "体验",
       docs: "文档",
       language: "切换语言",
+      credits: "积分",
+      account: "账户",
     },
     hero: {
       eyebrow: "AI 视频创作工作台",
@@ -128,5 +138,11 @@ export const landingContent = {
       { path: "software-implementation.html", label: "实现文档" },
       { path: "software-test-plan.html", label: "测试文档" },
     ],
+    preview: {
+      title: "仅供预览",
+      body: "此页面仅用于设计预览。请使用正式产品创建项目、管理镜头并生成视频。",
+      action: "知道了",
+      close: "关闭预览提示",
+    },
   },
 } as const;

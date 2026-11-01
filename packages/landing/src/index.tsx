@@ -1,6 +1,6 @@
 "use client";
 
-import { Github, Sparkles } from "lucide-react";
+import { Coins, Github, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { landingContent, type LandingLocale } from "./content";
 
@@ -21,6 +21,9 @@ export type LandingPageProps = {
   githubHref: string;
   localeLinks: Record<LandingLocale, string>;
   docsBase: string;
+  accountCredits?: number;
+  accountHref?: string;
+  avatarLabel?: string;
 };
 
 function BrandMark() {
@@ -42,15 +45,16 @@ export function LandingPage({
   githubHref,
   localeLinks,
   docsBase,
+  accountCredits = 66,
+  accountHref,
+  avatarLabel = "VA",
 }: LandingPageProps) {
   const content = landingContent[locale];
   const [languageOpen, setLanguageOpen] = useState(false);
   const [activeVideo, setActiveVideo] = useState(0);
+  const [previewNoticeOpen, setPreviewNoticeOpen] = useState(false);
   const languageRef = useRef<HTMLDivElement>(null);
   const docsRef = useRef<HTMLDetailsElement>(null);
-  const primaryLabel = mode === "app" ? content.hero.create : content.hero.github;
-  const primaryHref = mode === "app" ? appHref : githubHref;
-  const PrimaryIcon = mode === "app" ? Sparkles : Github;
 
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -83,6 +87,19 @@ export function LandingPage({
     }, 5200);
     return () => window.clearInterval(timer);
   }, [videos.length]);
+
+  useEffect(() => {
+    if (!previewNoticeOpen) return;
+
+    function closePreview(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setPreviewNoticeOpen(false);
+      }
+    }
+
+    document.addEventListener("keydown", closePreview);
+    return () => document.removeEventListener("keydown", closePreview);
+  }, [previewNoticeOpen]);
 
   return (
     <main className="va-landing">
@@ -143,13 +160,37 @@ export function LandingPage({
               </a>
             </div>
           </div>
-          {mode === "project" ? (
-            <a className="header-action" href={primaryHref}>
-              <PrimaryIcon aria-hidden="true" className="cta-icon" strokeWidth={1.9} />
-              <span>{primaryLabel}</span>
-              <span aria-hidden="true">↗</span>
+          {mode === "app" ? (
+            <a
+              aria-label={content.nav.account}
+              className="account-summary"
+              href={accountHref ?? `/${locale}/projects`}
+            >
+              <span className="credit-count" title={`${accountCredits} ${content.nav.credits}`}>
+                <Coins aria-hidden="true" className="credit-icon" strokeWidth={1.8} />
+                <span>{accountCredits}</span>
+              </span>
+              <span className="account-avatar" aria-hidden="true">
+                {avatarLabel}
+              </span>
             </a>
-          ) : null}
+          ) : (
+            <button
+              aria-haspopup="dialog"
+              aria-label={content.nav.account}
+              className="account-summary"
+              onClick={() => setPreviewNoticeOpen(true)}
+              type="button"
+            >
+              <span className="credit-count" title={`${accountCredits} ${content.nav.credits}`}>
+                <Coins aria-hidden="true" className="credit-icon" strokeWidth={1.8} />
+                <span>{accountCredits}</span>
+              </span>
+              <span className="account-avatar" aria-hidden="true">
+                {avatarLabel}
+              </span>
+            </button>
+          )}
         </div>
       </header>
 
@@ -162,9 +203,27 @@ export function LandingPage({
           </h1>
           <p className="hero-description">{content.hero.description}</p>
           <div className="hero-actions">
-            <a className="primary-action" href={primaryHref}>
-              <PrimaryIcon aria-hidden="true" className="cta-icon" strokeWidth={1.9} />
-              <span>{primaryLabel}</span>
+            {mode === "app" ? (
+              <a className="primary-action" href={appHref}>
+                <Sparkles aria-hidden="true" className="cta-icon" strokeWidth={1.9} />
+                <span>{content.hero.create}</span>
+                <span aria-hidden="true">↗</span>
+              </a>
+            ) : (
+              <button
+                aria-haspopup="dialog"
+                className="primary-action"
+                onClick={() => setPreviewNoticeOpen(true)}
+                type="button"
+              >
+                <Sparkles aria-hidden="true" className="cta-icon" strokeWidth={1.9} />
+                <span>{content.hero.create}</span>
+                <span aria-hidden="true">↗</span>
+              </button>
+            )}
+            <a className="secondary-action" href={githubHref}>
+              <Github aria-hidden="true" className="cta-icon" strokeWidth={1.9} />
+              <span>GitHub</span>
               <span aria-hidden="true">↗</span>
             </a>
           </div>
@@ -233,17 +292,42 @@ export function LandingPage({
         </div>
       </section>
 
-      <footer>
-        <a className="brand" href={mode === "app" ? `/${locale}` : "./"} aria-label="VideoAgent home">
-          <BrandMark />
-          <span>VideoAgent</span>
-        </a>
-        <a className="footer-github" href={githubHref}>
-          <Github aria-hidden="true" className="cta-icon" strokeWidth={1.9} />
-          <span>GitHub</span>
-          <span aria-hidden="true">↗</span>
-        </a>
-      </footer>
+      {previewNoticeOpen ? (
+        <div
+          className="preview-backdrop"
+          onPointerDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setPreviewNoticeOpen(false);
+            }
+          }}
+        >
+          <section
+            aria-labelledby="preview-notice-title"
+            aria-modal="true"
+            className="preview-dialog"
+            role="dialog"
+          >
+            <button
+              aria-label={content.preview.close}
+              className="preview-close"
+              onClick={() => setPreviewNoticeOpen(false)}
+              type="button"
+            >
+              ×
+            </button>
+            <p className="preview-eyebrow">VideoAgent</p>
+            <h2 id="preview-notice-title">{content.preview.title}</h2>
+            <p>{content.preview.body}</p>
+            <button
+              className="primary-action"
+              onClick={() => setPreviewNoticeOpen(false)}
+              type="button"
+            >
+              {content.preview.action}
+            </button>
+          </section>
+        </div>
+      ) : null}
     </main>
   );
 }

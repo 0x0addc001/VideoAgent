@@ -1,4 +1,4 @@
-import { act, render } from "@testing-library/react";
+import { act, fireEvent, render } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import { LandingPage } from "@videoagent/landing";
 
@@ -23,7 +23,7 @@ const props = {
 };
 
 describe("LandingPage", () => {
-  it("keeps the navigation, language control, and a single hero action", () => {
+  it("keeps the navigation, account summary, and two hero actions", () => {
     const { container } = render(<LandingPage {...props} />);
     const nav = container.querySelector(".site-header > nav");
     const heroActions = container.querySelector(".hero-actions");
@@ -32,10 +32,14 @@ describe("LandingPage", () => {
     expect(nav?.textContent).toContain("Experience");
     expect(nav?.textContent).toContain("Docs");
     expect(container.querySelector(".language-button svg")).toBeInTheDocument();
-    expect(heroActions?.querySelectorAll("a")).toHaveLength(1);
+    expect(heroActions?.querySelectorAll("a, button")).toHaveLength(2);
+    expect(heroActions).toHaveTextContent("Create");
     expect(heroActions).toHaveTextContent("GitHub");
     expect(heroActions?.querySelector("svg")).toBeInTheDocument();
-    expect(container.querySelector(".secondary-action")).not.toBeInTheDocument();
+    expect(container.querySelector(".secondary-action")).toHaveTextContent("GitHub");
+    expect(container.querySelector(".credit-count")).toHaveTextContent("66");
+    expect(container.querySelector(".account-avatar")).toHaveTextContent("VA");
+    expect(container.querySelector("footer")).not.toBeInTheDocument();
     expect(container.querySelector(".hero-video-front")).toHaveAttribute(
       "data-video-index",
       "0",
@@ -65,6 +69,20 @@ describe("LandingPage", () => {
     expect(container.querySelector(".header-action")).not.toBeInTheDocument();
     expect(container.querySelector(".hero-actions .primary-action")).toHaveTextContent(
       "Create",
+    );
+    expect(container.querySelector(".hero-actions .secondary-action")).toHaveTextContent(
+      "GitHub",
+    );
+  });
+
+  it("shows the preview notice for unavailable project-page actions", () => {
+    const { container } = render(<LandingPage {...props} />);
+
+    fireEvent.click(container.querySelector(".hero-actions .primary-action")!);
+
+    expect(container.querySelector(".preview-dialog")).toHaveTextContent("Preview only");
+    expect(container.querySelector(".preview-dialog")).toHaveTextContent(
+      "This page is a design preview",
     );
   });
 
