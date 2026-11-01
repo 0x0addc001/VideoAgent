@@ -292,7 +292,7 @@ button {
   display: flex;
   align-items: center;
   justify-self: end;
-  gap: 17px;
+  gap: 21px;
 }
 
 .language-switcher {
@@ -366,13 +366,13 @@ button {
   display: inline-flex;
   min-height: 34px;
   align-items: center;
-  gap: 11px;
+  gap: 22px;
   border: 0;
   border-left: 1px solid var(--line);
   background: transparent;
   color: var(--text);
   cursor: pointer;
-  padding: 0 0 0 15px;
+  padding: 0 0 0 18px;
 }
 
 .credit-count {
@@ -475,9 +475,14 @@ h3 {
 h1 {
   max-width: 700px;
   margin: 26px 0 30px;
-  font-size: clamp(64px, 6.2vw, 96px);
+  font-size: clamp(72px, 7vw, 108px);
   line-height: 0.94;
   letter-spacing: -0.065em;
+}
+
+.hero-title-line {
+  display: flex;
+  align-items: baseline;
 }
 
 .title-kicker {
@@ -496,8 +501,8 @@ h1 {
   padding-inline: 0.12em;
 }
 
-.hero-title .title-main {
-  display: inline;
+.hero-title > .title-main.streaming-text {
+  display: grid;
 }
 
 .streaming-text {
@@ -935,7 +940,7 @@ h1 {
 
 .workflow-grid > div {
   display: flex;
-  min-height: 286px;
+  min-height: 370px;
   flex-direction: column;
   border-right: 1px solid var(--line);
   padding: 29px;
@@ -945,24 +950,24 @@ h1 {
   border-right: 0;
 }
 
-.workflow-grid span {
+.workflow-grid > div > span {
   color: var(--accent);
   font-size: var(--label-size);
   font-weight: 600;
 }
 
 .workflow-grid h3 {
-  max-width: 210px;
+  max-width: 270px;
   margin: auto 0 14px;
   font-family: var(--display);
-  font-size: clamp(25px, 2.1vw, 34px);
-  font-weight: 500;
-  line-height: 1.1;
-  letter-spacing: -0.025em;
+  font-size: clamp(30px, 2.6vw, 42px);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
 }
 
 .workflow-grid p {
-  max-width: 245px;
+  max-width: 300px;
   margin: 0;
   color: var(--muted);
   font-size: var(--text-small);
@@ -1033,7 +1038,7 @@ h1 {
 
 html[lang="zh-CN"] h1 {
   font-family: var(--display);
-  font-size: clamp(48px, 4.3vw, 64px);
+  font-size: clamp(56px, 5.4vw, 78px);
   font-weight: 500;
   line-height: 1.02;
   letter-spacing: -0.025em;
@@ -1270,7 +1275,7 @@ html[lang="zh-CN"] .hero-description {
   }
 
   .workflow-grid > div {
-    min-height: 250px;
+    min-height: 330px;
     border-bottom: 1px solid var(--line);
   }
 

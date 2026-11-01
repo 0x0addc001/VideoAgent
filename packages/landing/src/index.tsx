@@ -279,8 +279,10 @@ export function LandingPage({
       <section className="hero">
         <div className="hero-copy">
           <h1 className="hero-title">
-            <StreamingText className="title-kicker" text={content.hero.eyebrow} />
-            <span className="title-separator" aria-hidden="true">/</span>
+            <span className="hero-title-line">
+              <StreamingText className="title-kicker" text={content.hero.eyebrow} />
+              <span className="title-separator" aria-hidden="true">/</span>
+            </span>
             <StreamingText
               className="title-main"
               delay={850}
