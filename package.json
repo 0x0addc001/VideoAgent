@@ -4,6 +4,7 @@
   "packageManager": "pnpm@11.25.0",
   "scripts": {
     "dev": "pnpm --dir apps/web dev",
+    "pages:build": "pnpm --dir apps/landing build",
     "build": "pnpm --dir apps/web build",
     "test": "pnpm --dir apps/web test",
     "typecheck": "pnpm --dir apps/web typecheck",

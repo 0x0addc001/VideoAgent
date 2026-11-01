@@ -3,10 +3,10 @@ from __future__ import annotations
 import html
 import re
 import shutil
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "site"
 OUTPUT = ROOT / ".pages-build"
 DOCS = ROOT / "docs"
 
@@ -190,7 +190,7 @@ def document_page(filename: str, title_en: str, title_zh: str, body: str) -> str
           <span class="theme-icon" aria-hidden="true">◐</span>
           <span class="theme-label">Dark</span>
         </button>
-        <a class="back-link" href="../#documents">Back to project</a>
+        <a class="back-link" href="../">Back to project</a>
       </div>
     </header>
     <main class="document-shell">
@@ -208,9 +208,16 @@ def document_page(filename: str, title_en: str, title_zh: str, body: str) -> str
 
 
 def main() -> None:
-    if OUTPUT.exists():
-        shutil.rmtree(OUTPUT)
-    shutil.copytree(SOURCE, OUTPUT)
+    node = shutil.which("node")
+    vite = ROOT / "apps" / "landing" / "node_modules" / "vite" / "bin" / "vite.js"
+    if node is None or not vite.exists():
+        raise RuntimeError("Node.js and the workspace Vite dependency are required")
+
+    subprocess.run(
+        [node, str(vite), "build"],
+        cwd=ROOT / "apps" / "landing",
+        check=True,
+    )
     docs_output = OUTPUT / "docs"
     docs_output.mkdir(parents=True, exist_ok=True)
 

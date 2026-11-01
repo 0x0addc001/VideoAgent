@@ -1,0 +1,20 @@
+{
+  "name": "@videoagent/landing",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.tsx",
+    "./styles.css": "./src/landing.css"
+  },
+  "dependencies": {
+    "lucide-react": "^0.468.0",
+    "react": "19.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0"
+  },
+  "peerDependencies": {
+    "react-dom": "19.3.1"
+  }
+}

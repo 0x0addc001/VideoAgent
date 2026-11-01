@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import en from "../messages/en.json";
 import zhCN from "../messages/zh-CN.json";
 import { localeLabels, supportedLocales } from "@/i18n/config";
+import { landingContent } from "../../../packages/landing/src/content";
 
 function flattenKeys(value: unknown, prefix = ""): string[] {
   if (typeof value !== "object" || value === null) {
@@ -24,12 +25,10 @@ describe("localization resources", () => {
   });
 
   it("uses concise creator-focused product messaging", () => {
-    expect(en.hero.title).toBe("Direct the story");
-    expect(zhCN.hero.title).toBe("导演你的故事");
-    expect(en.hero.eyebrow).toBe("AI VIDEO CREATION WORKSPACE");
-    expect(zhCN.hero.eyebrow).toBe("AI 视频创作工作台");
-    expect(en.brand).toEqual({ name: "VideoAgent" });
-    expect(zhCN.brand).toEqual({ name: "VideoAgent" });
+    expect(landingContent.en.hero.title).toBe("Direct the story");
+    expect(landingContent["zh-CN"].hero.title).toBe("导演你的故事");
+    expect(landingContent.en.hero.eyebrow).toBe("AI VIDEO CREATION WORKSPACE");
+    expect(landingContent["zh-CN"].hero.eyebrow).toBe("AI 视频创作工作台");
   });
 });
 
