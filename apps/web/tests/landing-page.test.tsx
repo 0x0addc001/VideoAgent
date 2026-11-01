@@ -38,7 +38,7 @@ describe("LandingPage", () => {
     expect(heroActions?.querySelector("svg")).toBeInTheDocument();
     expect(container.querySelector(".secondary-action")).toHaveTextContent("GitHub");
     expect(container.querySelector(".credit-count")).toHaveTextContent("0");
-    expect(container.querySelector(".account-avatar")).toHaveTextContent("JL");
+    expect(container.querySelector(".account-avatar svg")).toBeInTheDocument();
     expect(container.querySelector("footer")).not.toBeInTheDocument();
     expect(container.querySelector(".hero-video-front")).toHaveAttribute(
       "data-video-index",

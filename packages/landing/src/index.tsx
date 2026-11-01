@@ -1,6 +1,6 @@
 "use client";
 
-import { Gem, Github, Sparkles } from "lucide-react";
+import { Gem, Github, Sparkles, UserRound } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { landingContent, type LandingLocale } from "./content";
 
@@ -24,7 +24,6 @@ export type LandingPageProps = {
   accountApiBase?: string;
   accountCredits?: number | null;
   accountHref?: string;
-  avatarLabel?: string;
 };
 
 function BrandMark() {
@@ -120,6 +119,16 @@ function StreamingText({
   );
 }
 
+function initialsFromEmail(email: string): string {
+  const localPart = email.split("@")[0]?.trim() ?? "";
+  const parts = localPart.split(/[._-]+/).filter(Boolean);
+  const characters =
+    parts.length > 1
+      ? [Array.from(parts[0])[0], Array.from(parts[1])[0]]
+      : Array.from(localPart).slice(0, 2);
+  return characters.filter(Boolean).join("").toUpperCase();
+}
+
 export function LandingPage({
   locale,
   mode,
@@ -131,7 +140,6 @@ export function LandingPage({
   accountApiBase,
   accountCredits = 0,
   accountHref,
-  avatarLabel = "JL",
 }: LandingPageProps) {
   const content = landingContent[locale];
   const [languageOpen, setLanguageOpen] = useState(false);
@@ -140,6 +148,7 @@ export function LandingPage({
   const [displayCredits, setDisplayCredits] = useState(
     accountCredits === null ? "—" : String(accountCredits),
   );
+  const [displayAvatar, setDisplayAvatar] = useState<string | null>(null);
   const languageRef = useRef<HTMLDivElement>(null);
   const docsRef = useRef<HTMLDetailsElement>(null);
 
@@ -181,15 +190,25 @@ export function LandingPage({
 
     async function loadCredits() {
       try {
-        const response = await fetch(`${accountApiBase}/providers/kling/credits`, {
-          credentials: "include",
-        });
-        if (!response.ok) return;
-        const payload = (await response.json()) as { credits?: number | null };
+        const [accountResponse, creditResponse] = await Promise.all([
+          fetch(`${accountApiBase}/auth/me`, { credentials: "include" }),
+          fetch(`${accountApiBase}/providers/kling/credits`, {
+            credentials: "include",
+          }),
+        ]);
         if (!active) return;
-        setDisplayCredits(
-          typeof payload.credits === "number" ? String(payload.credits) : "—",
-        );
+        if (accountResponse.ok) {
+          const account = (await accountResponse.json()) as { email?: string };
+          if (account.email) {
+            setDisplayAvatar(initialsFromEmail(account.email) || null);
+          }
+        }
+        if (creditResponse.ok) {
+          const payload = (await creditResponse.json()) as { credits?: number | null };
+          setDisplayCredits(
+            typeof payload.credits === "number" ? String(payload.credits) : "—",
+          );
+        }
       } catch {
         // Public and preview pages keep the available fallback balance.
       }
@@ -284,7 +303,7 @@ export function LandingPage({
                 <span>{displayCredits}</span>
               </span>
               <span className="account-avatar" aria-hidden="true">
-                {avatarLabel}
+                {displayAvatar ?? <UserRound className="avatar-placeholder" />}
               </span>
             </a>
           ) : (
@@ -300,7 +319,7 @@ export function LandingPage({
                 <span>{displayCredits}</span>
               </span>
               <span className="account-avatar" aria-hidden="true">
-                {avatarLabel}
+                {displayAvatar ?? <UserRound className="avatar-placeholder" />}
               </span>
             </button>
           )}

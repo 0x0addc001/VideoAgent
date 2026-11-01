@@ -422,6 +422,12 @@ button {
   content: "";
 }
 
+.avatar-placeholder {
+  width: 16px;
+  height: 16px;
+  stroke-width: 1.7;
+}
+
 .hero {
   position: relative;
   display: grid;
