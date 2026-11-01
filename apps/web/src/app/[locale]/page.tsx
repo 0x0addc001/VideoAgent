@@ -25,8 +25,20 @@ export default async function HomePage({
       locale={locale}
       localeLinks={{ en: "/en", "zh-CN": "/zh-CN" }}
       mode="app"
-      posterSrc="/media/vlog-hero-poster.jpg"
-      videoSrc="/media/vlog-hero.mp4"
+      videos={[
+        {
+          src: "/media/vlog-hero.mp4#t=0.2",
+          poster: "/media/vlog-hero-poster-1.jpg",
+        },
+        {
+          src: "/media/vlog-hero.mp4#t=2.4",
+          poster: "/media/vlog-hero-poster-2.jpg",
+        },
+        {
+          src: "/media/vlog-hero.mp4#t=4.7",
+          poster: "/media/vlog-hero-poster-3.jpg",
+        },
+      ]}
     />
   );
 }

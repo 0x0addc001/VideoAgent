@@ -1,5 +1,6 @@
 "use client";
 
+import { Github, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { landingContent, type LandingLocale } from "./content";
 
@@ -7,11 +8,15 @@ export type { LandingLocale } from "./content";
 
 export type LandingMode = "app" | "project";
 
+export type LandingHeroVideo = {
+  src: string;
+  poster: string;
+};
+
 export type LandingPageProps = {
   locale: LandingLocale;
   mode: LandingMode;
-  videoSrc: string;
-  posterSrc: string;
+  videos: readonly LandingHeroVideo[];
   appHref: string;
   githubHref: string;
   localeLinks: Record<LandingLocale, string>;
@@ -30,8 +35,7 @@ function BrandMark() {
 export function LandingPage({
   locale,
   mode,
-  videoSrc,
-  posterSrc,
+  videos,
   appHref,
   githubHref,
   localeLinks,
@@ -39,10 +43,12 @@ export function LandingPage({
 }: LandingPageProps) {
   const content = landingContent[locale];
   const [languageOpen, setLanguageOpen] = useState(false);
+  const [activeVideo, setActiveVideo] = useState(0);
   const languageRef = useRef<HTMLDivElement>(null);
   const docsRef = useRef<HTMLDetailsElement>(null);
   const primaryLabel = mode === "app" ? content.hero.create : content.hero.github;
   const primaryHref = mode === "app" ? appHref : githubHref;
+  const PrimaryIcon = mode === "app" ? Sparkles : Github;
 
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -60,6 +66,21 @@ export function LandingPage({
     document.addEventListener("pointerdown", closeMenus);
     return () => document.removeEventListener("pointerdown", closeMenus);
   }, [content.documentTitle, locale]);
+
+  useEffect(() => {
+    if (
+      videos.length < 2 ||
+      (typeof window.matchMedia === "function" &&
+        window.matchMedia("(prefers-reduced-motion: reduce)").matches)
+    ) {
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      setActiveVideo((current) => (current + 1) % videos.length);
+    }, 5200);
+    return () => window.clearInterval(timer);
+  }, [videos.length]);
 
   return (
     <main className="va-landing">
@@ -121,7 +142,9 @@ export function LandingPage({
             </div>
           </div>
           <a className="header-action" href={primaryHref}>
-            {primaryLabel} <span aria-hidden="true">↗</span>
+            <PrimaryIcon aria-hidden="true" className="cta-icon" strokeWidth={1.9} />
+            <span>{primaryLabel}</span>
+            <span aria-hidden="true">↗</span>
           </a>
         </div>
       </header>
@@ -133,27 +156,38 @@ export function LandingPage({
           <p className="hero-description">{content.hero.description}</p>
           <div className="hero-actions">
             <a className="primary-action" href={primaryHref}>
-              {primaryLabel} <span aria-hidden="true">↗</span>
+              <PrimaryIcon aria-hidden="true" className="cta-icon" strokeWidth={1.9} />
+              <span>{primaryLabel}</span>
+              <span aria-hidden="true">↗</span>
             </a>
           </div>
         </div>
 
         <div className="hero-art">
-          <div className="scene-card scene-card-back-one" />
-          <div className="scene-card scene-card-back-two" />
-          <figure className="hero-video-frame">
-            <video
-              aria-label="A creator filming a personal vlog"
-              autoPlay
-              loop
-              muted
-              playsInline
-              poster={posterSrc}
-              preload="metadata"
-            >
-              <source src={videoSrc} type="video/mp4" />
-            </video>
-          </figure>
+          {videos.map((video, index) => {
+            const slot = (index - activeVideo + videos.length) % videos.length;
+            const position = slot === 0 ? "front" : slot === 1 ? "left" : "right";
+            return (
+              <figure
+                className={`hero-video-frame hero-video-${position}`}
+                data-active={index === activeVideo}
+                data-video-index={index}
+                key={video.src}
+              >
+                <video
+                  aria-label={content.hero.videoLabel}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  poster={video.poster}
+                  preload="metadata"
+                >
+                  <source src={video.src} type="video/mp4" />
+                </video>
+              </figure>
+            );
+          })}
         </div>
       </section>
 
@@ -194,7 +228,11 @@ export function LandingPage({
           <BrandMark />
           <span>VideoAgent</span>
         </a>
-        <a href={githubHref}>GitHub ↗</a>
+        <a className="footer-github" href={githubHref}>
+          <Github aria-hidden="true" className="cta-icon" strokeWidth={1.9} />
+          <span>GitHub</span>
+          <span aria-hidden="true">↗</span>
+        </a>
       </footer>
     </main>
   );

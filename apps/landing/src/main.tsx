@@ -36,8 +36,20 @@ createRoot(document.getElementById("root")!).render(
       locale={locale}
       localeLinks={{ en: "?lang=en", "zh-CN": "?lang=zh" }}
       mode="project"
-      posterSrc="./assets/vlog-hero-poster.jpg"
-      videoSrc="./assets/vlog-hero.mp4"
+      videos={[
+        {
+          src: "./assets/vlog-hero.mp4#t=0.2",
+          poster: "./assets/vlog-hero-poster-1.jpg",
+        },
+        {
+          src: "./assets/vlog-hero.mp4#t=2.4",
+          poster: "./assets/vlog-hero-poster-2.jpg",
+        },
+        {
+          src: "./assets/vlog-hero.mp4#t=4.7",
+          poster: "./assets/vlog-hero-poster-3.jpg",
+        },
+      ]}
     />
   </StrictMode>,
 );

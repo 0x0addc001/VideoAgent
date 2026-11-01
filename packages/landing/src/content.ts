@@ -17,6 +17,7 @@ export const landingContent = {
         "Turn a brief into a structured storyboard, generate each shot with a model provider, and keep the final cut under your control.",
       create: "Create",
       github: "GitHub",
+      videoLabel: "A creator filming a cinematic personal vlog",
     },
     product: {
       label: "Product",
@@ -68,6 +69,7 @@ export const landingContent = {
         "把创意变成结构化故事板，通过模型服务生成每个镜头，并让最终成片始终处于你的掌控之中。",
       create: "创作",
       github: "GitHub",
+      videoLabel: "正在拍摄电影感 Vlog 的创作者",
     },
     product: {
       label: "产品",
