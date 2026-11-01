@@ -90,6 +90,7 @@
     "Noto Sans SC", sans-serif;
   --page-width: 1240px;
   --text-small: 1.0625rem;
+  --label-size: clamp(19px, 1.35vw, 21px);
 }
 
 html[lang="zh-CN"] {
@@ -389,7 +390,7 @@ footer {
 .eyebrow {
   margin: 0;
   color: var(--accent);
-  font-size: var(--text-small);
+  font-size: var(--label-size);
   font-weight: 600;
   letter-spacing: 0.14em;
 }
@@ -707,7 +708,7 @@ h1 {
 
 .capabilities article > span {
   color: var(--accent);
-  font-size: var(--text-small);
+  font-size: var(--label-size);
   font-weight: 600;
 }
 
@@ -811,9 +812,11 @@ h1 {
 }
 
 .workflow-grid > div {
-  min-height: 230px;
+  display: flex;
+  min-height: 286px;
+  flex-direction: column;
   border-right: 1px solid var(--line);
-  padding: 27px;
+  padding: 29px;
 }
 
 .workflow-grid > div:last-child {
@@ -822,17 +825,27 @@ h1 {
 
 .workflow-grid span {
   color: var(--accent);
-  font-size: var(--text-small);
+  font-size: var(--label-size);
   font-weight: 600;
 }
 
-.workflow-grid p {
-  max-width: 180px;
-  margin: 100px 0 0;
+.workflow-grid h3 {
+  max-width: 210px;
+  margin: auto 0 14px;
   font-family: var(--display);
   font-size: clamp(25px, 2.1vw, 34px);
+  font-weight: 500;
   line-height: 1.1;
   letter-spacing: -0.025em;
+}
+
+.workflow-grid p {
+  max-width: 245px;
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-small);
+  font-weight: 400;
+  line-height: 1.65;
 }
 
 .document-links {
@@ -1091,7 +1104,7 @@ html[lang="zh-CN"] .section-heading > p:last-child {
   }
 
   .workflow-grid > div {
-    min-height: 190px;
+    min-height: 250px;
     border-bottom: 1px solid var(--line);
   }
 
@@ -1103,8 +1116,8 @@ html[lang="zh-CN"] .section-heading > p:last-child {
     border-bottom: 0;
   }
 
-  .workflow-grid p {
-    margin-top: 65px;
+  .workflow-grid h3 {
+    margin-top: 54px;
   }
 
   footer {

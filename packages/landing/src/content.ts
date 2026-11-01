@@ -6,7 +6,7 @@ export const landingContent = {
     documentTitle: "VideoAgent — Direct the story",
     nav: {
       product: "Product",
-      workflow: "Workflow",
+      workflow: "Craft",
       docs: "Docs",
       language: "Change language",
     },
@@ -43,9 +43,26 @@ export const landingContent = {
       ],
     },
     workflow: {
-      label: "Workflow",
+      label: "Craft",
       title: "From brief to final cut",
-      steps: ["Describe or attach", "Shape the story", "Generate each shot", "Review and assemble"],
+      steps: [
+        {
+          title: "Describe or attach",
+          description: "Write a brief, or bring references, footage, and visual cues.",
+        },
+        {
+          title: "Shape the story",
+          description: "The agent turns your direction into an editable storyboard and shot list.",
+        },
+        {
+          title: "Generate each shot",
+          description: "Approve prompts, duration, and framing before a provider renders.",
+        },
+        {
+          title: "Review and assemble",
+          description: "Keep, revise, or regenerate shots, then sequence the final cut.",
+        },
+      ],
     },
     documents: [
       { path: "software-design.html", label: "Software Design" },
@@ -58,7 +75,7 @@ export const landingContent = {
     documentTitle: "VideoAgent — 导演你的故事",
     nav: {
       product: "产品",
-      workflow: "流程",
+      workflow: "创作脉络",
       docs: "文档",
       language: "切换语言",
     },
@@ -95,9 +112,26 @@ export const landingContent = {
       ],
     },
     workflow: {
-      label: "流程",
+      label: "创作脉络",
       title: "从创意到最终成片",
-      steps: ["描述或上传", "设计故事", "生成镜头", "审核与合成"],
+      steps: [
+        {
+          title: "描述或上传",
+          description: "写下创意，或加入参考图、现有素材与视觉线索。",
+        },
+        {
+          title: "设计故事",
+          description: "Agent 将你的方向整理为可编辑的故事板和镜头清单。",
+        },
+        {
+          title: "生成镜头",
+          description: "确认提示词、时长与构图后，再由视频模型渲染。",
+        },
+        {
+          title: "审核与合成",
+          description: "保留、修改或重新生成镜头，最后完成剪辑。",
+        },
+      ],
     },
     documents: [
       { path: "software-design.html", label: "设计文档" },

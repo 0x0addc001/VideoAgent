@@ -23,7 +23,7 @@ describe("LandingPage", () => {
     const heroActions = container.querySelector(".hero-actions");
 
     expect(nav?.textContent).toContain("Product");
-    expect(nav?.textContent).toContain("Workflow");
+    expect(nav?.textContent).toContain("Craft");
     expect(nav?.textContent).toContain("Docs");
     expect(container.querySelector(".language-button svg")).toBeInTheDocument();
     expect(heroActions?.querySelectorAll("a")).toHaveLength(1);
@@ -35,6 +35,9 @@ describe("LandingPage", () => {
       "0",
     );
     expect(container.querySelectorAll(".hero-video-frame")).toHaveLength(3);
+    expect(container.querySelector(".workflow-grid p")).toHaveTextContent(
+      "Write a brief",
+    );
   });
 
   it("does not add decorative icons to product capabilities", () => {

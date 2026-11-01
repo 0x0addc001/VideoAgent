@@ -215,9 +215,10 @@ export function LandingPage({
         </div>
         <div className="workflow-grid">
           {content.workflow.steps.map((step, index) => (
-            <div key={step}>
+            <div key={step.title}>
               <span>{String(index + 1).padStart(2, "0")}</span>
-              <p>{step}</p>
+              <h3>{step.title}</h3>
+              <p>{step.description}</p>
             </div>
           ))}
         </div>
