@@ -9,9 +9,7 @@ The static GitHub Pages project homepage is deployed from [`site/`](site/) by
 Python/Next.js service because GitHub Pages cannot run FastAPI, OAuth callbacks,
 Celery, or media processing.
 
-## Current milestone
-
-Implemented:
+## Product scope
 
 - English and Simplified Chinese interfaces.
 - Registration, login, logout, and server-side sessions.
@@ -30,11 +28,6 @@ Implemented:
 - Durable generation-job records with idempotency and API-driven status refresh.
 - Celery polling worker for long-running Kling jobs.
 - Responsive landing page, authentication pages, project dashboard, and workspace.
-
-In progress:
-
-- MinIO/S3 upload flow and media persistence.
-- FFmpeg composition and public share pages.
 
 The default provider mode is `auto`: connected users use Kling, while users
 without a Kling connection fall back to the mock provider in development. Live
