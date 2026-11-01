@@ -38,16 +38,16 @@ createRoot(document.getElementById("root")!).render(
       mode="project"
       videos={[
         {
-          src: "./assets/vlog-hero.mp4#t=0.2",
-          poster: "./assets/vlog-hero-poster-1.jpg",
+          src: "./assets/vlog-hero.mp4",
+          poster: "./assets/vlog-hero-poster.jpg",
         },
         {
-          src: "./assets/vlog-hero.mp4#t=2.4",
-          poster: "./assets/vlog-hero-poster-2.jpg",
+          src: "./assets/vlog-hero-european.mp4",
+          poster: "./assets/vlog-hero-european-poster.jpg",
         },
         {
-          src: "./assets/vlog-hero.mp4#t=4.7",
-          poster: "./assets/vlog-hero-poster-3.jpg",
+          src: "./assets/vlog-hero-black.mp4",
+          poster: "./assets/vlog-hero-black-poster.jpg",
         },
       ]}
     />

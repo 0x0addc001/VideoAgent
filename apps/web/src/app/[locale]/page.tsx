@@ -27,16 +27,16 @@ export default async function HomePage({
       mode="app"
       videos={[
         {
-          src: "/media/vlog-hero.mp4#t=0.2",
-          poster: "/media/vlog-hero-poster-1.jpg",
+          src: "/media/vlog-hero.mp4",
+          poster: "/media/vlog-hero-poster.jpg",
         },
         {
-          src: "/media/vlog-hero.mp4#t=2.4",
-          poster: "/media/vlog-hero-poster-2.jpg",
+          src: "/media/vlog-hero-european.mp4",
+          poster: "/media/vlog-hero-european-poster.jpg",
         },
         {
-          src: "/media/vlog-hero.mp4#t=4.7",
-          poster: "/media/vlog-hero-poster-3.jpg",
+          src: "/media/vlog-hero-black.mp4",
+          poster: "/media/vlog-hero-black-poster.jpg",
         },
       ]}
     />

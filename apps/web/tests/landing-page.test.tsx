@@ -6,9 +6,15 @@ const props = {
   locale: "en" as const,
   mode: "project" as const,
   videos: [
-    { src: "/media/vlog-hero.mp4#t=0.2", poster: "/media/vlog-hero-poster-1.jpg" },
-    { src: "/media/vlog-hero.mp4#t=2.4", poster: "/media/vlog-hero-poster-2.jpg" },
-    { src: "/media/vlog-hero.mp4#t=4.7", poster: "/media/vlog-hero-poster-3.jpg" },
+    { src: "/media/vlog-hero.mp4", poster: "/media/vlog-hero-poster.jpg" },
+    {
+      src: "/media/vlog-hero-european.mp4",
+      poster: "/media/vlog-hero-european-poster.jpg",
+    },
+    {
+      src: "/media/vlog-hero-black.mp4",
+      poster: "/media/vlog-hero-black-poster.jpg",
+    },
   ],
   appHref: "/en/register",
   githubHref: "https://github.com/0x0addc001/VideoAgent",
@@ -35,6 +41,10 @@ describe("LandingPage", () => {
       "0",
     );
     expect(container.querySelectorAll(".hero-video-frame")).toHaveLength(3);
+    const videoSources = [...container.querySelectorAll(".hero-video-frame source")].map(
+      (source) => source.getAttribute("src"),
+    );
+    expect(new Set(videoSources).size).toBe(3);
     expect(container.querySelector(".workflow-grid p")).toHaveTextContent(
       "Write a brief",
     );

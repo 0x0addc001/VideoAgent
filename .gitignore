@@ -47,6 +47,10 @@ secrets/
 *.mp3
 !site/assets/vlog-hero.mp4
 !apps/web/public/media/vlog-hero.mp4
+!site/assets/vlog-hero-european.mp4
+!apps/web/public/media/vlog-hero-european.mp4
+!site/assets/vlog-hero-black.mp4
+!apps/web/public/media/vlog-hero-black.mp4
 
 # Editors and OS
 .idea/
