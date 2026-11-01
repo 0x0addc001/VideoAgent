@@ -17,7 +17,6 @@ export const landingContent = {
         "Turn a brief into a structured storyboard, generate each shot with a model provider, and keep the final cut under your control.",
       create: "Create",
       github: "GitHub",
-      workflow: "Workflow",
     },
     product: {
       label: "Product",
@@ -69,7 +68,6 @@ export const landingContent = {
         "把创意变成结构化故事板，通过模型服务生成每个镜头，并让最终成片始终处于你的掌控之中。",
       create: "创作",
       github: "GitHub",
-      workflow: "流程",
     },
     product: {
       label: "产品",

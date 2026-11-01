@@ -177,7 +177,7 @@ def document_page(filename: str, title_en: str, title_zh: str, body: str) -> str
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="VideoAgent {html.escape(title_en)}" />
     <title>{document_title}</title>
-    <link rel="icon" href="../favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="../brand-mark.svg?v=2" type="image/svg+xml" />
     <link rel="stylesheet" href="../docs.css" />
   </head>
   <body>

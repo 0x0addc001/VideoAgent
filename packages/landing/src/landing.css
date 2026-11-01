@@ -149,19 +149,31 @@ footer {
   stroke-width: 1.6;
 }
 
-nav {
+.site-header > nav {
   display: flex;
+  width: 360px;
   align-items: center;
-  gap: 30px;
+  justify-content: center;
+  gap: 0;
 }
 
-nav a {
+.site-header > nav > a,
+.site-header > nav > details {
+  display: flex;
+  min-width: 96px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+}
+
+.site-header > nav > a {
   color: var(--muted);
   font-size: var(--text-small);
+  font-weight: 500;
   transition: color 160ms ease;
 }
 
-nav a:hover {
+.site-header > nav > a:hover {
   color: var(--text);
 }
 
@@ -170,9 +182,14 @@ nav a:hover {
 }
 
 .nav-dropdown summary {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
   color: var(--muted);
   cursor: pointer;
   font-size: var(--text-small);
+  font-weight: 500;
   list-style: none;
   transition: color 160ms ease;
 }
@@ -233,16 +250,26 @@ nav a:hover {
   border: 0;
   border-radius: 999px;
   background: transparent;
+  color: var(--muted);
   cursor: pointer;
   font-size: var(--text-small);
   padding: 0;
+  transition:
+    color 160ms ease,
+    background 160ms ease;
+}
+
+.language-button:hover,
+.language-button[aria-expanded="true"] {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
 }
 
 .language-button svg {
-  width: 19px;
+  width: 20px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.5;
+  stroke-width: 1.6;
 }
 
 .language-options {
@@ -361,8 +388,7 @@ h1 {
   margin-top: 38px;
 }
 
-.primary-action,
-.secondary-action {
+.primary-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -383,13 +409,7 @@ h1 {
   box-shadow: 0 16px 42px rgba(255, 118, 67, 0.16);
 }
 
-.secondary-action {
-  border: 1px solid var(--line);
-  color: #d6cec4;
-}
-
-.primary-action:hover,
-.secondary-action:hover {
+.primary-action:hover {
   transform: translateY(-2px);
 }
 
@@ -636,13 +656,6 @@ h1 {
   font-weight: 650;
 }
 
-.feature-icon {
-  float: right;
-  width: 20px;
-  height: 20px;
-  color: rgba(255, 255, 255, 0.35);
-}
-
 .capabilities h3 {
   max-width: 270px;
   margin: 120px 0 16px;
@@ -854,8 +867,9 @@ html[lang="zh-CN"] .section-heading > p:last-child {
     gap: 14px;
   }
 
-  nav {
+  .site-header > nav {
     grid-column: 1 / -1;
+    width: 100%;
     justify-content: center;
     border-top: 1px solid var(--line);
     padding: 14px 0 4px;

@@ -1,11 +1,5 @@
 "use client";
 
-import {
-  ArrowDown,
-  BrainCircuit,
-  Clapperboard,
-  Layers3,
-} from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { landingContent, type LandingLocale } from "./content";
 
@@ -49,7 +43,6 @@ export function LandingPage({
   const docsRef = useRef<HTMLDetailsElement>(null);
   const primaryLabel = mode === "app" ? content.hero.create : content.hero.github;
   const primaryHref = mode === "app" ? appHref : githubHref;
-  const featureIcons = [BrainCircuit, Clapperboard, Layers3];
 
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -142,9 +135,6 @@ export function LandingPage({
             <a className="primary-action" href={primaryHref}>
               {primaryLabel} <span aria-hidden="true">↗</span>
             </a>
-            <a className="secondary-action" href="#workflow">
-              {content.hero.workflow} <ArrowDown aria-hidden="true" className="h-4 w-4" />
-            </a>
           </div>
         </div>
 
@@ -174,17 +164,13 @@ export function LandingPage({
           <p>{content.product.description}</p>
         </div>
         <div className="capabilities">
-          {content.product.features.map((feature, index) => {
-            const Icon = featureIcons[index];
-            return (
-              <article key={feature.number}>
-                <span>{feature.number}</span>
-                <Icon aria-hidden="true" className="feature-icon" />
-                <h3>{feature.title}</h3>
-                <p>{feature.body}</p>
-              </article>
-            );
-          })}
+          {content.product.features.map((feature) => (
+            <article key={feature.number}>
+              <span>{feature.number}</span>
+              <h3>{feature.title}</h3>
+              <p>{feature.body}</p>
+            </article>
+          ))}
         </div>
       </section>
 

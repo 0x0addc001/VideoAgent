@@ -13,6 +13,9 @@ export const metadata: Metadata = {
   },
   description:
     "Plan, generate, review, and assemble videos with an AI creative director.",
+  icons: {
+    icon: [{ url: "/brand-mark.svg?v=2", type: "image/svg+xml" }],
+  },
 };
 
 export function generateStaticParams() {
