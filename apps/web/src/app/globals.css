@@ -82,6 +82,12 @@ html[lang="zh-CN"] .font-display {
   font-weight: 700;
 }
 
+html[lang="zh-CN"] h1 {
+  font-size: clamp(3rem, 5.8vw, 5.5rem);
+  line-height: 1.04;
+  letter-spacing: -0.05em;
+}
+
 button,
 input,
 textarea,

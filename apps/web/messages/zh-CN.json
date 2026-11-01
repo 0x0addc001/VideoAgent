@@ -4,12 +4,17 @@
   },
   "nav": {
     "product": "产品",
-    "architecture": "架构",
-    "workflow": "创作流程",
+    "workflow": "流程",
+    "docs": "文档",
     "projects": "项目",
     "language": "语言",
     "signIn": "登录",
-    "start": "开始创作"
+    "start": "创作"
+  },
+  "documents": {
+    "design": "设计文档",
+    "implementation": "实现文档",
+    "testing": "测试文档"
   },
   "hero": {
     "eyebrow": "AI 视频创作工作台",
@@ -18,7 +23,6 @@
     "promptLabel": "导演控制",
     "promptPlaceholder": "一场午夜香水发布，像一帧遗失的老电影……",
     "promptAction": "和 Agent 一起导演",
-    "exploreSystem": "了解系统设计",
     "sceneLabel": "镜头 01",
     "direction": "导演控制"
   },
@@ -36,16 +40,6 @@
       "title": "Provider 抽象",
       "body": "稳定的 Provider 接口让产品不绑定于单一视频模型。"
     }
-  },
-  "architecture": {
-    "eyebrow": "系统架构",
-    "title": "为真实生产流程而设计。",
-    "experience": "体验层",
-    "orchestration": "编排层",
-    "execution": "执行层",
-    "workspace": "项目工作台",
-    "workflow": "工作流与审批",
-    "jobs": "任务与生成"
   },
   "workflow": {
     "title": "从创意到最终成片。",

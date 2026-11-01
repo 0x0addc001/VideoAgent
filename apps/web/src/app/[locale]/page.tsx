@@ -71,9 +71,9 @@ export default async function HomePage({
             </Link>
             <Link
               className="inline-flex min-h-[54px] items-center gap-3 rounded-full border border-white/12 px-5 text-[17px] text-white/65 transition hover:border-white/25 hover:text-white"
-              href="/#architecture"
+              href="/#workflow"
             >
-              {t("hero.exploreSystem")}
+              {t("nav.workflow")}
               <ArrowDown className="h-4 w-4" />
             </Link>
           </div>
@@ -104,7 +104,7 @@ export default async function HomePage({
         <div className="grid gap-16 lg:grid-cols-[0.8fr_1.2fr]">
           <div>
             <p className="m-0 text-[17px] font-semibold tracking-[0.14em] text-[#ff8a5c]">
-              PRODUCT
+              {t("nav.product")}
             </p>
             <h2 className="mt-5 max-w-xl text-balance text-[clamp(3rem,4.5vw,4.6rem)] leading-[1] tracking-[-0.045em]">
               {t("features.title")}
@@ -131,76 +131,21 @@ export default async function HomePage({
       </section>
 
       <section
-        className="relative z-10 mx-auto max-w-[1240px] border-t border-white/10 px-5 py-28 sm:px-8"
-        id="architecture"
-      >
-        <div className="section-heading mb-12">
-          <p className="m-0 text-[17px] font-semibold tracking-[0.14em] text-[#ff8a5c]">
-            {t("architecture.eyebrow")}
-          </p>
-          <h2 className="mt-5 max-w-3xl text-balance font-display text-[clamp(3rem,4.5vw,4.6rem)] leading-[1] tracking-[-0.045em]">
-            {t("architecture.title")}
-          </h2>
-        </div>
-        <div className="grid items-center gap-4 rounded-[28px] border border-white/10 bg-[linear-gradient(rgba(255,255,255,0.025)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.025)_1px,transparent_1px),#0f0d0b] bg-[length:34px_34px,34px_34px,auto] p-6 lg:grid-cols-[1fr_auto_1fr_auto_1fr] lg:p-9">
-          <div>
-            <span className="mb-3 block text-[17px] font-semibold tracking-[0.08em] text-white/40">
-              {t("architecture.experience")}
-            </span>
-            <div className="flex min-h-32 flex-col justify-center rounded-[18px] border border-white/10 bg-[#12100d] p-5">
-              <strong className="font-display text-2xl font-semibold">Next.js</strong>
-              <span className="mt-2 text-[17px] text-white/50">
-                {t("architecture.workspace")}
-              </span>
-            </div>
-          </div>
-          <ArrowRight className="mx-auto h-6 w-6 rotate-90 text-[#ff8a5c] lg:rotate-0" />
-          <div>
-            <span className="mb-3 block text-[17px] font-semibold tracking-[0.08em] text-white/40">
-              {t("architecture.orchestration")}
-            </span>
-            <div className="flex min-h-32 flex-col justify-center rounded-[18px] border border-[#ff7643]/30 bg-[#12100d] p-5">
-              <strong className="font-display text-2xl font-semibold">
-                FastAPI + LangGraph
-              </strong>
-              <span className="mt-2 text-[17px] text-white/50">
-                {t("architecture.workflow")}
-              </span>
-            </div>
-          </div>
-          <ArrowRight className="mx-auto h-6 w-6 rotate-90 text-[#ff8a5c] lg:rotate-0" />
-          <div>
-            <span className="mb-3 block text-[17px] font-semibold tracking-[0.08em] text-white/40">
-              {t("architecture.execution")}
-            </span>
-            <div className="flex min-h-32 flex-col justify-center rounded-[18px] border border-white/10 bg-[#12100d] p-5">
-              <strong className="font-display text-2xl font-semibold">
-                Celery + Provider
-              </strong>
-              <span className="mt-2 text-[17px] text-white/50">
-                {t("architecture.jobs")}
-              </span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section
         className="relative z-10 mx-auto max-w-[1240px] px-5 pb-28 sm:px-8"
         id="workflow"
       >
-        <div className="overflow-hidden rounded-[32px] bg-[#efe8dc] text-[#18140f]">
-          <div className="flex flex-col justify-between gap-7 border-b border-[#18140f]/10 p-8 sm:p-12 lg:flex-row lg:items-end">
+        <div className="overflow-hidden rounded-[32px] border border-white/10 bg-[#12100d] text-[#f7f0e6]">
+          <div className="flex flex-col justify-between gap-7 border-b border-white/10 p-8 sm:p-12 lg:flex-row lg:items-end">
             <div>
               <p className="m-0 text-[17px] font-semibold tracking-[0.12em] text-[#a94523]">
-                WORKFLOW
+                {t("nav.workflow")}
               </p>
               <h2 className="mt-4 max-w-2xl text-balance font-display text-[clamp(2.8rem,4.6vw,4.5rem)] leading-[1] tracking-[-0.045em]">
                 {t("workflow.title")}
               </h2>
             </div>
             <Link
-              className="inline-flex w-fit items-center gap-3 rounded-full bg-[#18140f] px-5 py-3.5 text-[17px] font-semibold text-white"
+              className="inline-flex w-fit items-center gap-3 rounded-full bg-[#f7f0e6] px-5 py-3.5 text-[17px] font-semibold text-[#18140f]"
               href="/register"
             >
               {t("nav.start")}
@@ -210,7 +155,7 @@ export default async function HomePage({
           <div className="grid sm:grid-cols-2 lg:grid-cols-4">
             {steps.map((step, index) => (
               <div
-                className="min-h-56 border-b border-[#18140f]/10 p-7 last:border-b-0 sm:border-r sm:last:border-r-0 sm:p-8 lg:border-b-0"
+                className="min-h-56 border-b border-white/10 p-7 last:border-b-0 sm:border-r sm:last:border-r-0 sm:p-8 lg:border-b-0"
                 key={step}
               >
                 <span className="text-[17px] font-semibold text-[#a94523]">

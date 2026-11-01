@@ -33,29 +33,39 @@
 
         <nav aria-label="Main navigation">
           <a href="#product" data-en="Product" data-zh="产品">Product</a>
-          <a href="#architecture" data-en="Architecture" data-zh="架构">Architecture</a>
-          <a href="./docs/software-design.html" data-en="Design Doc" data-zh="设计文档">Design Doc</a>
+          <a href="#workflow" data-en="Workflow" data-zh="流程">Workflow</a>
+          <details class="nav-dropdown">
+            <summary data-en="Docs" data-zh="文档">Docs</summary>
+            <div class="nav-dropdown-menu">
+              <a href="./docs/software-design.html" data-en="Software Design" data-zh="设计文档">Software Design</a>
+              <a href="./docs/software-implementation.html" data-en="Implementation Guide" data-zh="实现文档">Implementation Guide</a>
+              <a href="./docs/software-test-plan.html" data-en="Testing &amp; TDD" data-zh="测试文档">Testing &amp; TDD</a>
+            </div>
+          </details>
         </nav>
 
-        <div class="language-switcher">
-          <button
-            class="language-button"
-            id="language-button"
-            type="button"
-            aria-label="Change language"
-            title="Change language"
-            aria-expanded="false"
-            aria-controls="language-options"
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <circle cx="12" cy="12" r="9"></circle>
-              <path d="M3 12h18M12 3c2.5 2.5 3.8 5.5 3.8 9S14.5 18.5 12 21M12 3c-2.5 2.5-3.8 5.5-3.8 9S9.5 18.5 12 21"></path>
-            </svg>
-          </button>
-          <div class="language-options" id="language-options" hidden>
-            <button type="button" data-language="en" aria-current="true">English</button>
-            <button type="button" data-language="zh">简体中文</button>
+        <div class="header-actions">
+          <div class="language-switcher">
+            <button
+              class="language-button"
+              id="language-button"
+              type="button"
+              aria-label="Change language"
+              title="Change language"
+              aria-expanded="false"
+              aria-controls="language-options"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M3 12h18M12 3c2.5 2.5 3.8 5.5 3.8 9S14.5 18.5 12 21M12 3c-2.5 2.5-3.8 5.5-3.8 9S9.5 18.5 12 21"></path>
+              </svg>
+            </button>
+            <div class="language-options" id="language-options" hidden>
+              <button type="button" data-language="en" aria-current="true">English</button>
+              <button type="button" data-language="zh">简体中文</button>
+            </div>
           </div>
+          <a class="header-action" href="https://github.com/0x0addc001/VideoAgent">GitHub ↗</a>
         </div>
       </header>
 
@@ -77,11 +87,11 @@
           </p>
           <div class="hero-actions">
             <a class="primary-action" href="https://github.com/0x0addc001/VideoAgent">
-              <span data-en="View source" data-zh="查看源码">View source</span>
+              <span>GitHub</span>
               <span aria-hidden="true">↗</span>
             </a>
-            <a class="secondary-action" href="#architecture">
-              <span data-en="Explore the system" data-zh="了解系统设计">Explore the system</span>
+            <a class="secondary-action" href="#workflow">
+              <span data-en="Workflow" data-zh="流程">Workflow</span>
               <span aria-hidden="true">↓</span>
             </a>
           </div>
@@ -161,44 +171,9 @@
         </div>
       </section>
 
-      <section class="section architecture" id="architecture">
+      <section class="section workflow" id="workflow">
         <div class="section-heading compact">
-          <p class="eyebrow" data-en="ARCHITECTURE" data-zh="系统架构">ARCHITECTURE</p>
-          <h2 data-en="Designed for real production workflows." data-zh="为真实生产流程而设计。">
-            Designed for real production workflows.
-          </h2>
-        </div>
-
-        <div class="system-map">
-          <div class="system-column">
-            <span class="system-label" data-en="EXPERIENCE" data-zh="体验层">EXPERIENCE</span>
-            <div class="system-node">
-              <strong>Next.js</strong>
-              <span data-en="Project workspace" data-zh="项目工作台">Project workspace</span>
-            </div>
-          </div>
-          <span class="system-arrow" aria-hidden="true">→</span>
-          <div class="system-column">
-            <span class="system-label" data-en="ORCHESTRATION" data-zh="编排层">ORCHESTRATION</span>
-            <div class="system-node accent">
-              <strong>FastAPI + LangGraph</strong>
-              <span data-en="Workflow and approvals" data-zh="工作流与审批">Workflow and approvals</span>
-            </div>
-          </div>
-          <span class="system-arrow" aria-hidden="true">→</span>
-          <div class="system-column">
-            <span class="system-label" data-en="EXECUTION" data-zh="执行层">EXECUTION</span>
-            <div class="system-node">
-              <strong>Celery + Provider</strong>
-              <span data-en="Jobs and generation" data-zh="任务与生成">Jobs and generation</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="section workflow">
-        <div class="section-heading compact">
-          <p class="eyebrow" data-en="WORKFLOW" data-zh="创作流程">WORKFLOW</p>
+          <p class="eyebrow" data-en="WORKFLOW" data-zh="流程">WORKFLOW</p>
           <h2 data-en="From brief to final cut." data-zh="从创意到最终成片。">
             From brief to final cut.
           </h2>

@@ -41,8 +41,8 @@ export function LocaleSwitcher() {
         aria-haspopup="menu"
         aria-label={locale === "zh-CN" ? "切换语言" : "Change language"}
         className={cn(
-          "grid size-11 place-items-center rounded-full border border-white/10 bg-white/5 text-white/75 transition",
-          "hover:border-white/20 hover:bg-white/8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff7643]/40",
+          "grid size-11 place-items-center rounded-none border-0 bg-transparent text-white/75 transition",
+          "hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff7643]/40",
           isPending && "opacity-55",
         )}
         onClick={() => setIsOpen((current) => !current)}

@@ -28,10 +28,32 @@ export async function SiteHeader() {
         </Link>
         <Link
           className="hidden px-3 py-2 text-[17px] text-white/60 transition hover:text-white sm:block"
-          href="/#architecture"
+          href="/#workflow"
         >
-          {t("nav.architecture")}
+          {t("nav.workflow")}
         </Link>
+        <details className="group relative hidden sm:block">
+          <summary className="cursor-pointer list-none px-3 py-2 text-[17px] text-white/60 transition hover:text-white [&::-webkit-details-marker]:hidden">
+            {t("nav.docs")}
+          </summary>
+          <div className="absolute left-1/2 top-[calc(100%+10px)] grid w-56 -translate-x-1/2 overflow-hidden rounded-2xl border border-white/10 bg-[#17140f] p-1.5 shadow-2xl shadow-black/40">
+            {[
+              ["software-design.html", t("documents.design")],
+              ["software-implementation.html", t("documents.implementation")],
+              ["software-test-plan.html", t("documents.testing")],
+            ].map(([path, label]) => (
+              <a
+                className="rounded-xl px-3 py-2.5 text-[17px] text-white/60 transition hover:bg-white/6 hover:text-white"
+                href={`https://0x0addc001.github.io/VideoAgent/docs/${path}`}
+                key={path}
+                rel="noreferrer"
+                target="_blank"
+              >
+                {label}
+              </a>
+            ))}
+          </div>
+        </details>
         <LocaleSwitcher />
         <Link
           className="group flex items-center gap-1.5 rounded-full bg-white px-4 py-2.5 text-[17px] font-semibold text-[#16130f] transition hover:bg-[#ffd6c5]"

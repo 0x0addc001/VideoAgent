@@ -73,6 +73,9 @@ document.querySelectorAll("[data-language]").forEach((option) => {
 document.addEventListener("click", (event) => {
   if (!(event.target instanceof Element)) return;
   if (!event.target.closest(".language-switcher")) closeLanguageMenu();
+  document.querySelectorAll(".nav-dropdown[open]").forEach((dropdown) => {
+    if (!dropdown.contains(event.target)) dropdown.removeAttribute("open");
+  });
 });
 
 document.addEventListener("keydown", (event) => {

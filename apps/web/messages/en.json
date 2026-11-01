@@ -4,12 +4,17 @@
   },
   "nav": {
     "product": "Product",
-    "architecture": "Architecture",
     "workflow": "Workflow",
+    "docs": "Docs",
     "projects": "Projects",
     "language": "Language",
     "signIn": "Sign in",
-    "start": "Start creating"
+    "start": "Create"
+  },
+  "documents": {
+    "design": "Software Design",
+    "implementation": "Implementation Guide",
+    "testing": "Testing & TDD"
   },
   "hero": {
     "eyebrow": "AI VIDEO CREATION WORKSPACE",
@@ -18,7 +23,6 @@
     "promptLabel": "Creative direction",
     "promptPlaceholder": "A midnight perfume launch, lit like a lost film...",
     "promptAction": "Direct with agent",
-    "exploreSystem": "Explore the system",
     "sceneLabel": "Scene 01",
     "direction": "Direction"
   },
@@ -36,16 +40,6 @@
       "title": "Provider boundary",
       "body": "A stable provider interface keeps the product independent from a single video model."
     }
-  },
-  "architecture": {
-    "eyebrow": "ARCHITECTURE",
-    "title": "Designed for real production workflows.",
-    "experience": "EXPERIENCE",
-    "orchestration": "ORCHESTRATION",
-    "execution": "EXECUTION",
-    "workspace": "Project workspace",
-    "workflow": "Workflow and approvals",
-    "jobs": "Jobs and generation"
   },
   "workflow": {
     "title": "From brief to final cut.",
