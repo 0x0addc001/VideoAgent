@@ -4,6 +4,11 @@ VideoAgent is a bilingual AI video creation workspace. It turns a creative brief
 into a structured storyboard, estimates generation cost, and submits approved
 shots to a video provider.
 
+The static GitHub Pages project homepage is deployed from [`site/`](site/) by
+`.github/workflows/pages.yml`. The full application remains a separate
+Python/Next.js service because GitHub Pages cannot run FastAPI, OAuth callbacks,
+Celery, or media processing.
+
 ## Current milestone
 
 Implemented:
@@ -147,6 +152,7 @@ deploy                   Infrastructure and container configuration
 
 See:
 
+- [GitHub Pages project homepage](https://0x0addc001.github.io/VideoAgent/)
 - [Software design](docs/software-design.md)
 - [Software implementation](docs/software-implementation.md)
 - [Software test and TDD specification](docs/software-test-plan.md)

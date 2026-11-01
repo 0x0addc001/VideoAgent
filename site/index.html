@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="VideoAgent is a bilingual, agent-led video creation workspace built with Next.js, FastAPI, LangGraph, Kling MCP, and Celery."
+    />
+    <meta name="theme-color" content="#0b0a08" />
+    <meta property="og:title" content="VideoAgent — Your idea. Your direction. Your cut." />
+    <meta
+      property="og:description"
+      content="A bilingual AI video director that plans, storyboards, generates, and keeps every credit behind human approval."
+    />
+    <meta property="og:type" content="website" />
+    <title>VideoAgent — Your idea. Your direction. Your cut.</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="grain" aria-hidden="true"></div>
+    <main>
+      <header class="site-header">
+        <a class="brand" href="./">
+          <span class="brand-mark">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 7h16v13H4zM4 7l3-3h4l3 3m-2 0 3-3h4l-2 3" />
+            </svg>
+          </span>
+          <span>
+            <strong>VideoAgent</strong>
+            <small data-en="Your idea. Your direction. Your cut." data-zh="你的灵感，你的导演，你的成片。">
+              Your idea. Your direction. Your cut.
+            </small>
+          </span>
+        </a>
+
+        <nav aria-label="Main navigation">
+          <a href="#capabilities" data-en="Capabilities" data-zh="能力">Capabilities</a>
+          <a href="#architecture" data-en="Architecture" data-zh="架构">Architecture</a>
+          <a href="#docs" data-en="Docs" data-zh="文档">Docs</a>
+          <button class="language-toggle" id="language-toggle" type="button">
+            <span class="language-label">简体中文</span>
+          </button>
+        </nav>
+      </header>
+
+      <section class="hero">
+        <div class="hero-copy">
+          <div class="eyebrow">
+            <span class="status-dot"></span>
+            <span data-en="AI VIDEO DIRECTOR'S DESK" data-zh="AI 视频导演台">
+              AI VIDEO DIRECTOR'S DESK
+            </span>
+          </div>
+          <h1>
+            <span
+              data-en="Every idea deserves"
+              data-zh="让每个灵感，"
+            >Every idea deserves</span>
+            <span
+              class="gradient-text"
+              data-en="its own frame."
+              data-zh="都有自己的镜头。"
+            >its own frame.</span>
+          </h1>
+          <p
+            data-en="Go from a first thought to a final cut with an AI creative partner that plans, storyboards, and generates beside you."
+            data-zh="从一个念头到最终成片，让 AI 创意伙伴陪你策划、分镜，并把每个镜头真正生成出来。"
+          >
+            Go from a first thought to a final cut with an AI creative partner
+            that plans, storyboards, and generates beside you.
+          </p>
+          <div class="hero-actions">
+            <a
+              class="button primary"
+              href="https://github.com/0x0addc001/VideoAgent"
+            >
+              <span data-en="View the project" data-zh="查看项目">View the project</span>
+              <span aria-hidden="true">↗</span>
+            </a>
+            <a class="button secondary" href="#architecture">
+              <span data-en="Explore architecture" data-zh="了解架构">Explore architecture</span>
+              <span aria-hidden="true">↓</span>
+            </a>
+          </div>
+          <div class="trust-line">
+            <span></span>
+            <span
+              data-en="Kling-powered generation · Human approval before credits are used"
+              data-zh="Kling 提供生成能力 · 每次积分消耗都由你确认"
+            >
+              Kling-powered generation · Human approval before credits are used
+            </span>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="outline-title" aria-hidden="true">CUT 01</div>
+          <div class="film-rail" aria-hidden="true"></div>
+          <figure class="product-frame">
+            <div class="frame-top">
+              <span><i></i> <b data-en="SCENE 01" data-zh="镜头 01">SCENE 01</b></span>
+              <span>00:20:00</span>
+            </div>
+            <div class="scene-canvas" role="img" aria-label="VideoAgent cinematic shot preview">
+              <div class="scene-scan" aria-hidden="true"></div>
+              <div class="scene-rec">REC · 24FPS</div>
+              <button class="scene-play" type="button" aria-label="Play scene preview">▶</button>
+              <div class="scene-caption">
+                <small data-en="DIRECTION" data-zh="导演控制">DIRECTION</small>
+                <strong
+                  data-en="A midnight perfume launch, lit like a lost film..."
+                  data-zh="一场午夜香水发布，像一帧遗失的老电影……"
+                >
+                  A midnight perfume launch, lit like a lost film...
+                </strong>
+              </div>
+              <div class="scene-meta">WIDE · ANAMORPHIC · 00:20</div>
+            </div>
+            <figcaption>
+              <span class="prompt-icon">✦</span>
+              <span>
+                <small data-en="SET THE SCENE" data-zh="设定开场">SET THE SCENE</small>
+                <strong
+                  data-en="A midnight perfume launch, lit like a lost film..."
+                  data-zh="一场午夜香水发布，像一帧遗失的老电影……"
+                >
+                  A midnight perfume launch, lit like a lost film...
+                </strong>
+              </span>
+              <span class="arrow-chip">→</span>
+            </figcaption>
+          </figure>
+          <div class="direction-card">
+            <small>STATUS</small>
+            <span><i></i><b data-en="DIRECTION" data-zh="导演控制">DIRECTION</b></span>
+          </div>
+        </div>
+      </section>
+
+      <div class="sequence" aria-label="Product sequence">
+        <span>IDEA</span><i></i><span>DIRECTION</span><i></i><span>STORYBOARD</span>
+        <i></i><span>GENERATE</span><i></i><span>FINAL CUT</span>
+      </div>
+
+      <section class="content-section capabilities" id="capabilities">
+        <div class="section-intro">
+          <span class="kicker">THE CREATIVE DESK</span>
+          <h2
+            data-en="A director's desk, not another prompt box."
+            data-zh="一张导演台，而不是另一个提示词输入框。"
+          >
+            A director's desk, not another prompt box.
+          </h2>
+          <p
+            data-en="Every creative decision remains visible, editable, and under human control. The agent handles the production busywork."
+            data-zh="每个创意决策都可见、可编辑、由人掌控；Agent 负责制作过程中的繁琐工作。"
+          >
+            Every creative decision remains visible, editable, and under human
+            control. The agent handles the production busywork.
+          </p>
+          <div class="milestone-list">
+            <div>
+              <span>01</span>
+              <strong data-en="Agent-led planning" data-zh="Agent 策划">Agent-led planning</strong>
+              <p data-en="LangGraph turns a brief into a structured, editable storyboard." data-zh="LangGraph 将创意需求整理成结构化、可编辑的故事板。">
+                LangGraph turns a brief into a structured, editable storyboard.
+              </p>
+            </div>
+            <div>
+              <span>02</span>
+              <strong data-en="Provider ready" data-zh="可扩展 Provider">Provider ready</strong>
+              <p data-en="Kling MCP is abstracted behind a replaceable video-provider interface." data-zh="Kling MCP 被封装在可替换的视频 Provider 接口之后。">
+                Kling MCP is abstracted behind a replaceable video-provider interface.
+              </p>
+            </div>
+            <div>
+              <span>03</span>
+              <strong data-en="Human approval" data-zh="人工审批">Human approval</strong>
+              <p data-en="No billable generation is submitted without an explicit, traceable approval." data-zh="任何计费生成都必须经过明确且可追踪的用户批准。">
+                No billable generation is submitted without an explicit, traceable approval.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="capability-grid">
+          <article class="capability-card wide">
+            <span class="card-number">01 / CREATIVE AGENT</span>
+            <div class="card-icon">⌁</div>
+            <h3 data-en="The story stays editable." data-zh="故事始终可编辑。">
+              The story stays editable.
+            </h3>
+            <p
+              data-en="Plan the treatment, refine a shot, change the language, and approve generation without losing the thread."
+              data-zh="从创意方案、镜头调整到语言切换，整个过程始终围绕同一份可追踪的项目上下文。"
+            >
+              Plan the treatment, refine a shot, change the language, and
+              approve generation without losing the thread.
+            </p>
+            <div class="mini-storyboard" aria-hidden="true">
+              <span>01<br /><b>WIDE</b></span>
+              <span>02<br /><b>DETAIL</b></span>
+              <span>03<br /><b>HERO</b></span>
+            </div>
+          </article>
+          <article class="capability-card">
+            <span class="card-number">02 / STORYBOARD</span>
+            <div class="card-icon">▤</div>
+            <h3 data-en="Shot-level control." data-zh="镜头级控制。">
+              Shot-level control.
+            </h3>
+            <p
+              data-en="Prompt, duration, aspect ratio, provider mode, and approval state remain inspectable."
+              data-zh="提示词、时长、画面比例、Provider 模式和审批状态全部可检查。"
+            >
+              Prompt, duration, aspect ratio, provider mode, and approval state
+              remain inspectable.
+            </p>
+          </article>
+          <article class="capability-card">
+            <span class="card-number">03 / BILINGUAL</span>
+            <div class="card-icon">文</div>
+            <h3 data-en="Chinese and English, end to end." data-zh="中英文，贯穿全流程。">
+              Chinese and English, end to end.
+            </h3>
+            <p
+              data-en="The interface, agent responses, storyboards, and share pages use one shared localization system."
+              data-zh="界面、Agent 回复、故事板和分享页面使用统一国际化系统。"
+            >
+              The interface, agent responses, storyboards, and share pages use
+              one shared localization system.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="content-section architecture" id="architecture">
+        <div class="architecture-copy">
+          <span class="kicker">SYSTEM DESIGN</span>
+          <h2
+            data-en="Built as a product, not a demo wrapper."
+            data-zh="按产品标准构建，而不是一层演示包装。"
+          >
+            Built as a product, not a demo wrapper.
+          </h2>
+          <p
+            data-en="Typed contracts, persistent jobs, encrypted provider credentials, and a provider boundary keep the creative workflow independent from a single model."
+            data-zh="类型化契约、持久任务、加密 Provider 凭据和抽象边界，让创作流程不绑定于单一模型。"
+          >
+            Typed contracts, persistent jobs, encrypted provider credentials, and
+            a provider boundary keep the creative workflow independent from a
+            single model.
+          </p>
+        </div>
+        <div class="architecture-diagram">
+          <div class="diagram-row">
+            <span class="diagram-node browser">Next.js<br /><small>Web · i18n</small></span>
+            <span class="diagram-arrow">→</span>
+            <span class="diagram-node api">FastAPI<br /><small>API · OAuth</small></span>
+            <span class="diagram-arrow">→</span>
+            <span class="diagram-node agent">LangGraph<br /><small>Agent</small></span>
+          </div>
+          <div class="diagram-connector"></div>
+          <div class="diagram-row">
+            <span class="diagram-node worker">Celery<br /><small>Jobs</small></span>
+            <span class="diagram-arrow">→</span>
+            <span class="diagram-node kling">Kling MCP<br /><small>Provider</small></span>
+            <span class="diagram-arrow">→</span>
+            <span class="diagram-node data">Database<br /><small>+ Storage</small></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="content-section project-status">
+        <div class="status-board">
+          <div>
+            <span class="status-caption">CURRENT BASELINE</span>
+            <h2 data-en="Foundation ready. Production next." data-zh="基础完成，生产化继续。">
+              Foundation ready. Production next.
+            </h2>
+          </div>
+          <div class="status-items">
+            <div><i class="done"></i><span data-en="Bilingual Agent workspace" data-zh="双语 Agent 工作区">Bilingual Agent workspace</span></div>
+            <div><i class="done"></i><span data-en="Kling OAuth + MCP" data-zh="Kling OAuth + MCP">Kling OAuth + MCP</span></div>
+            <div><i class="done"></i><span data-en="Persistent generation jobs" data-zh="持久生成任务">Persistent generation jobs</span></div>
+            <div><i></i><span data-en="Media storage + FFmpeg export" data-zh="媒体存储 + FFmpeg 导出">Media storage + FFmpeg export</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="content-section product-preview">
+        <div class="preview-heading">
+          <span class="kicker">PRODUCT PREVIEW</span>
+          <h2 data-en="One workspace from brief to final cut." data-zh="从创意到成片，都在同一工作台。">
+            One workspace from brief to final cut.
+          </h2>
+        </div>
+        <figure class="preview-window">
+          <div class="preview-toolbar">
+            <span><i></i><i></i><i></i></span>
+            <strong>VIDEOAGENT / STUDIO</strong>
+            <span data-en="BILINGUAL" data-zh="双语">BILINGUAL</span>
+          </div>
+          <img
+            id="product-preview"
+            src="./assets/home-en.png"
+            alt="VideoAgent studio preview in English"
+          />
+        </figure>
+      </section>
+
+      <section class="content-section docs" id="docs">
+        <span class="kicker">BUILD WITH US</span>
+        <div class="docs-grid">
+          <a
+            class="doc-card"
+            href="https://github.com/0x0addc001/VideoAgent/blob/main/docs/software-design.md"
+          >
+            <span>01</span>
+            <strong data-en="Software design" data-zh="软件设计">Software design</strong>
+            <p data-en="Architecture, product boundaries, data model, and delivery plan." data-zh="架构、产品边界、数据模型与交付计划。">Architecture, product boundaries, data model, and delivery plan.</p>
+            <i>↗</i>
+          </a>
+          <a
+            class="doc-card"
+            href="https://github.com/0x0addc001/VideoAgent/blob/main/docs/software-implementation.md"
+          >
+            <span>02</span>
+            <strong data-en="Implementation guide" data-zh="实现说明">Implementation guide</strong>
+            <p data-en="Module map, runtime flows, API surface, security, and known technical debt." data-zh="模块映射、运行流程、API、安全和已知技术债。">Module map, runtime flows, API surface, security, and known technical debt.</p>
+            <i>↗</i>
+          </a>
+          <a
+            class="doc-card"
+            href="https://github.com/0x0addc001/VideoAgent/blob/main/docs/software-test-plan.md"
+          >
+            <span>03</span>
+            <strong data-en="TDD specification" data-zh="TDD 规范">TDD specification</strong>
+            <p data-en="Executable test strategy, quality gates, and controlled live-provider testing." data-zh="可执行测试策略、质量门禁与受控真实 Provider 测试。">Executable test strategy, quality gates, and controlled live-provider testing.</p>
+            <i>↗</i>
+          </a>
+        </div>
+      </section>
+
+      <footer>
+        <a class="brand footer-brand" href="./">
+          <span class="brand-mark">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 7h16v13H4zM4 7l3-3h4l3 3m-2 0 3-3h4l-2 3" />
+            </svg>
+          </span>
+          <span><strong>VideoAgent</strong><small>Open-source AI video studio</small></span>
+        </a>
+        <p>DIRECTION · GENERATION · FINAL CUT · <span id="year">2026</span></p>
+      </footer>
+    </main>
+    <script src="./app.js"></script>
+  </body>
+</html>
+

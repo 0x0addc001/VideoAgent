@@ -14,16 +14,29 @@ node_modules/
 coverage/
 playwright-report/
 test-results/
+*.tsbuildinfo
 
 # Local runtime data
 .data/
 *.db
 *.sqlite3
+*.db-shm
+*.db-wal
 
 # Environment and secrets
 .env
 .env.*
 !.env.example
+.envrc
+*.pem
+*.key
+*.p12
+*.pfx
+auth.json
+credentials.json
+service-account*.json
+.secrets/
+secrets/
 
 # Media
 *.mp4
@@ -37,4 +50,7 @@ test-results/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Local design captures
+.data/
 
