@@ -29,6 +29,14 @@ describe("localization resources", () => {
     expect(landingContent["zh-CN"].hero.title).toBe("导演你的故事");
     expect(landingContent.en.hero.eyebrow).toBe("AI VIDEO CREATION WORKSPACE");
     expect(landingContent["zh-CN"].hero.eyebrow).toBe("AI 视频创作工作台");
+    expect(landingContent["zh-CN"].product.features[1].title).toBe("镜头管理");
+    expect(landingContent["zh-CN"].product.features[2].title).toBe("模型自由");
+    expect(landingContent["zh-CN"].workflow.steps.map((step) => step.title)).toEqual([
+      "描述创意",
+      "编排故事",
+      "生成镜头",
+      "合成成片",
+    ]);
   });
 });
 

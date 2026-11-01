@@ -21,22 +21,18 @@ export const landingContent = {
     },
     product: {
       label: "Product",
-      title: "A clear workflow for deliberate video creation",
-      description:
-        "The agent handles planning and repetitive production work. The project remains visible, editable, and auditable at every stage.",
+      title:
+        "Agent-assisted planning and production keep every stage clear, controllable, editable, and auditable",
       features: [
         {
-          number: "01",
           title: "Creative planning",
           body: "A structured agent turns the creative brief into an editable treatment and shot sequence.",
         },
         {
-          number: "02",
           title: "Shot-level control",
           body: "Prompt, duration, aspect ratio, provider mode, and approval state remain inspectable.",
         },
         {
-          number: "03",
           title: "Provider boundary",
           body: "A stable provider interface keeps the product independent from a single video model.",
         },
@@ -90,23 +86,18 @@ export const landingContent = {
     },
     product: {
       label: "产品",
-      title: "清晰、可控的视频创作流程",
-      description:
-        "Agent 负责策划与重复性制作工作，项目在每个阶段都保持可见、可编辑、可追踪。",
+      title: "Agent 协同策划与制作，让每个创作阶段清晰、可控、可编辑、可追踪",
       features: [
         {
-          number: "01",
           title: "创意策划",
           body: "结构化 Agent 将创意需求整理为可编辑的方案和镜头序列。",
         },
         {
-          number: "02",
-          title: "镜头级控制",
+          title: "镜头管理",
           body: "提示词、时长、画面比例、生成模式与审批状态全部可检查。",
         },
         {
-          number: "03",
-          title: "模型服务解耦",
+          title: "模型自由",
           body: "统一的模型服务接口让创作流程不绑定于单一视频模型。",
         },
       ],
@@ -116,11 +107,11 @@ export const landingContent = {
       title: "从创意到最终成片",
       steps: [
         {
-          title: "描述或上传",
+          title: "描述创意",
           description: "写下创意，或加入参考图、现有素材与视觉线索。",
         },
         {
-          title: "设计故事",
+          title: "编排故事",
           description: "Agent 将你的方向整理为可编辑的故事板和镜头清单。",
         },
         {
@@ -128,7 +119,7 @@ export const landingContent = {
           description: "确认提示词、时长与构图后，再由视频模型渲染。",
         },
         {
-          title: "审核与合成",
+          title: "合成成片",
           description: "保留、修改或重新生成镜头，最后完成剪辑。",
         },
       ],

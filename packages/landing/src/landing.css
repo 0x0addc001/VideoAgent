@@ -673,23 +673,15 @@ h1 {
 }
 
 .combined-section-title {
-  max-width: 1000px;
-  margin: 0 0 20px;
-  font-size: clamp(46px, 4.6vw, 68px);
+  max-width: var(--page-width);
+  margin: 0;
+  font-size: clamp(42px, 4.2vw, 62px);
   line-height: 0.98;
   letter-spacing: -0.05em;
 }
 
 .combined-section-title .title-kicker {
   padding-top: 0;
-}
-
-.product-heading > p:last-child {
-  max-width: 730px;
-  margin: 0;
-  color: var(--muted);
-  font-size: clamp(19px, 1.6vw, 23px);
-  line-height: 1.62;
 }
 
 .experience-title {
@@ -704,6 +696,7 @@ h1 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
 }
 
 .capabilities article {
@@ -718,12 +711,6 @@ h1 {
 
 .capabilities article:last-child {
   border-right: 0;
-}
-
-.capabilities article > span {
-  color: var(--accent);
-  font-size: var(--label-size);
-  font-weight: 600;
 }
 
 .capabilities h3 {
@@ -950,8 +937,7 @@ html[lang="zh-CN"] h3 {
   letter-spacing: -0.025em;
 }
 
-html[lang="zh-CN"] .hero-description,
-html[lang="zh-CN"] .product-heading > p:last-child {
+html[lang="zh-CN"] .hero-description {
   font-family: var(--display);
   font-weight: 400;
   letter-spacing: 0.01em;
@@ -988,11 +974,6 @@ html[lang="zh-CN"] .product-heading > p:last-child {
 
   .section-heading {
     display: block;
-  }
-
-  .product-heading > p:last-child {
-    width: auto;
-    margin-left: 0;
   }
 
   .capabilities {

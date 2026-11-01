@@ -205,12 +205,10 @@ export function LandingPage({
             <span className="title-separator" aria-hidden="true">/</span>
             <span className="title-main">{content.product.title}</span>
           </h2>
-          <p>{content.product.description}</p>
         </div>
         <div className="capabilities">
           {content.product.features.map((feature) => (
-            <article key={feature.number}>
-              <span>{feature.number}</span>
+            <article key={feature.title}>
               <h3>{feature.title}</h3>
               <p>{feature.body}</p>
             </article>
