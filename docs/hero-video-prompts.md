@@ -35,11 +35,31 @@ No text, logos, extra fingers, or distorted face.
 ## 3. East Asian Creator
 
 ```text
-Cinematic vertical vlog footage of an elegant East Asian woman in her
-twenties, filming herself with a compact camera in a moody creative studio.
-Warm orange light and cool blue shadows shape her face while she adjusts the
-gimbal and looks toward the lens. The camera drifts slowly from a profile
-close-up to a three-quarter portrait. Refined editorial color grading, natural
-skin texture, gentle motion, shallow depth of field, no text, no logos, no
-extra fingers, no distorted face.
+Premium cinematic campaign video for a modern AI video creation platform. One
+continuous five-second shot in a sophisticated dark creative studio. A
+fictional stylish East Asian female content creator in her late twenties is
+filming a personal vlog with a compact mirrorless camera mounted on a small
+handheld gimbal. Medium close-up, vertical 3:4 composition, subject positioned
+toward the right third with clean negative space around the upper left.
+
+She calmly checks the camera screen, makes a subtle focus adjustment with one
+hand, then looks up toward the lens with a quiet, confident expression. Natural
+blinking, restrained movement, realistic hair and fabric motion. Exactly one
+person and two natural hands. Fashion-forward minimal charcoal and ivory
+outfit, refined natural makeup, authentic skin texture with subtle pores, no
+beauty-filter appearance.
+
+Dark charcoal and deep teal environment, warm orange rim light moving subtly
+across her hair and shoulder, soft practical light panels out of focus in the
+background, gentle atmospheric haze and subtle lens reflection. Shallow depth
+of field, 50mm portrait-lens perspective, slow almost-still camera with a very
+slight handheld breathing motion. High-end fashion campaign cinematography,
+realistic anatomy, polished editorial lighting.
+
+Single continuous take, no cuts, no zoom, no scene change, no camera shake. The
+beginning and ending frame should have nearly the same subject placement and
+lighting so the video loops naturally. No text, no letters, no logo, no
+watermark, no user interface, no duplicate person, no extra limbs, no distorted
+hands, no face morphing, no plastic skin, no exaggerated smile, no fast
+movement, no busy background.
 ```
