@@ -433,10 +433,11 @@ Idempotency-Key: <unique-client-generated-key>
 ### 13.1 启动 API
 
 ```powershell
-cd D:\_Science\Agent\VideoAgent\services\api
-uv sync --dev
-uv run uvicorn videoagent.main:app --reload --port 8000
+cd D:\_Science\Agent\VideoAgent
+.\scripts\dev-api.ps1
 ```
+
+启动脚本会将 Windows PowerShell、Python 标准输出和代码页切换为 UTF-8，避免中文日志乱码。
 
 默认数据库：
 
@@ -448,9 +449,10 @@ services/api/.data/videoagent.db
 
 ```powershell
 cd D:\_Science\Agent\VideoAgent
-pnpm install
-pnpm --dir apps/web dev
+.\scripts\dev-web.ps1
 ```
+
+该脚本同样会统一控制台编码，并启动 Next.js 开发服务。
 
 访问：
 

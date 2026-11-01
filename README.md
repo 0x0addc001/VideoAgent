@@ -53,19 +53,20 @@ cd D:\_Science\Agent\VideoAgent\services\api
 uv sync --dev
 ```
 
-Start the API:
+Start the API with the Windows UTF-8 startup script:
 
 ```powershell
-uv run uvicorn videoagent.main:app --reload --port 8000
+.\scripts\dev-api.ps1
 ```
 
 In a second terminal, install and start the web application:
 
 ```powershell
-cd D:\_Science\Agent\VideoAgent
-pnpm install
-pnpm --dir apps/web dev
+.\scripts\dev-web.ps1
 ```
+
+These scripts switch the PowerShell console and Python processes to UTF-8 so
+Chinese log output is not garbled on Windows.
 
 For persistent background polling, start Redis and set
 `VIDEOAGENT_CELERY_ENABLED=true`, then run the Worker:
