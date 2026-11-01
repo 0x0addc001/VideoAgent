@@ -7,6 +7,22 @@
 }
 
 @font-face {
+  font-family: "Noto Serif SC";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/noto-serif-sc-400.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Noto Serif SC";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("./fonts/noto-serif-sc-500.woff2") format("woff2");
+}
+
+@font-face {
   font-family: "Fraunces";
   font-style: normal;
   font-weight: 500;
@@ -67,8 +83,8 @@
   --line: rgba(255, 255, 255, 0.12);
   --accent: #ff7643;
   --display:
-    Fraunces, "Songti SC", "STSong", "Noto Serif CJK SC",
-    "Source Han Serif SC", "SimSun", serif;
+    Fraunces, "Noto Serif SC", "Noto Serif CJK SC", "Source Han Serif SC",
+    "Songti SC", "STSong", "SimSun", serif;
   --body:
     Manrope, "Segoe UI Variable Text", "PingFang SC", "Microsoft YaHei",
     "Noto Sans SC", sans-serif;
@@ -77,9 +93,6 @@
 }
 
 html[lang="zh-CN"] {
-  --display:
-    "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC",
-    "SimSun", serif;
   --body: "PingFang SC", "Microsoft YaHei", "Noto Sans SC", sans-serif;
 }
 

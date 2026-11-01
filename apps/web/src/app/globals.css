@@ -9,6 +9,22 @@
 }
 
 @font-face {
+  font-family: "Noto Serif SC";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("/fonts/noto-serif-sc-400.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Noto Serif SC";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("/fonts/noto-serif-sc-500.woff2") format("woff2");
+}
+
+@font-face {
   font-family: "Manrope";
   font-style: normal;
   font-weight: 400;
@@ -71,7 +87,9 @@ h1,
 h2,
 h3,
 .font-display {
-  font-family: Fraunces, "Songti SC", "Noto Serif CJK SC", serif;
+  font-family:
+    Fraunces, "Noto Serif SC", "Noto Serif CJK SC", "Source Han Serif SC",
+    "Songti SC", "STSong", "SimSun", serif;
 }
 
 html[lang="zh-CN"] h1,
@@ -79,8 +97,8 @@ html[lang="zh-CN"] h2,
 html[lang="zh-CN"] h3,
 html[lang="zh-CN"] .font-display {
   font-family:
-    "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC",
-    "SimSun", serif;
+    Fraunces, "Noto Serif SC", "Noto Serif CJK SC", "Source Han Serif SC",
+    "Songti SC", "STSong", "SimSun", serif;
   font-weight: 500;
   letter-spacing: -0.025em;
 }
