@@ -26,13 +26,14 @@ jobs:
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
-        with:
-          enablement: true
+
+      - name: Build documentation pages
+        run: python scripts/build_pages.py
 
       - name: Upload static site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: site
+          path: .pages-build
 
       - name: Deploy to GitHub Pages
         id: deployment

@@ -1,42 +1,41 @@
-const languageButton = document.querySelector("#language-toggle");
-const languageLabel = languageButton?.querySelector(".language-label");
-const productPreview = document.querySelector("#product-preview");
+const languageButton = document.querySelector("#language-button");
+const languageOptions = document.querySelector("#language-options");
+const currentLanguage = document.querySelector("#current-language");
 
 const copy = {
   en: {
-    button: "简体中文",
-    title: "VideoAgent — Your idea. Your direction. Your cut.",
-    preview: "./assets/home-en.png",
-    previewAlt: "VideoAgent studio preview in English",
+    label: "English",
+    title: "VideoAgent — Direct the story.",
   },
   zh: {
-    button: "English",
-    title: "VideoAgent — 你的灵感，你的导演，你的成片。",
-    preview: "./assets/home-zh.png",
-    previewAlt: "VideoAgent 中文创作工作台",
+    label: "简体中文",
+    title: "VideoAgent — 导演你的故事。",
   },
 };
 
+function closeLanguageMenu() {
+  if (!languageOptions || !languageButton) return;
+  languageOptions.hidden = true;
+  languageButton.setAttribute("aria-expanded", "false");
+}
+
 function applyLanguage(language) {
-  const languageCopy = copy[language];
   document.documentElement.lang = language === "zh" ? "zh-CN" : "en";
-  document.title = languageCopy.title;
+  document.title = copy[language].title;
+  if (currentLanguage) currentLanguage.textContent = copy[language].label;
 
   document.querySelectorAll("[data-en][data-zh]").forEach((element) => {
     element.textContent = element.dataset[language];
   });
 
-  if (languageLabel) {
-    languageLabel.textContent = languageCopy.button;
-  }
-  if (productPreview) {
-    productPreview.src = languageCopy.preview;
-    productPreview.alt = languageCopy.previewAlt;
-  }
+  document.querySelectorAll("[data-language]").forEach((option) => {
+    option.setAttribute("aria-current", String(option.dataset.language === language));
+  });
+
   try {
     window.localStorage.setItem("videoagent-language", language);
   } catch {
-    // Storage can be unavailable in hardened browser modes.
+    // Storage may be unavailable in hardened browser modes.
   }
 }
 
@@ -52,19 +51,34 @@ try {
     initialLanguage = "zh";
   }
 } catch {
-  if (navigator.language.toLowerCase().startsWith("zh")) {
-    initialLanguage = "zh";
-  }
+  if (navigator.language.toLowerCase().startsWith("zh")) initialLanguage = "zh";
 }
 
 applyLanguage(initialLanguage);
 
 languageButton?.addEventListener("click", () => {
-  applyLanguage(document.documentElement.lang === "zh-CN" ? "en" : "zh");
+  if (!languageOptions || !languageButton) return;
+  const willOpen = languageOptions.hidden;
+  languageOptions.hidden = !willOpen;
+  languageButton.setAttribute("aria-expanded", String(willOpen));
 });
 
-const year = document.querySelector("#year");
-if (year) {
-  year.textContent = String(new Date().getFullYear());
-}
+document.querySelectorAll("[data-language]").forEach((option) => {
+  option.addEventListener("click", () => {
+    applyLanguage(option.dataset.language);
+    closeLanguageMenu();
+  });
+});
+
+document.addEventListener("click", (event) => {
+  if (!(event.target instanceof Element)) return;
+  if (!event.target.closest(".language-switcher")) closeLanguageMenu();
+});
+
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    closeLanguageMenu();
+    languageButton?.focus();
+  }
+});
 
