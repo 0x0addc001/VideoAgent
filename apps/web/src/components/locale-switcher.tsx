@@ -2,7 +2,7 @@
 
 import { Languages } from "lucide-react";
 import { useLocale } from "next-intl";
-import { useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { localeLabels, supportedLocales, type AppLocale } from "@/i18n/config";
 import { usePathname, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
@@ -11,34 +11,68 @@ export function LocaleSwitcher() {
   const locale = useLocale() as AppLocale;
   const pathname = usePathname();
   const router = useRouter();
+  const [isOpen, setIsOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handlePointerDown(event: PointerEvent) {
+      if (!containerRef.current?.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, []);
+
+  function chooseLocale(nextLocale: AppLocale) {
+    setIsOpen(false);
+    if (nextLocale === locale) return;
+    startTransition(() => {
+      router.replace(pathname, { locale: nextLocale });
+    });
+  }
 
   return (
-    <label className="relative inline-flex items-center gap-2">
-      <Languages aria-hidden="true" className="h-4 w-4 text-white/55" />
-      <span className="sr-only">Language</span>
-      <select
-        aria-label="Language"
+    <div className="relative" ref={containerRef}>
+      <button
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
+        aria-label={locale === "zh-CN" ? "切换语言" : "Change language"}
         className={cn(
-          "cursor-pointer appearance-none rounded-full border border-white/10 bg-white/5 py-2 pl-3 pr-8 text-sm text-white outline-none transition",
-          "hover:border-white/20 focus:border-[#ff7a45] focus:ring-2 focus:ring-[#ff7a45]/25",
-          isPending && "opacity-60",
+          "grid size-11 place-items-center rounded-full border border-white/10 bg-white/5 text-white/75 transition",
+          "hover:border-white/20 hover:bg-white/8 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#ff7643]/40",
+          isPending && "opacity-55",
         )}
-        defaultValue={locale}
-        onChange={(event) => {
-          const nextLocale = event.target.value as AppLocale;
-          startTransition(() => {
-            router.replace(pathname, { locale: nextLocale });
-          });
-        }}
+        onClick={() => setIsOpen((current) => !current)}
+        type="button"
       >
-        {supportedLocales.map((item) => (
-          <option className="bg-[#16130f] text-white" key={item} value={item}>
-            {localeLabels[item]}
-          </option>
-        ))}
-      </select>
-    </label>
+        <Languages className="h-5 w-5" />
+      </button>
+
+      {isOpen ? (
+        <div
+          className="absolute right-0 top-[calc(100%+10px)] w-44 overflow-hidden rounded-2xl border border-white/10 bg-[#17140f] p-1.5 shadow-2xl shadow-black/40"
+          role="menu"
+        >
+          {supportedLocales.map((item) => (
+            <button
+              aria-current={item === locale ? "true" : undefined}
+              className={cn(
+                "block w-full rounded-xl px-3 py-2.5 text-left text-[17px] text-white/65 transition hover:bg-white/6 hover:text-white",
+                item === locale && "bg-white/6 text-white",
+              )}
+              key={item}
+              onClick={() => chooseLocale(item)}
+              role="menuitem"
+              type="button"
+            >
+              {localeLabels[item]}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
   );
 }
-

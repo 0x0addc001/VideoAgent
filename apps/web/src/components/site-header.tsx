@@ -13,31 +13,28 @@ export async function SiteHeader() {
           <Clapperboard className="h-5 w-5" strokeWidth={2.2} />
         </span>
         <span>
-          <span className="block text-[15px] font-semibold tracking-tight text-white">
+          <span className="block font-display text-xl font-semibold tracking-[-0.02em] text-white">
             {t("brand.name")}
-          </span>
-          <span className="hidden max-w-52 truncate text-[10px] uppercase tracking-[0.16em] text-white/40 sm:block">
-            {t("brand.tagline")}
           </span>
         </span>
       </Link>
 
       <nav className="flex items-center gap-2 sm:gap-4" aria-label="Primary navigation">
         <Link
-          className="hidden px-3 py-2 text-sm text-white/60 transition hover:text-white sm:block"
-          href="/#workflow"
+          className="hidden px-3 py-2 text-[17px] text-white/60 transition hover:text-white sm:block"
+          href="/#product"
         >
-          {t("nav.workflow")}
+          {t("nav.product")}
         </Link>
         <Link
-          className="hidden px-3 py-2 text-sm text-white/60 transition hover:text-white sm:block"
-          href="/projects"
+          className="hidden px-3 py-2 text-[17px] text-white/60 transition hover:text-white sm:block"
+          href="/#architecture"
         >
-          {t("nav.projects")}
+          {t("nav.architecture")}
         </Link>
         <LocaleSwitcher />
         <Link
-          className="group flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#16130f] transition hover:bg-[#ffd6c5]"
+          className="group flex items-center gap-1.5 rounded-full bg-white px-4 py-2.5 text-[17px] font-semibold text-[#16130f] transition hover:bg-[#ffd6c5]"
           href="/register"
         >
           {t("nav.start")}

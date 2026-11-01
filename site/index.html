@@ -34,7 +34,7 @@
         <nav aria-label="Main navigation">
           <a href="#product" data-en="Product" data-zh="产品">Product</a>
           <a href="#architecture" data-en="Architecture" data-zh="架构">Architecture</a>
-          <a href="#documents" data-en="Documents" data-zh="文档">Documents</a>
+          <a href="./docs/software-design.html" data-en="Design Doc" data-zh="设计文档">Design Doc</a>
         </nav>
 
         <div class="language-switcher">
@@ -87,28 +87,21 @@
           </div>
         </div>
 
-        <div class="hero-art" aria-hidden="true">
+        <div class="hero-art">
           <div class="scene-card scene-card-back-one"></div>
           <div class="scene-card scene-card-back-two"></div>
-          <figure class="frame">
-            <div class="frame-bar">
-              <span data-en="Scene 01" data-zh="镜头 01">Scene 01</span>
-              <span>00:20</span>
-            </div>
-            <div class="frame-image">
-              <span class="frame-light"></span>
-              <span class="frame-horizon"></span>
-              <span class="play-mark">▶</span>
-            </div>
-            <div class="frame-note">
-              <span data-en="Direction" data-zh="导演控制">Direction</span>
-              <p
-                data-en="Shape the treatment. Review every shot. Keep the final decision."
-                data-zh="打磨创意，审核每个镜头，最终决定权始终属于你。"
-              >
-                Shape the treatment. Review every shot. Keep the final decision.
-              </p>
-            </div>
+          <figure class="hero-video-frame">
+            <video
+              autoplay
+              loop
+              muted
+              playsinline
+              poster="./assets/vlog-hero-poster.jpg"
+              preload="metadata"
+              aria-label="A creator filming a vlog in a dark cinematic studio"
+            >
+              <source src="./assets/vlog-hero.mp4" type="video/mp4" />
+            </video>
           </figure>
         </div>
       </section>
@@ -203,44 +196,18 @@
         </div>
       </section>
 
-      <section class="section documents" id="documents">
+      <section class="section workflow">
         <div class="section-heading compact">
-          <p class="eyebrow" data-en="DOCUMENTATION" data-zh="项目文档">DOCUMENTATION</p>
-          <h2 data-en="Read the project in detail." data-zh="深入了解项目设计与实现。">
-            Read the project in detail.
+          <p class="eyebrow" data-en="WORKFLOW" data-zh="创作流程">WORKFLOW</p>
+          <h2 data-en="From brief to final cut." data-zh="从创意到最终成片。">
+            From brief to final cut.
           </h2>
         </div>
-        <div class="document-links">
-          <a href="./docs/software-design.html">
-            <span>01</span>
-            <div>
-              <strong data-en="Software Design" data-zh="软件设计">Software Design</strong>
-              <p data-en="Architecture, data model, product boundaries, and delivery plan." data-zh="架构、数据模型、产品边界与交付计划。">
-                Architecture, data model, product boundaries, and delivery plan.
-              </p>
-            </div>
-            <i aria-hidden="true">→</i>
-          </a>
-          <a href="./docs/software-implementation.html">
-            <span>02</span>
-            <div>
-              <strong data-en="Implementation Guide" data-zh="实现说明">Implementation Guide</strong>
-              <p data-en="Modules, runtime flows, APIs, security, and technical debt." data-zh="模块、运行流程、API、安全与技术债。">
-                Modules, runtime flows, APIs, security, and technical debt.
-              </p>
-            </div>
-            <i aria-hidden="true">→</i>
-          </a>
-          <a href="./docs/software-test-plan.html">
-            <span>03</span>
-            <div>
-              <strong data-en="Testing & TDD" data-zh="测试与 TDD">Testing &amp; TDD</strong>
-              <p data-en="Test strategy, quality gates, and controlled provider validation." data-zh="测试策略、质量门禁与受控 Provider 验收。">
-                Test strategy, quality gates, and controlled provider validation.
-              </p>
-            </div>
-            <i aria-hidden="true">→</i>
-          </a>
+        <div class="workflow-grid">
+          <div><span>01</span><p data-en="Describe or attach" data-zh="描述或上传">Describe or attach</p></div>
+          <div><span>02</span><p data-en="Shape the story" data-zh="设计故事">Shape the story</p></div>
+          <div><span>03</span><p data-en="Generate each shot" data-zh="生成镜头">Generate each shot</p></div>
+          <div><span>04</span><p data-en="Review and assemble" data-zh="审核与合成">Review and assemble</p></div>
         </div>
       </section>
 

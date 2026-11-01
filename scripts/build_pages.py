@@ -171,7 +171,7 @@ def markdown_to_html(markdown: str) -> str:
 def document_page(filename: str, title_en: str, title_zh: str, body: str) -> str:
     document_title = f"{title_en} · VideoAgent"
     return f"""<!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -185,7 +185,13 @@ def document_page(filename: str, title_en: str, title_zh: str, body: str) -> str
       <a class="doc-brand" href="../">VideoAgent</a>
       <span>/</span>
       <span>{html.escape(title_en)}</span>
-      <a class="back-link" href="../#documents">Back to project</a>
+      <div class="doc-actions">
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme">
+          <span class="theme-icon" aria-hidden="true">◐</span>
+          <span class="theme-label">Dark</span>
+        </button>
+        <a class="back-link" href="../#documents">Back to project</a>
+      </div>
     </header>
     <main class="document-shell">
       <aside class="document-meta">
@@ -195,6 +201,7 @@ def document_page(filename: str, title_en: str, title_zh: str, body: str) -> str
       </aside>
       <article class="document">{body}</article>
     </main>
+    <script src="../docs.js"></script>
   </body>
 </html>
 """

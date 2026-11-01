@@ -35,14 +35,15 @@ def result_payload(result: types.CallToolResult | types.Result) -> dict[str, Any
 class StreamableHTTPToolClient:
     def __init__(self, url: str, access_token: str) -> None:
         self._url = url
-        self._http_client = AsyncClient(headers={"Authorization": f"Bearer {access_token}"})
+        self._headers = {"Authorization": f"Bearer {access_token}"}
 
     async def call_tool(self, name: str, arguments: dict[str, Any]) -> dict[str, Any]:
+        http_client = AsyncClient(headers=self._headers)
         async with (
-            self._http_client,
+            http_client,
             streamable_http_client(
                 self._url,
-                http_client=self._http_client,
+                http_client=http_client,
             ) as (read_stream, write_stream),
             ClientSession(
                 read_stream,

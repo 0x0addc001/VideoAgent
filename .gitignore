@@ -45,6 +45,8 @@ secrets/
 *.webm
 *.wav
 *.mp3
+!site/assets/vlog-hero.mp4
+!apps/web/public/media/vlog-hero.mp4
 
 # Editors and OS
 .idea/

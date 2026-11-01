@@ -23,13 +23,13 @@ describe("localization resources", () => {
     expect(flattenKeys(zhCN).sort()).toEqual(flattenKeys(en).sort());
   });
 
-  it("uses director-led brand messaging in both languages", () => {
-    expect(en.hero.title).toBe("Every idea deserves its own frame.");
-    expect(zhCN.hero.title).toBe("让每个灵感，都有自己的镜头。");
-    expect(en.brand.tagline).toContain("direct");
-    expect(zhCN.brand.tagline).toContain("导演");
-    expect(en.hero.eyebrow).toBe("AI VIDEO DIRECTOR'S DESK");
-    expect(zhCN.hero.eyebrow).toBe("AI 视频导演台");
+  it("uses concise creator-focused product messaging", () => {
+    expect(en.hero.title).toBe("Direct the story.");
+    expect(zhCN.hero.title).toBe("导演你的故事。");
+    expect(en.hero.eyebrow).toBe("AI VIDEO CREATION WORKSPACE");
+    expect(zhCN.hero.eyebrow).toBe("AI 视频创作工作台");
+    expect(en.brand).toEqual({ name: "VideoAgent" });
+    expect(zhCN.brand).toEqual({ name: "VideoAgent" });
   });
 });
 

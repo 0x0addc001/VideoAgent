@@ -44,17 +44,73 @@ a {
   backdrop-filter: blur(18px);
 }
 
+.doc-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-left: auto;
+}
+
 .doc-brand {
   color: var(--ink);
-  font-family: "Instrument Serif", "Songti SC", "Noto Serif CJK SC", serif;
+  font-family: Fraunces, "Songti SC", "Noto Serif CJK SC", serif;
   font-size: 25px;
   font-weight: 600;
   text-decoration: none;
 }
 
 .back-link {
-  margin-left: auto;
   font-size: 17px;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  font-size: 17px;
+  padding: 0 13px;
+}
+
+.theme-icon {
+  font-size: 19px;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --paper: #11100d;
+  --ink: #f3ece1;
+  --muted: #aaa096;
+  --line: rgba(255, 255, 255, 0.13);
+  --accent: #ff8a5c;
+}
+
+html[data-theme="dark"] .doc-header {
+  background: rgba(17, 16, 13, 0.9);
+}
+
+html[data-theme="dark"] .document p,
+html[data-theme="dark"] .document li,
+html[data-theme="dark"] td {
+  color: #c8c0b5;
+}
+
+html[data-theme="dark"] th {
+  background: rgba(255, 255, 255, 0.045);
+}
+
+html[data-theme="dark"] code {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+html[data-theme="dark"] blockquote {
+  background: rgba(255, 138, 92, 0.07);
+  color: #d2c9be;
 }
 
 .document-shell {
@@ -86,7 +142,7 @@ a {
 
 .document-meta strong {
   margin-top: 20px;
-  font-family: "Instrument Serif", "Songti SC", "Noto Serif CJK SC", serif;
+  font-family: Fraunces, "Songti SC", "Noto Serif CJK SC", serif;
   font-size: 28px;
   line-height: 1.2;
 }
@@ -103,10 +159,18 @@ a {
 .document h4,
 .document h5,
 .document h6 {
-  font-family: "Instrument Serif", "Songti SC", "Noto Serif CJK SC", serif;
+  font-family: Fraunces, "Songti SC", "Noto Serif CJK SC", serif;
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: -0.025em;
+}
+
+html[lang="zh-CN"] .document h1,
+html[lang="zh-CN"] .document h2,
+html[lang="zh-CN"] .document h3,
+html[lang="zh-CN"] .document h4 {
+  font-family: Manrope, "Noto Sans SC", "Microsoft YaHei", sans-serif;
+  font-weight: 700;
 }
 
 .document h1 {
@@ -232,6 +296,14 @@ hr {
     display: none;
   }
 
+  .doc-actions {
+    gap: 9px;
+  }
+
+  .back-link {
+    display: none;
+  }
+
   .document-shell {
     grid-template-columns: 1fr;
     width: min(calc(100% - 32px), 820px);
@@ -255,11 +327,11 @@ hr {
 }
 
 @font-face {
-  font-family: "Instrument Serif";
+  font-family: "Fraunces";
   font-style: normal;
-  font-weight: 400;
+  font-weight: 600;
   font-display: swap;
-  src: url("./fonts/instrument-serif-latin-400.woff2") format("woff2");
+  src: url("./fonts/fraunces-latin-600.woff2") format("woff2");
 }
 
 @font-face {

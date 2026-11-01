@@ -1,9 +1,9 @@
 @font-face {
-  font-family: "Instrument Serif";
+  font-family: "Fraunces";
   font-style: normal;
-  font-weight: 400;
+  font-weight: 600;
   font-display: swap;
-  src: url("./fonts/instrument-serif-latin-400.woff2") format("woff2");
+  src: url("./fonts/fraunces-latin-600.woff2") format("woff2");
 }
 
 @font-face {
@@ -50,7 +50,7 @@
   --faint: #736b62;
   --line: rgba(255, 255, 255, 0.12);
   --accent: #ff7643;
-  --display: "Instrument Serif", "Songti SC", "Noto Serif CJK SC", "SimSun", serif;
+  --display: Fraunces, "Songti SC", "Noto Serif CJK SC", "SimSun", serif;
   --body: Manrope, "Segoe UI Variable Text", "Noto Sans SC", sans-serif;
   --page-width: 1240px;
   --text-small: 1.0625rem;
@@ -263,7 +263,7 @@ h1,
 h2,
 h3 {
   font-family: var(--display);
-  font-weight: 550;
+  font-weight: 600;
 }
 
 h1 {
@@ -378,6 +378,27 @@ h1 {
     radial-gradient(circle at 35% 70%, rgba(106, 146, 122, 0.35), transparent 31%),
     linear-gradient(145deg, #21160f, #20332a);
   transform: rotate(8deg);
+}
+
+.hero-video-frame {
+  position: relative;
+  z-index: 3;
+  width: min(84%, 470px);
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  margin: 30px 0 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 32px;
+  background: var(--surface);
+  box-shadow: 0 50px 110px rgba(0, 0, 0, 0.5);
+  transform: rotate(1.2deg);
+}
+
+.hero-video-frame video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .frame {
@@ -628,6 +649,44 @@ h1 {
   border-top: 1px solid var(--line);
 }
 
+.workflow {
+  border-top: 1px solid var(--line);
+}
+
+.workflow-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 28px;
+  background: var(--surface);
+}
+
+.workflow-grid > div {
+  min-height: 230px;
+  border-right: 1px solid var(--line);
+  padding: 27px;
+}
+
+.workflow-grid > div:last-child {
+  border-right: 0;
+}
+
+.workflow-grid span {
+  color: var(--accent);
+  font-size: var(--text-small);
+  font-weight: 650;
+}
+
+.workflow-grid p {
+  max-width: 180px;
+  margin: 100px 0 0;
+  font-family: var(--display);
+  font-size: clamp(25px, 2.1vw, 34px);
+  line-height: 1.1;
+  letter-spacing: -0.025em;
+}
+
 .document-links {
   border-top: 1px solid var(--line);
 }
@@ -697,7 +756,9 @@ footer > a:last-child {
 }
 
 html[lang="zh-CN"] h1 {
+  font-family: var(--body);
   font-size: clamp(68px, 7.4vw, 116px);
+  font-weight: 700;
   line-height: 0.98;
 }
 
@@ -813,6 +874,10 @@ html[lang="zh-CN"] .section-heading > p:last-child {
     height: 330px;
   }
 
+  .hero-video-frame {
+    width: min(88%, 430px);
+  }
+
   .frame-note {
     padding: 22px;
   }
@@ -832,6 +897,27 @@ html[lang="zh-CN"] .section-heading > p:last-child {
   .document-links a {
     grid-template-columns: 42px 1fr auto;
     gap: 12px;
+  }
+
+  .workflow-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .workflow-grid > div {
+    min-height: 190px;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .workflow-grid > div:nth-child(2) {
+    border-right: 0;
+  }
+
+  .workflow-grid > div:nth-child(n + 3) {
+    border-bottom: 0;
+  }
+
+  .workflow-grid p {
+    margin-top: 65px;
   }
 
   footer {

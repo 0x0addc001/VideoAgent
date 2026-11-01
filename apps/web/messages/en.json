@@ -1,46 +1,54 @@
 {
   "brand": {
-    "name": "VideoAgent",
-    "tagline": "Your idea. Your direction. Your cut."
+    "name": "VideoAgent"
   },
   "nav": {
+    "product": "Product",
+    "architecture": "Architecture",
     "workflow": "Workflow",
     "projects": "Projects",
     "language": "Language",
     "signIn": "Sign in",
-    "start": "Direct a film"
+    "start": "Start creating"
   },
   "hero": {
-    "eyebrow": "AI VIDEO DIRECTOR'S DESK",
-    "title": "Every idea deserves its own frame.",
-    "titleLine1": "Every idea deserves",
-    "titleLine2": "its own frame.",
-    "subtitle": "Go from a first thought to a final cut with an AI creative partner that plans, storyboards, and generates beside you.",
-    "promptLabel": "Set the scene",
+    "eyebrow": "AI VIDEO CREATION WORKSPACE",
+    "title": "Direct the story.",
+    "subtitle": "Turn a brief into a structured storyboard, generate each shot with a model provider, and keep the final cut under your control.",
+    "promptLabel": "Creative direction",
     "promptPlaceholder": "A midnight perfume launch, lit like a lost film...",
     "promptAction": "Direct with agent",
-    "trustNote": "Kling-powered generation · Every credit stays behind your approval",
-    "sceneLabel": "SCENE 01",
-    "sequenceLabel": "RAW → STORYBOARD → CUT",
-    "direction": "DIRECTION"
+    "exploreSystem": "Explore the system",
+    "sceneLabel": "Scene 01",
+    "direction": "Direction"
   },
   "features": {
-    "title": "A director's desk, not another prompt box.",
+    "title": "A clear workflow for deliberate video creation.",
     "agent": {
-      "title": "Creative agent",
-      "body": "Turn a brief or reference image into a structured treatment and an editable shot list."
+      "title": "Creative planning",
+      "body": "A structured agent turns the creative brief into an editable treatment and shot sequence."
     },
     "storyboard": {
-      "title": "Shot control",
-      "body": "Edit prompts, duration, aspect ratio, references, and generation mode for every shot."
+      "title": "Shot-level control",
+      "body": "Prompt, duration, aspect ratio, provider mode, and approval state remain inspectable."
     },
     "providers": {
-      "title": "Provider ready",
-      "body": "Start with Kling MCP and keep a stable workflow as new video services are added."
+      "title": "Provider boundary",
+      "body": "A stable provider interface keeps the product independent from a single video model."
     }
   },
+  "architecture": {
+    "eyebrow": "ARCHITECTURE",
+    "title": "Designed for real production workflows.",
+    "experience": "EXPERIENCE",
+    "orchestration": "ORCHESTRATION",
+    "execution": "EXECUTION",
+    "workspace": "Project workspace",
+    "workflow": "Workflow and approvals",
+    "jobs": "Jobs and generation"
+  },
   "workflow": {
-    "title": "From first spark to final cut.",
+    "title": "From brief to final cut.",
     "brief": "Describe or attach",
     "plan": "Shape the story",
     "generate": "Generate each shot",

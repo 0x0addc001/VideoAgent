@@ -1,46 +1,54 @@
 {
   "brand": {
-    "name": "VideoAgent",
-    "tagline": "你的灵感，你的导演，你的成片。"
+    "name": "VideoAgent"
   },
   "nav": {
+    "product": "产品",
+    "architecture": "架构",
     "workflow": "创作流程",
     "projects": "项目",
     "language": "语言",
     "signIn": "登录",
-    "start": "开始导演"
+    "start": "开始创作"
   },
   "hero": {
-    "eyebrow": "AI 视频导演台",
-    "title": "让每个灵感，都有自己的镜头。",
-    "titleLine1": "让每个灵感，",
-    "titleLine2": "都有自己的镜头。",
-    "subtitle": "从一个念头到最终成片，让 AI 创意伙伴陪你策划、分镜，并把每个镜头真正生成出来。",
-    "promptLabel": "设定开场",
+    "eyebrow": "AI 视频创作工作台",
+    "title": "导演你的故事。",
+    "subtitle": "把创意变成结构化故事板，通过模型服务生成每个镜头，并让最终成片始终处于你的掌控之中。",
+    "promptLabel": "导演控制",
     "promptPlaceholder": "一场午夜香水发布，像一帧遗失的老电影……",
     "promptAction": "和 Agent 一起导演",
-    "trustNote": "Kling 提供生成能力 · 每次积分消耗都由你确认",
+    "exploreSystem": "了解系统设计",
     "sceneLabel": "镜头 01",
-    "sequenceLabel": "灵感 → 分镜 → 成片",
     "direction": "导演控制"
   },
   "features": {
-    "title": "一张导演台，而不是另一个提示词输入框。",
+    "title": "清晰、可控的视频创作流程。",
     "agent": {
-      "title": "创意 Agent",
-      "body": "将需求或参考图整理成结构化创意方案和可编辑的镜头清单。"
+      "title": "创意策划",
+      "body": "结构化 Agent 将创意需求整理为可编辑的方案和镜头序列。"
     },
     "storyboard": {
-      "title": "镜头控制",
-      "body": "编辑每个镜头的提示词、时长、比例、参考素材和生成方式。"
+      "title": "镜头级控制",
+      "body": "提示词、时长、画面比例、Provider 模式与审批状态全部可检查。"
     },
     "providers": {
-      "title": "可扩展视频服务",
-      "body": "首版接入 Kling MCP，并保持稳定流程以扩展更多视频模型。"
+      "title": "Provider 抽象",
+      "body": "稳定的 Provider 接口让产品不绑定于单一视频模型。"
     }
   },
+  "architecture": {
+    "eyebrow": "系统架构",
+    "title": "为真实生产流程而设计。",
+    "experience": "体验层",
+    "orchestration": "编排层",
+    "execution": "执行层",
+    "workspace": "项目工作台",
+    "workflow": "工作流与审批",
+    "jobs": "任务与生成"
+  },
   "workflow": {
-    "title": "从第一束火花，到最后一帧。",
+    "title": "从创意到最终成片。",
     "brief": "描述或上传",
     "plan": "设计故事",
     "generate": "生成镜头",
