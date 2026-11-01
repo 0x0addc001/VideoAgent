@@ -21,8 +21,7 @@ export const landingContent = {
     },
     product: {
       label: "Product",
-      title:
-        "Agent-assisted planning and production keep every stage clear, controllable, editable, and auditable",
+      title: "Worry-free planning and production",
       features: [
         {
           title: "Creative planning",
@@ -34,7 +33,7 @@ export const landingContent = {
         },
         {
           title: "Provider boundary",
-          body: "A stable provider interface keeps the product independent from a single video model.",
+          body: "Timely creative feedback helps refine the direction and expression as the work evolves.",
         },
       ],
     },
@@ -86,7 +85,7 @@ export const landingContent = {
     },
     product: {
       label: "产品",
-      title: "Agent 协同策划与制作，让每个创作阶段清晰、可控、可编辑、可追踪",
+      title: "省心策划与制作",
       features: [
         {
           title: "创意策划",
@@ -97,8 +96,8 @@ export const landingContent = {
           body: "提示词、时长、画面比例、生成模式与审批状态全部可检查。",
         },
         {
-          title: "模型自由",
-          body: "统一的模型服务接口让创作流程不绑定于单一视频模型。",
+          title: "评估反馈",
+          body: "随创作进程提供针对性建议，帮助你及时调整方向与表达。",
         },
       ],
     },

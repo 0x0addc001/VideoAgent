@@ -30,7 +30,8 @@ describe("localization resources", () => {
     expect(landingContent.en.hero.eyebrow).toBe("AI VIDEO CREATION WORKSPACE");
     expect(landingContent["zh-CN"].hero.eyebrow).toBe("AI 视频创作工作台");
     expect(landingContent["zh-CN"].product.features[1].title).toBe("镜头管理");
-    expect(landingContent["zh-CN"].product.features[2].title).toBe("模型自由");
+    expect(landingContent["zh-CN"].product.title).toBe("省心策划与制作");
+    expect(landingContent["zh-CN"].product.features[2].title).toBe("评估反馈");
     expect(landingContent["zh-CN"].workflow.steps.map((step) => step.title)).toEqual([
       "描述创意",
       "编排故事",
