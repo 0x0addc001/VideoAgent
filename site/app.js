@@ -1,14 +1,11 @@
 const languageButton = document.querySelector("#language-button");
 const languageOptions = document.querySelector("#language-options");
-const currentLanguage = document.querySelector("#current-language");
 
 const copy = {
   en: {
-    label: "English",
     title: "VideoAgent — Direct the story.",
   },
   zh: {
-    label: "简体中文",
     title: "VideoAgent — 导演你的故事。",
   },
 };
@@ -22,7 +19,10 @@ function closeLanguageMenu() {
 function applyLanguage(language) {
   document.documentElement.lang = language === "zh" ? "zh-CN" : "en";
   document.title = copy[language].title;
-  if (currentLanguage) currentLanguage.textContent = copy[language].label;
+  languageButton?.setAttribute(
+    "aria-label",
+    language === "zh" ? "切换语言" : "Change language",
+  );
 
   document.querySelectorAll("[data-en][data-zh]").forEach((element) => {
     element.textContent = element.dataset[language];

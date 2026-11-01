@@ -42,6 +42,8 @@
             class="language-button"
             id="language-button"
             type="button"
+            aria-label="Change language"
+            title="Change language"
             aria-expanded="false"
             aria-controls="language-options"
           >
@@ -49,8 +51,6 @@
               <circle cx="12" cy="12" r="9"></circle>
               <path d="M3 12h18M12 3c2.5 2.5 3.8 5.5 3.8 9S14.5 18.5 12 21M12 3c-2.5 2.5-3.8 5.5-3.8 9S9.5 18.5 12 21"></path>
             </svg>
-            <span id="current-language">English</span>
-            <span class="chevron" aria-hidden="true">⌄</span>
           </button>
           <div class="language-options" id="language-options" hidden>
             <button type="button" data-language="en" aria-current="true">English</button>
@@ -88,7 +88,9 @@
         </div>
 
         <div class="hero-art" aria-hidden="true">
-          <div class="frame">
+          <div class="scene-card scene-card-back-one"></div>
+          <div class="scene-card scene-card-back-two"></div>
+          <figure class="frame">
             <div class="frame-bar">
               <span data-en="Scene 01" data-zh="镜头 01">Scene 01</span>
               <span>00:20</span>
@@ -107,7 +109,7 @@
                 Shape the treatment. Review every shot. Keep the final decision.
               </p>
             </div>
-          </div>
+          </figure>
         </div>
       </section>
 
@@ -198,21 +200,6 @@
               <span data-en="Jobs and generation" data-zh="任务与生成">Jobs and generation</span>
             </div>
           </div>
-        </div>
-
-        <div class="status-panel">
-          <div>
-            <p class="eyebrow" data-en="CURRENT BASELINE" data-zh="当前基线">CURRENT BASELINE</p>
-            <h2 data-en="Foundation ready. Production next." data-zh="基础完成，生产化继续。">
-              Foundation ready. Production next.
-            </h2>
-          </div>
-          <ul>
-            <li><i class="complete"></i><span data-en="Agent workspace" data-zh="Agent 工作区">Agent workspace</span></li>
-            <li><i class="complete"></i><span data-en="Kling OAuth and MCP" data-zh="Kling OAuth 与 MCP">Kling OAuth and MCP</span></li>
-            <li><i class="complete"></i><span data-en="Persistent generation jobs" data-zh="持久生成任务">Persistent generation jobs</span></li>
-            <li><i></i><span data-en="Media storage and export" data-zh="媒体存储与导出">Media storage and export</span></li>
-          </ul>
         </div>
       </section>
 
