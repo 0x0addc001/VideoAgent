@@ -500,6 +500,38 @@ h1 {
   display: inline;
 }
 
+.streaming-text {
+  position: relative;
+  display: inline-grid;
+  max-width: 100%;
+  vertical-align: baseline;
+}
+
+.streaming-ghost,
+.streaming-live {
+  grid-area: 1 / 1;
+}
+
+.streaming-ghost {
+  visibility: hidden;
+}
+
+.streaming-live {
+  white-space: pre-wrap;
+}
+
+.streaming-text.is-typing .streaming-live::after {
+  display: inline-block;
+  width: 0.07em;
+  height: 0.72em;
+  margin-left: 0.08em;
+  background: var(--accent);
+  box-shadow: 0 0 10px rgba(255, 118, 67, 0.34);
+  content: "";
+  vertical-align: -0.03em;
+  animation: stream-caret 680ms steps(1, end) infinite;
+}
+
 .hero-description {
   max-width: 620px;
   margin-bottom: 0;
@@ -518,6 +550,7 @@ h1 {
 
 .primary-action {
   display: inline-flex;
+  border: 0;
   align-items: center;
   justify-content: center;
   gap: 12px;
@@ -526,6 +559,7 @@ h1 {
   font-size: var(--text-small);
   font-weight: 600;
   padding: 0 23px;
+  cursor: pointer;
   transition:
     transform 160ms ease,
     background 160ms ease;
@@ -988,6 +1022,12 @@ h1 {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes stream-caret {
+  50% {
+    opacity: 0;
   }
 }
 

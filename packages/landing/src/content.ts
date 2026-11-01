@@ -13,7 +13,7 @@ export const landingContent = {
       account: "Account",
     },
     hero: {
-      eyebrow: "AI VIDEO CREATION WORKSPACE",
+      eyebrow: "VideoAgent",
       title: "Direct the story",
       description:
         "Turn a brief into a structured storyboard, generate each shot with a model provider, and keep the final cut under your control.",
@@ -85,7 +85,7 @@ export const landingContent = {
       account: "账户",
     },
     hero: {
-      eyebrow: "AI 视频创作工作台",
+      eyebrow: "VideoAgent",
       title: "导演你的故事",
       description:
         "把创意变成结构化故事板，通过模型服务生成每个镜头，并让最终成片始终处于你的掌控之中。",

@@ -27,8 +27,8 @@ describe("localization resources", () => {
   it("uses concise creator-focused product messaging", () => {
     expect(landingContent.en.hero.title).toBe("Direct the story");
     expect(landingContent["zh-CN"].hero.title).toBe("导演你的故事");
-    expect(landingContent.en.hero.eyebrow).toBe("AI VIDEO CREATION WORKSPACE");
-    expect(landingContent["zh-CN"].hero.eyebrow).toBe("AI 视频创作工作台");
+    expect(landingContent.en.hero.eyebrow).toBe("VideoAgent");
+    expect(landingContent["zh-CN"].hero.eyebrow).toBe("VideoAgent");
     expect(landingContent["zh-CN"].product.features[1].title).toBe("镜头管理");
     expect(landingContent["zh-CN"].product.title).toBe("省心策划与制作");
     expect(landingContent["zh-CN"].product.features[2].title).toBe("评估反馈");

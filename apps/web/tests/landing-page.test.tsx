@@ -53,7 +53,7 @@ describe("LandingPage", () => {
       "Write a brief",
     );
     expect(container.querySelector(".hero-title .title-kicker")).toHaveTextContent(
-      "AI VIDEO CREATION WORKSPACE",
+      "VideoAgent",
     );
     expect(container.querySelector(".combined-section-title .title-kicker")).toHaveTextContent(
       "Product",

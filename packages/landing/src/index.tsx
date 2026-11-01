@@ -37,6 +37,88 @@ function BrandMark() {
     </span>
   );
 }
+
+function StreamingText({
+  text,
+  className = "",
+  delay = 0,
+}: {
+  text: string;
+  className?: string;
+  delay?: number;
+}) {
+  const [visibleText, setVisibleText] = useState(text);
+  const textRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const element = textRef.current;
+    const reduceMotion =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (!element || reduceMotion || typeof window.IntersectionObserver !== "function") {
+      setVisibleText(text);
+      return;
+    }
+
+    let started = false;
+    let cancelled = false;
+    let timer: number | undefined;
+    setVisibleText("");
+
+    const characters = Array.from(text);
+    const baseDelay = Math.max(8, Math.min(24, 2300 / Math.max(text.length, 1)));
+
+    function typeNext(index: number) {
+      if (cancelled) return;
+      if (index >= characters.length) {
+        setVisibleText(text);
+        return;
+      }
+
+      const character = characters[index];
+      setVisibleText(characters.slice(0, index + 1).join(""));
+      const punctuationPause = /[，。！？；：,.!?;:]/.test(character) ? 4 : 1;
+      timer = window.setTimeout(
+        () => typeNext(index + 1),
+        baseDelay * punctuationPause,
+      );
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (started || !entries.some((entry) => entry.isIntersecting)) return;
+        started = true;
+        observer.disconnect();
+        timer = window.setTimeout(() => typeNext(0), delay);
+      },
+      { threshold: 0.16, rootMargin: "0px 0px -5% 0px" },
+    );
+    observer.observe(element);
+
+    return () => {
+      cancelled = true;
+      observer.disconnect();
+      if (timer !== undefined) window.clearTimeout(timer);
+    };
+  }, [delay, text]);
+
+  return (
+    <span
+      aria-label={text}
+      className={`streaming-text ${visibleText === text ? "is-typed" : "is-typing"} ${className}`}
+      ref={textRef}
+    >
+      <span aria-hidden="true" className="streaming-ghost">
+        {text}
+      </span>
+      <span aria-hidden="true" className="streaming-live">
+        {visibleText}
+      </span>
+    </span>
+  );
+}
+
 export function LandingPage({
   locale,
   mode,
@@ -197,11 +279,17 @@ export function LandingPage({
       <section className="hero">
         <div className="hero-copy">
           <h1 className="hero-title">
-            <span className="title-kicker">{content.hero.eyebrow}</span>
+            <StreamingText className="title-kicker" text={content.hero.eyebrow} />
             <span className="title-separator" aria-hidden="true">/</span>
-            <span className="title-main">{content.hero.title}</span>
+            <StreamingText
+              className="title-main"
+              delay={850}
+              text={content.hero.title}
+            />
           </h1>
-          <p className="hero-description">{content.hero.description}</p>
+          <p className="hero-description">
+            <StreamingText delay={1450} text={content.hero.description} />
+          </p>
           <div className="hero-actions">
             {mode === "app" ? (
               <a className="primary-action" href={appHref}>
@@ -260,16 +348,24 @@ export function LandingPage({
       <section className="section product" id="product">
         <div className="section-heading product-heading">
           <h2 className="combined-section-title">
-            <span className="title-kicker">{content.product.label}</span>
+            <StreamingText className="title-kicker" text={content.product.label} />
             <span className="title-separator" aria-hidden="true">/</span>
-            <span className="title-main">{content.product.title}</span>
+            <StreamingText
+              className="title-main"
+              delay={350}
+              text={content.product.title}
+            />
           </h2>
         </div>
         <div className="capabilities">
-          {content.product.features.map((feature) => (
+          {content.product.features.map((feature, index) => (
             <article key={feature.title}>
-              <h3>{feature.title}</h3>
-              <p>{feature.body}</p>
+              <h3>
+                <StreamingText text={feature.title} />
+              </h3>
+              <p>
+                <StreamingText delay={index * 100} text={feature.body} />
+              </p>
             </article>
           ))}
         </div>
@@ -277,16 +373,24 @@ export function LandingPage({
 
       <section className="section workflow" id="workflow">
         <h2 className="experience-title">
-          <span className="title-kicker">{content.workflow.label}</span>
+          <StreamingText className="title-kicker" text={content.workflow.label} />
           <span className="title-separator" aria-hidden="true">/</span>
-          <span className="title-main">{content.workflow.title}</span>
+          <StreamingText
+            className="title-main"
+            delay={350}
+            text={content.workflow.title}
+          />
         </h2>
         <div className="workflow-grid">
           {content.workflow.steps.map((step, index) => (
             <div key={step.title}>
               <span>{String(index + 1).padStart(2, "0")}</span>
-              <h3>{step.title}</h3>
-              <p>{step.description}</p>
+              <h3>
+                <StreamingText text={step.title} />
+              </h3>
+              <p>
+                <StreamingText delay={index * 100} text={step.description} />
+              </p>
             </div>
           ))}
         </div>
