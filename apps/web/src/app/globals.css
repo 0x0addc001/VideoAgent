@@ -78,14 +78,17 @@ html[lang="zh-CN"] h1,
 html[lang="zh-CN"] h2,
 html[lang="zh-CN"] h3,
 html[lang="zh-CN"] .font-display {
-  font-family: Manrope, "Noto Sans SC", "Microsoft YaHei", sans-serif;
-  font-weight: 700;
+  font-family:
+    "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC",
+    "SimSun", serif;
+  font-weight: 500;
+  letter-spacing: -0.025em;
 }
 
 html[lang="zh-CN"] h1 {
   font-size: clamp(3rem, 5.8vw, 5.5rem);
-  line-height: 1.04;
-  letter-spacing: -0.05em;
+  line-height: 1.06;
+  letter-spacing: -0.025em;
 }
 
 button,

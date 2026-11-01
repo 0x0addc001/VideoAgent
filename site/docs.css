@@ -5,6 +5,18 @@
   --muted: #6f675d;
   --line: rgba(25, 22, 17, 0.14);
   --accent: #b84722;
+  --display:
+    Fraunces, "Songti SC", "STSong", "Noto Serif CJK SC",
+    "Source Han Serif SC", "SimSun", serif;
+  --body:
+    Manrope, "Segoe UI Variable Text", "PingFang SC", "Microsoft YaHei",
+    "Noto Sans SC", sans-serif;
+}
+
+html[lang="zh-CN"] {
+  --display:
+    "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC",
+    "SimSun", serif;
 }
 
 * {
@@ -19,7 +31,7 @@ body {
   margin: 0;
   background: var(--paper);
   color: var(--ink);
-  font-family: Manrope, "Segoe UI Variable Text", "Noto Sans SC", sans-serif;
+  font-family: var(--body);
   font-size: 17px;
   line-height: 1.78;
 }
@@ -53,7 +65,7 @@ a {
 
 .doc-brand {
   color: var(--ink);
-  font-family: Fraunces, "Songti SC", "Noto Serif CJK SC", serif;
+  font-family: var(--display);
   font-size: 25px;
   font-weight: 600;
   text-decoration: none;
@@ -142,7 +154,7 @@ html[data-theme="dark"] blockquote {
 
 .document-meta strong {
   margin-top: 20px;
-  font-family: Fraunces, "Songti SC", "Noto Serif CJK SC", serif;
+  font-family: var(--display);
   font-size: 28px;
   line-height: 1.2;
 }
@@ -159,7 +171,7 @@ html[data-theme="dark"] blockquote {
 .document h4,
 .document h5,
 .document h6 {
-  font-family: Fraunces, "Songti SC", "Noto Serif CJK SC", serif;
+  font-family: var(--display);
   font-weight: 600;
   line-height: 1.2;
   letter-spacing: -0.025em;
@@ -169,8 +181,9 @@ html[lang="zh-CN"] .document h1,
 html[lang="zh-CN"] .document h2,
 html[lang="zh-CN"] .document h3,
 html[lang="zh-CN"] .document h4 {
-  font-family: Manrope, "Noto Sans SC", "Microsoft YaHei", sans-serif;
-  font-weight: 700;
+  font-family: var(--display);
+  font-weight: 500;
+  letter-spacing: -0.02em;
 }
 
 .document h1 {
@@ -324,6 +337,22 @@ hr {
   html {
     scroll-behavior: auto;
   }
+}
+
+@font-face {
+  font-family: "Fraunces";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("./fonts/fraunces-latin-600.woff2") format("woff2");
+}
+
+@font-face {
+  font-family: "Fraunces";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("./fonts/fraunces-latin-600.woff2") format("woff2");
 }
 
 @font-face {
