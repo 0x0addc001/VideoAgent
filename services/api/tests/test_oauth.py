@@ -84,7 +84,7 @@ async def oauth_context(
 
 
 @pytest.mark.api
-async def test_kling_oauth_stores_encrypted_tokens(oauth_context):
+async def test_kling_oauth_stores_encrypted_tokens(oauth_context, monkeypatch):
     client, app, gateway = oauth_context
     assert (await register(client, locale="zh-CN")).status_code == 201
 
@@ -104,6 +104,28 @@ async def test_kling_oauth_stores_encrypted_tokens(oauth_context):
     status = await client.get("/api/v1/providers/kling")
     assert status.status_code == 200
     assert status.json()["connected"] is True
+
+    class FakeCreditClient:
+        def __init__(self, url: str, access_token: str) -> None:
+            assert url == "https://kling.ai/mcp"
+            assert access_token == "access-token-secret"
+
+        async def call_tool(self, name: str, arguments: dict[str, object]):
+            assert name == "query_membership_and_credits"
+            assert arguments == {}
+            return {"availableRemainCredits": 0}
+
+    monkeypatch.setattr(
+        "videoagent.api.providers.StreamableHTTPToolClient",
+        FakeCreditClient,
+    )
+    credits = await client.get("/api/v1/providers/kling/credits")
+    assert credits.status_code == 200
+    assert credits.json() == {
+        "provider": "kling",
+        "connected": True,
+        "credits": 0,
+    }
 
     async with app.state.database.session() as session:
         connection = (await session.execute(select(ProviderConnection))).scalar_one()

@@ -21,7 +21,8 @@ export type LandingPageProps = {
   githubHref: string;
   localeLinks: Record<LandingLocale, string>;
   docsBase: string;
-  accountCredits?: number;
+  accountApiBase?: string;
+  accountCredits?: number | null;
   accountHref?: string;
   avatarLabel?: string;
 };
@@ -127,7 +128,8 @@ export function LandingPage({
   githubHref,
   localeLinks,
   docsBase,
-  accountCredits = 66,
+  accountApiBase,
+  accountCredits = 0,
   accountHref,
   avatarLabel = "JL",
 }: LandingPageProps) {
@@ -135,6 +137,9 @@ export function LandingPage({
   const [languageOpen, setLanguageOpen] = useState(false);
   const [activeVideo, setActiveVideo] = useState(0);
   const [previewNoticeOpen, setPreviewNoticeOpen] = useState(false);
+  const [displayCredits, setDisplayCredits] = useState(
+    accountCredits === null ? "—" : String(accountCredits),
+  );
   const languageRef = useRef<HTMLDivElement>(null);
   const docsRef = useRef<HTMLDetailsElement>(null);
 
@@ -169,6 +174,32 @@ export function LandingPage({
     }, 5200);
     return () => window.clearInterval(timer);
   }, [videos.length]);
+
+  useEffect(() => {
+    if (!accountApiBase || mode !== "app") return;
+    let active = true;
+
+    async function loadCredits() {
+      try {
+        const response = await fetch(`${accountApiBase}/providers/kling/credits`, {
+          credentials: "include",
+        });
+        if (!response.ok) return;
+        const payload = (await response.json()) as { credits?: number | null };
+        if (!active) return;
+        setDisplayCredits(
+          typeof payload.credits === "number" ? String(payload.credits) : "—",
+        );
+      } catch {
+        // Public and preview pages keep the available fallback balance.
+      }
+    }
+
+    void loadCredits();
+    return () => {
+      active = false;
+    };
+  }, [accountApiBase, mode]);
 
   useEffect(() => {
     if (!previewNoticeOpen) return;
@@ -248,9 +279,9 @@ export function LandingPage({
               className="account-summary"
               href={accountHref ?? `/${locale}/projects`}
             >
-              <span className="credit-count" title={`${accountCredits} ${content.nav.credits}`}>
+              <span className="credit-count" title={`${displayCredits} ${content.nav.credits}`}>
                 <Gem aria-hidden="true" className="credit-icon" strokeWidth={1.6} />
-                <span>{accountCredits}</span>
+                <span>{displayCredits}</span>
               </span>
               <span className="account-avatar" aria-hidden="true">
                 {avatarLabel}
@@ -264,9 +295,9 @@ export function LandingPage({
               onClick={() => setPreviewNoticeOpen(true)}
               type="button"
             >
-              <span className="credit-count" title={`${accountCredits} ${content.nav.credits}`}>
+              <span className="credit-count" title={`${displayCredits} ${content.nav.credits}`}>
                 <Gem aria-hidden="true" className="credit-icon" strokeWidth={1.6} />
-                <span>{accountCredits}</span>
+                <span>{displayCredits}</span>
               </span>
               <span className="account-avatar" aria-hidden="true">
                 {avatarLabel}

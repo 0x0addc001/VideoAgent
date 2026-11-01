@@ -16,8 +16,10 @@ from videoagent.api.dependencies import (
 from videoagent.config import Settings
 from videoagent.errors import AppError
 from videoagent.models import OAuthFlow, ProviderConnection, User, utcnow
+from videoagent.providers.mcp_client import StreamableHTTPToolClient
 from videoagent.providers.oauth import KlingOAuthGateway, pkce_challenge
 from videoagent.security import decrypt_secret, encrypt_secret, hash_session_token
+from videoagent.services.provider_credentials import resolve_kling_access_token
 
 router = APIRouter(prefix="/providers", tags=["providers"])
 PROVIDER_NAME = "kling"
@@ -179,6 +181,48 @@ async def kling_status(
         "expires_at": connection.expires_at.isoformat()
         if connection is not None and connection.expires_at is not None
         else None,
+    }
+
+
+@router.get("/kling/credits")
+async def kling_credits(
+    user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_settings)],
+    gateway: Annotated[KlingOAuthGateway, Depends(get_kling_oauth_gateway)],
+) -> dict[str, object]:
+    access_token = await resolve_kling_access_token(
+        session,
+        user_id=user.id,
+        settings=settings,
+        gateway=gateway,
+    )
+    if access_token is None:
+        return {
+            "provider": PROVIDER_NAME,
+            "connected": False,
+            "credits": None,
+        }
+
+    try:
+        payload = await StreamableHTTPToolClient(
+            settings.kling_mcp_url,
+            access_token,
+        ).call_tool("query_membership_and_credits", {})
+        credits = payload.get("availableRemainCredits")
+        if not isinstance(credits, (int, float)):
+            raise ValueError("Kling did not return a numeric credit balance")
+    except Exception as exc:
+        raise AppError(
+            status_code=502,
+            code="KLING_CREDITS_UNAVAILABLE",
+            message="The Kling credit balance is temporarily unavailable.",
+        ) from exc
+
+    return {
+        "provider": PROVIDER_NAME,
+        "connected": True,
+        "credits": credits,
     }
 
 
