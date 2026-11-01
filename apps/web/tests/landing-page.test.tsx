@@ -50,6 +50,15 @@ describe("LandingPage", () => {
     );
   });
 
+  it("removes the duplicate header action on the application homepage", () => {
+    const { container } = render(<LandingPage {...props} mode="app" />);
+
+    expect(container.querySelector(".header-action")).not.toBeInTheDocument();
+    expect(container.querySelector(".hero-actions .primary-action")).toHaveTextContent(
+      "Create",
+    );
+  });
+
   it("does not add decorative icons to product capabilities", () => {
     const { container } = render(<LandingPage {...props} />);
 

@@ -102,12 +102,12 @@ export const landingContent = {
         {
           number: "02",
           title: "镜头级控制",
-          body: "提示词、时长、画面比例、Provider 模式与审批状态全部可检查。",
+          body: "提示词、时长、画面比例、生成模式与审批状态全部可检查。",
         },
         {
           number: "03",
-          title: "Provider 抽象",
-          body: "稳定的 Provider 接口让产品不绑定于单一视频模型。",
+          title: "模型服务解耦",
+          body: "统一的模型服务接口让创作流程不绑定于单一视频模型。",
         },
       ],
     },

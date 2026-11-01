@@ -54,7 +54,7 @@
     "generate": "生成镜头",
     "generating": "正在生成……",
     "completed": "镜头已就绪",
-    "mockNotice": "开发模式使用模拟 Provider，不会消耗积分。"
+    "mockNotice": "开发模式使用模拟视频服务，不会消耗积分。"
   },
   "common": {
     "loading": "加载中……",

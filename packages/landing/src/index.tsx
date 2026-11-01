@@ -27,7 +27,9 @@ function BrandMark() {
   return (
     <span className="brand-mark" aria-hidden="true">
       <svg viewBox="0 0 24 24">
-        <path d="M4 7h16v13H4zM4 7l3-3h4l3 3m-2 0 3-3h4l-2 3" />
+        <rect x="2.75" y="6.75" width="13" height="10.5" rx="2.2" />
+        <path d="m15.75 10 5.5-2.25v8.5L15.75 14" />
+        <circle cx="9.25" cy="12" r="3" />
       </svg>
     </span>
   );
@@ -141,11 +143,13 @@ export function LandingPage({
               </a>
             </div>
           </div>
-          <a className="header-action" href={primaryHref}>
-            <PrimaryIcon aria-hidden="true" className="cta-icon" strokeWidth={1.9} />
-            <span>{primaryLabel}</span>
-            <span aria-hidden="true">↗</span>
-          </a>
+          {mode === "project" ? (
+            <a className="header-action" href={primaryHref}>
+              <PrimaryIcon aria-hidden="true" className="cta-icon" strokeWidth={1.9} />
+              <span>{primaryLabel}</span>
+              <span aria-hidden="true">↗</span>
+            </a>
+          ) : null}
         </div>
       </header>
 
