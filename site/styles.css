@@ -99,7 +99,8 @@ button {
 
 .site-header,
 .hero,
-.section {
+.section,
+footer {
   width: min(calc(100% - 48px), var(--page-width));
   margin-inline: auto;
 }
@@ -671,6 +672,19 @@ h1 {
   font-style: normal;
 }
 
+footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid var(--line);
+  padding: 32px 0 44px;
+}
+
+footer > a:last-child {
+  color: var(--muted);
+  font-size: var(--text-small);
+}
+
 @keyframes enter {
   from {
     opacity: 0;
@@ -761,7 +775,8 @@ html[lang="zh-CN"] .section-heading > p:last-child {
 @media (max-width: 640px) {
   .site-header,
   .hero,
-  .section {
+  .section,
+  footer {
     width: min(calc(100% - 28px), var(--page-width));
   }
 
@@ -819,6 +834,11 @@ html[lang="zh-CN"] .section-heading > p:last-child {
     gap: 12px;
   }
 
+  footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 24px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
