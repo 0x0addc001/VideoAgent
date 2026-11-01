@@ -292,7 +292,7 @@ button {
   display: flex;
   align-items: center;
   justify-self: end;
-  gap: 7px;
+  gap: 17px;
 }
 
 .language-switcher {
@@ -364,47 +364,63 @@ button {
 
 .account-summary {
   display: inline-flex;
+  min-height: 34px;
   align-items: center;
-  gap: 8px;
+  gap: 11px;
   border: 0;
+  border-left: 1px solid var(--line);
   background: transparent;
   color: var(--text);
   cursor: pointer;
-  padding: 0;
+  padding: 0 0 0 15px;
 }
 
 .credit-count {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  color: #d8d0c5;
-  font-size: 0.95rem;
+  gap: 5px;
+  color: #e5ddd3;
+  font-size: 0.93rem;
   font-variant-numeric: tabular-nums;
-  font-weight: 600;
+  font-weight: 500;
   line-height: 1;
 }
 
 .credit-icon {
-  width: 16px;
-  height: 16px;
-  color: var(--accent);
+  width: 15px;
+  height: 15px;
+  color: #ff8b60;
+  filter: drop-shadow(0 0 8px rgba(255, 118, 67, 0.22));
 }
 
 .account-avatar {
+  position: relative;
   display: grid;
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: 50%;
-  background:
-    radial-gradient(circle at 32% 24%, rgba(255, 198, 156, 0.42), transparent 32%),
-    linear-gradient(145deg, #573426, #171c19);
-  color: #fff4e8;
+  background: #efe4d6;
+  color: #1a1611;
   font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.04em;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+  letter-spacing: -0.04em;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    0 8px 22px rgba(0, 0, 0, 0.22);
+}
+
+.account-avatar::after {
+  position: absolute;
+  right: -1px;
+  bottom: 1px;
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--background);
+  border-radius: 50%;
+  background: var(--accent);
+  content: "";
 }
 
 .hero {

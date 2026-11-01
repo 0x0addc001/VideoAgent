@@ -1,6 +1,6 @@
 "use client";
 
-import { Coins, Github, Sparkles } from "lucide-react";
+import { Gem, Github, Sparkles } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { landingContent, type LandingLocale } from "./content";
 
@@ -47,7 +47,7 @@ export function LandingPage({
   docsBase,
   accountCredits = 66,
   accountHref,
-  avatarLabel = "VA",
+  avatarLabel = "JL",
 }: LandingPageProps) {
   const content = landingContent[locale];
   const [languageOpen, setLanguageOpen] = useState(false);
@@ -167,7 +167,7 @@ export function LandingPage({
               href={accountHref ?? `/${locale}/projects`}
             >
               <span className="credit-count" title={`${accountCredits} ${content.nav.credits}`}>
-                <Coins aria-hidden="true" className="credit-icon" strokeWidth={1.8} />
+                <Gem aria-hidden="true" className="credit-icon" strokeWidth={1.6} />
                 <span>{accountCredits}</span>
               </span>
               <span className="account-avatar" aria-hidden="true">
@@ -183,7 +183,7 @@ export function LandingPage({
               type="button"
             >
               <span className="credit-count" title={`${accountCredits} ${content.nav.credits}`}>
-                <Coins aria-hidden="true" className="credit-icon" strokeWidth={1.8} />
+                <Gem aria-hidden="true" className="credit-icon" strokeWidth={1.6} />
                 <span>{accountCredits}</span>
               </span>
               <span className="account-avatar" aria-hidden="true">
