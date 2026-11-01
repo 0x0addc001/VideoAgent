@@ -3,10 +3,10 @@ const languageOptions = document.querySelector("#language-options");
 
 const copy = {
   en: {
-    title: "VideoAgent — Direct the story.",
+    title: "VideoAgent — Direct the story",
   },
   zh: {
-    title: "VideoAgent — 导演你的故事。",
+    title: "VideoAgent — 导演你的故事",
   },
 };
 

@@ -18,7 +18,7 @@
   },
   "hero": {
     "eyebrow": "AI VIDEO CREATION WORKSPACE",
-    "title": "Direct the story.",
+    "title": "Direct the story",
     "subtitle": "Turn a brief into a structured storyboard, generate each shot with a model provider, and keep the final cut under your control.",
     "promptLabel": "Creative direction",
     "promptPlaceholder": "A midnight perfume launch, lit like a lost film...",

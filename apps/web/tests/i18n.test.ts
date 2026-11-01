@@ -24,8 +24,8 @@ describe("localization resources", () => {
   });
 
   it("uses concise creator-focused product messaging", () => {
-    expect(en.hero.title).toBe("Direct the story.");
-    expect(zhCN.hero.title).toBe("导演你的故事。");
+    expect(en.hero.title).toBe("Direct the story");
+    expect(zhCN.hero.title).toBe("导演你的故事");
     expect(en.hero.eyebrow).toBe("AI VIDEO CREATION WORKSPACE");
     expect(zhCN.hero.eyebrow).toBe("AI 视频创作工作台");
     expect(en.brand).toEqual({ name: "VideoAgent" });
