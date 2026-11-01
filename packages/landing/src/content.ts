@@ -6,7 +6,7 @@ export const landingContent = {
     documentTitle: "VideoAgent — Direct the story",
     nav: {
       product: "Product",
-      workflow: "Craft",
+      workflow: "Experience",
       docs: "Docs",
       language: "Change language",
     },
@@ -43,7 +43,7 @@ export const landingContent = {
       ],
     },
     workflow: {
-      label: "Craft",
+      label: "Experience",
       title: "From brief to final cut",
       steps: [
         {
@@ -75,7 +75,7 @@ export const landingContent = {
     documentTitle: "VideoAgent — 导演你的故事",
     nav: {
       product: "产品",
-      workflow: "创作脉络",
+      workflow: "体验",
       docs: "文档",
       language: "切换语言",
     },
@@ -112,7 +112,7 @@ export const landingContent = {
       ],
     },
     workflow: {
-      label: "创作脉络",
+      label: "体验",
       title: "从创意到最终成片",
       steps: [
         {

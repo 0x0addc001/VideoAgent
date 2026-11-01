@@ -209,7 +209,7 @@ export function LandingPage({
       </section>
 
       <section className="section workflow" id="workflow">
-        <div className="section-heading compact">
+        <div className="section-heading experience-heading">
           <p className="eyebrow">{content.workflow.label}</p>
           <h2>{content.workflow.title}</h2>
         </div>

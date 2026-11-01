@@ -29,7 +29,7 @@ describe("LandingPage", () => {
     const heroActions = container.querySelector(".hero-actions");
 
     expect(nav?.textContent).toContain("Product");
-    expect(nav?.textContent).toContain("Craft");
+    expect(nav?.textContent).toContain("Experience");
     expect(nav?.textContent).toContain("Docs");
     expect(container.querySelector(".language-button svg")).toBeInTheDocument();
     expect(heroActions?.querySelectorAll("a")).toHaveLength(1);
