@@ -1,0 +1,60 @@
+name: videoagent
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: videoagent
+      POSTGRES_USER: videoagent
+      POSTGRES_PASSWORD: videoagent
+    ports:
+      - "5432:5432"
+    volumes:
+      - videoagent-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U videoagent -d videoagent"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - videoagent-redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    command: ["server", "/data", "--console-address", ":9001"]
+    environment:
+      MINIO_ROOT_USER: videoagent
+      MINIO_ROOT_PASSWORD: videoagent-development
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - videoagent-minio:/data
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:9000/minio/health/live"
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  videoagent-postgres:
+  videoagent-redis:
+  videoagent-minio:
+

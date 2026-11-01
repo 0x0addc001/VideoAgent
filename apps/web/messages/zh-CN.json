@@ -1,0 +1,112 @@
+{
+  "brand": {
+    "name": "VideoAgent",
+    "tagline": "你的灵感，你的导演，你的成片。"
+  },
+  "nav": {
+    "workflow": "创作流程",
+    "projects": "项目",
+    "language": "语言",
+    "signIn": "登录",
+    "start": "开始导演"
+  },
+  "hero": {
+    "eyebrow": "AI 视频导演台",
+    "title": "让每个灵感，都有自己的镜头。",
+    "titleLine1": "让每个灵感，",
+    "titleLine2": "都有自己的镜头。",
+    "subtitle": "从一个念头到最终成片，让 AI 创意伙伴陪你策划、分镜，并把每个镜头真正生成出来。",
+    "promptLabel": "设定开场",
+    "promptPlaceholder": "一场午夜香水发布，像一帧遗失的老电影……",
+    "promptAction": "和 Agent 一起导演",
+    "trustNote": "Kling 提供生成能力 · 每次积分消耗都由你确认",
+    "sceneLabel": "镜头 01",
+    "sequenceLabel": "灵感 → 分镜 → 成片",
+    "direction": "导演控制"
+  },
+  "features": {
+    "title": "一张导演台，而不是另一个提示词输入框。",
+    "agent": {
+      "title": "创意 Agent",
+      "body": "将需求或参考图整理成结构化创意方案和可编辑的镜头清单。"
+    },
+    "storyboard": {
+      "title": "镜头控制",
+      "body": "编辑每个镜头的提示词、时长、比例、参考素材和生成方式。"
+    },
+    "providers": {
+      "title": "可扩展视频服务",
+      "body": "首版接入 Kling MCP，并保持稳定流程以扩展更多视频模型。"
+    }
+  },
+  "workflow": {
+    "title": "从第一束火花，到最后一帧。",
+    "brief": "描述或上传",
+    "plan": "设计故事",
+    "generate": "生成镜头",
+    "assemble": "审核与合成"
+  },
+  "auth": {
+    "registerTitle": "创建你的创作空间",
+    "loginTitle": "欢迎回来",
+    "registerSubtitle": "与过程透明的 Agent 一起创作、审核和导出视频。",
+    "loginSubtitle": "登录后继续你的项目。",
+    "email": "邮箱",
+    "password": "密码",
+    "createAccount": "创建账户",
+    "signIn": "登录",
+    "switchToLogin": "已有账户？",
+    "switchToRegister": "第一次使用 VideoAgent？",
+    "loading": "处理中……",
+    "genericError": "请求未能完成。"
+  },
+  "projects": {
+    "title": "你的工作室",
+    "subtitle": "每个项目都保留对话、故事板、素材和生成历史。",
+    "newProject": "新建项目",
+    "projectTitle": "项目名称",
+    "brief": "我们要创作什么？",
+    "create": "创建项目",
+    "empty": "还没有项目。先描述一个创意，让 Agent 起草第一版方案。",
+    "draft": "草稿",
+    "open": "打开项目",
+    "logout": "退出登录",
+    "loadError": "项目列表加载失败。",
+    "connectKling": "连接 Kling",
+    "klingConnected": "Kling 已连接",
+    "disconnectKling": "断开 Kling"
+  },
+  "workspace": {
+    "agent": "Agent",
+    "canvas": "画布",
+    "inspector": "检查器",
+    "emptyCanvas": "故事板将在这里出现。",
+    "composer": "描述下一项修改……",
+    "approval": "生成前需要获得批准",
+    "back": "全部项目",
+    "notFound": "未找到项目",
+    "agentIntro": "告诉 Agent 你想创作什么。故事板在每一步都可以编辑。",
+    "agentPlaceholder": "我们要做什么视频？",
+    "send": "发送",
+    "shotInspector": "镜头设置",
+    "aspectRatio": "画面比例",
+    "duration": "时长",
+    "noShot": "选择一个镜头以编辑生成设置。",
+    "planFirst": "先生成故事板，再创建视频镜头。",
+    "starterTitle": "从故事板开始",
+    "starterBody": "根据项目需求创建第一个起始镜头。生成前仍可继续修改。",
+    "createStarter": "起草第一个镜头",
+    "estimatedCredits": "预计积分",
+    "estimate": "估算积分",
+    "generate": "生成镜头",
+    "generating": "正在生成……",
+    "completed": "镜头已就绪",
+    "mockNotice": "开发模式使用模拟 Provider，不会消耗积分。"
+  },
+  "common": {
+    "loading": "加载中……",
+    "retry": "重试",
+    "cancel": "取消"
+  }
+}
+

@@ -1,0 +1,78 @@
+[project]
+name = "videoagent-api"
+version = "0.1.0"
+description = "VideoAgent FastAPI backend"
+readme = "README.md"
+requires-python = ">=3.12,<3.15"
+dependencies = [
+    "aiosqlite>=0.21.0",
+    "asyncpg>=0.30.0",
+    "celery[redis]>=5.5.0",
+    "cryptography>=45.0.0",
+    "email-validator>=2.2.0",
+    "fastapi>=0.116.0",
+    "httpx2>=2.16.0",
+    "langchain-core>=0.3.70",
+    "langchain-openai>=0.3.0",
+    "langgraph>=0.6.0",
+    "mcp>=1.12.0",
+    "pydantic-settings>=2.10.0",
+    "pwdlib[argon2]>=0.2.1",
+    "python-multipart>=0.0.20",
+    "redis>=6.2.0",
+    "sqlalchemy[asyncio]>=2.0.41",
+    "structlog>=25.4.0",
+    "uvicorn[standard]>=0.35.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "mypy>=1.16.0",
+    "pytest>=8.4.0",
+    "pytest-asyncio>=1.0.0",
+    "pytest-cov>=6.2.0",
+    "ruff>=0.12.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/videoagent"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+    "unit: fast tests without external infrastructure",
+    "api: FastAPI behavior and contracts",
+    "integration: tests using infrastructure adapters",
+    "live_readonly: real provider read-only smoke tests",
+    "live_paid: explicitly authorized billable provider tests",
+]
+
+[tool.coverage.run]
+branch = true
+source = ["videoagent"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "ASYNC"]
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+warn_unused_ignores = true
+

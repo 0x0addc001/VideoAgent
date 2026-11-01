@@ -1,0 +1,752 @@
+# VideoAgent 软件测试与 TDD 规范
+
+| 属性 | 内容 |
+| --- | --- |
+| 文档版本 | v1.0 |
+| 文档状态 | TDD 基线草案 |
+| 编写日期 | 2026-11-01 |
+| 适用范围 | Web、FastAPI、LangGraph、Celery、Kling MCP、媒体处理 |
+| 关联设计 | `docs/software-design.md` |
+| 测试框架 | pytest、Vitest、Testing Library、Playwright |
+
+## 1. 目的
+
+本文档定义 VideoAgent 的测试策略、测试分层、TDD 工作方式、环境要求、测试用例、质量门禁、缺陷等级和验收标准。
+
+测试不只用于验证完成后的代码，而是软件设计与实现的一部分。每项业务能力都应先通过失败测试明确行为，再实现代码使其通过，最后在不改变外部行为的前提下重构。
+
+## 2. 测试原则
+
+### 2.1 TDD 循环
+
+所有核心业务能力遵循 Red–Green–Refactor：
+
+1. **Red：** 根据验收场景编写一个最小失败测试。
+2. **Green：** 编写足以通过测试的最简单实现。
+3. **Refactor：** 消除重复、改善命名和结构，保持测试通过。
+4. **Commit：** 测试和实现可以在绿色状态后一起提交。
+
+禁止先完成大段实现，再事后补写只验证当前实现的测试。
+
+### 2.2 测试行为而非实现
+
+- 测试公开行为、业务规则和接口契约。
+- 避免直接断言私有函数、内部调用顺序或数据库实现细节。
+- 外部 Provider 通过接口边界 Mock，不 Mock 被测系统自身的领域逻辑。
+- 时间、随机数和 UUID 使用可注入 Clock 或 ID Provider，保证测试确定性。
+
+### 2.3 测试金字塔
+
+```text
+             E2E
+         少量关键流程
+        ─────────────────
+          Contract / API
+        前后端契约与接口
+      ─────────────────────
+        Integration Tests
+      真实 DB / Queue / S3
+    ─────────────────────────
+           Unit Tests
+      快速、大量、无外部依赖
+```
+
+建议比例：
+
+- 单元测试：60%–70%。
+- API、契约和集成测试：20%–30%。
+- E2E 和人工探索测试：5%–10%。
+
+比例是参考值，不应为了达到数量而编写低价值测试。
+
+## 3. 质量目标
+
+### 3.1 自动化覆盖目标
+
+| 范围 | 目标 |
+| --- | --- |
+| 领域规则和权限逻辑 | 分支覆盖率不低于 90% |
+| LangGraph 节点和状态迁移 | 分支覆盖率不低于 90% |
+| Provider 参数标准化 | 分支覆盖率不低于 90% |
+| FastAPI 后端整体 | 行覆盖率不低于 80% |
+| 前端核心业务组件 | 行覆盖率不低于 80% |
+| Kling MCP Adapter | 契约测试覆盖全部支持工具 |
+| 中英文界面 | 所有 MVP 页面均有 E2E 场景 |
+
+覆盖率只是质量指标之一。以下任一情况不能被高覆盖率抵消：
+
+- 存在未处理的 P0/P1 缺陷。
+- 计费任务存在重复提交风险。
+- 用户能够访问其他用户的数据。
+- Token 会出现在浏览器或日志中。
+- 中英文任一语言存在阻断流程的缺失文案。
+
+### 3.2 稳定性目标
+
+- CI 测试连续运行三次结果一致。
+- 非外部依赖测试的 Flaky Rate 低于 1%。
+- 同一失败测试重跑通过不能作为长期修复。
+- 所有 Flaky 测试必须建立跟踪记录，并在发布前修复或隔离。
+
+## 4. 测试范围
+
+### 4.1 纳入范围
+
+- 用户注册、登录、退出和会话。
+- 用户语言偏好。
+- 项目创建、读取、修改、归档和删除。
+- 项目数据所有权隔离。
+- 图片和视频上传。
+- Agent 对话、结构化输出和工作流状态。
+- 中文和英文 Agent 输出。
+- Kling OAuth、Token 加密和刷新。
+- Kling MCP Tool 能力发现和参数映射。
+- 生成任务提交、轮询、取消、失败和恢复。
+- 任务幂等和重复扣费防护。
+- Celery 消息重复、丢失和 Worker 重启。
+- SSE 状态推送和断线重连。
+- FFmpeg 合成、缩略图和 MP4 导出。
+- 公开分享链接、有效期和撤销。
+- API 契约、输入校验、权限和错误码。
+- 安全、性能、可访问性和可观测性。
+
+### 4.2 暂不纳入
+
+- 未实现的支付和计费系统。
+- 多用户实时协作。
+- 数字人、音乐和声音克隆。
+- 原生移动 App。
+- 第三方服务内部推理质量。
+- Kling 模型输出的艺术质量自动评分。
+
+视频艺术质量采用人工验收，自动化测试只验证任务、媒体格式和业务状态。
+
+## 5. 测试分层
+
+### 5.1 单元测试
+
+后端使用 pytest，前端使用 Vitest。
+
+重点对象：
+
+- Pydantic Schema 和字段约束。
+- 项目、镜头和任务状态机。
+- Agent 节点输入输出。
+- Provider 请求和响应映射。
+- 权限判断。
+- 幂等键生成和费用预算判断。
+- 分享 Token 生成与验证。
+- FFmpeg 参数构造。
+- 中英文翻译键选择。
+
+单元测试不得访问网络、PostgreSQL、Redis、MinIO、Kling 或真实 LLM。
+
+### 5.2 Provider 契约测试
+
+为 `VideoProvider` 定义共享契约测试，所有实现都必须通过：
+
+- `MockVideoProvider`
+- `KlingVideoProvider`
+
+至少验证：
+
+- 支持能力与声明的 Capability 一致。
+- 无效参数在调用 Provider 前被拒绝。
+- Provider 错误被转换为标准错误码。
+- 任务提交返回稳定的 Provider Job ID。
+- 状态查询返回标准状态。
+- 取消能力不支持时返回明确错误。
+- 原始响应可以保存，但不直接进入领域模型。
+
+### 5.3 API 测试
+
+使用 FastAPI TestClient 或 ASGI Transport：
+
+- HTTP 状态码。
+- 响应 Schema。
+- 错误响应格式。
+- 认证和所有权。
+- 分页和排序。
+- `Idempotency-Key`。
+- CSRF 和 Origin 校验。
+- OpenAPI 契约是否与生成客户端一致。
+
+### 5.4 集成测试
+
+使用真实 PostgreSQL、Redis、MinIO 和 Celery Worker：
+
+- 数据库约束和事务。
+- LangGraph Checkpoint 恢复。
+- Alembic 从空数据库升级。
+- Celery 任务投递和执行。
+- Redis Pub/Sub 到 SSE。
+- S3 预签名和对象生命周期。
+- Kling MCP 使用本地 Mock MCP Server 或受控网络 Stub。
+
+集成测试使用 Testcontainers 或 Docker Compose，每个测试套件使用独立数据库和 Bucket。
+
+### 5.5 E2E 测试
+
+使用 Playwright 覆盖：
+
+- 中文和英文完整用户流程。
+- 登录或测试会话注入。
+- 创建项目。
+- Agent 生成故事板。
+- 审批生成。
+- Mock Provider 生成任务。
+- SSE 状态更新。
+- 镜头编辑和重排。
+- 视频导出。
+- 公开分享页。
+- 错误、空状态和恢复。
+
+### 5.6 非功能测试
+
+包括：
+
+- 安全。
+- 性能。
+- 可靠性。
+- 可访问性。
+- 可观测性。
+- 浏览器兼容性。
+
+## 6. TDD 开发流程
+
+### 6.1 单个功能流程
+
+```text
+确认验收场景
+  → 编写场景编号
+  → 写最小失败测试
+  → 运行确认因预期原因失败
+  → 实现最小代码
+  → 测试通过
+  → 重构
+  → 运行受影响测试
+  → 提交
+```
+
+“测试失败”必须是因为缺少目标行为，而不是导入路径、测试环境或语法错误。
+
+### 6.2 测试先行顺序
+
+每个功能按以下顺序编写测试：
+
+1. 领域失败用例。
+2. 领域成功用例。
+3. 权限和边界条件。
+4. API/Provider 契约。
+5. 集成行为。
+6. 前端交互。
+7. E2E 验收。
+
+### 6.3 Definition of Done
+
+一个任务只有满足以下条件才完成：
+
+- 验收场景有自动化测试或明确的人工测试步骤。
+- 新逻辑有单元测试。
+- API 或 Provider 变化有契约测试。
+- 跨组件流程有必要的集成或 E2E 测试。
+- 中文和英文文案同时完成。
+- `Ruff`、`mypy`、pytest、前端类型检查和测试通过。
+- 没有新增 P0/P1 缺陷。
+- 安全日志不包含敏感信息。
+- 相关文档同步更新。
+
+## 7. 测试环境
+
+### 7.1 本地测试
+
+```text
+PostgreSQL
+Redis
+MinIO
+Mock MCP Server
+Mock Video Provider
+Mock LLM Provider
+```
+
+Kling MCP 的公开签名和工具 Schema 通过录制后脱敏的 Fixture 模拟。真实 Kling 网络测试默认关闭。
+
+### 7.2 CI 测试
+
+普通 Pull Request 只运行：
+
+- 后端单元测试、API 测试和契约测试。
+- 前端单元测试、类型检查和构建。
+- OpenAPI 与生成客户端一致性检查。
+- 静态安全和依赖扫描。
+
+Nightly 任务运行：
+
+- PostgreSQL、Redis、MinIO 和 Celery 集成测试。
+- Playwright E2E。
+- 迁移与恢复测试。
+
+受保护的 Release 流程运行：
+
+- Kling OAuth 只读 Smoke Test。
+- 经人工授权的一次付费生成测试。
+
+### 7.3 真实 Kling 测试开关
+
+真实测试必须同时满足：
+
+```text
+RUN_KLING_LIVE_TESTS=1
+RUN_KLING_PAID_TESTS=1
+KLING_PAID_TEST_BUDGET>0
+```
+
+付费测试还需要：
+
+- 使用专用测试账户。
+- 指定单次生成次数上限。
+- 指定最大积分预算。
+- 人工启动。
+- 测试后核对任务和积分流水。
+- 默认 CI 中强制关闭。
+
+## 8. 测试数据
+
+- 只使用合成用户、合成图片和公开授权测试素材。
+- 不在 Fixture 中保存真实 Kling Token。
+- 不在测试日志中输出 OAuth Code、Access Token 或 Refresh Token。
+- 测试用户邮箱使用无投递需求的合成地址，例如 `creator@example.com`。
+- 每个测试使用独立 UUID 和数据库事务。
+- 测试结束后删除数据库记录、对象存储文件和临时媒体。
+- 数据库测试禁止连接共享生产数据库。
+
+## 9. 测试用例
+
+### 9.1 认证、会话与权限
+
+| ID | 场景 | 预期结果 | 层级 | 优先级 |
+| --- | --- | --- | --- | --- |
+| AUTH-001 | 有效邮箱和强密码注册 | 创建用户，密码以 Argon2 哈希保存 | API | P0 |
+| AUTH-002 | 重复邮箱注册 | 返回稳定错误码，不泄露额外信息 | API | P0 |
+| AUTH-003 | 弱密码注册 | 返回字段级校验错误 | API | P1 |
+| AUTH-004 | 正确凭据登录 | 设置 HttpOnly 会话 Cookie | API | P0 |
+| AUTH-005 | 错误密码连续登录 | 限流生效，返回统一错误 | Security | P0 |
+| AUTH-006 | 过期会话访问 API | 返回 401，不访问业务数据 | API | P0 |
+| AUTH-007 | 登出 | 删除或失效会话，后续请求返回 401 | API | P0 |
+| AUTH-008 | 用户 A 读取用户 B 项目 | 返回 404 或 403，不泄露存在性 | Security | P0 |
+| AUTH-009 | 修改用户语言为英文 | 用户资料和 Cookie 均更新 | API | P1 |
+| AUTH-010 | CSRF Token 缺失的写请求 | 拒绝请求 | Security | P0 |
+
+### 9.2 项目与故事板
+
+| ID | 场景 | 预期结果 | 层级 | 优先级 |
+| --- | --- | --- | --- | --- |
+| PROJ-001 | 创建项目 | 默认为 `draft`，所有者正确 | Unit/API | P0 |
+| PROJ-002 | 列表只显示自己的项目 | 不返回其他用户项目 | API | P0 |
+| PROJ-003 | 修改项目标题和 Brief | 更新成功并记录 UpdatedAt | API | P1 |
+| PROJ-004 | 非法状态迁移 | 拒绝并返回 `INVALID_PROJECT_TRANSITION` | Unit | P0 |
+| PROJ-005 | Storyboard 少于一个镜头 | Schema 校验失败 | Unit | P0 |
+| PROJ-006 | 镜头顺序重复 | Schema 或数据库约束拒绝 | Unit | P0 |
+| PROJ-007 | 更新单个镜头 | 只更新目标镜头及版本 | API | P1 |
+| PROJ-008 | 并发更新同一镜头 | 使用版本号，后写不覆盖新版本 | Integration | P0 |
+| PROJ-009 | 删除项目 | 校验所有权，清理或排队清理媒体 | API | P1 |
+| PROJ-010 | 归档项目 | 保持数据可读，任务不可再提交 | API | P1 |
+
+### 9.3 素材与存储
+
+| ID | 场景 | 预期结果 | 层级 | 优先级 |
+| --- | --- | --- | --- | --- |
+| ASSET-001 | 合法 JPEG 上传 | 预签名成功，完成校验后创建 Asset | Integration | P0 |
+| ASSET-002 | 伪造扩展名文件 | 根据文件头识别并拒绝 | Unit/API | P0 |
+| ASSET-003 | 超过大小限制 | 返回文件大小错误 | API | P0 |
+| ASSET-004 | 上传未完成即引用 | 拒绝引用 | Integration | P0 |
+| ASSET-005 | 其他用户读取 Asset URL | 不签发有效 URL | Security | P0 |
+| ASSET-006 | 上传参考视频 | 提取时长、宽高和编码 | Integration | P1 |
+| ASSET-007 | 缩略图生成失败 | Asset 标记失败，不进入可用状态 | Integration | P1 |
+| ASSET-008 | 临时 URL 过期 | 返回可识别的 `ASSET_URL_EXPIRED` | Frontend | P1 |
+
+### 9.4 Agent 与工作流
+
+| ID | 场景 | 预期结果 | 层级 | 优先级 |
+| --- | --- | --- | --- | --- |
+| AGENT-001 | 用户提交完整视频需求 | Agent 输出合法 Treatment 和 Storyboard | Unit | P0 |
+| AGENT-002 | 缺少宽高比 | Agent 追问而不提交生成 | Unit | P0 |
+| AGENT-003 | 模型返回非法 JSON | 进行有限次数修复，仍失败则返回结构化错误 | Unit | P0 |
+| AGENT-004 | 镜头时长超 Provider 范围 | 校验失败，不调用 Kling | Unit | P0 |
+| AGENT-005 | 中文项目 | Agent 中文说明，模型 Prompt 支持英文 | Unit | P0 |
+| AGENT-006 | 英文项目 | 对话和故事板均为英文 | Unit | P0 |
+| AGENT-007 | 未审批直接进入生成 | 状态机拒绝迁移 | Unit | P0 |
+| AGENT-008 | 审批后提交任务 | 进入 `submit_generation_jobs` | Integration | P0 |
+| AGENT-009 | API 重启后恢复 Checkpoint | 从当前审批或任务状态继续 | Integration | P0 |
+| AGENT-010 | 用户取消生成 | 不创建新任务，已有任务进入取消流程 | Integration | P0 |
+| AGENT-011 | Agent 尝试删除 Element | 工具白名单拒绝 | Security | P0 |
+| AGENT-012 | 上传文本包含 Prompt Injection | 被视为不可信内容，不扩大工具权限 | Security | P0 |
+
+### 9.5 Kling OAuth 和 MCP
+
+| ID | 场景 | 预期结果 | 层级 | 优先级 |
+| --- | --- | --- | --- | --- |
+| KLING-001 | 发起 OAuth | 生成有效 State、PKCE Verifier 和授权 URL | Unit | P0 |
+| KLING-002 | 回调 State 不匹配 | 拒绝回调，不保存 Token | Security | P0 |
+| KLING-003 | 回调成功 | 加密保存 Access/Refresh Token | Integration | P0 |
+| KLING-004 | OAuth 提供错误 | 转换为用户可读错误，不记录敏感参数 | API | P1 |
+| KLING-005 | Access Token 过期 | 使用互斥锁刷新 Token | Integration | P0 |
+| KLING-006 | 刷新失败或撤销 | 标记 `auth_required`，停止计费任务 | Integration | P0 |
+| KLING-007 | 查询身份 | 返回标准化账户状态 | Contract | P0 |
+| KLING-008 | 查询会员和积分 | 积分值转换为整数领域模型 | Contract | P0 |
+| KLING-009 | MCP Tool Schema 变化 | 记录差异，未知字段不导致崩溃 | Contract | P1 |
+| KLING-010 | 生成参数不符合 MCP Schema | 本地校验拒绝，不发送请求 | Unit | P0 |
+| KLING-011 | Provider 错误映射 | 标准化为认证、余额、限流或服务错误 | Unit | P0 |
+| KLING-012 | 断开账户 | 删除 Token，阻止后续生成 | API | P0 |
+
+### 9.6 生成任务
+
+| ID | 场景 | 预期结果 | 层级 | 优先级 |
+| --- | --- | --- | --- | --- |
+| JOB-001 | 创建合法任务 | 返回本地 Job ID，状态为 `pending` | API | P0 |
+| JOB-002 | 相同 Idempotency-Key 重复请求 | 返回同一任务，不重复提交 | Integration | P0 |
+| JOB-003 | 用户积分不足 | 阻止提交并返回 `KLING_INSUFFICIENT_CREDITS` | Unit/API | P0 |
+| JOB-004 | 提交成功 | 保存 Provider Task ID 并进入 `submitted` | Integration | P0 |
+| JOB-005 | 提交超时且无 Task ID | 进入 `submission_uncertain`，禁止自动重提 | Integration | P0 |
+| JOB-006 | `query_tasks` 暂时失败 | 按退避策略重试 | Unit | P0 |
+| JOB-007 | Provider 任务运行中 | 更新进度并广播事件 | Integration | P1 |
+| JOB-008 | Provider 任务成功 | 下载媒体、创建 Asset、更新 Shot | Integration | P0 |
+| JOB-009 | Provider 任务失败 | 保存标准错误并允许用户重新生成 | Integration | P0 |
+| JOB-010 | Celery 重复投递同一任务 | 数据库幂等保护，不重复生成 | Integration | P0 |
+| JOB-011 | Worker 在轮询中被终止 | 重启后继续轮询既有 Provider Task ID | Integration | P0 |
+| JOB-012 | 用户取消任务 | 调用 Provider 取消或标记不可取消状态 | Integration | P1 |
+| JOB-013 | 超过任务最大时长 | 标记超时并广播告警 | Integration | P1 |
+
+### 9.7 合成、导出与分享
+
+| ID | 场景 | 预期结果 | 层级 | 优先级 |
+| --- | --- | --- | --- | --- |
+| MEDIA-001 | 对合法镜头视频探测元数据 | 返回正确时长、尺寸和编码 | Unit | P0 |
+| MEDIA-002 | 宽高比不同的镜头合成 | 按配置缩放/裁切，不产生空白帧 | Integration | P1 |
+| MEDIA-003 | FFmpeg 进程失败 | 返回结构化错误并保留诊断日志 | Unit | P0 |
+| MEDIA-004 | 文件名包含 Shell 字符 | 作为参数传递，不执行命令注入 | Security | P0 |
+| MEDIA-005 | 导出成功 | 产生可播放 MP4 和缩略图 | Integration | P0 |
+| MEDIA-006 | 导出取消 | 停止进程并清理临时文件 | Integration | P1 |
+| MEDIA-007 | 创建公开分享 | 只返回随机 Token，数据库仅保存哈希 | API | P0 |
+| MEDIA-008 | 分享链接过期 | 返回 404 或明确的过期页面 | API | P1 |
+| MEDIA-009 | 撤销分享链接 | 原链接立即失效 | API | P0 |
+| MEDIA-010 | 未登录访问分享页 | 只能访问已公开项目 | Security | P0 |
+
+### 9.8 中英文与前端体验
+
+| ID | 场景 | 预期结果 | 层级 | 优先级 |
+| --- | --- | --- | --- | --- |
+| I18N-001 | 首次访问中文浏览器 | 进入 `/zh-CN` 并加载中文 | E2E | P0 |
+| I18N-002 | 首次访问英文浏览器 | 进入 `/en` 并加载英文 | E2E | P0 |
+| I18N-003 | 登录用户切换语言 | 路由、界面和用户偏好同步更新 | E2E | P0 |
+| I18N-004 | 后端返回业务错误 | 两种语言均显示对应翻译 | Frontend | P0 |
+| I18N-005 | 中文故事板使用英文 Prompt 模式 | 中文说明与英文 Prompt 同时存在 | Unit/E2E | P1 |
+| I18N-006 | 日期和任务时间 | 按 Locale 格式化且时区一致 | Frontend | P1 |
+| I18N-007 | 翻译资源缺少 Key | CI 检查失败，运行时显示安全回退 | Unit | P0 |
+| UI-001 | 桌面端三栏布局 | 对话、Canvas、Inspector 均可用 | E2E | P1 |
+| UI-002 | 移动端标签切换 | 不丢失当前项目状态 | E2E | P1 |
+| UI-003 | 生成状态实时更新 | 不需要刷新页面 | E2E | P0 |
+| UI-004 | SSE 断线后重连 | 状态重新同步，不重复消息 | E2E | P0 |
+| UI-005 | 所有核心控件键盘可操作 | 焦点顺序正确，有可见焦点 | Accessibility | P1 |
+
+### 9.9 安全与隐私
+
+| ID | 场景 | 预期结果 | 层级 | 优先级 |
+| --- | --- | --- | --- | --- |
+| SEC-001 | JWT 或 OAuth Token 出现在响应 | 测试失败 | Contract | P0 |
+| SEC-002 | Token 出现在日志 | 脱敏检查失败 | Integration | P0 |
+| SEC-003 | OAuth 回调开放重定向 | 只允许配置的 Callback URL | Security | P0 |
+| SEC-004 | 跨用户 IDOR 访问 Job 或 Asset | 拒绝访问 | Security | P0 |
+| SEC-005 | 文件名和 Prompt 包含 XSS | 前端按文本渲染 | Frontend | P0 |
+| SEC-006 | 上传内容 MIME 欺骗 | 文件头校验拒绝 | Security | P0 |
+| SEC-007 | 高频生成请求 | 用户、项目和 Provider 限流生效 | Security | P0 |
+| SEC-008 | Agent 被要求调用任意 URL | 无通用 HTTP/Shell 工具 | Security | P0 |
+| SEC-009 | 删除用户账户 | 撤销会话、凭据和访问链接 | Integration | P1 |
+| SEC-010 | 依赖扫描存在高危漏洞 | Release 门禁失败 | CI | P0 |
+
+## 10. 状态与恢复专项测试
+
+### 10.1 LangGraph 恢复
+
+测试以下状态保存与恢复：
+
+```text
+awaiting_plan_approval
+awaiting_generation_approval
+submit_generation_jobs
+wait_for_jobs
+review_results
+await_export_approval
+```
+
+每个状态至少验证：
+
+- 进程重启后状态不变。
+- 重复提交审批不会创建重复任务。
+- 未审批状态无法跳过。
+- 已完成状态不会被重复执行。
+
+### 10.2 Celery 故障
+
+使用受控故障注入：
+
+- Worker 在收到任务前退出。
+- Worker 在调用 Kling 前退出。
+- Worker 获得 Provider Task ID 后退出。
+- Worker 下载媒体失败。
+- Redis 短暂不可用。
+- 同一任务被重复投递。
+
+预期系统最终进入一致状态，不重复扣费，不丢失已成功的 Provider 任务。
+
+### 10.3 SSE 故障
+
+- 浏览器断网后重连。
+- FastAPI 重启。
+- Redis Pub/Sub 消息暂时丢失。
+- 多个 API 实例订阅同一项目。
+- 客户端收到重复事件。
+
+客户端必须根据完整 REST 状态去重和校正。
+
+## 11. 性能测试
+
+MVP 基线：
+
+- 普通 API 不含 Provider 调用时，P95 小于 300 ms。
+- 项目列表和故事板接口在 100 个镜头内保持可接受响应。
+- SSE 心跳间隔 15–30 秒。
+- 单 Worker 可并发处理配置数量的查询任务。
+- 同一任务的并发提交只能成功一次。
+- 100 个前端事件连续到达时，界面不出现明显卡顿。
+
+性能测试不把 Kling 推理时间计算为 API 响应时间。Provider 排队和生成时间单独统计。
+
+## 12. 可访问性与兼容性
+
+### 12.1 可访问性
+
+- 目标为 WCAG 2.1 AA。
+- 所有表单具有关联 Label。
+- 所有交互可以使用键盘完成。
+- 焦点顺序合理，焦点样式可见。
+- 错误信息通过 ARIA Live Region 通知。
+- 中英文页面不能因文字长度出现遮挡。
+- 视频状态不能只用颜色表达。
+
+### 12.2 浏览器
+
+- 最新稳定版 Chrome。
+- 最新稳定版 Microsoft Edge。
+- 最新稳定版 Firefox。
+- Safari 以发布前目标版本为准。
+
+## 13. CI 质量门禁
+
+### 13.1 Pull Request 门禁
+
+以下任一失败阻止合并：
+
+- Ruff 检查或格式化失败。
+- mypy 类型检查失败。
+- 后端单元、API、契约测试失败。
+- 前端类型检查、Lint 或组件测试失败。
+- OpenAPI 与生成客户端不一致。
+- 数据库迁移测试失败。
+- 新增高危依赖漏洞。
+- 命中敏感信息扫描。
+
+### 13.2 Nightly 门禁
+
+- PostgreSQL、Redis、MinIO 集成测试。
+- Celery Worker 测试。
+- Playwright 中文和英文 E2E。
+- 数据库迁移从空库升级。
+- 故障恢复测试。
+- 浏览器兼容性测试。
+
+### 13.3 Release 门禁
+
+- 所有自动化测试通过。
+- 无 P0/P1 未解决缺陷。
+- Kling 只读 Smoke Test 通过。
+- 生产配置和 Secrets 检查通过。
+- 数据库备份与回滚步骤确认。
+- 经授权完成付费生成验收，或有明确风险接受记录。
+
+## 14. Kling 真实测试流程
+
+### 14.1 只读 Smoke Test
+
+人工触发，不消耗积分：
+
+1. 完成测试账户 OAuth。
+2. 调用身份查询。
+3. 调用会员和积分查询。
+4. 验证 MCP Tool 列表。
+5. 验证 401 后 Token 刷新。
+6. 验证日志不包含 Token。
+
+### 14.2 付费生成测试
+
+仅限发布前人工执行：
+
+1. 记录起始积分。
+2. 用户明确批准预算。
+3. 创建 1 个最小视频生成任务。
+4. 验证 Provider Task ID 只保存一次。
+5. 轮询至完成。
+6. 下载并校验媒体。
+7. 记录任务和积分变化。
+8. 验证重复请求不会再次提交。
+9. 执行 FFmpeg 合成或单镜头导出。
+10. 审核 UI、事件和数据库状态一致性。
+
+当前 Kling 账户积分为 0。执行付费测试前需要补充积分。
+
+## 15. 测试报告
+
+每次 Release 生成测试摘要，包含：
+
+- 测试版本和 Commit。
+- 测试环境和依赖版本。
+- 自动化用例总数、通过、失败和跳过。
+- 覆盖率报告。
+- E2E 结果。
+- Flaky Tests。
+- 未解决缺陷及风险接受。
+- Kling 只读测试结果。
+- Kling 付费测试结果和积分使用。
+- 与上一版本的性能变化。
+
+## 16. 缺陷等级
+
+| 等级 | 定义 | 处理要求 |
+| --- | --- | --- |
+| P0 | 数据泄露、跨用户访问、重复扣费、无法登录、无法生成 | 立即停止发布 |
+| P1 | 核心流程受阻、任务无法恢复、中英文关键页面不可用 | 发布前必须修复 |
+| P2 | 非关键功能异常、明显体验问题或有限范围错误 | 评估修复或记录 |
+| P3 | 轻微视觉、文案或低概率问题 | 可进入后续迭代 |
+
+## 17. TDD 实施顺序
+
+### 第 1 轮：测试基础设施
+
+1. 配置 pytest、Vitest、Playwright。
+2. 创建测试标记和目录。
+3. 实现 Fake Clock、UUID、LLM、MCP、Provider 和 Storage。
+4. 建立测试数据库和迁移测试。
+5. 配置 CI 报告。
+
+### 第 2 轮：健康检查
+
+- 先写 `/health` 失败测试。
+- 实现最小 FastAPI 应用。
+- 增加数据库和 Redis 健康状态。
+
+### 第 3 轮：认证与权限
+
+- 测试先行实现注册、登录、会话。
+- 测试先行实现项目所有权。
+- 测试先行实现 CSRF 和访问控制。
+
+### 第 4 轮：国际化
+
+- 测试先行实现 `/en` 和 `/zh-CN`。
+- 测试语言切换和偏好保存。
+- 建立翻译键完整性检查。
+
+### 第 5 轮：项目与故事板
+
+- 测试先行定义 Project、Shot 和状态迁移。
+- 实现版本控制和并发更新。
+- 实现故事板 API。
+
+### 第 6 轮：资产与存储
+
+- 测试先行实现预签名和文件校验。
+- 实现素材元数据和缩略图。
+- 测试跨用户隔离。
+
+### 第 7 轮：Agent
+
+- 测试先行定义 Pydantic 输出。
+- 实现单节点 Agent。
+- 逐步加入创意、故事板、审批和审核节点。
+- 使用 Fake LLM 保证确定性。
+
+### 第 8 轮：Provider 与 Kling
+
+- 先定义 Provider 共享契约。
+- 先实现 Mock Provider。
+- 再实现 Kling Adapter。
+- 测试 OAuth State、PKCE、Token 加密和刷新。
+- 测试 MCP 参数映射和错误转换。
+
+### 第 9 轮：任务执行
+
+- 测试幂等键和任务状态。
+- 实现 Celery 提交和轮询。
+- 注入 Worker 重启和重复投递。
+- 实现 SSE 和恢复。
+
+### 第 10 轮：媒体与分享
+
+- 测试 FFmpeg 参数构造和失败处理。
+- 实现合成、导出和缩略图。
+- 测试分享 Token、过期和撤销。
+
+### 第 11 轮：E2E 与发布
+
+- 使用 Mock Provider 完成中英文全流程。
+- 执行 Kling 只读测试。
+- 在用户批准预算后执行一次付费测试。
+
+## 18. 需求追溯
+
+| 设计能力 | 主要测试 |
+| --- | --- |
+| 中英文界面与 Agent | AUTH-009、AGENT-005/006、I18N-001 至 007 |
+| 项目管理和权限 | AUTH-008、PROJ-001 至 010、SEC-004 |
+| 素材上传 | ASSET-001 至 008、SEC-006 |
+| Agent 工作流 | AGENT-001 至 012 |
+| Kling OAuth/MCP | KLING-001 至 012 |
+| 异步生成与恢复 | JOB-001 至 013 |
+| 视频合成与分享 | MEDIA-001 至 010 |
+| Token 和隐私 | SEC-001 至 010 |
+| 实时状态 | UI-003/004、SSE 专项测试 |
+| 发布验收 | Release 门禁和 Kling 真实测试流程 |
+
+## 19. 风险和约束
+
+| 风险 | 测试措施 |
+| --- | --- |
+| LLM 输出不确定 | Fake LLM、结构化 Schema、固定 Fixture、重试测试 |
+| Kling 真实接口不可控 | Mock MCP Contract、受控只读 Smoke Test |
+| 付费测试成本 | 默认关闭、人工开关、单次预算、积分核对 |
+| 长任务测试缓慢 | 可注入轮询间隔和 Fake Clock |
+| 媒体文件体积大 | 使用小样本 Fixture、测试后清理 |
+| E2E 容易 Flaky | 稳定测试选择器、事件驱动等待、禁止固定长 Sleep |
+| 中英文内容不同步 | 翻译键检查、双语言 E2E |
+| 并发任务重复 | Idempotency-Key、数据库锁、重复投递测试 |
+
+## 20. 完成标准
+
+测试体系达到以下条件后，视为具备稳定 TDD 开发基础：
+
+1. 本地一条命令启动测试依赖。
+2. 后端单元和 API 测试可在无网络环境运行。
+3. Mock Provider 可完成项目、故事板、生成和导出全流程。
+4. 集成测试可验证 PostgreSQL、Redis、MinIO 和 Celery。
+5. 中文和英文关键 E2E 用例稳定通过。
+6. CI 阻止失败测试、类型错误和契约不一致进入主分支。
+7. 真实付费生成默认不在 CI 中运行。
+8. 所有 P0 场景均有用例。
+9. 每次发布生成可追溯的测试报告。
+10. 新增功能遵循 Red–Green–Refactor，而不是实现后补测试。
+
+## 21. 变更记录
+
+| 版本 | 日期 | 状态 | 说明 |
+| --- | --- | --- | --- |
+| v1.0 | 2026-11-01 | TDD 基线草案 | 建立测试分层、用例和质量门禁 |

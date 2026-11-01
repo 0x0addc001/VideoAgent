@@ -1,0 +1,112 @@
+{
+  "brand": {
+    "name": "VideoAgent",
+    "tagline": "Your idea. Your direction. Your cut."
+  },
+  "nav": {
+    "workflow": "Workflow",
+    "projects": "Projects",
+    "language": "Language",
+    "signIn": "Sign in",
+    "start": "Direct a film"
+  },
+  "hero": {
+    "eyebrow": "AI VIDEO DIRECTOR'S DESK",
+    "title": "Every idea deserves its own frame.",
+    "titleLine1": "Every idea deserves",
+    "titleLine2": "its own frame.",
+    "subtitle": "Go from a first thought to a final cut with an AI creative partner that plans, storyboards, and generates beside you.",
+    "promptLabel": "Set the scene",
+    "promptPlaceholder": "A midnight perfume launch, lit like a lost film...",
+    "promptAction": "Direct with agent",
+    "trustNote": "Kling-powered generation · Every credit stays behind your approval",
+    "sceneLabel": "SCENE 01",
+    "sequenceLabel": "RAW → STORYBOARD → CUT",
+    "direction": "DIRECTION"
+  },
+  "features": {
+    "title": "A director's desk, not another prompt box.",
+    "agent": {
+      "title": "Creative agent",
+      "body": "Turn a brief or reference image into a structured treatment and an editable shot list."
+    },
+    "storyboard": {
+      "title": "Shot control",
+      "body": "Edit prompts, duration, aspect ratio, references, and generation mode for every shot."
+    },
+    "providers": {
+      "title": "Provider ready",
+      "body": "Start with Kling MCP and keep a stable workflow as new video services are added."
+    }
+  },
+  "workflow": {
+    "title": "From first spark to final cut.",
+    "brief": "Describe or attach",
+    "plan": "Shape the story",
+    "generate": "Generate each shot",
+    "assemble": "Review and assemble"
+  },
+  "auth": {
+    "registerTitle": "Create your creative workspace",
+    "loginTitle": "Welcome back",
+    "registerSubtitle": "Build, review, and export videos with an agent that shows its work.",
+    "loginSubtitle": "Sign in to continue your projects.",
+    "email": "Email",
+    "password": "Password",
+    "createAccount": "Create account",
+    "signIn": "Sign in",
+    "switchToLogin": "Already have an account?",
+    "switchToRegister": "New to VideoAgent?",
+    "loading": "Working...",
+    "genericError": "We could not complete that request."
+  },
+  "projects": {
+    "title": "Your studio",
+    "subtitle": "Every project keeps its conversation, storyboard, assets, and generation history.",
+    "newProject": "New project",
+    "projectTitle": "Project title",
+    "brief": "What are we making?",
+    "create": "Create project",
+    "empty": "No projects yet. Start with a brief and let the agent draft the first cut.",
+    "draft": "Draft",
+    "open": "Open project",
+    "logout": "Sign out",
+    "loadError": "Your projects could not be loaded.",
+    "connectKling": "Connect Kling",
+    "klingConnected": "Kling connected",
+    "disconnectKling": "Disconnect Kling"
+  },
+  "workspace": {
+    "agent": "Agent",
+    "canvas": "Canvas",
+    "inspector": "Inspector",
+    "emptyCanvas": "Your storyboard will appear here.",
+    "composer": "Describe the next change...",
+    "approval": "Generation requires approval",
+    "back": "All projects",
+    "notFound": "Project not found",
+    "agentIntro": "Tell the agent what you want to create. The storyboard will stay editable at every step.",
+    "agentPlaceholder": "What are we making?",
+    "send": "Send",
+    "shotInspector": "Shot settings",
+    "aspectRatio": "Aspect ratio",
+    "duration": "Duration",
+    "noShot": "Select a shot to edit its generation settings.",
+    "planFirst": "Generate a storyboard before creating clips.",
+    "starterTitle": "Start with a storyboard",
+    "starterBody": "Create a starter shot from this project brief. You can refine it before generating.",
+    "createStarter": "Draft first shot",
+    "estimatedCredits": "Estimated credits",
+    "estimate": "Estimate cost",
+    "generate": "Generate shot",
+    "generating": "Generating...",
+    "completed": "Shot ready",
+    "mockNotice": "Development mode uses a mock provider. No credits are used."
+  },
+  "common": {
+    "loading": "Loading...",
+    "retry": "Retry",
+    "cancel": "Cancel"
+  }
+}
+
