@@ -155,8 +155,11 @@ export function LandingPage({
 
       <section className="hero">
         <div className="hero-copy">
-          <p className="eyebrow">{content.hero.eyebrow}</p>
-          <h1>{content.hero.title}</h1>
+          <h1 className="hero-title">
+            <span className="title-kicker">{content.hero.eyebrow}</span>
+            <span className="title-separator" aria-hidden="true">/</span>
+            <span className="title-main">{content.hero.title}</span>
+          </h1>
           <p className="hero-description">{content.hero.description}</p>
           <div className="hero-actions">
             <a className="primary-action" href={primaryHref}>
@@ -196,9 +199,12 @@ export function LandingPage({
       </section>
 
       <section className="section product" id="product">
-        <div className="section-heading">
-          <p className="eyebrow">{content.product.label}</p>
-          <h2>{content.product.title}</h2>
+        <div className="section-heading product-heading">
+          <h2 className="combined-section-title">
+            <span className="title-kicker">{content.product.label}</span>
+            <span className="title-separator" aria-hidden="true">/</span>
+            <span className="title-main">{content.product.title}</span>
+          </h2>
           <p>{content.product.description}</p>
         </div>
         <div className="capabilities">
@@ -213,10 +219,11 @@ export function LandingPage({
       </section>
 
       <section className="section workflow" id="workflow">
-        <div className="section-heading experience-heading">
-          <p className="eyebrow">{content.workflow.label}</p>
-          <h2>{content.workflow.title}</h2>
-        </div>
+        <h2 className="experience-title">
+          <span className="title-kicker">{content.workflow.label}</span>
+          <span className="title-separator" aria-hidden="true">/</span>
+          <span className="title-main">{content.workflow.title}</span>
+        </h2>
         <div className="workflow-grid">
           {content.workflow.steps.map((step, index) => (
             <div key={step.title}>

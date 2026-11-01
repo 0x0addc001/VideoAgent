@@ -48,6 +48,15 @@ describe("LandingPage", () => {
     expect(container.querySelector(".workflow-grid p")).toHaveTextContent(
       "Write a brief",
     );
+    expect(container.querySelector(".hero-title .title-kicker")).toHaveTextContent(
+      "AI VIDEO CREATION WORKSPACE",
+    );
+    expect(container.querySelector(".combined-section-title .title-kicker")).toHaveTextContent(
+      "Product",
+    );
+    expect(container.querySelector(".experience-title .title-kicker")).toHaveTextContent(
+      "Experience",
+    );
   });
 
   it("removes the duplicate header action on the application homepage", () => {
