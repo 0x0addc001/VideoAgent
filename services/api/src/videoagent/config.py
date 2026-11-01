@@ -22,7 +22,10 @@ class Settings(BaseSettings):
     session_ttl_days: int = Field(default=14, ge=1, le=90)
     session_secret: str = "development-only-change-me-32-bytes"
     token_encryption_key: str = "development-token-key-change-me!!!!!"
-    allowed_origins: list[str] = ["http://localhost:3000"]
+    allowed_origins: list[str] = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ]
     llm_base_url: str | None = None
     llm_api_key: str | None = None
     llm_model: str | None = None

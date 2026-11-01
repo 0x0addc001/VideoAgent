@@ -188,14 +188,11 @@ export function LandingPage({
     if (!accountApiBase || mode !== "app") return;
     let active = true;
 
-    async function loadCredits() {
+    async function loadAccount() {
       try {
-        const [accountResponse, creditResponse] = await Promise.all([
-          fetch(`${accountApiBase}/auth/me`, { credentials: "include" }),
-          fetch(`${accountApiBase}/providers/kling/credits`, {
-            credentials: "include",
-          }),
-        ]);
+        const accountResponse = await fetch(`${accountApiBase}/auth/me`, {
+          credentials: "include",
+        });
         if (!active) return;
         if (accountResponse.ok) {
           const account = (await accountResponse.json()) as { email?: string };
@@ -203,6 +200,17 @@ export function LandingPage({
             setDisplayAvatar(initialsFromEmail(account.email) || null);
           }
         }
+      } catch {
+        // Public and preview pages use the generic account icon.
+      }
+    }
+
+    async function loadCredits() {
+      try {
+        const creditResponse = await fetch(`${accountApiBase}/providers/kling/credits`, {
+          credentials: "include",
+        });
+        if (!active) return;
         if (creditResponse.ok) {
           const payload = (await creditResponse.json()) as { credits?: number | null };
           setDisplayCredits(
@@ -214,6 +222,7 @@ export function LandingPage({
       }
     }
 
+    void loadAccount();
     void loadCredits();
     return () => {
       active = false;
@@ -437,12 +446,14 @@ export function LandingPage({
           {content.workflow.steps.map((step, index) => (
             <div key={step.title}>
               <span>{String(index + 1).padStart(2, "0")}</span>
-              <h3>
-                <StreamingText text={step.title} />
-              </h3>
-              <p>
-                <StreamingText delay={index * 100} text={step.description} />
-              </p>
+              <div className="workflow-step-copy">
+                <h3>
+                  <StreamingText text={step.title} />
+                </h3>
+                <p>
+                  <StreamingText delay={index * 100} text={step.description} />
+                </p>
+              </div>
             </div>
           ))}
         </div>

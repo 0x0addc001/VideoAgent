@@ -963,12 +963,20 @@ h1 {
 
 .workflow-grid h3 {
   max-width: 270px;
-  margin: auto 0 14px;
+  margin: 0 0 14px;
   font-family: var(--display);
   font-size: clamp(30px, 2.6vw, 42px);
   font-weight: 600;
   line-height: 1.05;
   letter-spacing: -0.035em;
+}
+
+.workflow-step-copy {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: center;
+  padding-top: 18px;
 }
 
 .workflow-grid p {
@@ -1290,10 +1298,6 @@ html[lang="zh-CN"] .hero-description {
 
   .workflow-grid > div:nth-child(n + 3) {
     border-bottom: 0;
-  }
-
-  .workflow-grid h3 {
-    margin-top: 54px;
   }
 
 }
