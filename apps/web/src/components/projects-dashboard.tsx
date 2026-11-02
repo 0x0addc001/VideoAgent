@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, LogOut, Pencil, PlugZap, Plus, Trash2, Video, X } from "lucide-react";
+import { ArrowRight, LogOut, Pencil, Plus, Trash2, Video, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FormEvent, useEffect, useState } from "react";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -21,12 +21,6 @@ type Project = {
   updated_at: string;
 };
 
-type KlingConnection = {
-  provider: "kling";
-  connected: boolean;
-  expires_at: string | null;
-};
-
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api/v1";
 
@@ -35,7 +29,6 @@ export function ProjectsDashboard() {
   const router = useRouter();
   const [user, setUser] = useState<User | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
-  const [kling, setKling] = useState<KlingConnection | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [isRenaming, setIsRenaming] = useState(false);
@@ -50,10 +43,9 @@ export function ProjectsDashboard() {
 
     async function load() {
       try {
-        const [userResponse, projectsResponse, klingResponse] = await Promise.all([
+        const [userResponse, projectsResponse] = await Promise.all([
           fetch(`${API_BASE_URL}/auth/me`, { credentials: "include" }),
           fetch(`${API_BASE_URL}/projects`, { credentials: "include" }),
-          fetch(`${API_BASE_URL}/providers/kling`, { credentials: "include" }),
         ]);
         if (userResponse.status === 401) {
           router.push("/login");
@@ -62,17 +54,13 @@ export function ProjectsDashboard() {
         if (!userResponse.ok || !projectsResponse.ok) {
           throw new Error("request-failed");
         }
-        const [nextUser, nextProjects, nextKling] = await Promise.all([
+        const [nextUser, nextProjects] = await Promise.all([
           userResponse.json() as Promise<User>,
           projectsResponse.json() as Promise<{ items: Project[] }>,
-          klingResponse.ok
-            ? (klingResponse.json() as Promise<KlingConnection>)
-            : Promise.resolve(null),
         ]);
         if (active) {
           setUser(nextUser);
           setProjects(nextProjects.items);
-          setKling(nextKling);
         }
       } catch {
         if (active) {
@@ -180,31 +168,6 @@ export function ProjectsDashboard() {
     router.refresh();
   }
 
-  async function toggleKlingConnection() {
-    setError(null);
-    if (kling?.connected) {
-      const response = await fetch(`${API_BASE_URL}/providers/kling`, {
-        method: "DELETE",
-        credentials: "include",
-      }).catch(() => null);
-      if (response?.ok) {
-        setKling((current) => (current ? { ...current, connected: false } : current));
-      }
-      return;
-    }
-
-    const response = await fetch(`${API_BASE_URL}/providers/kling/connect`, {
-      method: "POST",
-      credentials: "include",
-    }).catch(() => null);
-    if (!response?.ok) {
-      setError(t("loadError"));
-      return;
-    }
-    const body = (await response.json()) as { authorization_url: string };
-    window.location.assign(body.authorization_url);
-  }
-
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_76%_-12%,rgba(255,118,67,0.11),transparent_31%),#0b0a08] px-5 py-7 text-[#f7f0e6] sm:px-8">
       <div className="mx-auto max-w-7xl">
@@ -217,14 +180,6 @@ export function ProjectsDashboard() {
           </Link>
           <div className="flex items-center gap-4">
             <span className="hidden text-sm text-white/45 sm:block">{user?.email}</span>
-            <button
-              className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm transition hover:bg-white/10"
-              onClick={() => void toggleKlingConnection()}
-              type="button"
-            >
-              <PlugZap className="h-4 w-4" />
-              {kling?.connected ? t("klingConnected") : t("connectKling")}
-            </button>
             <button
               className="flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm transition hover:bg-white/10"
               onClick={() => void logout()}

@@ -1,6 +1,6 @@
 # VideoAgent API
 
-FastAPI service for VideoAgent projects, agent workflows, Kling MCP integration,
+FastAPI service for VideoAgent projects, agent workflows, Pippit CLI integration,
 generation jobs, and media exports.
 
 Run from the repository root with `make api-test` or from this directory:

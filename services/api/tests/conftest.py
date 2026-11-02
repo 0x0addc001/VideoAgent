@@ -15,6 +15,7 @@ async def app(tmp_path: Path):
         cookie_secure=False,
         session_secret="test-session-secret-at-least-32-bytes",
         token_encryption_key="test-token-key-32-bytes-long!!!!!!",
+        video_provider="mock",
     )
     application = create_app(settings)
     async with application.router.lifespan_context(application):

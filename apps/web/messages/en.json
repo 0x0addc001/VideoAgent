@@ -31,10 +31,7 @@
     "confirmDelete": "Remove this project from your workspace?",
     "deleteError": "The project could not be deleted.",
     "logout": "Sign out",
-    "loadError": "Your projects could not be loaded.",
-    "connectKling": "Connect Kling",
-    "klingConnected": "Kling connected",
-    "disconnectKling": "Disconnect Kling"
+    "loadError": "Your projects could not be loaded."
   },
   "workspace": {
     "agent": "VideoAgent",

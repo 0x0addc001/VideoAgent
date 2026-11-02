@@ -31,10 +31,7 @@
     "confirmDelete": "确定从工作区移除这个项目吗？",
     "deleteError": "项目删除失败。",
     "logout": "退出登录",
-    "loadError": "项目列表加载失败。",
-    "connectKling": "连接 Kling",
-    "klingConnected": "Kling 已连接",
-    "disconnectKling": "断开 Kling"
+    "loadError": "项目列表加载失败。"
   },
   "workspace": {
     "agent": "VideoAgent",

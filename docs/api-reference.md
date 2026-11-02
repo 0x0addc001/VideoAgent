@@ -159,18 +159,42 @@ Request:
 Possible statuses include `submitted`, `queued`, `running`, `succeeded`,
 `failed`, and `cancelled`.
 
-## Kling Provider
+## Pippit Provider
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| `POST` | `/providers/kling/connect` | Start Kling OAuth |
-| `GET` | `/providers/kling/callback` | OAuth callback |
-| `GET` | `/providers/kling` | Read connection status |
-| `GET` | `/providers/kling/credits` | Read current Kling credit balance |
-| `DELETE` | `/providers/kling` | Disconnect Kling |
+| `GET` | `/providers/pippit` | Read server-owned Pippit account status |
+| `GET` | `/providers/pippit/credits` | Read the active Pippit credit balance |
 
-Kling authorization is scoped to the currently authenticated VideoAgent user.
-It is not linked by matching email addresses.
+Pippit authorization is server-owned. The API invokes the installed
+`pippit-tool-cli` binary; browser clients never receive access keys or CLI
+session files. Every VideoAgent user therefore uses the same configured Pippit
+account and credit pool. Operators should authorize the CLI on the API host
+before enabling live generation.
+
+`GET /providers/pippit` response:
+
+```json
+{
+  "provider": "pippit",
+  "connected": true,
+  "scope": "server"
+}
+```
+
+`GET /providers/pippit/credits` response:
+
+```json
+{
+  "provider": "pippit",
+  "connected": true,
+  "credits": 42
+}
+```
+
+If the server CLI is not logged in, the credits endpoint returns `connected:
+false` and `credits: null`. A missing binary returns `503`; an upstream CLI
+failure returns `502`.
 
 ## Errors
 
@@ -194,6 +218,6 @@ Important status codes:
 | `401` | Authentication required or session expired |
 | `403` | Explicit approval required |
 | `404` | Resource not found or not owned by the current user |
-| `409` | Provider is not connected |
+| `409` | Configured provider is not active |
 | `422` | Request validation failed |
 | `502` | Upstream provider request failed |

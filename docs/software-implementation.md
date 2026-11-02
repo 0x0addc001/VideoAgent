@@ -2,9 +2,9 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v1.0 |
+| 文档版本 | v1.1 |
 | 文档状态 | 当前实现基线 |
-| 编写日期 | 2026-11-01 |
+| 编写日期 | 2026-11-02 |
 | 对应设计 | `docs/software-design.md` |
 | 测试规范 | `docs/software-test-plan.md` |
 | 项目目录 | `D:\_Science\Agent\VideoAgent` |
@@ -30,11 +30,8 @@
 - 积分估算和显式生成审批。
 - 生成任务持久化及 `Idempotency-Key` 防重复提交。
 - Mock Provider。
-- Kling Provider 参数和状态标准化。
-- Python MCP Streamable HTTP 客户端。
-- 用户级 Kling OAuth、DCR、PKCE 和一次性 State。
-- Kling Access/Refresh Token 加密保存和自动刷新。
-- Kling 连接、状态查询和断开。
+- Pippit CLI 视频提交、任务查询和余额读取。
+- Pippit 服务端授权；不再为每个 Web 用户单独绑定 Kling。
 - 任务状态 API 刷新。
 - 可选 Celery 后台轮询。
 - Docker Compose 基础设施配置。
@@ -65,7 +62,7 @@ VideoAgent/
 │   ├── src/videoagent/
 │   │   ├── agent/                  # LangGraph 和 Planner
 │   │   ├── api/                    # FastAPI 路由与依赖
-│   │   ├── providers/              # Mock、Kling、MCP、OAuth
+│   │   ├── providers/              # Mock、Pippit CLI 和旧版 Provider
 │   │   ├── services/               # 业务服务
 │   │   ├── workers/                # Celery 配置和任务
 │   │   ├── config.py
@@ -94,13 +91,12 @@ Browser
         ├── SQLite（当前开发默认）
         ├── PostgreSQL（Docker/生产目标）
         ├── LangGraph
-        ├── Kling OAuth
-        └── Kling MCP
+        └── Pippit CLI（服务端登录）
 
 Celery Worker（可选）
   ├── Redis Broker
   ├── PostgreSQL/SQLite
-  └── Kling MCP query_tasks
+  └── Pippit CLI query-result
 ```
 
 当前本地开发中，浏览器直接访问 FastAPI 的 `8000` 端口。FastAPI 已配置本地 CORS。
@@ -194,9 +190,9 @@ START → plan_storyboard → END
 ```text
 生成接口提交 Job
   → videoagent.poll_generation_job.delay(job_id)
-  → Worker 加载 Job 和项目所有者
-  → 解析用户 Kling Token
-  → 调用 query_tasks
+  → Worker 加载 Job
+  → 使用服务端 Pippit CLI 配置
+  → 调用 query-result
   → 更新 Job 和 Shot
   → 未结束则指数退避重试
 ```
@@ -219,11 +215,10 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 | `api/storyboards.py` | 故事板读取和替换 |
 | `api/agent.py` | 对话和消息持久化 |
 | `api/generation.py` | 积分估算、生成提交和任务查询 |
-| `api/providers.py` | Kling OAuth 流程和连接状态 |
+| `api/providers.py` | Pippit 服务端状态和积分余额 |
 | `services/storyboards.py` | 故事板领域操作 |
 | `services/generation_jobs.py` | Job 刷新和 Shot 状态联动 |
-| `services/provider_credentials.py` | Token 解密和刷新的解析流程 |
-| `services/provider_resolver.py` | 按用户和配置选择 Provider |
+| `providers/pippit.py` | Pippit CLI 子进程、JSON 契约和任务映射 |
 | `agent/graph.py` | LangGraph 编译和执行 |
 | `agent/planner.py` | 本地和远程故事板规划器 |
 | `workers/celery_app.py` | Celery 配置 |
@@ -241,7 +236,7 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 | `site-header.tsx` | 品牌导航和语言入口 |
 | `locale-switcher.tsx` | 中英文切换 |
 | `auth-form.tsx` | 注册/登录请求 |
-| `projects-dashboard.tsx` | 项目列表、新建项目和 Kling 连接 |
+| `projects-dashboard.tsx` | 项目列表、新建、重命名和删除 |
 | `project-workspace.tsx` | Agent、故事板、镜头设置、估算和生成 |
 
 前端通过 `NEXT_PUBLIC_API_BASE_URL` 访问 FastAPI，所有鉴权请求设置 `credentials: "include"`。
@@ -295,8 +290,8 @@ zh-CN
 | `conversations` | 每个项目唯一的对话 |
 | `messages` | User/Assistant 消息 |
 | `generation_jobs` | Provider 任务、幂等键和结果 |
-| `provider_connections` | 用户 Provider 的加密 Token |
-| `oauth_flows` | OAuth State、PKCE Verifier 和过期时间 |
+| `provider_connections` | 历史 OAuth 表，当前 Pippit 链路不使用 |
+| `oauth_flows` | 历史 OAuth 流程表，当前 Pippit 链路不使用 |
 
 关键约束：
 
@@ -307,9 +302,9 @@ zh-CN
 - `(Shot.storyboard_id, Shot.index)` 唯一。
 - `(GenerationJob.shot_id, GenerationJob.idempotency_key)` 唯一。
 - `(ProviderConnection.user_id, ProviderConnection.provider)` 唯一。
-- `OAuthFlow.state_hash` 唯一且只能使用一次。
+- 历史 `OAuthFlow.state_hash` 约束保留，当前 Pippit 链路不创建新记录。
 
-## 10. Kling Provider 与 OAuth
+## 10. Pippit CLI Provider
 
 ### 10.1 Provider 选择
 
@@ -317,52 +312,46 @@ zh-CN
 
 | 值 | 行为 |
 | --- | --- |
-| `mock` | 始终使用 Mock，不访问 Kling |
-| `auto` | 用户已连接 Kling时使用 Kling，否则回退 Mock |
-| `kling` | 必须存在有效 Kling 连接，否则返回 `KLING_NOT_CONNECTED` |
+| `pippit` | 使用服务端安装并授权的 Pippit CLI |
+| `auto` | 当前兼容别名，与 `pippit` 行为相同 |
+| `mock` | 使用本地 Mock，不执行 CLI 或外部生成 |
 
-开发默认值为 `auto`。
+默认值为 `pippit`。测试环境显式使用 `mock`。
 
-### 10.2 OAuth 流程
-
-```text
-POST /providers/kling/connect
-  → 优先使用配置的 OAuth Client ID
-  → 否则调用 Kling DCR
-  → 生成 State 和 PKCE Verifier
-  → 加密保存 Verifier
-  → 返回 Kling 授权 URL
-
-Kling 回调
-  → 哈希并查询 State
-  → 校验未使用且未过期
-  → 解密 Verifier
-  → 交换 Access/Refresh Token
-  → AES-256-GCM 加密保存
-  → Redirect 到项目页
-```
-
-连接元数据保存 OAuth Client ID，供 Token 刷新使用。
-
-### 10.3 MCP 调用
-
-`StreamableHTTPToolClient` 每次工具调用建立 MCP Streamable HTTP Session：
+### 10.2 服务端授权
 
 ```text
-创建带 Bearer Token 的 httpx2 Client
-  → 建立 MCP Streamable HTTP 连接
-  → ClientSession.initialize
-  → call_tool
-  → 优先读取 structuredContent
-  → 否则解析 text content 中的 JSON
+安装 @pippit-dev/cli
+  → pippit-tool-cli login
+  → 浏览器完成 Pippit 授权
+  → CLI 写入操作系统安全存储
+  → FastAPI 子进程复用服务端登录状态
 ```
 
-工具参数和返回值由 `KlingVideoProvider` 转换为领域对象：
+CI 可改用 `VIDEOAGENT_PIPPIT_ACCESS_KEY`，Provider 只把该值转换为子进程
+环境变量 `XYQ_ACCESS_KEY`。它不是用户级凭据，不写入数据库，也不通过 API
+返回。
+
+### 10.3 CLI 调用
+
+`PippitVideoProvider` 使用参数数组启动子进程，不拼接 Shell 字符串：
 
 ```text
-GenerationRequest → text_to_video/image_to_video → ProviderJob
-task_id           → query_tasks                 → JobStatus
+status             → logged_in
+get-credit-balance → total_remain_amount
+generate-video     → thread_id + run_id
+query-result       → completed + videos[].download_url
 ```
+
+Provider 将 CLI 输出转换为稳定领域对象：
+
+```text
+GenerationRequest → generate-video → JSON task reference → ProviderJob
+task reference    → query-result   → JobStatus + result URL
+```
+
+子进程标准输出必须是单个 JSON 对象；标准错误和完整参数不返回浏览器。
+退出码非 0、无效 JSON、超时和缺少必要 ID 均映射为 Provider 错误。
 
 ## 11. API 清单
 
@@ -386,10 +375,8 @@ task_id           → query_tasks                 → JobStatus
 | POST | `/shots/{id}/estimate` | 查询积分估算 |
 | POST | `/shots/{id}/generate` | 提交生成任务 |
 | GET | `/jobs/{id}` | 查询并刷新任务状态 |
-| POST | `/providers/kling/connect` | 创建 Kling OAuth URL |
-| GET | `/providers/kling/callback` | OAuth 回调 |
-| GET | `/providers/kling` | Kling 连接状态 |
-| DELETE | `/providers/kling` | 断开 Kling |
+| GET | `/providers/pippit` | 服务端 Pippit 登录状态 |
+| GET | `/providers/pippit/credits` | Pippit 积分余额 |
 
 生成接口必须携带：
 
@@ -415,9 +402,9 @@ Idempotency-Key: <unique-client-generated-key>
 - 密码使用 Argon2。
 - 会话使用随机不透明 Token，数据库只保存 SHA-256。
 - 会话 Cookie 为 HttpOnly 和 SameSite=Lax。
-- Kling Token 使用 AES-256-GCM。
-- OAuth State 一次性使用并设置 10 分钟过期。
-- OAuth 使用 S256 PKCE。
+- Pippit CLI 登录文件放在服务账号可访问但权限受限的位置。
+- `VIDEOAGENT_PIPPIT_ACCESS_KEY` 只来自秘密环境变量。
+- CLI 子进程有超时，命令参数不经 Shell 解释。
 - 跨用户资源访问统一返回 404。
 - 日志和 API 响应不返回 Provider Token。
 - 敏感环境变量不得提交到 Git。
@@ -495,11 +482,12 @@ docker compose -f deploy/docker-compose.yml up -d
 | `VIDEOAGENT_COOKIE_SECURE` | `false` | HTTPS 环境应设为 `true` |
 | `VIDEOAGENT_SESSION_SECRET` | 开发值 | 必须替换 |
 | `VIDEOAGENT_TOKEN_ENCRYPTION_KEY` | 开发值 | 必须替换 |
-| `VIDEOAGENT_VIDEO_PROVIDER` | `auto` | `mock/auto/kling` |
-| `VIDEOAGENT_KLING_MCP_URL` | Kling MCP 地址 | Streamable HTTP Endpoint |
-| `VIDEOAGENT_KLING_AUTH_BASE_URL` | Kling OAuth 地址 | OAuth Issuer |
-| `VIDEOAGENT_KLING_OAUTH_CLIENT_ID` | 空 | 为空时使用 DCR |
-| `VIDEOAGENT_KLING_OAUTH_REDIRECT_URI` | 本地回调 | 必须与授权配置一致 |
+| `VIDEOAGENT_VIDEO_PROVIDER` | `pippit` | `pippit/auto/mock` |
+| `VIDEOAGENT_PIPPIT_CLI_COMMAND` | `pippit-tool-cli` | CLI 命令或可执行路径 |
+| `VIDEOAGENT_PIPPIT_ACCESS_KEY` | 空 | CI 可选服务端 Access Key |
+| `VIDEOAGENT_PIPPIT_VIDEO_MODEL` | 空 | 留空使用 CLI 服务默认模型 |
+| `VIDEOAGENT_PIPPIT_VIDEO_RESOLUTION` | 空 | 例如 `720p` |
+| `VIDEOAGENT_PIPPIT_TIMEOUT_SECONDS` | `180` | 子进程超时 |
 | `VIDEOAGENT_CELERY_ENABLED` | `false` | 是否投递轮询任务 |
 | `VIDEOAGENT_CELERY_BROKER_URL` | Redis localhost | Celery Broker |
 | `VIDEOAGENT_CELERY_RESULT_BACKEND` | Redis localhost | Celery Result |
@@ -508,7 +496,8 @@ docker compose -f deploy/docker-compose.yml up -d
 | `VIDEOAGENT_LLM_MODEL` | 空 | 模型名称 |
 | `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:8000/api/v1` | 浏览器 API 地址 |
 
-`KLING_ACCESS_TOKEN` 环境变量只作为无 OAuth 场景的服务级开发配置存在。正常用户流程必须使用 OAuth。
+`VIDEOAGENT_PIPPIT_ACCESS_KEY` 只适用于服务端或 CI。本地和生产主机优先使用
+`pippit-tool-cli login`，避免把长期凭据写入 `.env`。
 
 ## 15. 测试与质量门禁
 
@@ -535,7 +524,7 @@ pnpm --dir apps/web build
 - 后端 28 个测试。
 - 前端 5 个测试。
 - 后端测试使用临时 SQLite 文件。
-- OAuth 测试使用 Fake Gateway，不访问真实 Kling。
+- Pippit 测试使用本地 Fake CLI，不访问真实生成网络。
 - 普通 CI 不执行付费生成。
 
 新增功能必须遵循：
@@ -554,7 +543,7 @@ pnpm --dir apps/web build
 - Provider 细节只放在 `providers/`。
 - 所有外部输入由 Pydantic 校验。
 - API 错误使用稳定错误码。
-- 不能把 Provider Token 写入日志。
+- 不能把 Pippit Access Key 或 CLI 登录文件写入日志。
 - 新查询必须包含用户所有权条件。
 
 ### 16.2 Agent
@@ -580,7 +569,7 @@ pnpm --dir apps/web build
 - 新文案必须同时进入 `en.json` 和 `zh-CN.json`。
 - 优先使用语义标签和可访问控件。
 - 动效必须支持 `prefers-reduced-motion`。
-- Provider Token 不得进入 localStorage 或浏览器状态。
+- Pippit 凭据不得进入 localStorage 或浏览器状态。
 
 ## 17. 扩展点
 
@@ -619,7 +608,7 @@ pnpm --dir apps/web build
 | 导出 | 未实现 | 增加 FFmpeg 合成 Worker |
 | CSRF | 尚未实现 | 为 Cookie 写接口增加 CSRF 防护 |
 | 限流 | 尚未实现 | 使用 Redis 对用户和 IP 限流 |
-| MCP 会话 | 每次工具调用重建连接 | 压测后考虑 Session Pool |
+| Pippit CLI | 每个命令启动一个子进程 | 压测后评估长驻 worker 或官方 SDK |
 | Celery | 默认关闭 | 生产环境开启并配置 Redis/RabbitMQ |
 | 真实生成 | 未执行付费验收 | 补充积分后按测试文档人工执行 |
 
@@ -638,4 +627,4 @@ pnpm --dir apps/web build
 
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
-| v1.0 | 2026-11-01 | 根据当前 Python FastAPI、LangGraph、Kling OAuth 和 Celery 实现建立基线 |
+| v1.1 | 2026-11-02 | 将视频链路切换为服务端 Pippit CLI，移除 Web 用户级 Kling 绑定 |

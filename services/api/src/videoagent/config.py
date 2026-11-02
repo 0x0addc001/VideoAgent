@@ -29,7 +29,12 @@ class Settings(BaseSettings):
     llm_base_url: str | None = None
     llm_api_key: str | None = None
     llm_model: str | None = None
-    video_provider: str = "auto"
+    video_provider: str = "pippit"
+    pippit_cli_command: str = "pippit-tool-cli"
+    pippit_access_key: str | None = None
+    pippit_video_model: str | None = None
+    pippit_video_resolution: str | None = None
+    pippit_timeout_seconds: int = Field(default=180, ge=10, le=1800)
     kling_mcp_url: str = "https://kling.ai/mcp"
     kling_access_token: str | None = None
     kling_auth_base_url: str = "https://kling.ai/auth"

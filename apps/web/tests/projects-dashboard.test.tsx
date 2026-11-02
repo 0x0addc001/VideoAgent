@@ -41,15 +41,6 @@ describe("ProjectsDashboard", () => {
             }),
           );
         }
-        if (url.endsWith("/providers/kling")) {
-          return Promise.resolve(
-            Response.json({
-              provider: "kling",
-              connected: false,
-              expires_at: null,
-            }),
-          );
-        }
         return Promise.resolve(
           Response.json({
             items: [
@@ -82,7 +73,7 @@ describe("ProjectsDashboard", () => {
     expect(
       screen.getByRole("button", { name: "Rename project: Launch story" }),
     ).toBeVisible();
-    expect(screen.getByRole("button", { name: "Connect Kling" })).toBeVisible();
+    expect(screen.queryByRole("button", { name: /Kling/i })).not.toBeInTheDocument();
   });
 });
 

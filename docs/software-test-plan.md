@@ -4,8 +4,8 @@
 | --- | --- |
 | 文档版本 | v1.0 |
 | 文档状态 | TDD 基线草案 |
-| 编写日期 | 2026-11-01 |
-| 适用范围 | Web、FastAPI、LangGraph、Celery、Kling MCP、媒体处理 |
+| 编写日期 | 2026-11-02 |
+| 适用范围 | Web、FastAPI、LangGraph、Celery、Pippit CLI、媒体处理 |
 | 关联设计 | `docs/software-design.md` |
 | 测试框架 | pytest、Vitest、Testing Library、Playwright |
 
@@ -70,7 +70,7 @@
 | Provider 参数标准化 | 分支覆盖率不低于 90% |
 | FastAPI 后端整体 | 行覆盖率不低于 80% |
 | 前端核心业务组件 | 行覆盖率不低于 80% |
-| Kling MCP Adapter | 契约测试覆盖全部支持工具 |
+| Pippit CLI Adapter | 契约测试覆盖状态、积分、提交和查询 |
 | 中英文界面 | 所有 MVP 页面均有 E2E 场景 |
 
 覆盖率只是质量指标之一。以下任一情况不能被高覆盖率抵消：
@@ -99,8 +99,8 @@
 - 图片和视频上传。
 - Agent 对话、结构化输出和工作流状态。
 - 中文和英文 Agent 输出。
-- Kling OAuth、Token 加密和刷新。
-- Kling MCP Tool 能力发现和参数映射。
+- Pippit CLI 服务端授权状态和积分读取。
+- Pippit CLI 命令参数、JSON 输出和任务状态映射。
 - 生成任务提交、轮询、取消、失败和恢复。
 - 任务幂等和重复扣费防护。
 - Celery 消息重复、丢失和 Worker 重启。
@@ -117,7 +117,7 @@
 - 数字人、音乐和声音克隆。
 - 原生移动 App。
 - 第三方服务内部推理质量。
-- Kling 模型输出的艺术质量自动评分。
+- Pippit 模型输出的艺术质量自动评分。
 
 视频艺术质量采用人工验收，自动化测试只验证任务、媒体格式和业务状态。
 
@@ -139,14 +139,14 @@
 - FFmpeg 参数构造。
 - 中英文翻译键选择。
 
-单元测试不得访问网络、PostgreSQL、Redis、MinIO、Kling 或真实 LLM。
+单元测试不得访问网络、PostgreSQL、Redis、MinIO、Pippit 或真实 LLM。
 
 ### 5.2 Provider 契约测试
 
 为 `VideoProvider` 定义共享契约测试，所有实现都必须通过：
 
 - `MockVideoProvider`
-- `KlingVideoProvider`
+- `PippitVideoProvider`
 
 至少验证：
 
@@ -181,7 +181,7 @@
 - Celery 任务投递和执行。
 - Redis Pub/Sub 到 SSE。
 - S3 预签名和对象生命周期。
-- Kling MCP 使用本地 Mock MCP Server 或受控网络 Stub。
+- Pippit CLI 使用本地 Fake CLI 可执行文件或受控网络 Stub。
 
 集成测试使用 Testcontainers 或 Docker Compose，每个测试套件使用独立数据库和 Bucket。
 
@@ -264,12 +264,12 @@
 PostgreSQL
 Redis
 MinIO
-Mock MCP Server
+Mock Pippit CLI
 Mock Video Provider
 Mock LLM Provider
 ```
 
-Kling MCP 的公开签名和工具 Schema 通过录制后脱敏的 Fixture 模拟。真实 Kling 网络测试默认关闭。
+Pippit CLI 的 stdout JSON 契约通过本地 Fake CLI 模拟。真实 Pippit 网络测试默认关闭。
 
 ### 7.2 CI 测试
 
@@ -288,17 +288,17 @@ Nightly 任务运行：
 
 受保护的 Release 流程运行：
 
-- Kling OAuth 只读 Smoke Test。
+- Pippit CLI 状态和积分只读 Smoke Test。
 - 经人工授权的一次付费生成测试。
 
-### 7.3 真实 Kling 测试开关
+### 7.3 真实 Pippit 测试开关
 
 真实测试必须同时满足：
 
 ```text
-RUN_KLING_LIVE_TESTS=1
-RUN_KLING_PAID_TESTS=1
-KLING_PAID_TEST_BUDGET>0
+RUN_PIPPIT_LIVE_TESTS=1
+RUN_PIPPIT_PAID_TESTS=1
+PIPPIT_PAID_TEST_BUDGET>0
 ```
 
 付费测试还需要：
@@ -313,8 +313,8 @@ KLING_PAID_TEST_BUDGET>0
 ## 8. 测试数据
 
 - 只使用合成用户、合成图片和公开授权测试素材。
-- 不在 Fixture 中保存真实 Kling Token。
-- 不在测试日志中输出 OAuth Code、Access Token 或 Refresh Token。
+- 不在 Fixture 中保存真实 Pippit Access Key 或 CLI 登录文件。
+- 不在测试日志中输出 Access Key 或完整 CLI 环境变量。
 - 测试用户邮箱使用无投递需求的合成地址，例如 `creator@example.com`。
 - 每个测试使用独立 UUID 和数据库事务。
 - 测试结束后删除数据库记录、对象存储文件和临时媒体。
@@ -372,7 +372,7 @@ KLING_PAID_TEST_BUDGET>0
 | AGENT-001 | 用户提交完整视频需求 | Agent 输出合法 Treatment 和 Storyboard | Unit | P0 |
 | AGENT-002 | 缺少宽高比 | Agent 追问而不提交生成 | Unit | P0 |
 | AGENT-003 | 模型返回非法 JSON | 进行有限次数修复，仍失败则返回结构化错误 | Unit | P0 |
-| AGENT-004 | 镜头时长超 Provider 范围 | 校验失败，不调用 Kling | Unit | P0 |
+| AGENT-004 | 镜头时长超 Provider 范围 | 校验失败，不调用 Pippit | Unit | P0 |
 | AGENT-005 | 中文项目 | Agent 中文说明，模型 Prompt 支持英文 | Unit | P0 |
 | AGENT-006 | 英文项目 | 对话和故事板均为英文 | Unit | P0 |
 | AGENT-007 | 未审批直接进入生成 | 状态机拒绝迁移 | Unit | P0 |
@@ -382,22 +382,22 @@ KLING_PAID_TEST_BUDGET>0
 | AGENT-011 | Agent 尝试删除 Element | 工具白名单拒绝 | Security | P0 |
 | AGENT-012 | 上传文本包含 Prompt Injection | 被视为不可信内容，不扩大工具权限 | Security | P0 |
 
-### 9.5 Kling OAuth 和 MCP
+### 9.5 Pippit CLI Provider
 
 | ID | 场景 | 预期结果 | 层级 | 优先级 |
 | --- | --- | --- | --- | --- |
-| KLING-001 | 发起 OAuth | 生成有效 State、PKCE Verifier 和授权 URL | Unit | P0 |
-| KLING-002 | 回调 State 不匹配 | 拒绝回调，不保存 Token | Security | P0 |
-| KLING-003 | 回调成功 | 加密保存 Access/Refresh Token | Integration | P0 |
-| KLING-004 | OAuth 提供错误 | 转换为用户可读错误，不记录敏感参数 | API | P1 |
-| KLING-005 | Access Token 过期 | 使用互斥锁刷新 Token | Integration | P0 |
-| KLING-006 | 刷新失败或撤销 | 标记 `auth_required`，停止计费任务 | Integration | P0 |
-| KLING-007 | 查询身份 | 返回标准化账户状态 | Contract | P0 |
-| KLING-008 | 查询会员和积分 | 积分值转换为整数领域模型 | Contract | P0 |
-| KLING-009 | MCP Tool Schema 变化 | 记录差异，未知字段不导致崩溃 | Contract | P1 |
-| KLING-010 | 生成参数不符合 MCP Schema | 本地校验拒绝，不发送请求 | Unit | P0 |
-| KLING-011 | Provider 错误映射 | 标准化为认证、余额、限流或服务错误 | Unit | P0 |
-| KLING-012 | 断开账户 | 删除 Token，阻止后续生成 | API | P0 |
+| PIPPIT-001 | 查询未登录状态 | 返回 `connected=false`，不泄露登录信息 | API | P0 |
+| PIPPIT-002 | 查询已登录状态 | 返回 `scope=server` 和连接状态 | API | P0 |
+| PIPPIT-003 | 查询零积分 | `0` 是合法余额，不转换为空值 | Contract | P0 |
+| PIPPIT-004 | 查询非零积分 | 字符串金额转换为数值 | Contract | P0 |
+| PIPPIT-005 | CLI 未安装 | 返回 `PIPPIT_CLI_UNAVAILABLE`，不尝试生成 | API | P0 |
+| PIPPIT-006 | CLI 超时 | 终止子进程并返回结构化错误 | Unit | P0 |
+| PIPPIT-007 | 提交文本生成视频 | 参数按数组传给 CLI，任务引用可恢复 | Contract | P0 |
+| PIPPIT-008 | 提交图片生成视频 | 首版明确拒绝，不调用 CLI | Unit | P1 |
+| PIPPIT-009 | 缺少 thread/run ID | 不保存不可查询的 Job | Unit | P0 |
+| PIPPIT-010 | 查询未完成 | 映射为 `running` | Contract | P0 |
+| PIPPIT-011 | 查询成功 | 映射为 `succeeded` 并返回视频 URL | Contract | P0 |
+| PIPPIT-012 | 查询失败或结果无视频 | 映射为 `failed` | Contract | P0 |
 
 ### 9.6 生成任务
 
@@ -453,9 +453,9 @@ KLING_PAID_TEST_BUDGET>0
 
 | ID | 场景 | 预期结果 | 层级 | 优先级 |
 | --- | --- | --- | --- | --- |
-| SEC-001 | JWT 或 OAuth Token 出现在响应 | 测试失败 | Contract | P0 |
-| SEC-002 | Token 出现在日志 | 脱敏检查失败 | Integration | P0 |
-| SEC-003 | OAuth 回调开放重定向 | 只允许配置的 Callback URL | Security | P0 |
+| SEC-001 | Access Key 或会话凭据出现在响应 | 测试失败 | Contract | P0 |
+| SEC-002 | 凭据出现在日志 | 脱敏检查失败 | Integration | P0 |
+| SEC-003 | CLI 参数被解释为 Shell | 测试失败 | Security | P0 |
 | SEC-004 | 跨用户 IDOR 访问 Job 或 Asset | 拒绝访问 | Security | P0 |
 | SEC-005 | 文件名和 Prompt 包含 XSS | 前端按文本渲染 | Frontend | P0 |
 | SEC-006 | 上传内容 MIME 欺骗 | 文件头校验拒绝 | Security | P0 |
@@ -491,7 +491,7 @@ await_export_approval
 使用受控故障注入：
 
 - Worker 在收到任务前退出。
-- Worker 在调用 Kling 前退出。
+- Worker 在调用 Pippit 前退出。
 - Worker 获得 Provider Task ID 后退出。
 - Worker 下载媒体失败。
 - Redis 短暂不可用。
@@ -520,7 +520,7 @@ MVP 基线：
 - 同一任务的并发提交只能成功一次。
 - 100 个前端事件连续到达时，界面不出现明显卡顿。
 
-性能测试不把 Kling 推理时间计算为 API 响应时间。Provider 排队和生成时间单独统计。
+性能测试不把 Pippit 推理时间计算为 API 响应时间。Provider 排队和生成时间单独统计。
 
 ## 12. 可访问性与兼容性
 
@@ -569,23 +569,23 @@ MVP 基线：
 
 - 所有自动化测试通过。
 - 无 P0/P1 未解决缺陷。
-- Kling 只读 Smoke Test 通过。
+- Pippit 状态和积分只读 Smoke Test 通过。
 - 生产配置和 Secrets 检查通过。
 - 数据库备份与回滚步骤确认。
 - 经授权完成付费生成验收，或有明确风险接受记录。
 
-## 14. Kling 真实测试流程
+## 14. Pippit 真实测试流程
 
 ### 14.1 只读 Smoke Test
 
 人工触发，不消耗积分：
 
-1. 完成测试账户 OAuth。
-2. 调用身份查询。
-3. 调用会员和积分查询。
-4. 验证 MCP Tool 列表。
-5. 验证 401 后 Token 刷新。
-6. 验证日志不包含 Token。
+1. 在 API 主机安装 `@pippit-dev/cli@1.0.48` 或更新版本。
+2. 使用受控测试账户执行 `pippit-tool-cli login`。
+3. 执行 `pippit-tool-cli status`。
+4. 执行 `pippit-tool-cli get-credit-balance`。
+5. 调用 `/providers/pippit` 和 `/providers/pippit/credits`。
+6. 验证日志不包含 Access Key 或 CLI 登录状态内容。
 
 ### 14.2 付费生成测试
 
@@ -602,7 +602,8 @@ MVP 基线：
 9. 执行 FFmpeg 合成或单镜头导出。
 10. 审核 UI、事件和数据库状态一致性。
 
-当前 Kling 账户积分为 0。执行付费测试前需要补充积分。
+测试报告必须记录测试时的实时 Pippit 余额，不得在代码或文档中硬编码账户数值。
+余额为 0 时跳过付费测试，不自动充值。
 
 ## 15. 测试报告
 
@@ -615,8 +616,8 @@ MVP 基线：
 - E2E 结果。
 - Flaky Tests。
 - 未解决缺陷及风险接受。
-- Kling 只读测试结果。
-- Kling 付费测试结果和积分使用。
+- Pippit 只读测试结果。
+- Pippit 付费测试结果和积分使用。
 - 与上一版本的性能变化。
 
 ## 16. 缺陷等级
@@ -634,7 +635,7 @@ MVP 基线：
 
 1. 配置 pytest、Vitest、Playwright。
 2. 创建测试标记和目录。
-3. 实现 Fake Clock、UUID、LLM、MCP、Provider 和 Storage。
+3. 实现 Fake Clock、UUID、LLM、Pippit CLI、Provider 和 Storage。
 4. 建立测试数据库和迁移测试。
 5. 配置 CI 报告。
 
@@ -675,13 +676,13 @@ MVP 基线：
 - 逐步加入创意、故事板、审批和审核节点。
 - 使用 Fake LLM 保证确定性。
 
-### 第 8 轮：Provider 与 Kling
+### 第 8 轮：Provider 与 Pippit
 
 - 先定义 Provider 共享契约。
 - 先实现 Mock Provider。
-- 再实现 Kling Adapter。
-- 测试 OAuth State、PKCE、Token 加密和刷新。
-- 测试 MCP 参数映射和错误转换。
+- 再实现 Pippit CLI Adapter。
+- 测试状态、余额、提交和查询 JSON 映射。
+- 测试 CLI 缺失、超时、非零退出码和无效 JSON。
 
 ### 第 9 轮：任务执行
 
@@ -699,7 +700,7 @@ MVP 基线：
 ### 第 11 轮：E2E 与发布
 
 - 使用 Mock Provider 完成中英文全流程。
-- 执行 Kling 只读测试。
+- 执行 Pippit 状态和积分只读测试。
 - 在用户批准预算后执行一次付费测试。
 
 ## 18. 需求追溯
@@ -710,19 +711,19 @@ MVP 基线：
 | 项目管理和权限 | AUTH-008、PROJ-001 至 010、SEC-004 |
 | 素材上传 | ASSET-001 至 008、SEC-006 |
 | Agent 工作流 | AGENT-001 至 012 |
-| Kling OAuth/MCP | KLING-001 至 012 |
+| Pippit CLI Provider | PIPPIT-001 至 012 |
 | 异步生成与恢复 | JOB-001 至 013 |
 | 视频合成与分享 | MEDIA-001 至 010 |
 | Token 和隐私 | SEC-001 至 010 |
 | 实时状态 | UI-003/004、SSE 专项测试 |
-| 发布验收 | Release 门禁和 Kling 真实测试流程 |
+| 发布验收 | Release 门禁和 Pippit 真实测试流程 |
 
 ## 19. 风险和约束
 
 | 风险 | 测试措施 |
 | --- | --- |
 | LLM 输出不确定 | Fake LLM、结构化 Schema、固定 Fixture、重试测试 |
-| Kling 真实接口不可控 | Mock MCP Contract、受控只读 Smoke Test |
+| Pippit 真实接口不可控 | Fake CLI Contract、受控只读 Smoke Test、CLI 版本记录 |
 | 付费测试成本 | 默认关闭、人工开关、单次预算、积分核对 |
 | 长任务测试缓慢 | 可注入轮询间隔和 Fake Clock |
 | 媒体文件体积大 | 使用小样本 Fixture、测试后清理 |

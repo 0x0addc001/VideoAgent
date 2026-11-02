@@ -10,9 +10,7 @@ from videoagent.db import Database
 from videoagent.errors import AppError
 from videoagent.models import User
 from videoagent.providers.base import VideoProvider
-from videoagent.providers.oauth import KlingOAuthGateway
 from videoagent.services.auth import get_user_for_session
-from videoagent.services.provider_resolver import resolve_video_provider
 
 
 def get_settings(request: Request) -> Settings:
@@ -25,10 +23,6 @@ def get_database(request: Request) -> Database:
 
 def get_storyboard_agent(request: Request) -> StoryboardAgent:
     return cast(StoryboardAgent, request.app.state.storyboard_agent)
-
-
-def get_kling_oauth_gateway(request: Request) -> KlingOAuthGateway:
-    return cast(KlingOAuthGateway, request.app.state.kling_oauth)
 
 
 async def get_session(
@@ -62,16 +56,5 @@ async def get_current_user(
 
 async def get_video_provider(
     request: Request,
-    session: Annotated[AsyncSession, Depends(get_session)],
-    settings: Annotated[Settings, Depends(get_settings)],
-    gateway: Annotated[KlingOAuthGateway, Depends(get_kling_oauth_gateway)],
-    user: Annotated[User, Depends(get_current_user)],
 ) -> VideoProvider:
-    return await resolve_video_provider(
-        session,
-        user=user,
-        settings=settings,
-        gateway=gateway,
-        allow_mock=True,
-        fallback=cast(VideoProvider, request.app.state.video_provider),
-    )
+    return cast(VideoProvider, request.app.state.video_provider)

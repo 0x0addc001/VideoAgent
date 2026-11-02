@@ -2,19 +2,19 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v1.0 |
+| 文档版本 | v1.1 |
 | 文档状态 | 已评审通过 |
-| 编写日期 | 2026-11-01 |
+| 编写日期 | 2026-11-02 |
 | 产品名称 | VideoAgent |
 | 后端技术 | Python + FastAPI |
 | 前端技术 | Next.js + TypeScript |
-| 首选视频服务 | Kling MCP |
+| 首选视频服务 | Pippit CLI |
 | 支持语言 | 简体中文、English |
 | 项目目录 | `D:\_Science\Agent\VideoAgent` |
 
 ## 1. 文档目的
 
-本文档描述 VideoAgent 的产品目标、系统架构、核心模块、Agent 编排、数据模型、接口规范、Kling MCP 集成、安全策略、测试策略及部署方式，供产品、前端、后端、测试和运维研发人员共同参考。
+本文档描述 VideoAgent 的产品目标、系统架构、核心模块、Agent 编排、数据模型、接口规范、Pippit CLI 集成、安全策略、测试策略及部署方式，供产品、前端、后端、测试和运维研发人员共同参考。
 
 本文档是 MVP 实现基线。涉及外部服务能力变化、付费生成策略或生产部署架构的修改，应通过新的设计决策记录变更，不应直接修改历史决策。
 
@@ -40,12 +40,12 @@ VideoAgent 是一个面向内容创作者、营销人员和普通用户的 AI �
 - 支持图片、视频等创作素材上传。
 - 支持 Agent 生成创意方案和多镜头故事板。
 - 支持镜头参数编辑和积分成本估算。
-- 支持 Kling MCP OAuth 用户授权。
-- 支持 Kling 文本生成视频、图片生成视频和文本生成图片。
+- 支持服务端统一授权的 Pippit CLI。
+- 支持 Pippit 文本生成视频、任务查询和积分余额读取。
 - 支持异步任务提交、状态查询、失败恢复和结果保存。
 - 支持镜头审核、重新生成、排序和 FFmpeg 合成。
 - 支持 MP4 下载和公开只读分享。
-- 保证 Kling Token 不暴露给浏览器。
+- 保证 Pippit Access Key、CLI 登录文件和服务端路径不暴露给浏览器。
 
 ### 3.2 MVP 不包含
 
@@ -92,7 +92,7 @@ VideoAgent 是一个面向内容创作者、营销人员和普通用户的 AI �
                           │ HTTPS / SSE
 ┌─────────────────────────▼───────────────────────────────┐
 │ FastAPI                                                 │
-│ Auth / Projects / Assets / Agent / OAuth / Jobs         │
+│ Auth / Projects / Assets / Agent / Jobs                 │
 └────────────┬──────────────────────────┬─────────────────┘
              │                          │
 ┌────────────▼────────────┐  ┌──────────▼─────────────────┐
@@ -106,7 +106,7 @@ VideoAgent 是一个面向内容创作者、营销人员和普通用户的 AI �
 └────────────┬────────────────────────────────────────────┘
              │
 ┌────────────▼────────────────────────────────────────────┐
-│ Kling MCP / S3 或 MinIO / FFmpeg                        │
+│ Pippit CLI / S3 或 MinIO / FFmpeg                       │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -132,8 +132,9 @@ VideoAgent 是一个面向内容创作者、营销人员和普通用户的 AI �
 | Agent | LangGraph |
 | 模型调用 | LangChain OpenAI-compatible Provider |
 | 数据校验 | Pydantic v2 |
-| MCP | Python MCP SDK |
-| OAuth | Authlib、PKCE、DCR |
+| 视频服务 | Pippit CLI 1.x |
+| 服务端授权 | CLI 浏览器登录或 `XYQ_ACCESS_KEY` |
+| MCP | Python MCP SDK（非当前默认视频链路） |
 | 数据库 | PostgreSQL |
 | ORM | SQLAlchemy 2 Async、asyncpg |
 | 迁移 | Alembic |
@@ -207,10 +208,10 @@ VideoAgent/
 | `agent.nodes` | 创意、故事板、审核、导出节点 |
 | `agent.schemas` | Pydantic 输入输出模型 |
 | `providers.base` | Provider 抽象接口 |
-| `providers.kling` | Kling MCP 适配器 |
+| `providers.pippit` | Pippit CLI 适配器 |
 | `providers.mock` | 无外部依赖的测试 Provider |
 | `services.media` | 上传校验、缩略图和 FFmpeg |
-| `workers.generation` | Kling 提交和轮询 |
+| `workers.generation` | Pippit 任务轮询 |
 | `workers.export` | 视频合成和转码 |
 
 ## 9. Agent 设计
@@ -333,9 +334,9 @@ LangGraph 和 Celery 职责分离：
 1. LangGraph 创建镜头和生成计划。
 2. 用户批准生成。
 3. FastAPI 创建数据库任务和本地幂等键。
-4. Celery 调用 Kling MCP 提交任务。
-5. 保存 Provider Task ID。
-6. Celery 使用 `query_tasks` 轮询。
+4. API 调用 `pippit-tool-cli generate-video` 提交任务。
+5. 保存 thread ID 与 run ID 组成的标准化任务引用。
+6. Celery 调用 `pippit-tool-cli query-result` 轮询。
 7. 成功后将媒体复制到应用对象存储。
 8. 发布 `job.completed` 事件。
 9. SSE 更新前端。
@@ -343,22 +344,22 @@ LangGraph 和 Celery 职责分离：
 
 具备不确定性的提交不能自动重发。提交超时但未获得 Provider Task ID 时，任务进入 `submission_uncertain`，通过查询账户近期任务进行人工或自动对账。
 
-## 11. Kling MCP 集成
+## 11. Pippit CLI 集成
 
 ### 11.1 连接方式
 
 ```text
-用户点击连接 Kling
-  → FastAPI 发起 OAuth
-  → 动态注册客户端
-  → Authorization Code + PKCE
-  → 用户授权
-  → FastAPI 接收回调
-  → 查询身份和积分
-  → 加密保存凭据
+运维在 API 主机安装 Pippit CLI
+  → 运维执行 pippit-tool-cli login
+  → CLI 将设备凭据保存到操作系统安全存储
+  → 或 CI 注入 VIDEOAGENT_PIPPIT_ACCESS_KEY
+  → FastAPI 通过受限子进程调用 CLI
+  → 读取 Pippit 账户状态和积分
 ```
 
-Web 应用使用用户级 OAuth，不复用 Codex 内部的 Kling 登录凭据。
+Pippit 授权由服务端统一持有，不对每个 VideoAgent 用户单独发起 Kling
+授权。所有用户共享当前 Pippit 账户及其积分池；如果未来需要用户级计费，
+必须新增租户级凭据隔离和额度服务，不能直接复用该服务账户模型。
 
 ### 11.2 Provider 接口
 
@@ -371,35 +372,27 @@ class VideoProvider(Protocol):
     async def cancel(self, job_id: str) -> None: ...
 ```
 
-### 11.3 首版 Kling 能力
+### 11.3 首版 Pippit 能力
 
 ```text
-who_am_i
-query_membership_and_credits
-file_upload
-text_to_image
-image_to_image
-text_to_video
-image_to_video
-omni_ref_video
-motion_control
-query_tasks
-motion_library_list
-element_create
-element_update
-element_get
-element_list
+pippit-tool-cli status
+pippit-tool-cli get-credit-balance
+pippit-tool-cli generate-video
+pippit-tool-cli query-result
 ```
 
-Provider 在启动或连接时动态读取 MCP Tool Schema，并用 Pydantic 做输入校验。MCP Schema 变更不应直接破坏业务层接口。
+首版仅开放文本生成视频。Provider 使用参数数组启动 CLI，不经过 Shell
+字符串拼接；stdout 仅接受 JSON，stderr 和完整命令参数不返回到浏览器。
+模型与分辨率由服务端环境变量可选配置，留空时使用 CLI 服务的默认值。
 
-### 11.4 Token 安全
+### 11.4 凭据与进程安全
 
-- Access Token 和 Refresh Token 使用 AES-256-GCM 加密。
-- 加密主密钥只保存在服务端环境变量或密钥管理系统中。
-- 浏览器和前端 API 不返回 Token。
-- Token 刷新使用项目级互斥锁，避免并发刷新冲突。
-- 日志中不记录 Authorization Header、Token 或完整回调参数。
+- CLI 登录文件由操作系统安全存储管理，不写入仓库或数据库。
+- `VIDEOAGENT_PIPPIT_ACCESS_KEY` 仅作为服务端秘密环境变量注入子进程。
+- 浏览器、API 响应和日志均不返回 Access Key。
+- CLI 命令使用 `asyncio.create_subprocess_exec` 的参数数组形式执行。
+- 子进程受超时控制；超时后终止进程，不自动重提计费任务。
+- Web 进程必须只允许受信用户触发生成，并在调用前执行显式审批。
 
 ## 12. 数据模型
 
@@ -413,7 +406,7 @@ Provider 在启动或连接时动态读取 MCP Tool Schema，并用 Pydantic 做
 | `storyboards` | `id`, `project_id`, `version` | 故事板版本 |
 | `shots` | `id`, `storyboard_id`, `index`, `prompt`, `status` | 镜头定义 |
 | `assets` | `id`, `project_id`, `kind`, `storage_key` | 上传和生成媒体 |
-| `provider_connections` | `id`, `user_id`, `provider`, `encrypted_tokens` | Kling 凭据 |
+| `provider_connections` | `id`, `user_id`, `provider`, `encrypted_tokens` | 历史 OAuth 表，当前 Pippit 链路不使用 |
 | `generation_jobs` | `id`, `shot_id`, `provider_task_id`, `status` | 生成任务 |
 | `tool_runs` | `id`, `job_id`, `tool_name`, `request_id`, `status` | 工具调用审计 |
 | `usage_ledger` | `id`, `user_id`, `project_id`, `amount`, `metadata` | 积分和费用记录 |
@@ -508,9 +501,8 @@ cancelled
 | POST | `/jobs/{id}/cancel` | 取消任务 |
 | POST | `/assets/presign` | 获取上传地址 |
 | POST | `/assets/complete` | 确认上传 |
-| POST | `/providers/kling/connect` | 开始 Kling OAuth |
-| GET | `/providers/kling/callback` | OAuth 回调 |
-| DELETE | `/providers/kling/connection` | 断开 Kling |
+| GET | `/providers/pippit` | 服务端 Pippit 状态 |
+| GET | `/providers/pippit/credits` | Pippit 积分余额 |
 | POST | `/projects/{id}/export` | 合成导出 |
 | POST | `/projects/{id}/share` | 创建公开分享 |
 | GET | `/health` | 健康检查 |
@@ -571,7 +563,7 @@ cancelled
 - 项目列表。
 - 项目工作区。
 - 素材库。
-- Kling 连接。
+- Pippit 服务端授权状态。
 - 生成历史。
 - 设置。
 - 公开分享页。
@@ -607,7 +599,7 @@ Agent | Canvas | Inspector
 - Zustand：当前镜头、侧栏、播放器和时间线选择。
 - 聊天 Token 使用流式 `fetch`。
 - 项目事件使用 SSE。
-- 不将 OAuth 凭据、Provider Token 或敏感任务内容写入 localStorage。
+- 不将 Provider 凭据、Access Key 或敏感任务内容写入 localStorage。
 
 ## 17. 中英文支持
 
@@ -641,7 +633,8 @@ Agent 输出支持三种 Prompt 模式：
 - 所有项目、镜头、任务和资产必须校验资源所有权。
 - 会话 Cookie 使用 HttpOnly、Secure、SameSite。
 - 修改类 Cookie API 校验 CSRF Token 或受控 Origin。
-- Kling Token 使用 AES-256-GCM 加密。
+- Pippit CLI 登录文件放在服务账号可访问但受严格权限保护的位置。
+- `VIDEOAGENT_PIPPIT_ACCESS_KEY` 只保存在秘密管理系统或服务环境变量中。
 - 上传文件限制类型、大小和扩展名，并检查文件头。
 - 素材通过短期签名 URL 访问。
 - Agent 工具使用服务端白名单和 Pydantic 参数校验。
@@ -680,7 +673,7 @@ Agent 输出支持三种 Prompt 模式：
 
 - 生成任务成功率。
 - Provider 平均排队时间和生成时间。
-- MCP 工具错误率。
+- Pippit CLI 命令错误率。
 - 任务重复提交次数。
 - 单项目积分使用量。
 - SSE 活跃连接数。
@@ -695,9 +688,9 @@ Agent 输出支持三种 Prompt 模式：
 
 - 每个业务能力先编写失败测试，再实现最小代码，最后重构。
 - CI 仅使用 Mock Provider，不执行真实付费生成。
-- 单元测试不依赖 PostgreSQL、Redis、MinIO 或 Kling。
+- 单元测试不依赖 PostgreSQL、Redis、MinIO 或 Pippit 网络。
 - 集成测试使用可重复、可清理的真实基础设施。
-- Kling OAuth 和只读 Smoke Test 使用受控测试账户。
+- Pippit 状态和余额只读 Smoke Test 使用受控服务账户。
 - 真实生成测试必须人工触发并显式限制次数和积分预算。
 
 ## 22. 配置项
@@ -715,8 +708,10 @@ S3_ACCESS_KEY
 S3_SECRET_KEY
 SESSION_SECRET
 TOKEN_ENCRYPTION_KEY
-KLING_MCP_URL
-KLING_OAUTH_CALLBACK_URL
+PIPPIT_CLI_COMMAND
+PIPPIT_ACCESS_KEY
+PIPPIT_VIDEO_MODEL
+PIPPIT_VIDEO_RESOLUTION
 LLM_BASE_URL
 LLM_API_KEY
 LLM_MODEL
@@ -784,10 +779,10 @@ reverse-proxy
 - Celery 和 SSE。
 - 无积分消耗的完整模拟流程。
 
-### 阶段 4：Kling 集成
+### 阶段 4：Pippit 集成
 
-- OAuth 和 Token 加密。
-- MCP 能力发现。
+- CLI 安装、服务端授权和凭据隔离。
+- 视频模型发现和参数适配。
 - 身份和积分查询。
 - 正式生成、轮询、下载和恢复。
 
@@ -813,19 +808,19 @@ MVP 满足以下条件才视为完成：
 3. Agent 能生成符合 Pydantic Schema 的多镜头故事板。
 4. 用户可以在生成前查看并批准预计积分费用。
 5. 刷新页面或重启服务后任务状态不会丢失。
-6. Kling Token 不出现在浏览器、日志或公开接口中。
+6. Pippit Access Key 和 CLI 登录文件不出现在浏览器、日志或公开接口中。
 7. 生成任务不会因自动重试造成重复扣费。
 8. 用户可以审核、重新生成、排序和合成镜头。
 9. 最终视频可下载，并能创建可撤销的公开分享链接。
 10. Mock Provider 的自动化测试全部通过。
-11. Kling 只读 Smoke Test 通过。
+11. Pippit 状态和积分只读 Smoke Test 通过。
 12. 在账户有积分且用户授权的情况下，至少完成一次真实视频生成和导出。
 
 ## 26. 主要风险
 
 | 风险 | 应对措施 |
 | --- | --- |
-| Kling MCP Schema 变化 | 动态发现能力、Provider 隔离、版本日志 |
+| Pippit CLI 参数或输出变化 | 命令契约测试、Provider 隔离、版本锁定 |
 | 生成提交超时导致不确定状态 | 本地幂等键、任务对账、禁止盲目重试 |
 | 视频生成耗时长 | Celery、持久任务、SSE、超时与取消 |
 | 费用误用 | 审批门、预算上限、积分流水 |
@@ -843,7 +838,7 @@ MVP 满足以下条件才视为完成：
 - 生产部署服务器和域名。
 - 是否在 MVP 中开放公开分享。
 - 媒体保留时间和最大上传大小。
-- 是否为 Kling 账户补充积分以执行真实生成验收。
+- 是否为服务端 Pippit 账户补充积分以执行真实生成验收。
 - 生产 Celery Broker 是否直接使用 RabbitMQ。
 
 ## 28. 变更记录

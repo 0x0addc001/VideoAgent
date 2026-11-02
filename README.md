@@ -6,7 +6,7 @@ shots to a video provider.
 
 The static GitHub Pages project homepage is deployed from [`site/`](site/) by
 `.github/workflows/pages.yml`. The full application remains a separate
-Python/Next.js service because GitHub Pages cannot run FastAPI, OAuth callbacks,
+Python/Next.js service because GitHub Pages cannot run FastAPI, the Pippit CLI,
 Celery, or media processing.
 
 ## Product scope
@@ -20,18 +20,16 @@ Celery, or media processing.
 - Credit estimation and explicit generation approval.
 - Persisted generation jobs with idempotency protection.
 - Mock video provider for development and CI.
-- Kling MCP provider contract and Python Streamable HTTP client.
-- Per-user Kling OAuth with PKCE, one-time state validation, encrypted tokens,
-  token refresh, connection status, and disconnect.
-- Automatic provider selection: a connected Kling account uses Kling; otherwise
-  development falls back to the mock provider.
+- Pippit CLI provider for video submission, status polling, and credit balance.
+- Server-owned Pippit authorization; credentials remain outside browser code,
+  API responses, and the repository.
 - Durable generation-job records with idempotency and API-driven status refresh.
-- Celery polling worker for long-running Kling jobs.
+- Celery polling worker for long-running Pippit jobs.
 - Responsive landing page, authentication pages, project dashboard, and workspace.
 
-The default provider mode is `auto`: connected users use Kling, while users
-without a Kling connection fall back to the mock provider in development. Live
-generation requires a Kling OAuth connection and a non-zero account balance.
+The default provider mode is `pippit`. The backend invokes the Pippit CLI under
+the server account, so individual VideoAgent users do not connect a Kling
+account. The `mock` mode is available for tests and offline UI development.
 
 ## Prerequisites
 
@@ -40,6 +38,7 @@ generation requires a Kling OAuth connection and a non-zero account balance.
 - Node.js 24+
 - pnpm 11+
 - FFmpeg and ffprobe
+- Pippit CLI 1.0.48+ for live video generation
 
 Docker is optional for the current automated tests. The provided Compose file
 starts PostgreSQL, Redis, and MinIO for production-like development.
@@ -52,6 +51,20 @@ Install backend dependencies:
 cd D:\_Science\Agent\VideoAgent\services\api
 uv sync --dev
 ```
+
+Install and authorize Pippit on the machine that runs the API:
+
+```powershell
+npx @pippit-dev/cli@latest install
+pippit-tool-cli login
+pippit-tool-cli status
+```
+
+The Windows installer can report a `curl` failure even when the package itself
+was downloaded. In that case, reinstall the npm package with `--ignore-scripts`
+and place the checksum-verified release binary in the package's `bin` directory.
+For CI, set the private `VIDEOAGENT_PIPPIT_ACCESS_KEY` environment variable
+instead of an interactive login.
 
 Start the API with the Windows UTF-8 startup script:
 
@@ -121,8 +134,11 @@ VIDEOAGENT_DATABASE_URL
 VIDEOAGENT_SESSION_SECRET
 VIDEOAGENT_TOKEN_ENCRYPTION_KEY
 VIDEOAGENT_VIDEO_PROVIDER
-VIDEOAGENT_KLING_MCP_URL
-VIDEOAGENT_KLING_ACCESS_TOKEN
+VIDEOAGENT_PIPPIT_CLI_COMMAND
+VIDEOAGENT_PIPPIT_ACCESS_KEY
+VIDEOAGENT_PIPPIT_VIDEO_MODEL
+VIDEOAGENT_PIPPIT_VIDEO_RESOLUTION
+VIDEOAGENT_PIPPIT_TIMEOUT_SECONDS
 VIDEOAGENT_CELERY_ENABLED
 VIDEOAGENT_CELERY_BROKER_URL
 VIDEOAGENT_CELERY_RESULT_BACKEND
@@ -133,7 +149,9 @@ NEXT_PUBLIC_API_BASE_URL
 ```
 
 If LLM variables are absent, the Agent uses its deterministic local planner.
-If `VIDEOAGENT_VIDEO_PROVIDER=mock`, generation uses the mock provider.
+If `VIDEOAGENT_VIDEO_PROVIDER=mock`, generation uses the mock provider. Use
+`pippit` for the server-owned CLI integration. Provider credentials and Pippit
+login files are never committed.
 
 ## Repository structure
 

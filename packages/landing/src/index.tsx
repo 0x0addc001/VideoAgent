@@ -207,7 +207,7 @@ export function LandingPage({
 
     async function loadCredits() {
       try {
-        const creditResponse = await fetch(`${accountApiBase}/providers/kling/credits`, {
+        const creditResponse = await fetch(`${accountApiBase}/providers/pippit/credits`, {
           credentials: "include",
         });
         if (!active) return;

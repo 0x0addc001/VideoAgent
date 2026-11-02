@@ -16,13 +16,13 @@ from videoagent.api.storyboards import router as storyboards_router
 from videoagent.config import Settings, get_settings
 from videoagent.db import Database
 from videoagent.errors import AppError, app_error_handler
+from videoagent.providers.base import VideoProvider
 from videoagent.providers.factory import build_video_provider
-from videoagent.providers.oauth import KlingOAuthGateway, build_kling_oauth_gateway
 
 
 def create_app(
     settings: Settings | None = None,
-    kling_oauth: KlingOAuthGateway | None = None,
+    video_provider: VideoProvider | None = None,
 ) -> FastAPI:
     resolved_settings = settings or get_settings()
 
@@ -31,11 +31,12 @@ def create_app(
         database = Database(resolved_settings)
         application.state.settings = resolved_settings
         application.state.database = database
-        application.state.video_provider = build_video_provider(resolved_settings)
+        application.state.video_provider = video_provider or build_video_provider(
+            resolved_settings
+        )
         application.state.storyboard_agent = StoryboardAgent(
             build_storyboard_planner(resolved_settings)
         )
-        application.state.kling_oauth = kling_oauth or build_kling_oauth_gateway(resolved_settings)
         await database.create_schema()
         try:
             yield
