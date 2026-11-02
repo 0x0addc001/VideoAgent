@@ -47,3 +47,18 @@ async def test_anonymous_project_access_is_rejected(client):
 
     assert response.status_code == 401
     assert response.json()["error"]["code"] == "AUTHENTICATION_REQUIRED"
+
+
+@pytest.mark.api
+async def test_user_can_delete_own_project(client):
+    assert (await register(client)).status_code == 201
+    created = await client.post("/api/v1/projects", json={"title": "Delete me"})
+    assert created.status_code == 201
+
+    deleted = await client.delete(f"/api/v1/projects/{created.json()['id']}")
+
+    assert deleted.status_code == 204
+    assert (await client.get("/api/v1/projects")).json()["items"] == []
+    assert (
+        await client.get(f"/api/v1/projects/{created.json()['id']}")
+    ).status_code == 404

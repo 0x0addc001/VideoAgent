@@ -65,6 +65,7 @@ export const landingContent = {
       { path: "software-design.html", label: "Software Design" },
       { path: "software-implementation.html", label: "Implementation Guide" },
       { path: "software-test-plan.html", label: "Testing & TDD" },
+      { path: "api-reference.html", label: "API Reference" },
     ],
     preview: {
       title: "Preview only",
@@ -137,6 +138,7 @@ export const landingContent = {
       { path: "software-design.html", label: "设计文档" },
       { path: "software-implementation.html", label: "实现文档" },
       { path: "software-test-plan.html", label: "测试文档" },
+      { path: "api-reference.html", label: "API 文档" },
     ],
     preview: {
       title: "仅供预览",

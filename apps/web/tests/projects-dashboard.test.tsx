@@ -73,9 +73,12 @@ describe("ProjectsDashboard", () => {
       </NextIntlClientProvider>,
     );
 
-    expect(screen.getByRole("heading", { name: "Your studio" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "VideoAgent Studio" })).toBeVisible();
     await waitFor(() => expect(screen.getByText("Launch story")).toBeVisible());
     expect(screen.getByRole("button", { name: "New project" })).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "Delete project: Launch story" }),
+    ).toBeVisible();
     expect(screen.getByRole("button", { name: "Connect Kling" })).toBeVisible();
   });
 });

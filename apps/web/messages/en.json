@@ -14,15 +14,16 @@
     "genericError": "We could not complete that request."
   },
   "projects": {
-    "title": "Your studio",
-    "subtitle": "Every project keeps its conversation, storyboard, assets, and generation history.",
+    "title": "VideoAgent Studio",
     "newProject": "New project",
     "projectTitle": "Project title",
     "brief": "What are we making?",
     "create": "Create project",
-    "empty": "No projects yet. Start with a brief and let the agent draft the first cut.",
-    "draft": "Draft",
+    "empty": "No projects yet. Start with a brief and let VideoAgent draft the first cut.",
     "open": "Open project",
+    "deleteProject": "Delete project",
+    "confirmDelete": "Delete this project permanently?",
+    "deleteError": "The project could not be deleted.",
     "logout": "Sign out",
     "loadError": "Your projects could not be loaded.",
     "connectKling": "Connect Kling",
@@ -30,15 +31,14 @@
     "disconnectKling": "Disconnect Kling"
   },
   "workspace": {
-    "agent": "Agent",
+    "agent": "VideoAgent",
     "canvas": "Canvas",
     "inspector": "Inspector",
     "emptyCanvas": "Your storyboard will appear here.",
     "composer": "Describe the next change...",
-    "approval": "Generation requires approval",
     "back": "All projects",
     "notFound": "Project not found",
-    "agentIntro": "Tell the agent what you want to create. The storyboard will stay editable at every step.",
+    "agentIntro": "Tell VideoAgent what you want to create. The storyboard will stay editable at every step.",
     "agentPlaceholder": "What are we making?",
     "send": "Send",
     "shotInspector": "Shot settings",
@@ -53,8 +53,9 @@
     "estimate": "Estimate cost",
     "generate": "Generate shot",
     "generating": "Generating...",
+    "generationError": "The shot could not be generated. Please try again.",
     "completed": "Shot ready",
-    "mockNotice": "Development mode uses a mock provider. No credits are used."
+    "addStoryboard": "Add storyboard shot"
   },
   "common": {
     "loading": "Loading...",

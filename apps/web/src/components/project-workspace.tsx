@@ -4,14 +4,15 @@ import {
   ArrowLeft,
   ArrowUp,
   Check,
-  Clapperboard,
   Film,
   MessageCircleMore,
   PanelRight,
   Plus,
   Sparkles,
+  Video,
   WandSparkles,
 } from "lucide-react";
+import { StreamingText } from "@videoagent/landing";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "@/i18n/navigation";
@@ -163,7 +164,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
         );
         setActiveJob(null);
       } else if (["failed", "cancelled"].includes(job.status)) {
-        setActionError(t("approval"));
+        setActionError(t("generationError"));
         setActiveJob(null);
       } else {
         setActiveJob(job);
@@ -296,7 +297,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
         setActiveJob(job);
       }
     } catch {
-      setActionError(t("approval"));
+      setActionError(t("generationError"));
     } finally {
       setIsWorking(false);
     }
@@ -332,16 +333,13 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
             <ArrowLeft className="h-4 w-4" />
           </Link>
           <span className="hidden size-8 place-items-center rounded-xl bg-[#ff7542] text-[#16130f] sm:grid">
-            <Clapperboard className="h-4 w-4" />
+            <Video className="h-4 w-4" />
           </span>
           <div className="min-w-0">
             <h1 className="truncate text-sm font-semibold">{project.title}</h1>
             <p className="truncate text-[11px] text-white/35">{project.brief || t("planFirst")}</p>
           </div>
         </div>
-        <span className="hidden rounded-full border border-amber-300/15 bg-amber-300/8 px-3 py-1.5 text-[11px] text-amber-100/65 sm:block">
-          {t("mockNotice")}
-        </span>
       </header>
 
       <div className="grid min-h-0 flex-1 lg:grid-cols-[340px_1fr_320px]">
@@ -358,7 +356,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
           <div className="flex-1 space-y-4 overflow-y-auto p-5">
             {messages.length === 0 ? (
               <div className="rounded-2xl border border-white/8 bg-white/[0.025] p-4 text-sm leading-6 text-white/50">
-                {t("agentIntro")}
+                <StreamingText text={t("agentIntro")} />
               </div>
             ) : (
               messages.map((message) => (
@@ -371,7 +369,11 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
                   )}
                   key={message.id}
                 >
-                  {message.content}
+                  {message.role === "user" ? (
+                    message.content
+                  ) : (
+                    <StreamingText text={message.content} />
+                  )}
                 </div>
               ))
             )}
@@ -406,11 +408,8 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
             mobilePanel === "canvas" ? "flex" : "hidden",
           )}
         >
-          <div className="flex h-14 items-center justify-between border-b border-white/8 px-5">
+          <div className="flex h-14 items-center border-b border-white/8 px-5">
             <span className="text-sm font-medium">{t("canvas")}</span>
-            <span className="rounded-full bg-white/5 px-3 py-1 text-[10px] uppercase tracking-[0.16em] text-white/35">
-              {project.state}
-            </span>
           </div>
           <div className="flex-1 overflow-auto p-5 sm:p-8">
             {storyboard ? (
@@ -452,14 +451,12 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
                     </button>
                   ))}
                   <button
+                    aria-label={t("addStoryboard")}
                     className="grid aspect-video place-items-center rounded-2xl border border-dashed border-white/12 text-white/30 transition hover:border-[#ff7542]/40 hover:text-[#ff9369]"
                     onClick={() => setMobilePanel("agent")}
                     type="button"
                   >
-                    <span className="flex items-center gap-2 text-xs">
-                      <Plus className="h-4 w-4" />
-                      Storyboard
-                    </span>
+                    <Plus className="h-5 w-5" />
                   </button>
                 </div>
               </div>
@@ -571,9 +568,6 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
                         ? t("completed")
                         : t("generate")}
                   </button>
-                  <p className="text-center text-[11px] leading-5 text-white/25">
-                    {t("mockNotice")}
-                  </p>
                 </div>
               </div>
             ) : (

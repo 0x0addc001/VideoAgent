@@ -51,7 +51,11 @@ async def get_project(
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> ProjectRead:
     result = await session.execute(
-        select(Project).where(Project.id == project_id, Project.owner_id == user.id)
+        select(Project).where(
+            Project.id == project_id,
+            Project.owner_id == user.id,
+            Project.state != ProjectState.ARCHIVED.value,
+        )
     )
     project = result.scalar_one_or_none()
     if project is None:
@@ -61,3 +65,28 @@ async def get_project(
             message="The project was not found.",
         )
     return ProjectRead.model_validate(project)
+
+
+@router.delete("/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_project(
+    project_id: UUID,
+    user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> None:
+    result = await session.execute(
+        select(Project).where(
+            Project.id == project_id,
+            Project.owner_id == user.id,
+            Project.state != ProjectState.ARCHIVED.value,
+        )
+    )
+    project = result.scalar_one_or_none()
+    if project is None:
+        raise AppError(
+            status_code=404,
+            code="PROJECT_NOT_FOUND",
+            message="The project was not found.",
+        )
+    project.state = ProjectState.ARCHIVED.value
+    session.add(project)
+    await session.commit()

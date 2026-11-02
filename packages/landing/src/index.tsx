@@ -38,7 +38,7 @@ function BrandMark() {
   );
 }
 
-function StreamingText({
+export function StreamingText({
   text,
   className = "",
   delay = 0,

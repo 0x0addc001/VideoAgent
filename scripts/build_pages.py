@@ -14,6 +14,7 @@ DOCUMENTS = {
     "software-design.md": ("Software Design", "软件设计说明书"),
     "software-implementation.md": ("Implementation Guide", "软件实现说明"),
     "software-test-plan.md": ("Testing & TDD", "软件测试与 TDD 规范"),
+    "api-reference.md": ("API Reference", "API 接口文档"),
 }
 
 

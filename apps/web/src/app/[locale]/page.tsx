@@ -22,7 +22,7 @@ export default async function HomePage({
     <LandingPage
       accountApiBase={ACCOUNT_API_BASE}
       accountHref={`/${locale}/projects`}
-      appHref={`/${locale}/register`}
+      appHref={`/${locale}/projects`}
       docsBase={DOCS_BASE_URL}
       githubHref={GITHUB_URL}
       locale={locale}
