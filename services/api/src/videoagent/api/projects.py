@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from videoagent.api.dependencies import get_current_user, get_session
 from videoagent.errors import AppError
 from videoagent.models import Project, ProjectState, User
-from videoagent.schemas import ProjectCreate, ProjectList, ProjectRead
+from videoagent.schemas import ProjectCreate, ProjectList, ProjectRead, ProjectUpdate
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
@@ -64,6 +64,34 @@ async def get_project(
             code="PROJECT_NOT_FOUND",
             message="The project was not found.",
         )
+    return ProjectRead.model_validate(project)
+
+
+@router.patch("/{project_id}", response_model=ProjectRead)
+async def rename_project(
+    project_id: UUID,
+    payload: ProjectUpdate,
+    user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> ProjectRead:
+    result = await session.execute(
+        select(Project).where(
+            Project.id == project_id,
+            Project.owner_id == user.id,
+            Project.state != ProjectState.ARCHIVED.value,
+        )
+    )
+    project = result.scalar_one_or_none()
+    if project is None:
+        raise AppError(
+            status_code=404,
+            code="PROJECT_NOT_FOUND",
+            message="The project was not found.",
+        )
+    project.title = payload.title.strip()
+    session.add(project)
+    await session.commit()
+    await session.refresh(project)
     return ProjectRead.model_validate(project)
 
 

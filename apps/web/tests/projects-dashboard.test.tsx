@@ -79,6 +79,9 @@ describe("ProjectsDashboard", () => {
     expect(
       screen.getByRole("button", { name: "Delete project: Launch story" }),
     ).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "Rename project: Launch story" }),
+    ).toBeVisible();
     expect(screen.getByRole("button", { name: "Connect Kling" })).toBeVisible();
   });
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, LogOut, PlugZap, Plus, Trash2, Video, X } from "lucide-react";
+import { ArrowRight, LogOut, Pencil, PlugZap, Plus, Trash2, Video, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { FormEvent, useEffect, useState } from "react";
 import { Link, useRouter } from "@/i18n/navigation";
@@ -38,7 +38,10 @@ export function ProjectsDashboard() {
   const [kling, setKling] = useState<KlingConnection | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
+  const [isRenaming, setIsRenaming] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [renamingProject, setRenamingProject] = useState<Project | null>(null);
+  const [renameValue, setRenameValue] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -133,6 +136,38 @@ export function ProjectsDashboard() {
       setError(t("deleteError"));
     } finally {
       setDeletingId(null);
+    }
+  }
+
+  function openRename(project: Project) {
+    setError(null);
+    setRenamingProject(project);
+    setRenameValue(project.title);
+  }
+
+  async function renameProject(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const title = renameValue.trim();
+    if (!renamingProject || !title) return;
+    setError(null);
+    setIsRenaming(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/projects/${renamingProject.id}`, {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title }),
+      });
+      if (!response.ok) throw new Error("rename-failed");
+      const project = (await response.json()) as Project;
+      setProjects((current) =>
+        current.map((item) => (item.id === project.id ? project : item)),
+      );
+      setRenamingProject(null);
+    } catch {
+      setError(t("renameError"));
+    } finally {
+      setIsRenaming(false);
     }
   }
 
@@ -300,15 +335,25 @@ export function ProjectsDashboard() {
                         </div>
                       </div>
                     </Link>
-                    <button
-                      aria-label={`${t("deleteProject")}: ${project.title}`}
-                      className="absolute right-4 top-4 grid size-9 place-items-center rounded-full border border-white/15 bg-black/35 text-white/65 backdrop-blur transition hover:border-red-300/40 hover:bg-red-500/20 hover:text-red-200 disabled:opacity-40"
-                      disabled={deletingId === project.id}
-                      onClick={() => void deleteProject(project.id)}
-                      type="button"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
+                    <div className="absolute right-4 top-4 flex gap-2">
+                      <button
+                        aria-label={`${t("renameProject")}: ${project.title}`}
+                        className="grid size-9 place-items-center rounded-full border border-white/15 bg-black/35 text-white/65 backdrop-blur transition hover:border-white/30 hover:bg-white/15 hover:text-white"
+                        onClick={() => openRename(project)}
+                        type="button"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </button>
+                      <button
+                        aria-label={`${t("deleteProject")}: ${project.title}`}
+                        className="grid size-9 place-items-center rounded-full border border-white/15 bg-black/35 text-white/65 backdrop-blur transition hover:border-red-300/40 hover:bg-red-500/20 hover:text-red-200 disabled:opacity-40"
+                        disabled={deletingId === project.id}
+                        onClick={() => void deleteProject(project.id)}
+                        type="button"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
                   </article>
                 ))}
               </div>
@@ -316,6 +361,61 @@ export function ProjectsDashboard() {
           </div>
         </section>
       </div>
+      {renamingProject ? (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-5 backdrop-blur-sm"
+          onPointerDown={(event) => {
+            if (event.target === event.currentTarget) setRenamingProject(null);
+          }}
+        >
+          <form
+            aria-label={t("renameProject")}
+            className="w-full max-w-md rounded-3xl border border-white/12 bg-[#15120e] p-6 shadow-2xl shadow-black/50"
+            onSubmit={renameProject}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.16em] text-[#ff8b60]">
+                  {t("renameProject")}
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold">{t("renameTitle")}</h2>
+              </div>
+              <button
+                aria-label={t("cancel")}
+                className="grid size-9 place-items-center rounded-full bg-white/5 text-white/55 hover:text-white"
+                onClick={() => setRenamingProject(null)}
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <input
+              autoFocus
+              className="mt-6 w-full rounded-xl border border-white/10 bg-[#0b0a08] px-4 py-3 text-white outline-none focus:border-[#ff7542]"
+              maxLength={200}
+              onChange={(event) => setRenameValue(event.target.value)}
+              required
+              value={renameValue}
+            />
+            <div className="mt-5 flex justify-end gap-3">
+              <button
+                className="rounded-full border border-white/10 px-4 py-2.5 text-sm text-white/65 hover:text-white"
+                onClick={() => setRenamingProject(null)}
+                type="button"
+              >
+                {t("cancel")}
+              </button>
+              <button
+                className="rounded-full bg-[#ff7542] px-5 py-2.5 text-sm font-semibold text-[#18140f] disabled:opacity-40"
+                disabled={isRenaming || !renameValue.trim()}
+                type="submit"
+              >
+                {isRenaming ? t("renaming") : t("renameSave")}
+              </button>
+            </div>
+          </form>
+        </div>
+      ) : null}
     </main>
   );
 }

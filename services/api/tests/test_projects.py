@@ -62,3 +62,18 @@ async def test_user_can_delete_own_project(client):
     assert (
         await client.get(f"/api/v1/projects/{created.json()['id']}")
     ).status_code == 404
+
+
+@pytest.mark.api
+async def test_user_can_rename_own_project(client):
+    assert (await register(client)).status_code == 201
+    created = await client.post("/api/v1/projects", json={"title": "Old title"})
+    assert created.status_code == 201
+
+    renamed = await client.patch(
+        f"/api/v1/projects/{created.json()['id']}",
+        json={"title": "  New title  "},
+    )
+
+    assert renamed.status_code == 200
+    assert renamed.json()["title"] == "New title"

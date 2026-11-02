@@ -36,6 +36,10 @@ class ProjectCreate(BaseModel):
     brief: str = Field(default="", max_length=20_000)
 
 
+class ProjectUpdate(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+
+
 class ProjectRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
