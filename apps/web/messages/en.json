@@ -60,6 +60,7 @@
     "generate": "Generate shot",
     "generating": "Generating...",
     "generationError": "The shot could not be generated. Please try again.",
+    "dismiss": "Got it",
     "completed": "Shot ready",
     "addStoryboard": "Add storyboard shot"
   },

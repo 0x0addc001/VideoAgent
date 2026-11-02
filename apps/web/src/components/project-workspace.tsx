@@ -95,6 +95,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
   const [status, setStatus] = useState<"loading" | "ready" | "missing">("loading");
   const [isWorking, setIsWorking] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [generationErrorOpen, setGenerationErrorOpen] = useState(false);
   const [activeJob, setActiveJob] = useState<GenerationJob | null>(null);
   const [mobilePanel, setMobilePanel] = useState<"agent" | "canvas" | "inspector">("canvas");
 
@@ -164,7 +165,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
         );
         setActiveJob(null);
       } else if (["failed", "cancelled"].includes(job.status)) {
-        setActionError(t("generationError"));
+        setGenerationErrorOpen(true);
         setActiveJob(null);
       } else {
         setActiveJob(job);
@@ -175,6 +176,15 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
       window.clearInterval(timer);
     };
   }, [activeJob, t]);
+
+  useEffect(() => {
+    if (!generationErrorOpen) return;
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") setGenerationErrorOpen(false);
+    }
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [generationErrorOpen]);
 
   const selectedShot = useMemo(
     () => storyboard?.shots.find((shot) => shot.id === selectedShotId) ?? null,
@@ -297,7 +307,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
         setActiveJob(job);
       }
     } catch {
-      setActionError(t("generationError"));
+      setGenerationErrorOpen(true);
     } finally {
       setIsWorking(false);
     }
@@ -597,6 +607,34 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
           </button>
         ))}
       </nav>
+      {generationErrorOpen ? (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-5 backdrop-blur-sm"
+          onPointerDown={(event) => {
+            if (event.target === event.currentTarget) setGenerationErrorOpen(false);
+          }}
+        >
+          <div
+            aria-labelledby="generation-error-title"
+            aria-modal="true"
+            className="w-full max-w-md rounded-3xl border border-white/12 bg-[#15120e] p-6 shadow-2xl shadow-black/50"
+            role="dialog"
+          >
+            <p className="text-xs uppercase tracking-[0.16em] text-[#ff8b60]">VideoAgent</p>
+            <h2 id="generation-error-title" className="mt-3 text-2xl font-semibold">
+              {t("generationError")}
+            </h2>
+            <button
+              autoFocus
+              className="mt-6 rounded-full bg-[#ff7542] px-5 py-2.5 text-sm font-semibold text-[#16130f]"
+              onClick={() => setGenerationErrorOpen(false)}
+              type="button"
+            >
+              {t("dismiss")}
+            </button>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }

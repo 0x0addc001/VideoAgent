@@ -60,6 +60,7 @@
     "generate": "生成镜头",
     "generating": "正在生成……",
     "generationError": "镜头生成失败，请稍后重试。",
+    "dismiss": "知道了",
     "completed": "镜头已就绪",
     "addStoryboard": "添加故事板镜头"
   },
