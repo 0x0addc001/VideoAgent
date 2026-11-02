@@ -374,12 +374,7 @@ export function ProjectsDashboard() {
             onSubmit={renameProject}
           >
             <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.16em] text-[#ff8b60]">
-                  {t("renameProject")}
-                </p>
-                <h2 className="mt-2 text-2xl font-semibold">{t("renameTitle")}</h2>
-              </div>
+              <h2 className="text-2xl font-semibold">{t("renameTitle")}</h2>
               <button
                 aria-label={t("cancel")}
                 className="grid size-9 place-items-center rounded-full bg-white/5 text-white/55 hover:text-white"
