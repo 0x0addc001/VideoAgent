@@ -22,7 +22,7 @@
     "empty": "No projects yet. Start with a brief and let VideoAgent draft the first cut.",
     "open": "Open project",
     "deleteProject": "Delete project",
-    "confirmDelete": "Delete this project permanently?",
+    "confirmDelete": "Remove this project from your workspace?",
     "deleteError": "The project could not be deleted.",
     "logout": "Sign out",
     "loadError": "Your projects could not be loaded.",

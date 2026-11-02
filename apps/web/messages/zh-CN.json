@@ -22,7 +22,7 @@
     "empty": "还没有项目。先描述一个创意，让 VideoAgent 起草第一版方案。",
     "open": "打开项目",
     "deleteProject": "删除项目",
-    "confirmDelete": "确定永久删除这个项目吗？",
+    "confirmDelete": "确定从工作区移除这个项目吗？",
     "deleteError": "项目删除失败。",
     "logout": "退出登录",
     "loadError": "项目列表加载失败。",
