@@ -405,10 +405,10 @@ button {
   width: 36px;
   height: 36px;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(22, 119, 255, 0.78);
   border-radius: 50%;
-  background: #efe4d6;
-  color: #1a1611;
+  background: var(--accent);
+  color: white;
   font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: -0.04em;
@@ -425,7 +425,7 @@ button {
   height: 8px;
   border: 2px solid var(--background);
   border-radius: 50%;
-  background: var(--accent);
+  background: #34d399;
   content: "";
 }
 
@@ -1522,7 +1522,7 @@ html[lang="zh-CN"] .va-landing select {
 }
 
 .account-avatar::after {
-  background: #f7f0e6;
+  background: #34d399;
 }
 
 .notification-button svg {
@@ -1631,6 +1631,23 @@ html[lang="zh-CN"] .va-landing select {
 
 .hero-copy h1 > span {
   display: block;
+  white-space: nowrap;
+}
+
+.hero-line {
+  display: grid;
+  place-items: center;
+}
+
+.hero-line > span {
+  grid-area: 1 / 1;
+}
+
+.hero-line-ghost {
+  visibility: hidden;
+}
+
+.hero-line-live {
   white-space: nowrap;
 }
 
@@ -2507,6 +2524,7 @@ html[lang="zh-CN"] .hero-copy h1 {
   max-width: 960px;
   margin: 14px 0 18px;
   font-size: clamp(54px, 5.9vw, 88px);
+  font-weight: 400;
   line-height: 0.96;
   letter-spacing: -0.062em;
 }

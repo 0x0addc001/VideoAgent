@@ -55,6 +55,105 @@ function BrandMark() {
   );
 }
 
+type HeroPart = {
+  text: string;
+  accent?: boolean;
+};
+
+const HERO_LINE_ONE: HeroPart[] = [
+  { text: "Video" },
+  { text: "Agent", accent: true },
+];
+const HERO_LINE_TWO: HeroPart[] = [
+  { text: "You Are the " },
+  { text: "Director", accent: true },
+];
+
+const DOCS_ASSET_VERSION = "11";
+
+function heroPartsLength(parts: readonly HeroPart[]) {
+  return parts.reduce((total, part) => total + Array.from(part.text).length, 0);
+}
+
+function renderHeroParts(parts: readonly HeroPart[], visible: number) {
+  let remaining = visible;
+  return parts.map((part, index) => {
+    const characters = Array.from(part.text);
+    const count = Math.max(0, Math.min(characters.length, remaining));
+    remaining -= characters.length;
+    return (
+      <span className={part.accent ? "hero-accent" : undefined} key={`${part.text}-${index}`}>
+        {characters.slice(0, count).join("")}
+      </span>
+    );
+  });
+}
+
+function StreamingHeroTitle() {
+  const lineOneLength = heroPartsLength(HERO_LINE_ONE);
+  const lineTwoLength = heroPartsLength(HERO_LINE_TWO);
+  const totalLength = lineOneLength + lineTwoLength;
+  const [visibleCharacters, setVisibleCharacters] = useState<number | null>(null);
+
+  useEffect(() => {
+    const reduceMotion =
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduceMotion) {
+      setVisibleCharacters(totalLength);
+      return;
+    }
+
+    let cancelled = false;
+    let typed = 0;
+    let timer: number | undefined;
+
+    const clearTimer = () => {
+      if (timer !== undefined) window.clearTimeout(timer);
+    };
+
+    const typeNext = () => {
+      if (cancelled) return;
+      typed += 1;
+      setVisibleCharacters(typed);
+      if (typed < totalLength) {
+        timer = window.setTimeout(typeNext, typed === lineOneLength ? 380 : 42);
+        return;
+      }
+      timer = window.setTimeout(() => {
+        if (cancelled) return;
+        typed = 0;
+        setVisibleCharacters(0);
+        timer = window.setTimeout(typeNext, 700);
+      }, 3200);
+    };
+
+    setVisibleCharacters(0);
+    timer = window.setTimeout(typeNext, 350);
+    return () => {
+      cancelled = true;
+      clearTimer();
+    };
+  }, [lineOneLength, totalLength]);
+
+  const visible = visibleCharacters ?? totalLength;
+  const visibleLineOne = Math.min(visible, lineOneLength);
+  const visibleLineTwo = Math.max(0, visible - lineOneLength);
+
+  return (
+    <h1 aria-label="VideoAgent You Are the Director" data-hero-stream="loop">
+      <span aria-hidden="true" className="hero-line">
+        <span className="hero-line-ghost">{renderHeroParts(HERO_LINE_ONE, lineOneLength)}</span>
+        <span className="hero-line-live">{renderHeroParts(HERO_LINE_ONE, visibleLineOne)}</span>
+      </span>
+      <span aria-hidden="true" className="hero-line">
+        <span className="hero-line-ghost">{renderHeroParts(HERO_LINE_TWO, lineTwoLength)}</span>
+        <span className="hero-line-live">{renderHeroParts(HERO_LINE_TWO, visibleLineTwo)}</span>
+      </span>
+    </h1>
+  );
+}
+
 export function StreamingText({
   text,
   className = "",
@@ -424,14 +523,7 @@ export function LandingPage({
         <div className="hero-inner">
           <div className="hero-copy">
             <div className="hero-title">
-              <h1>
-                <span>
-                  Video<em className="hero-accent">Agent</em>
-                </span>
-                <span>
-                  You Are the <em className="hero-accent">Director</em>
-                </span>
-              </h1>
+              <StreamingHeroTitle />
             </div>
           </div>
 
@@ -697,7 +789,7 @@ export function LandingPage({
           <div className="docs-frame">
             <iframe
               key={activeDocument}
-              src={`${docsBase}${activeDocument}`}
+              src={`${docsBase}${activeDocument}?v=${DOCS_ASSET_VERSION}`}
               title={content.documents.find((document) => document.path === activeDocument)?.label}
             />
           </div>

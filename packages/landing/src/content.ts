@@ -5,7 +5,7 @@ export const landingContent = {
     localeLabel: "English",
     documentTitle: "VideoAgent — You Are the Director",
     nav: {
-      agents: "Agent",
+      agents: "Agents",
       skills: "Skills",
       assets: "Assets",
       hots: "Hots",
@@ -200,7 +200,7 @@ export const landingContent = {
     localeLabel: "简体中文",
     documentTitle: "VideoAgent — 把脑海里的画面拍出来",
     nav: {
-      agents: "Agent",
+      agents: "Agents",
       skills: "Skills",
       assets: "资产",
       hots: "Hots",

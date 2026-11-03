@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { LandingPage } from "@videoagent/landing";
 
@@ -29,7 +29,7 @@ describe("LandingPage", () => {
     const nav = container.querySelector(".site-header > nav");
     const composer = container.querySelector(".creation-composer");
 
-    expect(nav?.textContent).toContain("Agent");
+    expect(nav?.textContent).toContain("Agents");
     expect(nav?.textContent).toContain("Skills");
     expect(nav?.textContent).toContain("Assets");
     expect(nav?.textContent).toContain("Hots");
@@ -65,6 +65,11 @@ describe("LandingPage", () => {
     expect(container.querySelector(".hero-copy h1")).toHaveTextContent(
       "You Are the Director",
     );
+    expect(container.querySelector(".hero-copy h1")).toHaveAttribute(
+      "data-hero-stream",
+      "loop",
+    );
+    expect(container.querySelectorAll(".hero-line-ghost")).toHaveLength(2);
     expect(container.querySelector("#skills")).not.toBeInTheDocument();
     expect(container.querySelector("#assets")).not.toBeInTheDocument();
     expect(container.querySelector("#hots")).not.toBeInTheDocument();
@@ -117,7 +122,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/software-design.html",
+      "/docs/software-design.html?v=11",
     );
   });
 
@@ -171,5 +176,33 @@ describe("LandingPage", () => {
 
     expect(container.querySelector(".hero-media-track")).toBeInTheDocument();
     expect(indices).toEqual(["0", "1", "2", "0", "1", "2"]);
+  });
+
+  it("streams the headline in sequence and loops after a pause", () => {
+    vi.useFakeTimers();
+    try {
+      const { container } = render(<LandingPage {...props} />);
+      const lines = container.querySelectorAll(".hero-line-live");
+
+      act(() => {
+        vi.advanceTimersByTime(730);
+      });
+      expect(lines[0]).toHaveTextContent("VideoAgent");
+      expect(lines[1]).toHaveTextContent("");
+
+      act(() => {
+        vi.advanceTimersByTime(1200);
+      });
+      expect(lines[0]).toHaveTextContent("VideoAgent");
+      expect(lines[1]).toHaveTextContent("You Are the Director");
+
+      act(() => {
+        vi.advanceTimersByTime(3300);
+      });
+      expect(lines[0]).toHaveTextContent("");
+      expect(lines[1]).toHaveTextContent("");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
