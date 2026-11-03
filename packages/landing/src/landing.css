@@ -1704,12 +1704,22 @@ html[lang="zh-CN"] .va-landing select {
 }
 
 .hero-title-icon {
-  width: clamp(30px, 3vw, 44px);
-  height: clamp(30px, 3vw, 44px);
+  width: clamp(44px, 4.8vw, 66px);
+  height: clamp(44px, 4.8vw, 66px);
   flex: 0 0 auto;
   fill: #4facff;
+  opacity: 0;
   stroke: #4facff;
   stroke-width: 1.2;
+  transform: translateX(-6px) scale(0.82);
+  transition:
+    opacity 120ms ease,
+    transform 180ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.hero-title-icon.is-visible {
+  opacity: 1;
+  transform: translateX(0) scale(1);
 }
 
 .hero-line-text {

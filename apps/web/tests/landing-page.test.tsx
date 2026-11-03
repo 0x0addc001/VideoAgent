@@ -233,6 +233,7 @@ describe("LandingPage", () => {
       });
       expect(lines[0]).toHaveTextContent("VideoAgent");
       expect(lines[1]).toHaveTextContent("");
+      expect(container.querySelector(".hero-title-icon")).toHaveClass("is-visible");
 
       act(() => {
         vi.advanceTimersByTime(1200);
@@ -245,6 +246,7 @@ describe("LandingPage", () => {
       });
       expect(lines[0]).toHaveTextContent("");
       expect(lines[1]).toHaveTextContent("");
+      expect(container.querySelector(".hero-title-icon")).not.toHaveClass("is-visible");
     } finally {
       vi.useRealTimers();
     }

@@ -152,7 +152,9 @@ function StreamingHeroTitle() {
   return (
     <h1 aria-label="VideoAgent You Are the Director" data-hero-stream="loop">
       <span aria-hidden="true" className="hero-line hero-line-brand">
-        <Play className="hero-title-icon" />
+        <Play
+          className={`hero-title-icon${visibleLineOne > 0 ? " is-visible" : ""}`}
+        />
         <span className="hero-line-text">
           <span className="hero-line-ghost">{renderHeroParts(HERO_LINE_ONE, lineOneLength)}</span>
           <span className="hero-line-live">
