@@ -112,6 +112,11 @@ describe("LandingPage", () => {
     expect(
       container.querySelector("#hots .community-card:not(.community-publish-card)"),
     ).toHaveTextContent("Editorial vlog");
+    expect(
+      container.querySelector(
+        "#hots .community-card:not(.community-publish-card) .community-card-content",
+      )?.firstElementChild,
+    ).toHaveClass("community-card-title");
     expect(container.querySelector(".community-author")).toHaveTextContent("Maya Chen");
     expect(container.querySelector(".community-likes")).toHaveTextContent("128");
     expect(container.querySelector("#hots .community-action")).toHaveTextContent(

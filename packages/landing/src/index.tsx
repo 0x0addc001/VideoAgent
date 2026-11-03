@@ -875,17 +875,21 @@ export function LandingPage({
               type="button"
             >
               <img alt="" src={videos[index % videos.length].poster} />
-              <span className="community-author">
-                <span className="community-author-mark" aria-hidden="true">
-                  {Array.from(item.author)[0]}
+              <span className="community-card-content">
+                <span className="community-card-title">{item.title}</span>
+                <span className="community-card-meta">
+                  <span className="community-author">
+                    <span className="community-author-mark" aria-hidden="true">
+                      {Array.from(item.author)[0]}
+                    </span>
+                    {item.author}
+                  </span>
+                  <span className="community-likes">
+                    <Heart aria-hidden="true" />
+                    {item.likes}
+                  </span>
                 </span>
-                {item.author}
               </span>
-              <span className="community-likes">
-                <Heart aria-hidden="true" />
-                {item.likes}
-              </span>
-              <span className="community-card-title">{item.title}</span>
               <span className="community-action">{content.hots.makeThis} ↗</span>
             </button>
           ))}
