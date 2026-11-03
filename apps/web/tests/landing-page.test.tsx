@@ -54,10 +54,10 @@ describe("LandingPage", () => {
     expect(container.querySelector("a.account-summary")).not.toBeInTheDocument();
     const actionItems = [...container.querySelectorAll(".header-actions > *")];
     expect(actionItems.map((item) => item.className)).toEqual([
-      "account-avatar account-avatar-default",
-      "credit-count",
-      "notification-switcher",
       "language-switcher",
+      "notification-switcher",
+      "credit-count",
+      "account-avatar account-avatar-default",
     ]);
     expect(container.querySelector("footer")).not.toBeInTheDocument();
     expect(container.querySelectorAll(".hero-video-frame")).toHaveLength(6);

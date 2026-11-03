@@ -8,7 +8,7 @@ import {
   Film,
   Flame,
   Gem,
-  Globe2,
+  Globe,
   Heart,
   Play,
   UserRound,
@@ -625,33 +625,9 @@ export function LandingPage({
             <span>{content.nav.docs}</span>
           </button>
         </nav>
+      </header>
 
-        <div className="header-actions">
-          <span
-            aria-label={content.nav.account}
-            className={`account-avatar${displayAvatar ? "" : " account-avatar-default"}`}
-            title={content.nav.account}
-          >
-            {displayAvatar ?? <UserRound className="avatar-placeholder" />}
-          </span>
-          <span className="credit-count" title={`${displayCredits} ${content.nav.credits}`}>
-            <Gem aria-hidden="true" className="credit-icon" strokeWidth={1.6} />
-            <span>{displayCredits}</span>
-          </span>
-          <div className="notification-switcher" ref={notificationRef}>
-            <button
-              aria-expanded={notificationsOpen}
-              aria-label={content.nav.notifications}
-              className="notification-button"
-              onClick={() => setNotificationsOpen((current) => !current)}
-              type="button"
-            >
-              <Bell aria-hidden="true" strokeWidth={1.6} />
-            </button>
-            <div className="notification-panel" hidden={!notificationsOpen}>
-              <p>{content.nav.emptyNotifications}</p>
-            </div>
-          </div>
+      <div className="header-actions">
           <div className="language-switcher" ref={languageRef}>
             <button
               aria-expanded={languageOpen}
@@ -661,7 +637,7 @@ export function LandingPage({
               title={`${content.nav.language}: ${docsLocale === "zh-CN" ? "中文" : "English"}`}
               type="button"
             >
-              <Globe2 aria-hidden="true" />
+              <Globe aria-hidden="true" />
             </button>
             <div
               aria-label={content.nav.language}
@@ -687,8 +663,32 @@ export function LandingPage({
               </button>
             </div>
           </div>
-        </div>
-      </header>
+          <div className="notification-switcher" ref={notificationRef}>
+            <button
+              aria-expanded={notificationsOpen}
+              aria-label={content.nav.notifications}
+              className="notification-button"
+              onClick={() => setNotificationsOpen((current) => !current)}
+              type="button"
+            >
+              <Bell aria-hidden="true" strokeWidth={1.6} />
+            </button>
+            <div className="notification-panel" hidden={!notificationsOpen}>
+              <p>{content.nav.emptyNotifications}</p>
+            </div>
+          </div>
+          <span className="credit-count" title={`${displayCredits} ${content.nav.credits}`}>
+            <Gem aria-hidden="true" className="credit-icon" strokeWidth={1.6} />
+            <span>{displayCredits}</span>
+          </span>
+          <span
+            aria-label={content.nav.account}
+            className={`account-avatar${displayAvatar ? "" : " account-avatar-default"}`}
+            title={content.nav.account}
+          >
+            {displayAvatar ?? <UserRound className="avatar-placeholder" />}
+          </span>
+      </div>
 
       {activeView === "agents" ? (
       <section className="hero" id="agents">

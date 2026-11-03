@@ -310,12 +310,13 @@ button {
   display: grid;
   align-items: center;
   justify-items: center;
-  min-height: 42px;
-  width: 40px;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: var(--muted);
+  width: 36px;
+  height: 36px;
+  min-height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.035);
+  color: #d2c9bf;
   cursor: pointer;
   font-size: var(--text-small);
   padding: 0;
@@ -326,7 +327,8 @@ button {
 
 .language-button:hover,
 .language-button[aria-expanded="true"] {
-  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.28);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text);
 }
 
@@ -1521,15 +1523,18 @@ html[lang="zh-CN"] .va-landing select {
 }
 
 .header-actions {
-  display: grid;
-  width: 100%;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  position: fixed;
+  z-index: 60;
+  top: 20px;
+  right: 26px;
+  display: flex;
+  width: auto;
   align-items: center;
-  justify-items: center;
-  gap: 0;
-  margin-top: auto;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 16px 2px 0;
+  justify-content: flex-end;
+  gap: 10px;
+  margin: 0;
+  border: 0;
+  padding: 0;
 }
 
 .credit-count {
@@ -1612,9 +1617,9 @@ html[lang="zh-CN"] .va-landing select {
 }
 
 .header-actions .language-options {
-  top: auto;
+  top: calc(100% + 10px);
   right: 0;
-  bottom: calc(100% + 10px);
+  bottom: auto;
   left: auto;
 }
 
