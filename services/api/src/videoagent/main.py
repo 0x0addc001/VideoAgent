@@ -8,6 +8,7 @@ from videoagent.agent.graph import StoryboardAgent
 from videoagent.agent.planner import build_storyboard_planner
 from videoagent.api.agent import router as agent_router
 from videoagent.api.auth import router as auth_router
+from videoagent.api.evaluation import router as evaluation_router
 from videoagent.api.generation import router as generation_router
 from videoagent.api.health import router as health_router
 from videoagent.api.projects import router as projects_router
@@ -60,6 +61,7 @@ def create_app(
     application.include_router(auth_router, prefix=resolved_settings.api_prefix)
     application.include_router(projects_router, prefix=resolved_settings.api_prefix)
     application.include_router(storyboards_router, prefix=resolved_settings.api_prefix)
+    application.include_router(evaluation_router, prefix=resolved_settings.api_prefix)
     application.include_router(generation_router, prefix=resolved_settings.api_prefix)
     application.include_router(agent_router, prefix=resolved_settings.api_prefix)
     application.include_router(providers_router, prefix=resolved_settings.api_prefix)

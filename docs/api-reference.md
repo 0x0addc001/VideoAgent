@@ -159,6 +159,27 @@ Request:
 Possible statuses include `submitted`, `queued`, `running`, `succeeded`,
 `failed`, and `cancelled`.
 
+### Evaluate Storyboard
+
+`POST /projects/{project_id}/evaluate`
+
+Returns an immediate review of the current storyboard:
+
+```json
+{
+  "overall_score": 88,
+  "metrics": [
+    { "key": "consistency", "score": 92 },
+    { "key": "coverage", "score": 100 },
+    { "key": "clarity", "score": 84 },
+    { "key": "pacing", "score": 80 }
+  ],
+  "suggestions": [
+    { "code": "IMPROVE_PROMPTS", "severity": "medium" }
+  ]
+}
+```
+
 ## Pippit Provider
 
 | Method | Path | Purpose |

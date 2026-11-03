@@ -11,7 +11,8 @@ Celery, or media processing.
 
 ## Product scope
 
-- English and Simplified Chinese interfaces.
+- English-first public interface; Chinese routes redirect to English while the
+  Chinese codebase remains available for later re-enablement.
 - Registration, login, logout, and server-side sessions.
 - User-scoped project CRUD foundation.
 - Multi-shot storyboards with versioned replacement.

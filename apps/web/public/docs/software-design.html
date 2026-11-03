@@ -1,0 +1,1107 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="VideoAgent Software Design" />
+    <title>Software Design · VideoAgent</title>
+    <link rel="icon" href="../brand-mark.svg?v=10" type="image/svg+xml" />
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header class="doc-header">
+      <a class="doc-brand" href="../">VideoAgent</a>
+      <span>/</span>
+      <span>Software Design</span>
+      <div class="doc-actions">
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme">
+          <span class="theme-icon" aria-hidden="true">◐</span>
+          <span class="theme-label">Dark</span>
+        </button>
+      </div>
+    </header>
+    <main class="document-shell">
+      <aside class="document-meta">
+        <span>PROJECT DOCUMENT</span>
+        <strong>Software Design</strong>
+        <small>软件设计说明书</small>
+      </aside>
+      <article class="document"><h1>VideoAgent 软件设计说明书</h1>
+<div class="table-wrap"><table><thead><tr>
+<th>属性</th>
+<th>内容</th>
+</tr></thead><tbody>
+<tr>
+<td>文档版本</td>
+<td>v1.1</td>
+</tr>
+<tr>
+<td>文档状态</td>
+<td>已评审通过</td>
+</tr>
+<tr>
+<td>编写日期</td>
+<td>2026-11-02</td>
+</tr>
+<tr>
+<td>产品名称</td>
+<td>VideoAgent</td>
+</tr>
+<tr>
+<td>后端技术</td>
+<td>Python + FastAPI</td>
+</tr>
+<tr>
+<td>前端技术</td>
+<td>Next.js + TypeScript</td>
+</tr>
+<tr>
+<td>模型服务</td>
+<td>Pippit CLI：Seedance 2.5 Draft、Seedance 2.5、Seedance 2.0 Fast VIP、Seedance 2.0 VIP、Seedance 2.0 Mini 体验版、Seedance 2.0 Mini、Wan 3.0、HappyHorse 1.1</td>
+</tr>
+</tbody></table></div>
+<h2>1. 文档目的</h2>
+<p>本文档描述 VideoAgent 的产品目标、系统架构、核心模块、Agent 编排、数据模型、接口规范、Pippit CLI 集成、安全策略、测试策略及部署方式，供产品、前端、后端、测试和运维研发人员共同参考。</p>
+<p>本文档是 MVP 实现基线。涉及外部服务能力变化、付费生成策略或生产部署架构的修改，应通过新的设计决策记录变更，不应直接修改历史决策。</p>
+<h2>2. 产品概述</h2>
+<p>VideoAgent 是一个面向内容创作者、营销人员和普通用户的 AI 视频创作平台。用户通过自然语言对话、上传素材或选择模板，在 Agent 协助下完成创意策划、故事板设计、视频镜头生成、结果审核及最终视频合成。</p>
+<p>系统同时提供：</p>
+<ul>
+<li><strong>Agent 模式：</strong> 从创意到故事板再到视频成片。</li>
+<li><strong>直接生成模式：</strong> 为单个镜头或图片直接设置参数并生成。</li>
+<li><strong>素材模式：</strong> 基于产品图、角色图或参考视频生成内容。</li>
+<li><strong>项目管理：</strong> 保存项目状态、对话、素材、任务和导出结果。</li>
+</ul>
+<p>系统借鉴 Lumina 的对话式生成、Pippit 的创作模板和素材工作流，但采用可控制的镜头级故事板及 Provider 抽象，避免将业务流程绑定到单一视频模型。</p>
+<h2>3. 产品目标与范围</h2>
+<h3>3.1 MVP 目标</h3>
+<ul>
+<li>当前公开界面固定为英文；中文路由统一重定向到英文。</li>
+<li>支持项目创建、编辑、恢复和删除。</li>
+<li>支持图片、视频等创作素材上传。</li>
+<li>支持 Agent 生成创意方案和多镜头故事板。</li>
+<li>支持镜头参数编辑和积分成本估算。</li>
+<li>支持故事板即时评估，计算一致性、覆盖度、提示清晰度和节奏。</li>
+<li>支持服务端统一授权的 Pippit CLI。</li>
+<li>支持 Pippit 文本生成视频、任务查询和积分余额读取。</li>
+<li>支持异步任务提交、状态查询、失败恢复和结果保存。</li>
+<li>支持镜头审核、重新生成、排序和 FFmpeg 合成。</li>
+<li>支持 MP4 下载和公开只读分享。</li>
+<li>保证 Pippit Access Key、CLI 登录文件和服务端路径不暴露给浏览器。</li>
+</ul>
+<h3>3.2 MVP 不包含</h3>
+<ul>
+<li>订阅、充值或平台积分销售。</li>
+<li>多人实时协作。</li>
+<li>专业非线性视频编辑器。</li>
+<li>数字人、声音克隆和音乐生成。</li>
+<li>Marketplace、联盟营销和模板交易。</li>
+<li>Provider 自动竞价或自动模型路由。</li>
+<li>移动端原生 App。</li>
+</ul>
+<h2>4. 用户与核心场景</h2>
+<h3>4.1 目标用户</h3>
+<ul>
+<li>普通内容创作者。</li>
+<li>电商和产品营销人员。</li>
+<li>社交媒体运营人员。</li>
+<li>广告创意和短视频制作人员。</li>
+</ul>
+<h3>4.2 核心用户流程</h3>
+<pre><code class="language-text">登录
+  → 在首页多设定创作框描述创意
+  → 提交时自动创建默认项目
+  → 直接进入项目工作区
+  → Agent 追问并生成创意方案
+  → 编辑故事板和镜头
+  → 查看预计积分
+  → 确认生成
+  → 查看生成进度
+  → 审核并重新生成镜头
+  → 合成视频
+  → 导出或分享</code></pre>
+<h2>5. 总体架构</h2>
+<pre><code class="language-text">┌─────────────────────────────────────────────────────────┐
+│ Next.js Web                                             │
+│ 对话 / 故事板 / 视频预览 / 时间线 / 中英文界面          │
+└─────────────────────────┬───────────────────────────────┘
+                          │ HTTPS / SSE
+┌─────────────────────────▼───────────────────────────────┐
+│ FastAPI                                                 │
+│ Auth / Projects / Assets / Agent / Jobs                 │
+└────────────┬──────────────────────────┬─────────────────┘
+             │                          │
+┌────────────▼────────────┐  ┌──────────▼─────────────────┐
+│ LangGraph               │  │ PostgreSQL                 │
+│ Agent 工作流 / 审批     │  │ 业务数据 / Checkpoint      │
+└────────────┬────────────┘  └────────────────────────────┘
+             │
+┌────────────▼────────────────────────────────────────────┐
+│ Celery Worker + Redis/Broker                            │
+│ 生成提交 / 轮询 / 下载 / 缩略图 / FFmpeg 合成          │
+└────────────┬────────────────────────────────────────────┘
+             │
+┌────────────▼────────────────────────────────────────────┐
+│ Pippit CLI / S3 或 MinIO / FFmpeg                       │
+└─────────────────────────────────────────────────────────┘</code></pre>
+<p>生产环境通过 Nginx 或 Caddy 使用统一域名：</p>
+<ul>
+<li><code>/</code> 路由到 Next.js。</li>
+<li><code>/api/*</code> 路由到 FastAPI。</li>
+<li><code>/api/projects/{id}/events</code> 使用 SSE。</li>
+<li>API 代理必须关闭响应缓冲。</li>
+<li>使用同域 HttpOnly Cookie 管理会话。</li>
+</ul>
+<h2>6. 技术栈</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>模块</th>
+<th>技术</th>
+</tr></thead><tbody>
+<tr>
+<td>Web 前端</td>
+<td>Next.js App Router、React、TypeScript</td>
+</tr>
+<tr>
+<td>UI</td>
+<td>Tailwind CSS、shadcn/ui、Radix UI、Lucide</td>
+</tr>
+<tr>
+<td>国际化</td>
+<td>next-intl</td>
+</tr>
+<tr>
+<td>前端状态</td>
+<td>TanStack Query、Zustand</td>
+</tr>
+<tr>
+<td>表单校验</td>
+<td>React Hook Form、Zod</td>
+</tr>
+<tr>
+<td>时间线</td>
+<td>dnd-kit</td>
+</tr>
+<tr>
+<td>API</td>
+<td>FastAPI、Uvicorn</td>
+</tr>
+<tr>
+<td>Agent</td>
+<td>LangGraph</td>
+</tr>
+<tr>
+<td>模型调用</td>
+<td>LangChain OpenAI-compatible Provider</td>
+</tr>
+<tr>
+<td>数据校验</td>
+<td>Pydantic v2</td>
+</tr>
+<tr>
+<td>视频服务</td>
+<td>Pippit CLI 1.x</td>
+</tr>
+<tr>
+<td>服务端授权</td>
+<td>CLI 浏览器登录或 <code>XYQ_ACCESS_KEY</code></td>
+</tr>
+<tr>
+<td>MCP</td>
+<td>Python MCP SDK（非当前默认视频链路）</td>
+</tr>
+<tr>
+<td>数据库</td>
+<td>PostgreSQL</td>
+</tr>
+<tr>
+<td>ORM</td>
+<td>SQLAlchemy 2 Async、asyncpg</td>
+</tr>
+<tr>
+<td>迁移</td>
+<td>Alembic</td>
+</tr>
+<tr>
+<td>任务队列</td>
+<td>Celery</td>
+</tr>
+<tr>
+<td>MVP Broker</td>
+<td>Redis</td>
+</tr>
+<tr>
+<td>生产 Broker</td>
+<td>RabbitMQ 可选</td>
+</tr>
+<tr>
+<td>实时事件</td>
+<td>sse-starlette、Redis Pub/Sub</td>
+</tr>
+<tr>
+<td>对象存储</td>
+<td>S3、MinIO、Boto3</td>
+</tr>
+<tr>
+<td>视频处理</td>
+<td>FFmpeg、ffprobe</td>
+</tr>
+<tr>
+<td>图片处理</td>
+<td>Pillow</td>
+</tr>
+<tr>
+<td>用户认证</td>
+<td>fastapi-users、Argon2</td>
+</tr>
+<tr>
+<td>凭据加密</td>
+<td>cryptography AES-256-GCM</td>
+</tr>
+<tr>
+<td>日志</td>
+<td>structlog</td>
+</tr>
+<tr>
+<td>单元测试</td>
+<td>pytest、pytest-asyncio</td>
+</tr>
+<tr>
+<td>E2E 测试</td>
+<td>Playwright</td>
+</tr>
+<tr>
+<td>Python 环境</td>
+<td>uv、pyproject.toml</td>
+</tr>
+<tr>
+<td>代码质量</td>
+<td>Ruff、mypy</td>
+</tr>
+<tr>
+<td>本地环境</td>
+<td>Docker Compose</td>
+</tr>
+</tbody></table></div>
+<p>依赖版本在项目初始化时锁定为稳定版本，并提交 <code>uv.lock</code>、<code>pnpm-lock.yaml</code> 等锁文件。</p>
+<h2>7. 项目结构</h2>
+<pre><code class="language-text">VideoAgent/
+├── apps/
+│   └── web/
+│       ├── src/app/
+│       ├── src/components/
+│       ├── src/features/
+│       ├── src/lib/api/
+│       └── messages/
+├── services/
+│   └── api/
+│       ├── pyproject.toml
+│       ├── alembic/
+│       ├── src/videoagent/
+│       │   ├── api/
+│       │   ├── agent/
+│       │   ├── db/
+│       │   ├── providers/
+│       │   ├── services/
+│       │   ├── workers/
+│       │   └── main.py
+│       └── tests/
+├── contracts/
+│   └── openapi.json
+├── deploy/
+│   ├── docker-compose.yml
+│   ├── nginx/
+│   └── Dockerfiles
+├── docs/
+├── Makefile
+├── README.md
+└── .env.example</code></pre>
+<p>前后端契约以 FastAPI 生成的 OpenAPI 文档为准，前端客户端类型通过 OpenAPI 自动生成。</p>
+<h2>8. 模块划分</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>模块</th>
+<th>职责</th>
+</tr></thead><tbody>
+<tr>
+<td><code>api.auth</code></td>
+<td>注册、登录、会话和用户信息</td>
+</tr>
+<tr>
+<td><code>api.projects</code></td>
+<td>项目生命周期和权限</td>
+</tr>
+<tr>
+<td><code>api.assets</code></td>
+<td>上传、下载和素材管理</td>
+</tr>
+<tr>
+<td><code>api.agent</code></td>
+<td>消息、流式响应和工作流控制</td>
+</tr>
+<tr>
+<td><code>api.jobs</code></td>
+<td>生成任务查询和取消</td>
+</tr>
+<tr>
+<td><code>api.exports</code></td>
+<td>合成、导出和分享</td>
+</tr>
+<tr>
+<td><code>agent.graph</code></td>
+<td>LangGraph 图定义</td>
+</tr>
+<tr>
+<td><code>agent.nodes</code></td>
+<td>创意、故事板、审核、导出节点</td>
+</tr>
+<tr>
+<td><code>agent.schemas</code></td>
+<td>Pydantic 输入输出模型</td>
+</tr>
+<tr>
+<td><code>providers.base</code></td>
+<td>Provider 抽象接口</td>
+</tr>
+<tr>
+<td><code>providers.pippit</code></td>
+<td>Pippit CLI 适配器</td>
+</tr>
+<tr>
+<td><code>providers.mock</code></td>
+<td>无外部依赖的测试 Provider</td>
+</tr>
+<tr>
+<td><code>services.media</code></td>
+<td>上传校验、缩略图和 FFmpeg</td>
+</tr>
+<tr>
+<td><code>workers.generation</code></td>
+<td>Pippit 任务轮询</td>
+</tr>
+<tr>
+<td><code>workers.export</code></td>
+<td>视频合成和转码</td>
+</tr>
+</tbody></table></div>
+<h2>9. Agent 设计</h2>
+<h3>9.1 基本策略</h3>
+<p>MVP 使用一个主 Agent 和多个确定性工作流节点，不采用无限制 ReAct 循环，也不在首版拆成多个自由对话 Agent。</p>
+<ul>
+<li>LangGraph 控制业务阶段和人工审批。</li>
+<li>LangChain OpenAI-compatible Provider 执行模型调用。</li>
+<li>Pydantic 校验模型输出和工具参数。</li>
+<li>Celery 执行耗时的外部任务。</li>
+<li>PostgreSQL 保存工作流检查点。</li>
+</ul>
+<h3>9.2 主流程</h3>
+<pre><code class="language-text">intake
+  → load_project_context
+  → classify_intent
+  → gather_requirements
+  → create_treatment
+  → create_storyboard
+  → validate_storyboard
+  → await_plan_approval
+  → estimate_cost
+  → await_generation_approval
+  → submit_generation_jobs
+  → wait_for_jobs
+  → review_results
+  → revise_shots
+  → assemble_video
+  → await_export_approval
+  → export_video
+  → completed</code></pre>
+<p>失败状态：</p>
+<pre><code class="language-text">auth_required
+insufficient_credits
+provider_unavailable
+generation_failed
+cancelled</code></pre>
+<h3>9.3 工作流状态</h3>
+<pre><code class="language-python">class VideoProjectState(TypedDict):
+    project_id: UUID
+    locale: Literal[&quot;en&quot;, &quot;zh-CN&quot;]
+
+    brief: str
+    aspect_ratio: str
+    target_duration: int | None
+
+    treatment: dict | None
+    storyboard: list[dict]
+
+    reference_assets: list[UUID]
+    approval: dict | None
+
+    active_jobs: list[UUID]
+    failed_jobs: list[UUID]
+    completed_assets: list[UUID]
+
+    step: str
+    last_error: str | None</code></pre>
+<h3>9.4 Agent 工具</h3>
+<p>只允许 Agent 使用业务级白名单工具：</p>
+<pre><code class="language-text">create_storyboard
+update_shot
+estimate_generation_cost
+submit_generation
+get_generation_status
+regenerate_shot
+assemble_video
+export_video</code></pre>
+<p>以下操作不能由 Agent 自主执行：</p>
+<ul>
+<li>删除 Element 或项目。</li>
+<li>断开 Provider。</li>
+<li>支付或充值。</li>
+<li>修改安全设置。</li>
+<li>执行任意 Shell 命令。</li>
+<li>访问用户未授权的其他项目。</li>
+</ul>
+<h3>9.5 审批策略</h3>
+<p>以下动作必须由用户显式确认：</p>
+<ul>
+<li>提交任何可能计费的视频或图片生成。</li>
+<li>重新生成已完成镜头。</li>
+<li>把 Provider 积分用于批量任务。</li>
+<li>发布公开分享链接。</li>
+<li>删除项目或素材。</li>
+</ul>
+<p>审批记录包含用户、项目、操作、参数摘要、预计费用和时间。</p>
+<h2>10. LangGraph 与 Celery</h2>
+<p>LangGraph 和 Celery 职责分离：</p>
+<ul>
+<li>LangGraph 决定业务阶段。</li>
+<li>Celery 负责长时间任务执行。</li>
+<li>PostgreSQL 保存最终状态和检查点。</li>
+<li>Redis 传递实时事件。</li>
+</ul>
+<p>任务流程：</p>
+<ol>
+<li>LangGraph 创建镜头和生成计划。</li>
+<li>用户批准生成。</li>
+<li>FastAPI 创建数据库任务和本地幂等键。</li>
+<li>API 调用 <code>pippit-tool-cli generate-video</code> 提交任务。</li>
+<li>保存 thread ID 与 run ID 组成的标准化任务引用。</li>
+<li>Celery 调用 <code>pippit-tool-cli query-result</code> 轮询。</li>
+<li>成功后将媒体复制到应用对象存储。</li>
+<li>发布 <code>job.completed</code> 事件。</li>
+<li>SSE 更新前端。</li>
+<li>所有镜头完成后恢复 LangGraph 审核节点。</li>
+</ol>
+<p>具备不确定性的提交不能自动重发。提交超时但未获得 Provider Task ID 时，任务进入 <code>submission_uncertain</code>，通过查询账户近期任务进行人工或自动对账。</p>
+<h2>11. Pippit CLI 集成</h2>
+<h3>11.1 连接方式</h3>
+<pre><code class="language-text">运维在 API 主机安装 Pippit CLI
+  → 运维执行 pippit-tool-cli login
+  → CLI 将设备凭据保存到操作系统安全存储
+  → 或 CI 注入 VIDEOAGENT_PIPPIT_ACCESS_KEY
+  → FastAPI 通过受限子进程调用 CLI
+  → 读取 Pippit 账户状态和积分</code></pre>
+<p>Pippit 授权由服务端统一持有，不对每个 VideoAgent 用户单独发起 Kling 授权。所有用户共享当前 Pippit 账户及其积分池；如果未来需要用户级计费， 必须新增租户级凭据隔离和额度服务，不能直接复用该服务账户模型。</p>
+<h3>11.2 Provider 接口</h3>
+<pre><code class="language-python">class VideoProvider(Protocol):
+    async def capabilities(self) -&gt; ProviderCapabilities: ...
+    async def estimate(self, request: GenerationRequest) -&gt; CostEstimate: ...
+    async def submit(self, request: GenerationRequest) -&gt; ProviderJob: ...
+    async def status(self, job_id: str) -&gt; JobStatus: ...
+    async def cancel(self, job_id: str) -&gt; None: ...</code></pre>
+<h3>11.3 首版 Pippit 能力</h3>
+<pre><code class="language-text">pippit-tool-cli status
+pippit-tool-cli get-credit-balance
+pippit-tool-cli generate-video
+pippit-tool-cli query-result</code></pre>
+<p>首版仅开放文本生成视频。Provider 使用参数数组启动 CLI，不经过 Shell 字符串拼接；stdout 仅接受 JSON，stderr 和完整命令参数不返回到浏览器。 模型与分辨率由服务端环境变量可选配置，留空时使用 CLI 服务的默认值。</p>
+<h3>11.4 凭据与进程安全</h3>
+<ul>
+<li>CLI 登录文件由操作系统安全存储管理，不写入仓库或数据库。</li>
+<li><code>VIDEOAGENT_PIPPIT_ACCESS_KEY</code> 仅作为服务端秘密环境变量注入子进程。</li>
+<li>浏览器、API 响应和日志均不返回 Access Key。</li>
+<li>CLI 命令使用 <code>asyncio.create_subprocess_exec</code> 的参数数组形式执行。</li>
+<li>子进程受超时控制；超时后终止进程，不自动重提计费任务。</li>
+<li>Web 进程必须只允许受信用户触发生成，并在调用前执行显式审批。</li>
+</ul>
+<h2>12. 数据模型</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>表</th>
+<th>关键字段</th>
+<th>说明</th>
+</tr></thead><tbody>
+<tr>
+<td><code>users</code></td>
+<td><code>id</code>, <code>email</code>, <code>locale</code>, <code>status</code></td>
+<td>用户和语言偏好</td>
+</tr>
+<tr>
+<td><code>sessions</code></td>
+<td><code>id</code>, <code>user_id</code>, <code>expires_at</code></td>
+<td>服务端会话</td>
+</tr>
+<tr>
+<td><code>projects</code></td>
+<td><code>id</code>, <code>owner_id</code>, <code>title</code>, <code>state</code>, <code>brief</code></td>
+<td>视频项目</td>
+</tr>
+<tr>
+<td><code>conversations</code></td>
+<td><code>id</code>, <code>project_id</code></td>
+<td>项目对话</td>
+</tr>
+<tr>
+<td><code>messages</code></td>
+<td><code>id</code>, <code>role</code>, <code>content</code>, <code>metadata</code></td>
+<td>对话和工具消息</td>
+</tr>
+<tr>
+<td><code>storyboards</code></td>
+<td><code>id</code>, <code>project_id</code>, <code>version</code></td>
+<td>故事板版本</td>
+</tr>
+<tr>
+<td><code>shots</code></td>
+<td><code>id</code>, <code>storyboard_id</code>, <code>index</code>, <code>prompt</code>, <code>status</code></td>
+<td>镜头定义</td>
+</tr>
+<tr>
+<td><code>assets</code></td>
+<td><code>id</code>, <code>project_id</code>, <code>kind</code>, <code>storage_key</code></td>
+<td>上传和生成媒体</td>
+</tr>
+<tr>
+<td><code>provider_connections</code></td>
+<td><code>id</code>, <code>user_id</code>, <code>provider</code>, <code>encrypted_tokens</code></td>
+<td>历史 OAuth 表，当前 Pippit 链路不使用</td>
+</tr>
+<tr>
+<td><code>generation_jobs</code></td>
+<td><code>id</code>, <code>shot_id</code>, <code>provider_task_id</code>, <code>status</code></td>
+<td>生成任务</td>
+</tr>
+<tr>
+<td><code>tool_runs</code></td>
+<td><code>id</code>, <code>job_id</code>, <code>tool_name</code>, <code>request_id</code>, <code>status</code></td>
+<td>工具调用审计</td>
+</tr>
+<tr>
+<td><code>usage_ledger</code></td>
+<td><code>id</code>, <code>user_id</code>, <code>project_id</code>, <code>amount</code>, <code>metadata</code></td>
+<td>积分和费用记录</td>
+</tr>
+<tr>
+<td><code>exports</code></td>
+<td><code>id</code>, <code>project_id</code>, <code>asset_id</code>, <code>status</code></td>
+<td>最终导出</td>
+</tr>
+<tr>
+<td><code>public_shares</code></td>
+<td><code>id</code>, <code>project_id</code>, <code>token_hash</code>, <code>expires_at</code></td>
+<td>公开分享</td>
+</tr>
+</tbody></table></div>
+<p>统一使用 UUID 主键、UTC 时间戳和数据库外键。Provider 原始响应保存在 <code>JSONB</code> 字段中，业务逻辑只消费标准化对象。</p>
+<h2>13. 核心状态定义</h2>
+<h3>13.1 项目状态</h3>
+<pre><code class="language-text">draft
+planning
+awaiting_plan_approval
+generating
+review
+assembling
+completed
+failed
+archived</code></pre>
+<h3>13.2 镜头状态</h3>
+<pre><code class="language-text">draft
+ready
+queued
+generating
+completed
+failed
+cancelled</code></pre>
+<h3>13.3 生成任务状态</h3>
+<pre><code class="language-text">pending
+submission_uncertain
+submitted
+queued
+running
+succeeded
+failed
+cancelled</code></pre>
+<h2>14. API 设计</h2>
+<h3>14.1 通用规范</h3>
+<ul>
+<li>基础路径：<code>/api/v1</code>。</li>
+<li>认证：HttpOnly 服务端会话 Cookie。</li>
+<li>成功响应使用 JSON；文件上传使用预签名 URL。</li>
+<li>错误统一返回稳定错误码。</li>
+<li>列表接口使用游标分页。</li>
+<li>所有计费写操作支持 <code>Idempotency-Key</code> 请求头。</li>
+<li>OpenAPI 是前后端接口契约。</li>
+</ul>
+<p>统一错误响应：</p>
+<pre><code class="language-json">{
+  &quot;error&quot;: {
+    &quot;code&quot;: &quot;KLING_INSUFFICIENT_CREDITS&quot;,
+    &quot;message&quot;: &quot;Insufficient credits&quot;,
+    &quot;details&quot;: {},
+    &quot;requestId&quot;: &quot;req_...&quot;
+  }
+}</code></pre>
+<h3>14.2 主要接口</h3>
+<div class="table-wrap"><table><thead><tr>
+<th>方法</th>
+<th>路径</th>
+<th>用途</th>
+</tr></thead><tbody>
+<tr>
+<td>POST</td>
+<td><code>/auth/register</code></td>
+<td>注册</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/auth/login</code></td>
+<td>登录</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/auth/logout</code></td>
+<td>退出</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/auth/me</code></td>
+<td>当前用户</td>
+</tr>
+<tr>
+<td>GET/POST</td>
+<td><code>/projects</code></td>
+<td>项目列表和创建</td>
+</tr>
+<tr>
+<td>GET/PATCH/DELETE</td>
+<td><code>/projects/{id}</code></td>
+<td>项目操作</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/projects/{id}/messages</code></td>
+<td>发送消息并流式返回</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/projects/{id}/events</code></td>
+<td>项目 SSE 事件</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/projects/{id}/storyboard</code></td>
+<td>获取故事板</td>
+</tr>
+<tr>
+<td>PATCH</td>
+<td><code>/shots/{id}</code></td>
+<td>修改镜头</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/shots/{id}/estimate</code></td>
+<td>积分估算</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/shots/{id}/generate</code></td>
+<td>创建生成任务</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/jobs/{id}</code></td>
+<td>查询任务</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/jobs/{id}/cancel</code></td>
+<td>取消任务</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/assets/presign</code></td>
+<td>获取上传地址</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/assets/complete</code></td>
+<td>确认上传</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/providers/pippit</code></td>
+<td>服务端 Pippit 状态</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/providers/pippit/credits</code></td>
+<td>Pippit 积分余额</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/projects/{id}/export</code></td>
+<td>合成导出</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/projects/{id}/share</code></td>
+<td>创建公开分享</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/health</code></td>
+<td>健康检查</td>
+</tr>
+</tbody></table></div>
+<h3>14.3 SSE 事件</h3>
+<pre><code class="language-json">{
+  &quot;event&quot;: &quot;job.updated&quot;,
+  &quot;projectId&quot;: &quot;uuid&quot;,
+  &quot;jobId&quot;: &quot;uuid&quot;,
+  &quot;status&quot;: &quot;running&quot;,
+  &quot;progress&quot;: 45,
+  &quot;occurredAt&quot;: &quot;2026-11-01T12:00:00Z&quot;
+}</code></pre>
+<p>事件至少包括：</p>
+<ul>
+<li><code>agent.message</code></li>
+<li><code>agent.requires_approval</code></li>
+<li><code>job.updated</code></li>
+<li><code>asset.created</code></li>
+<li><code>export.updated</code></li>
+<li><code>workflow.failed</code></li>
+</ul>
+<p>客户端断线重连时先调用 REST API 获取完整状态，再恢复 SSE，避免丢失事件。</p>
+<h2>15. 素材与媒体处理</h2>
+<h3>15.1 上传</h3>
+<ol>
+<li>前端向 FastAPI 请求预签名上传 URL。</li>
+<li>浏览器直接上传到 MinIO/S3。</li>
+<li>FastAPI 校验文件类型、文件头、大小和 checksum。</li>
+<li>生成缩略图和媒体元数据。</li>
+<li>上传完成后才允许被镜头引用。</li>
+</ol>
+<h3>15.2 生成结果</h3>
+<ul>
+<li>Provider 临时 URL 不直接作为长期播放地址。</li>
+<li>Worker 下载结果并保存到应用对象存储。</li>
+<li>记录时长、宽高、编码、文件大小和 checksum。</li>
+<li>失败下载按照安全退避策略重试。</li>
+</ul>
+<h3>15.3 导出</h3>
+<ul>
+<li>使用 FFmpeg 参数数组调用，禁止字符串拼接 Shell 命令。</li>
+<li>统一分辨率、帧率和音频参数。</li>
+<li>输出 MP4，并生成封面缩略图。</li>
+<li>导出任务可取消，临时文件在完成或失败后清理。</li>
+</ul>
+<h2>16. 前端设计</h2>
+<h3>16.1 信息架构</h3>
+<ul>
+<li>首页：右侧导航和居中的多设定创作聊天框；提交即创建项目。</li>
+<li>项目列表。</li>
+<li>项目工作区：对话、故事板、素材和镜头编辑。</li>
+<li>素材库。</li>
+<li>Pippit 服务端授权状态。</li>
+<li>生成历史。</li>
+<li>设置。</li>
+<li>公开分享页。</li>
+</ul>
+<h3>16.2 项目工作区</h3>
+<p>桌面端采用三栏：</p>
+<pre><code class="language-text">Agent 对话 | 视频预览与故事板 | 镜头检查器</code></pre>
+<p>移动端采用标签页：</p>
+<pre><code class="language-text">Agent | Canvas | Inspector</code></pre>
+<p>镜头检查器包含：</p>
+<ul>
+<li>Prompt 中英文版本。</li>
+<li>参考图和参考视频。</li>
+<li>生成模式。</li>
+<li>宽高比。</li>
+<li>时长。</li>
+<li>Provider 模型参数。</li>
+<li>积分估算。</li>
+<li>生成和重试按钮。</li>
+</ul>
+<h3>16.3 前端状态</h3>
+<ul>
+<li>TanStack Query：项目、镜头、任务、积分等服务端状态。</li>
+<li>Zustand：当前镜头、侧栏、播放器和时间线选择。</li>
+<li>聊天 Token 使用流式 <code>fetch</code>。</li>
+<li>项目事件使用 SSE。</li>
+<li>不将 Provider 凭据、Access Key 或敏感任务内容写入 localStorage。</li>
+</ul>
+<h2>17. 中英文支持</h2>
+<p>路由：</p>
+<pre><code class="language-text">/en/...
+/zh-CN/...</code></pre>
+<p>国际化范围包括：</p>
+<ul>
+<li>界面文案、按钮、表单校验。</li>
+<li>Agent 对话和故事板说明。</li>
+<li>错误码对应的用户提示。</li>
+<li>任务状态和通知。</li>
+<li>模板、推荐 Prompt 和空状态。</li>
+<li>公开分享页。</li>
+<li>日期、时间和数字格式。</li>
+</ul>
+<p>Agent 输出支持三种 Prompt 模式：</p>
+<ul>
+<li>中文说明 + 英文模型 Prompt。</li>
+<li>全中文。</li>
+<li>中英双语对照。</li>
+</ul>
+<p>后端 API 使用稳定错误码；用户可读文案由前端翻译资源提供。用户选择语言后同时保存到用户资料和 Cookie。</p>
+<h2>18. 安全与隐私</h2>
+<ul>
+<li>所有项目、镜头、任务和资产必须校验资源所有权。</li>
+<li>会话 Cookie 使用 HttpOnly、Secure、SameSite。</li>
+<li>修改类 Cookie API 校验 CSRF Token 或受控 Origin。</li>
+<li>Pippit CLI 登录文件放在服务账号可访问但受严格权限保护的位置。</li>
+<li><code>VIDEOAGENT_PIPPIT_ACCESS_KEY</code> 只保存在秘密管理系统或服务环境变量中。</li>
+<li>上传文件限制类型、大小和扩展名，并检查文件头。</li>
+<li>素材通过短期签名 URL 访问。</li>
+<li>Agent 工具使用服务端白名单和 Pydantic 参数校验。</li>
+<li>上传文件、OCR 文本和文件名视为不可信数据，防止 Prompt Injection。</li>
+<li>不使用 Agent 生成的内容拼接 Shell 命令。</li>
+<li>用户、项目和生成接口使用独立限流。</li>
+<li>删除用户或断开 Provider 时删除相关凭据。</li>
+<li>日志不记录密码、Cookie、Token、Authorization Header。</li>
+</ul>
+<h2>19. 可靠性设计</h2>
+<ul>
+<li>Celery 使用延迟确认，避免 Worker 崩溃导致任务立即丢失。</li>
+<li>数据库任务状态为业务事实来源。</li>
+<li>提交、查询、下载和导出使用不同重试策略。</li>
+<li>查询和下载采用指数退避；生成提交禁止盲目重试。</li>
+<li>任务设置最长运行时间和超时告警。</li>
+<li>Celery Beat 定期清理过期任务和孤立临时文件。</li>
+<li>SSE 支持 Last-Event-ID 或“重新获取完整状态”的恢复方式。</li>
+<li>LangGraph Checkpoint 支持审批和失败后的恢复。</li>
+</ul>
+<h2>20. 可观测性</h2>
+<p>使用 structlog 输出结构化日志，至少包含：</p>
+<ul>
+<li><code>request_id</code></li>
+<li><code>user_id</code></li>
+<li><code>project_id</code></li>
+<li><code>job_id</code></li>
+<li><code>tool_run_id</code></li>
+<li><code>provider</code></li>
+<li><code>tool_name</code></li>
+<li><code>duration_ms</code></li>
+<li><code>error_code</code></li>
+</ul>
+<p>关键指标：</p>
+<ul>
+<li>生成任务成功率。</li>
+<li>Provider 平均排队时间和生成时间。</li>
+<li>Pippit CLI 命令错误率。</li>
+<li>任务重复提交次数。</li>
+<li>单项目积分使用量。</li>
+<li>SSE 活跃连接数。</li>
+<li>Worker 队列积压。</li>
+<li>FFmpeg 导出失败率。</li>
+</ul>
+<h2>21. 测试策略</h2>
+<p>测试以测试驱动开发为主要工作方式。详细测试范围、测试用例、覆盖目标和质量门禁见 <code>docs/software-test-plan.md</code>。</p>
+<p>整体原则：</p>
+<ul>
+<li>每个业务能力先编写失败测试，再实现最小代码，最后重构。</li>
+<li>CI 仅使用 Mock Provider，不执行真实付费生成。</li>
+<li>单元测试不依赖 PostgreSQL、Redis、MinIO 或 Pippit 网络。</li>
+<li>集成测试使用可重复、可清理的真实基础设施。</li>
+<li>Pippit 状态和余额只读 Smoke Test 使用受控服务账户。</li>
+<li>真实生成测试必须人工触发并显式限制次数和积分预算。</li>
+</ul>
+<h2>22. 配置项</h2>
+<p>后端至少需要：</p>
+<pre><code class="language-text">DATABASE_URL
+REDIS_URL
+CELERY_BROKER_URL
+CELERY_RESULT_BACKEND
+S3_ENDPOINT
+S3_BUCKET
+S3_ACCESS_KEY
+S3_SECRET_KEY
+SESSION_SECRET
+TOKEN_ENCRYPTION_KEY
+PIPPIT_CLI_COMMAND
+PIPPIT_ACCESS_KEY
+PIPPIT_VIDEO_MODEL
+PIPPIT_VIDEO_RESOLUTION
+LLM_BASE_URL
+LLM_API_KEY
+LLM_MODEL</code></pre>
+<p>所有敏感值通过环境变量或密钥管理服务提供，不提交到 Git。</p>
+<h2>23. 部署设计</h2>
+<p>本地开发使用 Docker Compose：</p>
+<pre><code class="language-text">web
+api
+worker
+beat
+postgres
+redis
+minio
+reverse-proxy</code></pre>
+<p>生产环境使用独立镜像：</p>
+<ul>
+<li>Next.js 镜像。</li>
+<li>FastAPI 镜像。</li>
+<li>Celery Worker 镜像。</li>
+<li>Celery Beat 镜像。</li>
+<li>Nginx/Caddy 反向代理。</li>
+<li>外部 PostgreSQL。</li>
+<li>Redis 或 RabbitMQ。</li>
+<li>S3 兼容对象存储。</li>
+</ul>
+<p>部署流程：</p>
+<ol>
+<li>安装锁定依赖。</li>
+<li>执行 Ruff、mypy 和测试。</li>
+<li>构建前后端镜像。</li>
+<li>执行 Alembic 迁移。</li>
+<li>滚动更新 API。</li>
+<li>更新 Worker。</li>
+<li>检查健康和 Provider 状态。</li>
+</ol>
+<h2>24. 实施阶段</h2>
+<h3>阶段 1：基础工程</h3>
+<ul>
+<li>初始化目录和依赖。</li>
+<li>启动 Docker 服务。</li>
+<li>完成中英文设计系统和基础页面。</li>
+<li>建立 OpenAPI 前端客户端。</li>
+</ul>
+<h3>阶段 2：用户、项目和素材</h3>
+<ul>
+<li>登录和会话。</li>
+<li>项目工作区。</li>
+<li>S3/MinIO 上传。</li>
+<li>故事板数据模型。</li>
+</ul>
+<h3>阶段 3：Agent 与 Mock Provider</h3>
+<ul>
+<li>LangGraph 工作流。</li>
+<li>对话和结构化输出。</li>
+<li>故事板编辑。</li>
+<li>Celery 和 SSE。</li>
+<li>无积分消耗的完整模拟流程。</li>
+</ul>
+<h3>阶段 4：Pippit 集成</h3>
+<ul>
+<li>CLI 安装、服务端授权和凭据隔离。</li>
+<li>视频模型发现和参数适配。</li>
+<li>身份和积分查询。</li>
+<li>正式生成、轮询、下载和恢复。</li>
+</ul>
+<h3>阶段 5：合成与发布</h3>
+<ul>
+<li>镜头审核。</li>
+<li>FFmpeg 合成。</li>
+<li>导出和公开分享。</li>
+</ul>
+<h3>阶段 6：测试和部署</h3>
+<ul>
+<li>pytest、Playwright。</li>
+<li>安全和权限测试。</li>
+<li>Docker 部署。</li>
+<li>运维文档。</li>
+</ul>
+<h2>25. 验收标准</h2>
+<p>MVP 满足以下条件才视为完成：</p>
+<ol>
+<li>中文和英文界面均可完整使用。</li>
+<li>用户能够创建、修改、归档和删除自己的项目。</li>
+<li>Agent 能生成符合 Pydantic Schema 的多镜头故事板。</li>
+<li>用户可以在生成前查看并批准预计积分费用。</li>
+<li>刷新页面或重启服务后任务状态不会丢失。</li>
+<li>Pippit Access Key 和 CLI 登录文件不出现在浏览器、日志或公开接口中。</li>
+<li>生成任务不会因自动重试造成重复扣费。</li>
+<li>用户可以审核、重新生成、排序和合成镜头。</li>
+<li>最终视频可下载，并能创建可撤销的公开分享链接。</li>
+<li>Mock Provider 的自动化测试全部通过。</li>
+<li>Pippit 状态和积分只读 Smoke Test 通过。</li>
+<li>在账户有积分且用户授权的情况下，至少完成一次真实视频生成和导出。</li>
+</ol>
+<h2>26. 主要风险</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>风险</th>
+<th>应对措施</th>
+</tr></thead><tbody>
+<tr>
+<td>Pippit CLI 参数或输出变化</td>
+<td>命令契约测试、Provider 隔离、版本锁定</td>
+</tr>
+<tr>
+<td>生成提交超时导致不确定状态</td>
+<td>本地幂等键、任务对账、禁止盲目重试</td>
+</tr>
+<tr>
+<td>视频生成耗时长</td>
+<td>Celery、持久任务、SSE、超时与取消</td>
+</tr>
+<tr>
+<td>费用误用</td>
+<td>审批门、预算上限、积分流水</td>
+</tr>
+<tr>
+<td>Token 泄露</td>
+<td>服务端加密、日志脱敏、Cookie 安全</td>
+</tr>
+<tr>
+<td>前后端类型不一致</td>
+<td>OpenAPI 自动生成客户端</td>
+</tr>
+<tr>
+<td>文件过大或非法上传</td>
+<td>预签名、大小和 MIME 校验</td>
+</tr>
+<tr>
+<td>Celery 与 LangGraph 状态重复</td>
+<td>明确数据库事实来源和单向事件流</td>
+</tr>
+<tr>
+<td>中英文内容不同步</td>
+<td>统一翻译键、双语测试、Agent Locale 状态</td>
+</tr>
+</tbody></table></div>
+<h2>27. 待确认事项</h2>
+<p>以下事项不影响开始实现，但影响生产部署：</p>
+<ul>
+<li>使用哪个 OpenAI-compatible 模型服务平台。</li>
+<li>生产部署服务器和域名。</li>
+<li>是否在 MVP 中开放公开分享。</li>
+<li>媒体保留时间和最大上传大小。</li>
+<li>是否为服务端 Pippit 账户补充积分以执行真实生成验收。</li>
+<li>生产 Celery Broker 是否直接使用 RabbitMQ。</li>
+</ul>
+<h2>28. 变更记录</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>版本</th>
+<th>日期</th>
+<th>状态</th>
+<th>说明</th>
+</tr></thead><tbody>
+<tr>
+<td>v0.1</td>
+<td>2026-11-01</td>
+<td>待评审</td>
+<td>初始软件设计</td>
+</tr>
+<tr>
+<td>v1.0</td>
+<td>2026-11-01</td>
+<td>已评审通过</td>
+<td>确定 Python 后端、中英文及 TDD 要求</td>
+</tr>
+</tbody></table></div></article>
+    </main>
+    <script src="../docs.js"></script>
+  </body>
+</html>

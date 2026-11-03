@@ -169,11 +169,11 @@ export function ProjectsDashboard() {
   }
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_76%_-12%,rgba(255,118,67,0.11),transparent_31%),#0b0a08] px-5 py-7 text-[#f7f0e6] sm:px-8">
+    <main className="min-h-screen bg-[radial-gradient(circle_at_76%_-12%,rgba(22,119,255,0.14),transparent_31%),#0b0a08] px-5 py-7 text-[#f7f0e6] sm:px-8">
       <div className="mx-auto max-w-7xl">
         <header className="flex items-center justify-between border-b border-white/10 pb-6">
           <Link className="flex items-center gap-3 font-semibold" href="/">
-            <span className="grid size-9 place-items-center rounded-xl bg-[#ff7542] text-[#18140f]">
+            <span className="grid size-9 place-items-center rounded-xl border border-white/20 text-white">
               <Video className="h-4 w-4" />
             </span>
             VideoAgent
@@ -199,7 +199,7 @@ export function ProjectsDashboard() {
               </h1>
             </div>
             <button
-              className="flex items-center justify-center gap-2 rounded-full bg-[#f7f0e6] px-5 py-3 text-sm font-semibold text-[#18140f] transition hover:bg-[#ffd8c7]"
+              className="flex items-center justify-center gap-2 rounded-full bg-[#1677ff] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#00b8ff]"
               onClick={() => setShowCreate((current) => !current)}
               type="button"
             >
@@ -216,7 +216,7 @@ export function ProjectsDashboard() {
               <label className="space-y-2 text-sm font-medium">
                 <span>{t("projectTitle")}</span>
                 <input
-                className="block w-full rounded-xl border border-white/10 bg-[#15120e] px-4 py-3 text-white outline-none focus:border-[#ff7542]"
+                className="block w-full rounded-xl border border-white/10 bg-[#15120e] px-4 py-3 text-white outline-none focus:border-[#1677ff]"
                   name="title"
                   required
                 />
@@ -224,12 +224,12 @@ export function ProjectsDashboard() {
               <label className="space-y-2 text-sm font-medium">
                 <span>{t("brief")}</span>
                 <input
-                className="block w-full rounded-xl border border-white/10 bg-[#15120e] px-4 py-3 text-white outline-none focus:border-[#ff7542]"
+                className="block w-full rounded-xl border border-white/10 bg-[#15120e] px-4 py-3 text-white outline-none focus:border-[#1677ff]"
                   name="brief"
                 />
               </label>
               <button
-                className="rounded-xl bg-[#ff7542] px-5 py-3 font-semibold text-[#18140f] disabled:opacity-50"
+                className="rounded-xl bg-[#1677ff] px-5 py-3 font-semibold text-white disabled:opacity-50"
                 disabled={isCreating}
                 type="submit"
               >
@@ -254,7 +254,7 @@ export function ProjectsDashboard() {
             ) : projects.length === 0 ? (
               <div className="grid min-h-80 place-items-center rounded-[2rem] border border-dashed border-white/15 bg-white/[0.035] p-8 text-center">
                 <div className="max-w-md">
-                  <span className="mx-auto grid size-14 place-items-center rounded-2xl bg-[#ff7542] text-[#18140f]">
+                  <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-white/20 text-white/70">
                     <Video className="h-6 w-6" />
                   </span>
                   <p className="mt-5 leading-7 text-white/45">{t("empty")}</p>
@@ -341,7 +341,7 @@ export function ProjectsDashboard() {
             </div>
             <input
               autoFocus
-              className="mt-6 w-full rounded-xl border border-white/10 bg-[#0b0a08] px-4 py-3 text-white outline-none focus:border-[#ff7542]"
+              className="mt-6 w-full rounded-xl border border-white/10 bg-[#0b0a08] px-4 py-3 text-white outline-none focus:border-[#1677ff]"
               maxLength={200}
               onChange={(event) => setRenameValue(event.target.value)}
               required
@@ -356,7 +356,7 @@ export function ProjectsDashboard() {
                 {t("cancel")}
               </button>
               <button
-                className="rounded-full bg-[#ff7542] px-5 py-2.5 text-sm font-semibold text-[#18140f] disabled:opacity-40"
+                className="rounded-full bg-[#1677ff] px-5 py-2.5 text-sm font-semibold text-white disabled:opacity-40"
                 disabled={isRenaming || !renameValue.trim()}
                 type="submit"
               >

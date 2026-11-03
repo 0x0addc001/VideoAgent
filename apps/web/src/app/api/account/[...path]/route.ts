@@ -3,28 +3,58 @@ import { NextResponse } from "next/server";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api/v1";
-const ALLOWED_PATHS = new Set([
+const ALLOWED_GET_PATHS = new Set([
   "auth/me",
   "providers/pippit/credits",
 ]);
+const ALLOWED_POST_PATHS = new Set(["projects"]);
+
+async function sessionHeaders() {
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get("videoagent_session")?.value;
+  return sessionToken
+    ? { cookie: `videoagent_session=${sessionToken}` }
+    : undefined;
+}
 
 export async function GET(
   _request: Request,
   { params }: { params: Promise<{ path: string[] }> },
 ) {
   const path = (await params).path.join("/");
-  if (!ALLOWED_PATHS.has(path)) {
+  if (!ALLOWED_GET_PATHS.has(path)) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
 
-  const cookieStore = await cookies();
-  const sessionToken = cookieStore.get("videoagent_session")?.value;
   const response = await fetch(`${API_BASE_URL}/${path}`, {
     cache: "no-store",
-    headers: sessionToken
-      ? { cookie: `videoagent_session=${sessionToken}` }
-      : undefined,
+    headers: await sessionHeaders(),
   });
+  return proxyResponse(response);
+}
+
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ path: string[] }> },
+) {
+  const path = (await params).path.join("/");
+  if (!ALLOWED_POST_PATHS.has(path)) {
+    return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+
+  const response = await fetch(`${API_BASE_URL}/${path}`, {
+    method: "POST",
+    cache: "no-store",
+    headers: {
+      ...(await sessionHeaders()),
+      "content-type": request.headers.get("content-type") ?? "application/json",
+    },
+    body: await request.text(),
+  });
+  return proxyResponse(response);
+}
+
+async function proxyResponse(response: Response) {
   const body = await response.text();
 
   return new NextResponse(body, {

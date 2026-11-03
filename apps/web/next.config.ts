@@ -6,6 +6,8 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   poweredByHeader: false,
+  agentRules: false,
+  devIndicators: false,
   transpilePackages: ["@videoagent/landing"],
 };
 

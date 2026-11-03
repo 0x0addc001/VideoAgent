@@ -8,6 +8,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / ".pages-build"
+WEB_PUBLIC = ROOT / "apps" / "web" / "public"
 DOCS = ROOT / "docs"
 
 DOCUMENTS = {
@@ -178,7 +179,7 @@ def document_page(filename: str, title_en: str, title_zh: str, body: str) -> str
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="VideoAgent {html.escape(title_en)}" />
     <title>{document_title}</title>
-    <link rel="icon" href="../brand-mark.svg?v=3" type="image/svg+xml" />
+    <link rel="icon" href="../brand-mark.svg?v=10" type="image/svg+xml" />
     <link rel="stylesheet" href="../docs.css" />
   </head>
   <body>
@@ -191,7 +192,6 @@ def document_page(filename: str, title_en: str, title_zh: str, body: str) -> str
           <span class="theme-icon" aria-hidden="true">◐</span>
           <span class="theme-label">Dark</span>
         </button>
-        <a class="back-link" href="../">Back to project</a>
       </div>
     </header>
     <main class="document-shell">
@@ -231,6 +231,13 @@ def main() -> None:
             document_page(filename, title_en, title_zh, body),
             encoding="utf-8",
         )
+
+    web_docs = WEB_PUBLIC / "docs"
+    if web_docs.exists():
+        shutil.rmtree(web_docs)
+    shutil.copytree(docs_output, web_docs)
+    shutil.copy2(ROOT / "site" / "docs.css", WEB_PUBLIC / "docs.css")
+    shutil.copy2(ROOT / "site" / "docs.js", WEB_PUBLIC / "docs.js")
 
     print(f"Built GitHub Pages artifact at {OUTPUT}")
 

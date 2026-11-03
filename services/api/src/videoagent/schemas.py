@@ -108,6 +108,32 @@ class StoryboardRead(BaseModel):
     updated_at: datetime
 
 
+EvaluationMetricKey = Literal["consistency", "coverage", "clarity", "pacing"]
+EvaluationSuggestionCode = Literal[
+    "ADD_SHOTS",
+    "UNIFY_ASPECT_RATIO",
+    "IMPROVE_PROMPTS",
+    "BALANCE_PACING",
+    "READY",
+]
+
+
+class EvaluationMetric(BaseModel):
+    key: EvaluationMetricKey
+    score: int = Field(ge=0, le=100)
+
+
+class EvaluationSuggestion(BaseModel):
+    code: EvaluationSuggestionCode
+    severity: Literal["high", "medium", "low"]
+
+
+class EvaluationRead(BaseModel):
+    overall_score: int = Field(ge=0, le=100)
+    metrics: list[EvaluationMetric]
+    suggestions: list[EvaluationSuggestion]
+
+
 class GenerationApproval(BaseModel):
     approved: bool
 

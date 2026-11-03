@@ -1,39 +1,56 @@
 "use client";
 
-import { Gem, Github, Sparkles, UserRound } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import {
+  Bell,
+  Clapperboard,
+  FileText,
+  Film,
+  Flame,
+  Gem,
+  Play,
+  UserRound,
+  Video,
+} from "lucide-react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { landingContent, type LandingLocale } from "./content";
 
 export type { LandingLocale } from "./content";
+export { landingContent } from "./content";
 
 export type LandingMode = "app" | "project";
+export type LandingView = "agents" | "skills" | "assets" | "hots" | "docs";
 
 export type LandingHeroVideo = {
   src: string;
   poster: string;
 };
 
+export type LandingProjectDraft = {
+  prompt: string;
+  style: string;
+  aspectRatio: "auto" | "16:9" | "9:16" | "1:1";
+  durationSeconds: "auto" | 5 | 10;
+  model: string;
+  resolution: "auto" | "720p" | "1080p";
+  audio: "auto" | "on" | "off";
+  reviewMode: "auto" | "ask";
+};
+
 export type LandingPageProps = {
   locale: LandingLocale;
   mode: LandingMode;
   videos: readonly LandingHeroVideo[];
-  appHref: string;
-  githubHref: string;
-  localeLinks: Record<LandingLocale, string>;
   docsBase: string;
   accountApiBase?: string;
   accountCredits?: number | null;
-  accountHref?: string;
+  onCreateProject?: (draft: LandingProjectDraft) => Promise<void>;
 };
 
 function BrandMark() {
   return (
-    <span className="brand-mark" aria-hidden="true">
-      <svg viewBox="0 0 24 24">
-        <rect x="2.75" y="6.75" width="13" height="10.5" rx="2.2" />
-        <path d="m15.75 10 5.5-2.25v8.5L15.75 14" />
-        <circle cx="9.25" cy="12" r="3" />
-      </svg>
+    <span className="brand-mark" data-tone="monochrome" aria-hidden="true">
+      <span className="brand-v">V</span>
+      <span className="brand-a">A</span>
     </span>
   );
 }
@@ -133,56 +150,62 @@ export function LandingPage({
   locale,
   mode,
   videos,
-  appHref,
-  githubHref,
-  localeLinks,
   docsBase,
   accountApiBase,
   accountCredits = 0,
-  accountHref,
+  onCreateProject,
 }: LandingPageProps) {
   const content = landingContent[locale];
-  const [languageOpen, setLanguageOpen] = useState(false);
-  const [activeVideo, setActiveVideo] = useState(0);
+  const [activeView, setActiveView] = useState<LandingView>("agents");
+  const [activeDocument, setActiveDocument] = useState<string>(
+    content.documents[0]?.path ?? "",
+  );
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [previewNoticeOpen, setPreviewNoticeOpen] = useState(false);
   const [displayCredits, setDisplayCredits] = useState(
     accountCredits === null ? "—" : String(accountCredits),
   );
   const [displayAvatar, setDisplayAvatar] = useState<string | null>(null);
-  const languageRef = useRef<HTMLDivElement>(null);
-  const docsRef = useRef<HTMLDetailsElement>(null);
+  const [prompt, setPrompt] = useState("");
+  const [style, setStyle] = useState<string>("auto");
+  const [aspectRatio, setAspectRatio] =
+    useState<LandingProjectDraft["aspectRatio"]>("auto");
+  const [durationSeconds, setDurationSeconds] =
+    useState<LandingProjectDraft["durationSeconds"]>("auto");
+  const [model, setModel] = useState<string>("auto");
+  const [resolution, setResolution] =
+    useState<LandingProjectDraft["resolution"]>("auto");
+  const [audio, setAudio] = useState<LandingProjectDraft["audio"]>("auto");
+  const [reviewMode, setReviewMode] =
+    useState<LandingProjectDraft["reviewMode"]>("auto");
+  const [isCreating, setIsCreating] = useState(false);
+  const [composerError, setComposerError] = useState<string | null>(null);
+  const notificationRef = useRef<HTMLDivElement>(null);
+  const promptRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     document.documentElement.lang = locale;
     document.title = content.documentTitle;
+    const hash = window.location.hash.slice(1);
+    if (
+      hash === "agents" ||
+      hash === "skills" ||
+      hash === "assets" ||
+      hash === "hots" ||
+      hash === "docs"
+    ) {
+      setActiveView(hash);
+    }
 
     function closeMenus(event: PointerEvent) {
-      if (!languageRef.current?.contains(event.target as Node)) {
-        setLanguageOpen(false);
-      }
-      if (!docsRef.current?.contains(event.target as Node)) {
-        docsRef.current?.removeAttribute("open");
+      if (!notificationRef.current?.contains(event.target as Node)) {
+        setNotificationsOpen(false);
       }
     }
 
     document.addEventListener("pointerdown", closeMenus);
     return () => document.removeEventListener("pointerdown", closeMenus);
   }, [content.documentTitle, locale]);
-
-  useEffect(() => {
-    if (
-      videos.length < 2 ||
-      (typeof window.matchMedia === "function" &&
-        window.matchMedia("(prefers-reduced-motion: reduce)").matches)
-    ) {
-      return;
-    }
-
-    const timer = window.setInterval(() => {
-      setActiveVideo((current) => (current + 1) % videos.length);
-    }, 5200);
-    return () => window.clearInterval(timer);
-  }, [videos.length]);
 
   useEffect(() => {
     if (!accountApiBase || mode !== "app") return;
@@ -242,6 +265,50 @@ export function LandingPage({
     return () => document.removeEventListener("keydown", closePreview);
   }, [previewNoticeOpen]);
 
+  async function submitProject(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const normalizedPrompt = prompt.trim();
+    if (!normalizedPrompt) {
+      promptRef.current?.focus();
+      return;
+    }
+    if (mode !== "app" || !onCreateProject) {
+      setPreviewNoticeOpen(true);
+      return;
+    }
+
+    setComposerError(null);
+    setIsCreating(true);
+    try {
+      await onCreateProject({
+        prompt: normalizedPrompt,
+        style,
+        aspectRatio,
+        durationSeconds,
+        model,
+        resolution,
+        audio,
+        reviewMode,
+      });
+    } catch {
+      setComposerError(content.composer.error);
+    } finally {
+      setIsCreating(false);
+    }
+  }
+
+  function usePrompt(value: string) {
+    setPrompt(value);
+    setActiveView("agents");
+    window.history.replaceState(null, "", "#agents");
+    window.setTimeout(() => promptRef.current?.focus(), 250);
+  }
+
+  function openView(view: LandingView) {
+    setActiveView(view);
+    window.history.replaceState(null, "", `#${view}`);
+  }
+
   return (
     <main className="va-landing">
       <div className="page-grain" aria-hidden="true" />
@@ -249,145 +316,93 @@ export function LandingPage({
       <header className="site-header">
         <a className="brand" href={mode === "app" ? `/${locale}` : "./"} aria-label="VideoAgent home">
           <BrandMark />
-          <span>VideoAgent</span>
+          <span className="brand-copy">
+            <strong>Video</strong>
+            <em>Agent</em>
+          </span>
         </a>
 
         <nav aria-label="Main navigation">
-          <a href="#product">{content.nav.product}</a>
-          <a href="#workflow">{content.nav.workflow}</a>
-          <details className="nav-dropdown" ref={docsRef}>
-            <summary>{content.nav.docs}</summary>
-            <div className="nav-dropdown-menu">
-              {content.documents.map((document) => (
-                <a href={`${docsBase}${document.path}`} key={document.path}>
-                  {document.label}
-                </a>
-              ))}
-            </div>
-          </details>
+          <button
+            aria-current={activeView === "agents" ? "page" : undefined}
+            onClick={() => openView("agents")}
+            type="button"
+          >
+            <Clapperboard aria-hidden="true" className="nav-icon" />
+            <span>{content.nav.agents}</span>
+          </button>
+          <button
+            aria-current={activeView === "skills" ? "page" : undefined}
+            onClick={() => openView("skills")}
+            type="button"
+          >
+            <Video aria-hidden="true" className="nav-icon" />
+            <span>{content.nav.skills}</span>
+          </button>
+          <button
+            aria-current={activeView === "assets" ? "page" : undefined}
+            onClick={() => openView("assets")}
+            type="button"
+          >
+            <Film aria-hidden="true" className="nav-icon" />
+            <span>{content.nav.assets}</span>
+          </button>
+          <button
+            aria-current={activeView === "hots" ? "page" : undefined}
+            onClick={() => openView("hots")}
+            type="button"
+          >
+            <Flame aria-hidden="true" className="nav-icon" />
+            <span>{content.nav.hots}</span>
+          </button>
+          <button
+            aria-current={activeView === "docs" ? "page" : undefined}
+            onClick={() => openView("docs")}
+            type="button"
+          >
+            <FileText aria-hidden="true" className="nav-icon" />
+            <span>{content.nav.docs}</span>
+          </button>
         </nav>
 
         <div className="header-actions">
-          <div className="language-switcher" ref={languageRef}>
+          <span
+            aria-label={content.nav.account}
+            className="account-avatar"
+            title={content.nav.account}
+          >
+            {displayAvatar ?? <UserRound className="avatar-placeholder" />}
+          </span>
+          <span className="credit-count" title={`${displayCredits} ${content.nav.credits}`}>
+            <Gem aria-hidden="true" className="credit-icon" strokeWidth={1.6} />
+            <span>{displayCredits}</span>
+          </span>
+          <div className="notification-switcher" ref={notificationRef}>
             <button
-              aria-expanded={languageOpen}
-              aria-haspopup="menu"
-              aria-label={content.nav.language}
-              className="language-button"
-              onClick={() => setLanguageOpen((current) => !current)}
+              aria-expanded={notificationsOpen}
+              aria-label={content.nav.notifications}
+              className="notification-button"
+              onClick={() => setNotificationsOpen((current) => !current)}
               type="button"
             >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="12" cy="12" r="9" />
-                <path d="M3 12h18M12 3c2.5 2.5 3.8 5.5 3.8 9S14.5 18.5 12 21M12 3c-2.5 2.5-3.8 5.5-3.8 9S9.5 18.5 12 21" />
-              </svg>
+              <Bell aria-hidden="true" strokeWidth={1.6} />
             </button>
-            <div className="language-options" hidden={!languageOpen} role="menu">
-              <a
-                aria-current={locale === "en" ? "true" : undefined}
-                href={localeLinks.en}
-                onClick={() => setLanguageOpen(false)}
-                role="menuitem"
-              >
-                English
-              </a>
-              <a
-                aria-current={locale === "zh-CN" ? "true" : undefined}
-                href={localeLinks["zh-CN"]}
-                onClick={() => setLanguageOpen(false)}
-                role="menuitem"
-              >
-                简体中文
-              </a>
+            <div className="notification-panel" hidden={!notificationsOpen}>
+              <p>{content.nav.emptyNotifications}</p>
             </div>
           </div>
-          {mode === "app" ? (
-            <a
-              aria-label={content.nav.account}
-              className="account-summary"
-              href={accountHref ?? `/${locale}/projects`}
-            >
-              <span className="credit-count" title={`${displayCredits} ${content.nav.credits}`}>
-                <Gem aria-hidden="true" className="credit-icon" strokeWidth={1.6} />
-                <span>{displayCredits}</span>
-              </span>
-              <span className="account-avatar" aria-hidden="true">
-                {displayAvatar ?? <UserRound className="avatar-placeholder" />}
-              </span>
-            </a>
-          ) : (
-            <button
-              aria-haspopup="dialog"
-              aria-label={content.nav.account}
-              className="account-summary"
-              onClick={() => setPreviewNoticeOpen(true)}
-              type="button"
-            >
-              <span className="credit-count" title={`${displayCredits} ${content.nav.credits}`}>
-                <Gem aria-hidden="true" className="credit-icon" strokeWidth={1.6} />
-                <span>{displayCredits}</span>
-              </span>
-              <span className="account-avatar" aria-hidden="true">
-                {displayAvatar ?? <UserRound className="avatar-placeholder" />}
-              </span>
-            </button>
-          )}
         </div>
       </header>
 
-      <section className="hero">
-        <div className="hero-copy">
-          <h1 className="hero-title">
-            <span className="hero-title-line">
-              <StreamingText className="title-kicker" text={content.hero.eyebrow} />
-              <span className="title-separator" aria-hidden="true">/</span>
-            </span>
-            <StreamingText
-              className="title-main"
-              delay={850}
-              text={content.hero.title}
-            />
-          </h1>
-          <p className="hero-description">
-            <StreamingText delay={1450} text={content.hero.description} />
-          </p>
-          <div className="hero-actions">
-            {mode === "app" ? (
-              <a className="primary-action" href={appHref}>
-                <Sparkles aria-hidden="true" className="cta-icon" strokeWidth={1.9} />
-                <span>{content.hero.create}</span>
-                <span aria-hidden="true">↗</span>
-              </a>
-            ) : (
-              <button
-                aria-haspopup="dialog"
-                className="primary-action"
-                onClick={() => setPreviewNoticeOpen(true)}
-                type="button"
-              >
-                <Sparkles aria-hidden="true" className="cta-icon" strokeWidth={1.9} />
-                <span>{content.hero.create}</span>
-                <span aria-hidden="true">↗</span>
-              </button>
-            )}
-            <a className="secondary-action" href={githubHref}>
-              <Github aria-hidden="true" className="cta-icon" strokeWidth={1.9} />
-              <span>GitHub</span>
-              <span aria-hidden="true">↗</span>
-            </a>
-          </div>
-        </div>
-
-        <div className="hero-art">
-          {videos.map((video, index) => {
-            const slot = (index - activeVideo + videos.length) % videos.length;
-            const position = slot === 0 ? "front" : slot === 1 ? "left" : "right";
-            return (
+      {activeView === "agents" ? (
+      <section className="hero" id="agents">
+        <div className="hero-media-wall" aria-hidden="true">
+          <div className="hero-media-track">
+            {[...videos, ...videos].map((video, index) => (
               <figure
-                className={`hero-video-frame hero-video-${position}`}
-                data-active={index === activeVideo}
-                data-video-index={index}
-                key={video.src}
+                className="hero-video-frame"
+                data-video-index={index % videos.length}
+                key={`${video.src}-${index}`}
               >
                 <video
                   aria-label={content.hero.videoLabel}
@@ -401,63 +416,293 @@ export function LandingPage({
                   <source src={video.src} type="video/mp4" />
                 </video>
               </figure>
-            );
-          })}
+            ))}
+          </div>
+          <div className="hero-media-shade" />
         </div>
-      </section>
 
-      <section className="section product" id="product">
-        <div className="section-heading product-heading">
-          <h2 className="combined-section-title">
-            <StreamingText className="title-kicker" text={content.product.label} />
-            <span className="title-separator" aria-hidden="true">/</span>
-            <StreamingText
-              className="title-main"
-              delay={350}
-              text={content.product.title}
+        <div className="hero-inner">
+          <div className="hero-copy">
+            <div className="hero-title">
+              <h1>
+                <span>
+                  Video<em className="hero-accent">Agent</em>
+                </span>
+                <span>
+                  You Are the <em className="hero-accent">Director</em>
+                </span>
+              </h1>
+            </div>
+          </div>
+
+          <form className="creation-composer" onSubmit={submitProject}>
+            <textarea
+              aria-label={content.composer.label}
+              maxLength={20_000}
+              onChange={(event) => setPrompt(event.target.value)}
+              placeholder={content.composer.placeholder}
+              ref={promptRef}
+              rows={3}
+              value={prompt}
             />
-          </h2>
-        </div>
-        <div className="capabilities">
-          {content.product.features.map((feature, index) => (
-            <article key={feature.title}>
-              <h3>
-                <StreamingText text={feature.title} />
-              </h3>
-              <p>
-                <StreamingText delay={index * 100} text={feature.body} />
-              </p>
-            </article>
-          ))}
-        </div>
-      </section>
-
-      <section className="section workflow" id="workflow">
-        <h2 className="experience-title">
-          <StreamingText className="title-kicker" text={content.workflow.label} />
-          <span className="title-separator" aria-hidden="true">/</span>
-          <StreamingText
-            className="title-main"
-            delay={350}
-            text={content.workflow.title}
-          />
-        </h2>
-        <div className="workflow-grid">
-          {content.workflow.steps.map((step, index) => (
-            <div key={step.title}>
-              <span>{String(index + 1).padStart(2, "0")}</span>
-              <div className="workflow-step-copy">
-                <h3>
-                  <StreamingText text={step.title} />
-                </h3>
-                <p>
-                  <StreamingText delay={index * 100} text={step.description} />
-                </p>
+            <div className="idea-row">
+              <div>
+                {content.composer.examples.map((example) => (
+                  <button
+                    key={example}
+                    onClick={() => {
+                      setPrompt(example);
+                      promptRef.current?.focus();
+                    }}
+                    type="button"
+                  >
+                    {example}
+                  </button>
+                ))}
               </div>
             </div>
+            <div className="composer-controls" aria-label={content.composer.settingsLabel}>
+              <label className="composer-select">
+                <select
+                  aria-label={content.composer.styleLabel}
+                  onChange={(event) => setStyle(event.target.value)}
+                  value={style}
+                >
+                  <option value="auto">{content.composer.styleLabel}</option>
+                  {content.composer.styles.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {content.composer.styleLabel} · {option.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="composer-select">
+                <select
+                  aria-label={content.composer.frameLabel}
+                  onChange={(event) =>
+                    setAspectRatio(event.target.value as LandingProjectDraft["aspectRatio"])
+                  }
+                  value={aspectRatio}
+                >
+                  <option value="auto">{content.composer.frameLabel}</option>
+                  {(["16:9", "9:16", "1:1"] as const).map((ratio) => (
+                    <option key={ratio} value={ratio}>
+                      {content.composer.frameLabel} · {ratio}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="composer-select">
+                <select
+                  aria-label={content.composer.lengthLabel}
+                  onChange={(event) =>
+                    setDurationSeconds(
+                      Number(event.target.value) as LandingProjectDraft["durationSeconds"],
+                    )
+                  }
+                  value={durationSeconds}
+                >
+                  <option value="auto">{content.composer.lengthLabel}</option>
+                  {[5, 10].map((duration) => (
+                    <option key={duration} value={duration}>
+                      {content.composer.lengthLabel} · {duration}
+                      {content.composer.seconds}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="composer-select composer-select-model">
+                <select
+                  aria-label={content.composer.modelLabel}
+                  onChange={(event) => setModel(event.target.value)}
+                  value={model}
+                >
+                  <option value="auto">{content.composer.modelLabel}</option>
+                  {content.composer.models
+                    .filter((option) => option !== "Auto")
+                    .map((option) => (
+                    <option key={option} value={option}>
+                      {content.composer.modelLabel} · {option}
+                    </option>
+                    ))}
+                </select>
+              </label>
+              <label className="composer-select">
+                <select
+                  aria-label={content.composer.resolutionLabel}
+                  onChange={(event) =>
+                    setResolution(
+                      event.target.value as LandingProjectDraft["resolution"],
+                    )
+                  }
+                  value={resolution}
+                >
+                  <option value="auto">{content.composer.resolutionLabel}</option>
+                  {content.composer.resolutions.map((option) => (
+                    <option key={option} value={option}>
+                      {content.composer.resolutionLabel} · {option}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="composer-select">
+                <select
+                  aria-label={content.composer.audioLabel}
+                  onChange={(event) =>
+                    setAudio(event.target.value as LandingProjectDraft["audio"])
+                  }
+                  value={audio}
+                >
+                  {content.composer.audioOptions.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.id === "auto"
+                        ? content.composer.audioLabel
+                        : `${content.composer.audioLabel} · ${option.label}`}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="composer-select">
+                <select
+                  aria-label={content.composer.reviewLabel}
+                  onChange={(event) =>
+                    setReviewMode(
+                      event.target.value as LandingProjectDraft["reviewMode"],
+                    )
+                  }
+                  value={reviewMode}
+                >
+                  {content.composer.reviewOptions.map((option) => (
+                    <option key={option.id} value={option.id}>
+                      {option.id === "auto"
+                        ? content.composer.reviewLabel
+                        : `${content.composer.reviewLabel} · ${option.label}`}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                aria-label={content.composer.submit}
+                className="composer-submit"
+                disabled={!prompt.trim() || isCreating}
+                type="submit"
+              >
+                <Play aria-hidden="true" strokeWidth={1.8} />
+                <span>{isCreating ? content.composer.creating : content.composer.submit}</span>
+              </button>
+            </div>
+            {composerError ? (
+              <p aria-live="polite" className="composer-error">
+                {composerError}
+              </p>
+            ) : null}
+          </form>
+        </div>
+      </section>
+      ) : null}
+
+      {activeView === "skills" ? (
+      <section className="section feature-section" id="skills">
+        <div className="feature-grid">
+          {content.skills.items.map((skill) => (
+            <button
+              className="feature-card"
+              key={skill.title}
+              onClick={() => usePrompt(skill.prompt)}
+              type="button"
+            >
+              <span>{skill.title}</span>
+              <p>{skill.body}</p>
+              <i aria-hidden="true">↗</i>
+            </button>
+          ))}
+        </div>
+        <div className="review-skill">
+          <div>
+            <span>{content.skills.review.title}</span>
+            <p>{content.skills.review.body}</p>
+          </div>
+          {mode === "app" ? (
+            <a href={`/${locale}/projects`}>{content.skills.review.action} ↗</a>
+          ) : (
+            <button onClick={() => setPreviewNoticeOpen(true)} type="button">
+              {content.skills.review.action} ↗
+            </button>
+          )}
+        </div>
+      </section>
+      ) : null}
+
+      {activeView === "assets" ? (
+      <section className="section feature-section" id="assets">
+        <div className="feature-grid">
+          {content.assets.items.map((asset) =>
+            mode === "app" ? (
+              <a className="feature-card" href={`/${locale}${asset.href}`} key={asset.title}>
+                <span>{asset.title}</span>
+                <p>{asset.body}</p>
+                <i aria-hidden="true">↗</i>
+              </a>
+            ) : (
+              <button
+                className="feature-card"
+                key={asset.title}
+                onClick={() => setPreviewNoticeOpen(true)}
+                type="button"
+              >
+                <span>{asset.title}</span>
+                <p>{asset.body}</p>
+                <i aria-hidden="true">↗</i>
+              </button>
+            ),
+          )}
+        </div>
+      </section>
+      ) : null}
+
+      {activeView === "hots" ? (
+      <section className="section hots-section" id="hots">
+        <div className="community-stream">
+          {content.hots.items.map((item, index) => (
+            <button
+              className={`community-card community-card-${(index % 5) + 1}`}
+              key={item.title}
+              onClick={() => usePrompt(item.prompt)}
+              type="button"
+            >
+              <img alt="" src={videos[index % videos.length].poster} />
+              <span className="community-card-title">{item.title}</span>
+              <span className="community-action">{content.hots.makeThis} ↗</span>
+            </button>
           ))}
         </div>
       </section>
+      ) : null}
+
+      {activeView === "docs" ? (
+        <section className="docs-view" id="docs">
+          <div aria-label={content.nav.docs} className="docs-tabs" role="tablist">
+            {content.documents.map((document) => (
+              <button
+                aria-selected={activeDocument === document.path}
+                key={document.path}
+                onClick={() => setActiveDocument(document.path)}
+                role="tab"
+                type="button"
+              >
+                {document.label}
+              </button>
+            ))}
+          </div>
+          <div className="docs-frame">
+            <iframe
+              key={activeDocument}
+              src={`${docsBase}${activeDocument}`}
+              title={content.documents.find((document) => document.path === activeDocument)?.label}
+            />
+          </div>
+        </section>
+      ) : null}
 
       {previewNoticeOpen ? (
         <div

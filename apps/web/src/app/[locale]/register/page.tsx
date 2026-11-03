@@ -1,7 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AuthForm } from "@/components/auth-form";
-import { LocaleSwitcher } from "@/components/locale-switcher";
 import { Link } from "@/i18n/navigation";
 
 export default async function RegisterPage({
@@ -16,7 +15,7 @@ export default async function RegisterPage({
   return (
     <main className="grid min-h-screen bg-[#eee6da] text-[#16130f] lg:grid-cols-[0.9fr_1.1fr]">
       <aside className="relative hidden overflow-hidden bg-[#15120e] p-12 text-white lg:flex lg:flex-col lg:justify-between">
-        <div className="absolute -right-44 -top-44 size-[34rem] rounded-full bg-[#ff7542]/20 blur-3xl" />
+        <div className="absolute -right-44 -top-44 size-[34rem] rounded-full bg-[#1677ff]/20 blur-3xl" />
         <Link className="relative flex items-center gap-2 text-sm text-white/70 hover:text-white" href="/">
           <ArrowLeft className="h-4 w-4" />
           VideoAgent
@@ -45,9 +44,6 @@ export default async function RegisterPage({
             <Link className="font-semibold lg:hidden" href="/">
               VideoAgent
             </Link>
-            <div className="ml-auto [&_select]:border-[#16130f]/10 [&_select]:bg-white [&_select]:text-[#16130f]">
-              <LocaleSwitcher />
-            </div>
           </div>
           <AuthForm mode="register" />
         </div>

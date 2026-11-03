@@ -1,5 +1,5 @@
-import { act, fireEvent, render } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { fireEvent, render, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { LandingPage } from "@videoagent/landing";
 
 const props = {
@@ -16,69 +16,146 @@ const props = {
       poster: "/media/vlog-hero-black-poster.jpg",
     },
   ],
-  appHref: "/en/register",
-  githubHref: "https://github.com/0x0addc001/VideoAgent",
-  localeLinks: { en: "/en", "zh-CN": "/zh-CN" },
-  docsBase: "https://0x0addc001.github.io/VideoAgent/docs/",
+  docsBase: "/docs/",
 };
 
+afterEach(() => {
+  window.history.replaceState({}, "", "/");
+});
+
 describe("LandingPage", () => {
-  it("keeps the navigation, account summary, and two hero actions", () => {
+  it("keeps left-side navigation, a VA brand, and creation composer", () => {
     const { container } = render(<LandingPage {...props} />);
     const nav = container.querySelector(".site-header > nav");
-    const heroActions = container.querySelector(".hero-actions");
+    const composer = container.querySelector(".creation-composer");
 
-    expect(nav?.textContent).toContain("Product");
-    expect(nav?.textContent).toContain("Experience");
+    expect(nav?.textContent).toContain("Agent");
+    expect(nav?.textContent).toContain("Skills");
+    expect(nav?.textContent).toContain("Assets");
+    expect(nav?.textContent).toContain("Hots");
     expect(nav?.textContent).toContain("Docs");
-    expect(container.querySelector(".language-button svg")).toBeInTheDocument();
-    expect(heroActions?.querySelectorAll("a, button")).toHaveLength(2);
-    expect(heroActions).toHaveTextContent("Create");
-    expect(heroActions).toHaveTextContent("GitHub");
-    expect(heroActions?.querySelector("svg")).toBeInTheDocument();
-    expect(container.querySelector(".secondary-action")).toHaveTextContent("GitHub");
+    expect(nav?.querySelectorAll(".nav-icon")).toHaveLength(5);
+    expect(container.querySelector(".language-button")).not.toBeInTheDocument();
+    expect(container.querySelector(".notification-button svg")).toBeInTheDocument();
+    expect(container.querySelector(".brand-mark")).toHaveTextContent("VA");
+    expect(composer).toBeInTheDocument();
+    expect(composer?.querySelectorAll(".composer-select")).toHaveLength(7);
+    expect(
+      [...(composer?.querySelectorAll("select") ?? [])].map((select) => select.value),
+    ).toEqual(["auto", "auto", "auto", "auto", "auto", "auto", "auto"]);
+    expect(composer).toHaveTextContent("Cinematic");
+    expect(composer).toHaveTextContent("16:9");
+    expect(composer).toHaveTextContent("5s");
     expect(container.querySelector(".credit-count")).toHaveTextContent("0");
     expect(container.querySelector(".account-avatar svg")).toBeInTheDocument();
+    expect(container.querySelector("a.account-summary")).not.toBeInTheDocument();
+    const actionItems = [...container.querySelectorAll(".header-actions > *")];
+    expect(actionItems.map((item) => item.className)).toEqual([
+      "account-avatar",
+      "credit-count",
+      "notification-switcher",
+    ]);
     expect(container.querySelector("footer")).not.toBeInTheDocument();
-    expect(container.querySelector(".hero-video-front")).toHaveAttribute(
-      "data-video-index",
-      "0",
-    );
-    expect(container.querySelectorAll(".hero-video-frame")).toHaveLength(3);
+    expect(container.querySelectorAll(".hero-video-frame")).toHaveLength(6);
     const videoSources = [...container.querySelectorAll(".hero-video-frame source")].map(
       (source) => source.getAttribute("src"),
     );
     expect(new Set(videoSources).size).toBe(3);
-    expect(container.querySelector(".workflow-grid p")).toHaveTextContent(
-      "Write a brief",
+    expect(container.querySelector(".hero-copy h1")).toHaveTextContent("VideoAgent");
+    expect(container.querySelector(".hero-copy h1")).toHaveTextContent(
+      "You Are the Director",
     );
-    expect(container.querySelector(".hero-title .title-kicker")).toHaveTextContent(
-      "VideoAgent",
+    expect(container.querySelector("#skills")).not.toBeInTheDocument();
+    expect(container.querySelector("#assets")).not.toBeInTheDocument();
+    expect(container.querySelector("#hots")).not.toBeInTheDocument();
+    expect(container.querySelector(".hero-description")).not.toBeInTheDocument();
+    expect(container.querySelector(".composer-github")).not.toBeInTheDocument();
+    expect(composer?.querySelector(".idea-row")).toBeInTheDocument();
+  });
+
+  it("switches between isolated navigation views", () => {
+    const { container } = render(<LandingPage {...props} />);
+
+    fireEvent.click(container.querySelector('button[aria-current="page"]')!);
+    fireEvent.click(
+      [...container.querySelectorAll(".site-header button")].find(
+        (button) => button.textContent === "Skills",
+      )!,
     );
-    expect(container.querySelector(".combined-section-title .title-kicker")).toHaveTextContent(
-      "Product",
+    expect(container.querySelector("#skills .feature-card")).toHaveTextContent(
+      "Storyboard",
     );
-    expect(container.querySelector(".experience-title .title-kicker")).toHaveTextContent(
-      "Experience",
+    expect(container.querySelector("#agents")).not.toBeInTheDocument();
+    expect(container.querySelector(".review-skill")).toHaveTextContent("Instant review");
+
+    fireEvent.click(
+      [...container.querySelectorAll(".site-header button")].find(
+        (button) => button.textContent === "Assets",
+      )!,
+    );
+    expect(container.querySelector("#assets .feature-card")).toHaveTextContent(
+      "Projects",
+    );
+    expect(container.querySelector("#skills")).not.toBeInTheDocument();
+
+    fireEvent.click(
+      [...container.querySelectorAll(".site-header button")].find(
+        (button) => button.textContent === "Hots",
+      )!,
+    );
+    expect(container.querySelector("#hots .community-card")).toHaveTextContent(
+      "Editorial vlog",
+    );
+    expect(container.querySelector("#hots .community-action")).toHaveTextContent(
+      "Make this",
+    );
+
+    fireEvent.click(
+      [...container.querySelectorAll(".site-header button")].find(
+        (button) => button.textContent === "Docs",
+      )!,
+    );
+    expect(container.querySelector("#docs iframe")).toHaveAttribute(
+      "src",
+      "/docs/software-design.html",
     );
   });
 
-  it("removes the duplicate header action on the application homepage", () => {
-    const { container } = render(<LandingPage {...props} mode="app" />);
-
-    expect(container.querySelector(".header-action")).not.toBeInTheDocument();
-    expect(container.querySelector(".hero-actions .primary-action")).toHaveTextContent(
-      "Create",
+  it("submits the home composer as a complete project draft", async () => {
+    const onCreateProject = vi.fn().mockResolvedValue(undefined);
+    const { container } = render(
+      <LandingPage {...props} mode="app" onCreateProject={onCreateProject} />,
     );
-    expect(container.querySelector(".hero-actions .secondary-action")).toHaveTextContent(
-      "GitHub",
+    const textarea = container.querySelector(".creation-composer textarea");
+
+    fireEvent.change(textarea!, {
+      target: { value: "A quiet Copenhagen morning told in one shot" },
+    });
+    fireEvent.click(
+      container.querySelector(".creation-composer .composer-submit")!,
+    );
+
+    await waitFor(() =>
+      expect(onCreateProject).toHaveBeenCalledWith({
+        prompt: "A quiet Copenhagen morning told in one shot",
+        style: "auto",
+        aspectRatio: "auto",
+        durationSeconds: "auto",
+        model: "auto",
+        resolution: "auto",
+        audio: "auto",
+        reviewMode: "auto",
+      }),
     );
   });
 
   it("shows the preview notice for unavailable project-page actions", () => {
     const { container } = render(<LandingPage {...props} />);
 
-    fireEvent.click(container.querySelector(".hero-actions .primary-action")!);
+    fireEvent.change(container.querySelector(".creation-composer textarea")!, {
+      target: { value: "A product film" },
+    });
+    fireEvent.click(container.querySelector(".creation-composer .composer-submit")!);
 
     expect(container.querySelector(".preview-dialog")).toHaveTextContent("Preview only");
     expect(container.querySelector(".preview-dialog")).toHaveTextContent(
@@ -86,28 +163,13 @@ describe("LandingPage", () => {
     );
   });
 
-  it("does not add decorative icons to product capabilities", () => {
+  it("renders the hero video as a seamless horizontal carousel", () => {
     const { container } = render(<LandingPage {...props} />);
+    const indices = [...container.querySelectorAll(".hero-video-frame")].map((frame) =>
+      frame.getAttribute("data-video-index"),
+    );
 
-    expect(container.querySelector(".capabilities svg")).not.toBeInTheDocument();
-    expect(container.querySelector(".feature-icon")).not.toBeInTheDocument();
-  });
-
-  it("brings the next hero video to the front", () => {
-    vi.useFakeTimers();
-    try {
-      const { container } = render(<LandingPage {...props} />);
-
-      act(() => {
-        vi.advanceTimersByTime(5200);
-      });
-
-      expect(container.querySelector(".hero-video-front")).toHaveAttribute(
-        "data-video-index",
-        "1",
-      );
-    } finally {
-      vi.useRealTimers();
-    }
+    expect(container.querySelector(".hero-media-track")).toBeInTheDocument();
+    expect(indices).toEqual(["0", "1", "2", "0", "1", "2"]);
   });
 });

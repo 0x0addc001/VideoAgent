@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="VideoAgent API Reference" />
+    <title>API Reference · VideoAgent</title>
+    <link rel="icon" href="../brand-mark.svg?v=10" type="image/svg+xml" />
+    <link rel="stylesheet" href="../docs.css" />
+  </head>
+  <body>
+    <header class="doc-header">
+      <a class="doc-brand" href="../">VideoAgent</a>
+      <span>/</span>
+      <span>API Reference</span>
+      <div class="doc-actions">
+        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme">
+          <span class="theme-icon" aria-hidden="true">◐</span>
+          <span class="theme-label">Dark</span>
+        </button>
+      </div>
+    </header>
+    <main class="document-shell">
+      <aside class="document-meta">
+        <span>PROJECT DOCUMENT</span>
+        <strong>API Reference</strong>
+        <small>API 接口文档</small>
+      </aside>
+      <article class="document"><h1>VideoAgent API Reference</h1>
+<p>Base URL:</p>
+<pre><code class="language-text">http://localhost:8000/api/v1</code></pre>
+<p>Interactive OpenAPI documentation is available at:</p>
+<pre><code class="language-text">http://localhost:8000/docs
+http://localhost:8000/openapi.json</code></pre>
+<h2>Authentication</h2>
+<p>The API uses an HttpOnly session cookie named <code>videoagent_session</code>. Browser clients must send requests with credentials enabled.</p>
+<h3>Register</h3>
+<p><code>POST /auth/register</code></p>
+<pre><code class="language-json">{
+  &quot;email&quot;: &quot;creator@example.com&quot;,
+  &quot;password&quot;: &quot;at-least-eight-characters&quot;,
+  &quot;locale&quot;: &quot;zh-CN&quot;
+}</code></pre>
+<h3>Login</h3>
+<p><code>POST /auth/login</code></p>
+<pre><code class="language-json">{
+  &quot;email&quot;: &quot;creator@example.com&quot;,
+  &quot;password&quot;: &quot;at-least-eight-characters&quot;
+}</code></pre>
+<h3>Current User</h3>
+<p><code>GET /auth/me</code></p>
+<p>Returns the authenticated user's ID, email, locale, and creation time.</p>
+<h3>Update Locale</h3>
+<p><code>PATCH /auth/me</code></p>
+<pre><code class="language-json">{
+  &quot;locale&quot;: &quot;en&quot;
+}</code></pre>
+<h3>Logout</h3>
+<p><code>POST /auth/logout</code></p>
+<p>Revokes the current session and removes the session cookie.</p>
+<h2>Projects</h2>
+<p>All project endpoints require authentication and are scoped to the current user. Another user's project returns <code>404</code>.</p>
+<div class="table-wrap"><table><thead><tr>
+<th>Method</th>
+<th>Path</th>
+<th>Purpose</th>
+</tr></thead><tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/projects</code></td>
+<td>List active projects</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/projects</code></td>
+<td>Create a project</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/projects/{project_id}</code></td>
+<td>Read a project</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/projects/{project_id}</code></td>
+<td>Archive a project</td>
+</tr>
+</tbody></table></div>
+<p>Create request:</p>
+<pre><code class="language-json">{
+  &quot;title&quot;: &quot;Launch film&quot;,
+  &quot;brief&quot;: &quot;A ten-second cinematic product launch&quot;
+}</code></pre>
+<h2>Storyboards</h2>
+<h3>Read Storyboard</h3>
+<p><code>GET /projects/{project_id}/storyboard</code></p>
+<h3>Replace Storyboard</h3>
+<p><code>PUT /projects/{project_id}/storyboard</code></p>
+<pre><code class="language-json">{
+  &quot;shots&quot;: [
+    {
+      &quot;description&quot;: &quot;Opening product reveal&quot;,
+      &quot;prompt_en&quot;: &quot;Cinematic product reveal with warm rim light&quot;,
+      &quot;prompt_zh&quot;: &quot;暖色轮廓光下的电影感产品亮相&quot;,
+      &quot;duration_seconds&quot;: 5,
+      &quot;aspect_ratio&quot;: &quot;16:9&quot;,
+      &quot;generation_mode&quot;: &quot;text_to_video&quot;
+    }
+  ]
+}</code></pre>
+<h2>VideoAgent Conversation</h2>
+<h3>List Messages</h3>
+<p><code>GET /projects/{project_id}/messages</code></p>
+<h3>Send Message</h3>
+<p><code>POST /projects/{project_id}/messages</code></p>
+<pre><code class="language-json">{
+  &quot;content&quot;: &quot;Turn the brief into a three-shot launch film&quot;
+}</code></pre>
+<p>The response includes the user message, VideoAgent reply, and updated storyboard.</p>
+<h2>Generation</h2>
+<h3>Estimate Cost</h3>
+<p><code>POST /shots/{shot_id}/estimate</code></p>
+<h3>Generate Shot</h3>
+<p><code>POST /shots/{shot_id}/generate</code></p>
+<p>Required header:</p>
+<pre><code class="language-text">Idempotency-Key: unique-request-id</code></pre>
+<p>Request:</p>
+<pre><code class="language-json">{
+  &quot;approved&quot;: true
+}</code></pre>
+<h3>Job Status</h3>
+<p><code>GET /jobs/{job_id}</code></p>
+<p>Possible statuses include <code>submitted</code>, <code>queued</code>, <code>running</code>, <code>succeeded</code>, <code>failed</code>, and <code>cancelled</code>.</p>
+<h3>Evaluate Storyboard</h3>
+<p><code>POST /projects/{project_id}/evaluate</code></p>
+<p>Returns an immediate review of the current storyboard:</p>
+<pre><code class="language-json">{
+  &quot;overall_score&quot;: 88,
+  &quot;metrics&quot;: [
+    { &quot;key&quot;: &quot;consistency&quot;, &quot;score&quot;: 92 },
+    { &quot;key&quot;: &quot;coverage&quot;, &quot;score&quot;: 100 },
+    { &quot;key&quot;: &quot;clarity&quot;, &quot;score&quot;: 84 },
+    { &quot;key&quot;: &quot;pacing&quot;, &quot;score&quot;: 80 }
+  ],
+  &quot;suggestions&quot;: [
+    { &quot;code&quot;: &quot;IMPROVE_PROMPTS&quot;, &quot;severity&quot;: &quot;medium&quot; }
+  ]
+}</code></pre>
+<h2>Pippit Provider</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Method</th>
+<th>Path</th>
+<th>Purpose</th>
+</tr></thead><tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/providers/pippit</code></td>
+<td>Read server-owned Pippit account status</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/providers/pippit/credits</code></td>
+<td>Read the active Pippit credit balance</td>
+</tr>
+</tbody></table></div>
+<p>Pippit authorization is server-owned. The API invokes the installed <code>pippit-tool-cli</code> binary; browser clients never receive access keys or CLI session files. Every VideoAgent user therefore uses the same configured Pippit account and credit pool. Operators should authorize the CLI on the API host before enabling live generation.</p>
+<p><code>GET /providers/pippit</code> response:</p>
+<pre><code class="language-json">{
+  &quot;provider&quot;: &quot;pippit&quot;,
+  &quot;connected&quot;: true,
+  &quot;scope&quot;: &quot;server&quot;
+}</code></pre>
+<p><code>GET /providers/pippit/credits</code> response:</p>
+<pre><code class="language-json">{
+  &quot;provider&quot;: &quot;pippit&quot;,
+  &quot;connected&quot;: true,
+  &quot;credits&quot;: 42
+}</code></pre>
+<p>If the server CLI is not logged in, the credits endpoint returns <code>connected: false</code> and <code>credits: null</code>. A missing binary returns <code>503</code>; an upstream CLI failure returns <code>502</code>.</p>
+<h2>Errors</h2>
+<p>Errors use the following shape:</p>
+<pre><code class="language-json">{
+  &quot;error&quot;: {
+    &quot;code&quot;: &quot;PROJECT_NOT_FOUND&quot;,
+    &quot;message&quot;: &quot;The project was not found.&quot;,
+    &quot;details&quot;: {},
+    &quot;requestId&quot;: &quot;request-id&quot;
+  }
+}</code></pre>
+<p>Important status codes:</p>
+<div class="table-wrap"><table><thead><tr>
+<th>Status</th>
+<th>Meaning</th>
+</tr></thead><tbody>
+<tr>
+<td><code>401</code></td>
+<td>Authentication required or session expired</td>
+</tr>
+<tr>
+<td><code>403</code></td>
+<td>Explicit approval required</td>
+</tr>
+<tr>
+<td><code>404</code></td>
+<td>Resource not found or not owned by the current user</td>
+</tr>
+<tr>
+<td><code>409</code></td>
+<td>Configured provider is not active</td>
+</tr>
+<tr>
+<td><code>422</code></td>
+<td>Request validation failed</td>
+</tr>
+<tr>
+<td><code>502</code></td>
+<td>Upstream provider request failed</td>
+</tr>
+</tbody></table></div></article>
+    </main>
+    <script src="../docs.js"></script>
+  </body>
+</html>

@@ -25,8 +25,14 @@ describe("localization resources", () => {
   });
 
   it("uses concise creator-focused product messaging", () => {
-    expect(landingContent.en.hero.title).toBe("Direct the story");
-    expect(landingContent["zh-CN"].hero.title).toBe("导演你的故事");
+    expect(landingContent.en.hero.title).toBe("You Are the Director");
+    expect(landingContent["zh-CN"].hero.title).toBe("把想象拍成片");
+    expect(landingContent.en.nav.agents).toBe("Agent");
+    expect(landingContent.en.nav.skills).toBe("Skills");
+    expect(landingContent["zh-CN"].nav.agents).toBe("Agent");
+    expect(landingContent["zh-CN"].nav.skills).toBe("Skills");
+    expect(landingContent["zh-CN"].nav.assets).toBe("资产");
+    expect(landingContent["zh-CN"].nav.hots).toBe("Hots");
     expect(landingContent.en.hero.eyebrow).toBe("VideoAgent");
     expect(landingContent["zh-CN"].hero.eyebrow).toBe("VideoAgent");
     expect(landingContent["zh-CN"].product.features[1].title).toBe("镜头管理");

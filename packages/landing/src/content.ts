@@ -3,23 +3,145 @@ export type LandingLocale = "en" | "zh-CN";
 export const landingContent = {
   en: {
     localeLabel: "English",
-    documentTitle: "VideoAgent — Direct the story",
+    documentTitle: "VideoAgent — You Are the Director",
     nav: {
-      product: "Product",
-      workflow: "Experience",
+      agents: "Agent",
+      skills: "Skills",
+      assets: "Assets",
+      hots: "Hots",
       docs: "Docs",
       language: "Change language",
       credits: "credits",
       account: "Account",
+      notifications: "Notifications",
+      emptyNotifications: "No notifications",
     },
     hero: {
       eyebrow: "VideoAgent",
-      title: "Direct the story",
+      title: "You Are the Director",
       description:
-        "Turn a brief into a structured storyboard, generate each shot with a model provider, and keep the final cut under your control.",
-      create: "Create",
+        "Describe the idea. VideoAgent builds the shots.",
+      create: "Create project",
       github: "GitHub",
       videoLabel: "A creator filming a cinematic personal vlog",
+    },
+    composer: {
+      label: "Start with an idea",
+      placeholder: "Describe a story, a mood, or a product film...",
+      agentMode: "Agent",
+      videoMode: "Video",
+      submit: "Action",
+      creating: "Starting...",
+      settingsLabel: "Project settings",
+      styleLabel: "Style",
+      frameLabel: "Frame",
+      lengthLabel: "Length",
+      modelLabel: "Model",
+      resolutionLabel: "Quality",
+      audioLabel: "Audio",
+      reviewLabel: "Review",
+      seconds: "s",
+      error: "The project could not be created. Please try again.",
+      examplesLabel: "Try an idea",
+      examples: [
+        "A quiet Copenhagen morning told in one shot",
+        "A one-take fragrance campaign",
+        "A founder story in three cinematic beats",
+      ],
+      styles: [
+        { id: "cinematic", label: "Cinematic" },
+        { id: "ugc", label: "UGC" },
+        { id: "product", label: "Product" },
+      ],
+      models: ["Auto", "Seedance 2.5", "Seedance 2.0 Mini", "Wan 3.0"],
+      resolutions: ["720p", "1080p"],
+      audioOptions: [
+        { id: "auto", label: "Auto" },
+        { id: "on", label: "On" },
+        { id: "off", label: "Off" },
+      ],
+      reviewOptions: [
+        { id: "auto", label: "Auto" },
+        { id: "ask", label: "Ask first" },
+      ],
+    },
+    skills: {
+      label: "Skills",
+      title: "Start with a tool",
+      review: {
+        title: "Instant review",
+        body: "Score consistency, coverage, clarity, and pacing, then get actionable fixes.",
+        action: "Open projects",
+      },
+      items: [
+        {
+          title: "Storyboard",
+          body: "Turn one idea into editable shots.",
+          prompt: "Build a three-shot storyboard from this idea:",
+        },
+        {
+          title: "Shot direction",
+          body: "Plan framing, movement, and duration.",
+          prompt: "Create a shot list with framing, camera movement, and duration for:",
+        },
+        {
+          title: "UGC video",
+          body: "Create a natural creator-led vertical video.",
+          prompt: "Create a vertical UGC video with a natural creator-led performance for:",
+        },
+      ],
+    },
+    assets: {
+      label: "Assets",
+      title: "Open your workspace",
+      items: [
+        {
+          title: "Projects",
+          body: "Your conversations, boards, and jobs.",
+          href: "/projects",
+        },
+        {
+          title: "Storyboards",
+          body: "Continue planning an existing film.",
+          href: "/projects",
+        },
+        {
+          title: "Generated clips",
+          body: "Review finished and active shots.",
+          href: "/projects",
+        },
+      ],
+    },
+    hots: {
+      label: "Hots",
+      title: "Community feed",
+      makeThis: "Make this",
+      items: [
+        {
+          title: "Editorial vlog",
+          prompt: "Create a quiet editorial vlog in a dark creative studio.",
+        },
+        {
+          title: "European morning",
+          prompt: "Create a natural European morning vlog with handheld movement.",
+        },
+        {
+          title: "Studio portrait",
+          prompt: "Create a fashion studio vlog with warm rim light and calm movement.",
+        },
+        {
+          title: "Product reveal",
+          prompt: "Create a slow product reveal with precise studio lighting.",
+        },
+        {
+          title: "Night city",
+          prompt: "Create a restrained night-city vlog with soft practical lights.",
+        },
+        {
+          title: "Founder portrait",
+          prompt: "Create a three-shot founder portrait with natural interview movement.",
+        },
+      ],
     },
     product: {
       label: "Product",
@@ -76,23 +198,145 @@ export const landingContent = {
   },
   "zh-CN": {
     localeLabel: "简体中文",
-    documentTitle: "VideoAgent — 导演你的故事",
+    documentTitle: "VideoAgent — 把脑海里的画面拍出来",
     nav: {
-      product: "产品",
-      workflow: "体验",
+      agents: "Agent",
+      skills: "Skills",
+      assets: "资产",
+      hots: "Hots",
       docs: "文档",
       language: "切换语言",
       credits: "积分",
       account: "账户",
+      notifications: "通知",
+      emptyNotifications: "暂无通知",
     },
     hero: {
       eyebrow: "VideoAgent",
-      title: "导演你的故事",
+      title: "把想象拍成片",
       description:
-        "把创意变成结构化故事板，通过模型服务生成每个镜头，并让最终成片始终处于你的掌控之中。",
-      create: "创作",
+        "描述创意，VideoAgent 编排镜头。",
+      create: "创建项目",
       github: "GitHub",
       videoLabel: "正在拍摄电影感 Vlog 的创作者",
+    },
+    composer: {
+      label: "从一个想法开始",
+      placeholder: "描述一个故事、一种情绪，或你想展示的产品……",
+      agentMode: "Agent",
+      videoMode: "视频",
+      submit: "开拍",
+      creating: "准备中……",
+      settingsLabel: "创作设定",
+      styleLabel: "风格",
+      frameLabel: "画幅",
+      lengthLabel: "时长",
+      modelLabel: "模型",
+      resolutionLabel: "清晰度",
+      audioLabel: "音频",
+      reviewLabel: "审核",
+      seconds: "秒",
+      error: "项目创建失败，请稍后重试。",
+      examplesLabel: "试试这些灵感",
+      examples: [
+        "清晨的哥本哈根，一镜到底",
+        "一支一镜到底的香水广告",
+        "用三个电影感片段讲述创始人故事",
+      ],
+      styles: [
+        { id: "cinematic", label: "电影感" },
+        { id: "ugc", label: "真实感" },
+        { id: "product", label: "产品片" },
+      ],
+      models: ["自动", "Seedance 2.5", "Seedance 2.0 Mini", "Wan 3.0"],
+      resolutions: ["720p", "1080p"],
+      audioOptions: [
+        { id: "auto", label: "自动" },
+        { id: "on", label: "开启" },
+        { id: "off", label: "关闭" },
+      ],
+      reviewOptions: [
+        { id: "auto", label: "自动" },
+        { id: "ask", label: "生成前确认" },
+      ],
+    },
+    skills: {
+      label: "技能",
+      title: "直接开始",
+      review: {
+        title: "即时评估",
+        body: "量化一致性、镜头覆盖、提示清晰度和节奏，并给出修改建议。",
+        action: "打开项目",
+      },
+      items: [
+        {
+          title: "故事板",
+          body: "把一个想法变成可编辑的镜头。",
+          prompt: "根据这个想法创建三段式故事板：",
+        },
+        {
+          title: "镜头设计",
+          body: "规划构图、运镜和时长。",
+          prompt: "为下面的创意生成镜头清单，包含构图、运镜和时长：",
+        },
+        {
+          title: "真实感视频",
+          body: "生成自然的竖屏创作者视频。",
+          prompt: "生成一条自然、竖屏、创作者出镜的真实感视频：",
+        },
+      ],
+    },
+    assets: {
+      label: "素材",
+      title: "进入工作区",
+      items: [
+        {
+          title: "项目",
+          body: "对话、故事板和生成任务。",
+          href: "/projects",
+        },
+        {
+          title: "故事板",
+          body: "继续编排已有视频。",
+          href: "/projects",
+        },
+        {
+          title: "已生成镜头",
+          body: "查看完成中和已完成的镜头。",
+          href: "/projects",
+        },
+      ],
+    },
+    hots: {
+      label: "Hots",
+      title: "社区作品",
+      makeThis: "做同款",
+      items: [
+        {
+          title: "编辑感 Vlog",
+          prompt: "在暗色创意工作室拍摄一条安静的编辑感 Vlog。",
+        },
+        {
+          title: "欧洲清晨",
+          prompt: "拍摄一条自然、手持感的欧洲清晨 Vlog。",
+        },
+        {
+          title: "影棚人像",
+          prompt: "拍摄一条暖色轮廓光、动作克制的时尚影棚 Vlog。",
+        },
+        {
+          title: "产品亮相",
+          prompt: "拍摄一条动作缓慢、灯光精准的产品亮相视频。",
+        },
+        {
+          title: "夜间城市",
+          prompt: "拍摄一条克制的夜间城市 Vlog，使用柔和的环境实景光。",
+        },
+        {
+          title: "创始人肖像",
+          prompt: "用三个镜头拍摄一条自然的创始人肖像视频。",
+        },
+      ],
     },
     product: {
       label: "产品",

@@ -1,7 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import { setRequestLocale } from "next-intl/server";
 import { AuthForm } from "@/components/auth-form";
-import { LocaleSwitcher } from "@/components/locale-switcher";
 import { Link } from "@/i18n/navigation";
 
 export default async function LoginPage({
@@ -20,9 +19,6 @@ export default async function LoginPage({
             <ArrowLeft className="h-4 w-4" />
             VideoAgent
           </Link>
-          <div className="[&_select]:border-[#16130f]/10 [&_select]:bg-white [&_select]:text-[#16130f]">
-            <LocaleSwitcher />
-          </div>
         </div>
         <AuthForm mode="login" />
       </section>

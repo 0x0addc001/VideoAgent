@@ -73,7 +73,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         </label>
         <input
           autoComplete="email"
-          className="w-full rounded-2xl border border-[#d9d2c5] bg-white px-4 py-3 text-[#16130f] outline-none transition placeholder:text-[#9c9487] focus:border-[#d4562b] focus:ring-4 focus:ring-[#d4562b]/10"
+          className="w-full rounded-2xl border border-[#d9d2c5] bg-white px-4 py-3 text-[#16130f] outline-none transition placeholder:text-[#9c9487] focus:border-[#1677ff] focus:ring-4 focus:ring-[#1677ff]/10"
           id="email"
           name="email"
           placeholder="you@example.com"
@@ -87,7 +87,7 @@ export function AuthForm({ mode }: AuthFormProps) {
         </label>
         <input
           autoComplete={isRegister ? "new-password" : "current-password"}
-          className="w-full rounded-2xl border border-[#d9d2c5] bg-white px-4 py-3 text-[#16130f] outline-none transition placeholder:text-[#9c9487] focus:border-[#d4562b] focus:ring-4 focus:ring-[#d4562b]/10"
+          className="w-full rounded-2xl border border-[#d9d2c5] bg-white px-4 py-3 text-[#16130f] outline-none transition placeholder:text-[#9c9487] focus:border-[#1677ff] focus:ring-4 focus:ring-[#1677ff]/10"
           id="password"
           minLength={8}
           name="password"
@@ -115,7 +115,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       <p className="text-center text-sm text-[#756d61]">
         {isRegister ? t("switchToLogin") : t("switchToRegister")}{" "}
         <Link
-          className="font-semibold text-[#b94621] hover:underline"
+          className="font-semibold text-[#3d64d9] hover:underline"
           href={isRegister ? "/login" : "/register"}
         >
           {isRegister ? t("signIn") : t("createAccount")}

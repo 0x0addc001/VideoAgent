@@ -1,6 +1,14 @@
 @import "tailwindcss";
 
 @font-face {
+  font-family: "Space Grotesk";
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url("/fonts/space-grotesk-latin.woff2") format("woff2");
+}
+
+@font-face {
   font-family: "Fraunces";
   font-style: normal;
   font-weight: 600;
@@ -61,7 +69,7 @@
   --foreground: #f6f0e6;
   --paper: #f1eadf;
   --ink: #16130f;
-  --accent: #ff7542;
+  --accent: #1677ff;
   --muted: #a69b8b;
 }
 
@@ -79,7 +87,8 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family:
-    Manrope, "Segoe UI Variable Text", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+    Baskerville, "Iowan Old Style", "Palatino Linotype", "Book Antiqua",
+    Georgia, serif;
   text-rendering: optimizeLegibility;
 }
 
@@ -88,17 +97,15 @@ h2,
 h3,
 .font-display {
   font-family:
-    Fraunces, "Noto Serif SC", "Noto Serif CJK SC", "Source Han Serif SC",
-    "Songti SC", "STSong", "SimSun", serif;
+    Baskerville, "Iowan Old Style", "Palatino Linotype", "Book Antiqua",
+    Georgia, serif;
 }
 
 html[lang="zh-CN"] h1,
 html[lang="zh-CN"] h2,
 html[lang="zh-CN"] h3,
 html[lang="zh-CN"] .font-display {
-  font-family:
-    Fraunces, "Noto Serif SC", "Noto Serif CJK SC", "Source Han Serif SC",
-    "Songti SC", "STSong", "SimSun", serif;
+  font-family: Baskerville, "Songti SC", STSong, SimSun, serif;
   font-weight: 500;
   letter-spacing: -0.025em;
 }
@@ -117,7 +124,7 @@ select {
 }
 
 ::selection {
-  background: rgba(255, 117, 66, 0.38);
+  background: rgba(22, 119, 255, 0.4);
 }
 
 .film-grain {
@@ -127,7 +134,7 @@ select {
 
 .hero-orbit {
   background:
-    radial-gradient(circle at 50% 48%, rgba(255, 117, 66, 0.24), transparent 24%),
+    radial-gradient(circle at 50% 48%, rgba(22, 119, 255, 0.26), transparent 24%),
     radial-gradient(circle at 50% 48%, transparent 40%, rgba(255, 255, 255, 0.04) 40.5%, transparent 41%),
     radial-gradient(circle at 50% 48%, transparent 58%, rgba(255, 255, 255, 0.03) 58.5%, transparent 59%);
 }
@@ -166,9 +173,9 @@ select {
 
 .scene-glow {
   background:
-    radial-gradient(circle at 68% 25%, rgba(255, 148, 91, 0.62), transparent 19%),
+    radial-gradient(circle at 68% 25%, rgba(22, 119, 255, 0.58), transparent 19%),
     radial-gradient(circle at 36% 68%, rgba(76, 116, 91, 0.5), transparent 30%),
-    linear-gradient(142deg, #2c1910 0%, #18221c 52%, #0e100f 100%);
+    linear-gradient(142deg, #172247 0%, #101c35 52%, #090c14 100%);
 }
 
 .animate-drift {

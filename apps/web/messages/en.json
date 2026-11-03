@@ -59,7 +59,22 @@
     "generationError": "The shot could not be generated. Please try again.",
     "dismiss": "Got it",
     "completed": "Shot ready",
-    "addStoryboard": "Add storyboard shot"
+    "addStoryboard": "Add storyboard shot",
+    "review": "Review",
+    "reviewTitle": "Project review",
+    "reviewing": "Reviewing...",
+    "overallScore": "Overall score",
+    "metricConsistency": "Consistency",
+    "metricCoverage": "Shot coverage",
+    "metricClarity": "Prompt clarity",
+    "metricPacing": "Pacing",
+    "suggestionAddShots": "Add shots so the story covers the full idea.",
+    "suggestionUnifyRatio": "Unify the aspect ratio to avoid visual jumps.",
+    "suggestionImprovePrompts": "Add subject, environment, and action details to prompts.",
+    "suggestionBalancePacing": "Adjust shot durations for a more even pace.",
+    "suggestionReady": "This storyboard is ready for generation.",
+    "reviewError": "Review is temporarily unavailable.",
+    "close": "Close"
   },
   "common": {
     "loading": "Loading...",

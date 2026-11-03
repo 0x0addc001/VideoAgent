@@ -7,7 +7,6 @@
 | 编写日期 | 2026-11-02 |
 | 对应设计 | `docs/software-design.md` |
 | 测试规范 | `docs/software-test-plan.md` |
-| 项目目录 | `D:\_Science\Agent\VideoAgent` |
 
 ## 1. 文档目的
 
@@ -215,9 +214,11 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 | `api/storyboards.py` | 故事板读取和替换 |
 | `api/agent.py` | 对话和消息持久化 |
 | `api/generation.py` | 积分估算、生成提交和任务查询 |
+| `api/evaluation.py` | 项目故事板即时评估 |
 | `api/providers.py` | Pippit 服务端状态和积分余额 |
 | `services/storyboards.py` | 故事板领域操作 |
 | `services/generation_jobs.py` | Job 刷新和 Shot 状态联动 |
+| `services/evaluation.py` | 一致性、覆盖、清晰度和节奏指标计算 |
 | `providers/pippit.py` | Pippit CLI 子进程、JSON 契约和任务映射 |
 | `agent/graph.py` | LangGraph 编译和执行 |
 | `agent/planner.py` | 本地和远程故事板规划器 |
@@ -228,16 +229,17 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 
 | 模块 | 当前职责 |
 | --- | --- |
-| `app/[locale]/page.tsx` | 品牌首页、视觉主画面和创作流程 |
+| `app/[locale]/page.tsx` | 加载共享首页与正式产品客户端适配层 |
+| `components/app-landing-page.tsx` | 首页创作框提交、项目创建和路由跳转 |
 | `app/[locale]/register/page.tsx` | 注册页 |
 | `app/[locale]/login/page.tsx` | 登录页 |
 | `app/[locale]/projects/page.tsx` | 项目工作台入口 |
 | `app/[locale]/projects/[projectId]/page.tsx` | 项目编辑工作区 |
-| `site-header.tsx` | 品牌导航和语言入口 |
+| `packages/landing` | 右侧导航、黑白品牌、视频主视觉和多设定创作框 |
 | `locale-switcher.tsx` | 中英文切换 |
 | `auth-form.tsx` | 注册/登录请求 |
 | `projects-dashboard.tsx` | 项目列表、新建、重命名和删除 |
-| `project-workspace.tsx` | Agent、故事板、镜头设置、估算和生成 |
+| `project-workspace.tsx` | 自动开始首轮 Agent 对话、故事板、镜头设置和生成 |
 
 前端通过 `NEXT_PUBLIC_API_BASE_URL` 访问 FastAPI，所有鉴权请求设置 `credentials: "include"`。
 
@@ -375,6 +377,7 @@ task reference    → query-result   → JobStatus + result URL
 | POST | `/shots/{id}/estimate` | 查询积分估算 |
 | POST | `/shots/{id}/generate` | 提交生成任务 |
 | GET | `/jobs/{id}` | 查询并刷新任务状态 |
+| POST | `/projects/{id}/evaluate` | 即时评估当前故事板 |
 | GET | `/providers/pippit` | 服务端 Pippit 登录状态 |
 | GET | `/providers/pippit/credits` | Pippit 积分余额 |
 

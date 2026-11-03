@@ -8,9 +8,11 @@ import {
   MessageCircleMore,
   PanelRight,
   Plus,
+  ScanSearch,
   Sparkles,
   Video,
   WandSparkles,
+  X,
 } from "lucide-react";
 import { StreamingText } from "@videoagent/landing";
 import { useLocale, useTranslations } from "next-intl";
@@ -80,6 +82,27 @@ type GenerationJob = {
   result_url: string | null;
 };
 
+type EvaluationMetric = {
+  key: "consistency" | "coverage" | "clarity" | "pacing";
+  score: number;
+};
+
+type EvaluationSuggestion = {
+  code:
+    | "ADD_SHOTS"
+    | "UNIFY_ASPECT_RATIO"
+    | "IMPROVE_PROMPTS"
+    | "BALANCE_PACING"
+    | "READY";
+  severity: "high" | "medium" | "low";
+};
+
+type Evaluation = {
+  overall_score: number;
+  metrics: EvaluationMetric[];
+  suggestions: EvaluationSuggestion[];
+};
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api/v1";
 
@@ -97,6 +120,9 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
   const [actionError, setActionError] = useState<string | null>(null);
   const [generationErrorOpen, setGenerationErrorOpen] = useState(false);
   const [activeJob, setActiveJob] = useState<GenerationJob | null>(null);
+  const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [isReviewing, setIsReviewing] = useState(false);
   const [mobilePanel, setMobilePanel] = useState<"agent" | "canvas" | "inspector">("canvas");
 
   useEffect(() => {
@@ -121,15 +147,38 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
         if (!projectResponse.ok) {
           throw new Error("load-failed");
         }
-        setProject((await projectResponse.json()) as Project);
+        const nextProject = (await projectResponse.json()) as Project;
+        setProject(nextProject);
         if (storyboardResponse.ok) {
           const nextStoryboard = (await storyboardResponse.json()) as Storyboard;
           setStoryboard(nextStoryboard);
           setSelectedShotId(nextStoryboard.shots[0]?.id ?? null);
         }
+        let nextMessages: Message[] = [];
         if (messagesResponse.ok) {
-          const nextMessages = (await messagesResponse.json()) as { items: Message[] };
-          setMessages(nextMessages.items);
+          nextMessages = ((await messagesResponse.json()) as { items: Message[] }).items;
+          setMessages(nextMessages);
+        }
+        const shouldStart =
+          new URLSearchParams(window.location.search).get("start") === "1" &&
+          nextMessages.length === 0 &&
+          Boolean(nextProject.brief.trim());
+        if (shouldStart) {
+          const turnResponse = await fetch(
+            `${API_BASE_URL}/projects/${projectId}/messages`,
+            {
+              method: "POST",
+              credentials: "include",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ content: nextProject.brief.trim() }),
+            },
+          );
+          if (turnResponse.ok) {
+            const turn = (await turnResponse.json()) as AgentTurn;
+            setMessages([turn.user_message, turn.assistant_message]);
+            setStoryboard(turn.storyboard);
+            setSelectedShotId(turn.storyboard.shots[0]?.id ?? null);
+          }
         }
         setStatus("ready");
       } catch {
@@ -313,6 +362,42 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
     }
   }
 
+  async function evaluateProject() {
+    if (!project || isReviewing) return;
+    setReviewOpen(true);
+    setEvaluation(null);
+    setIsReviewing(true);
+    setActionError(null);
+    try {
+      const response = await fetch(`${API_BASE_URL}/projects/${project.id}/evaluate`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("evaluation-failed");
+      setEvaluation((await response.json()) as Evaluation);
+    } catch {
+      setActionError(t("reviewError"));
+      setReviewOpen(false);
+    } finally {
+      setIsReviewing(false);
+    }
+  }
+
+  const metricLabels = {
+    consistency: t("metricConsistency"),
+    coverage: t("metricCoverage"),
+    clarity: t("metricClarity"),
+    pacing: t("metricPacing"),
+  };
+
+  const suggestionLabels = {
+    ADD_SHOTS: t("suggestionAddShots"),
+    UNIFY_ASPECT_RATIO: t("suggestionUnifyRatio"),
+    IMPROVE_PROMPTS: t("suggestionImprovePrompts"),
+    BALANCE_PACING: t("suggestionBalancePacing"),
+    READY: t("suggestionReady"),
+  };
+
   if (status === "loading") {
     return <div className="min-h-screen animate-pulse bg-[#11100d]" />;
   }
@@ -322,7 +407,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
       <main className="grid min-h-screen place-items-center bg-[#11100d] text-white">
         <div className="text-center">
           <h1 className="text-2xl font-semibold">{t("notFound")}</h1>
-          <Link className="mt-5 inline-flex items-center gap-2 text-[#ff9369]" href="/projects">
+          <Link className="mt-5 inline-flex items-center gap-2 text-[#5cc8ff]" href="/projects">
             <ArrowLeft className="h-4 w-4" />
             {t("back")}
           </Link>
@@ -342,7 +427,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>
-          <span className="hidden size-8 place-items-center rounded-xl bg-[#ff7542] text-[#16130f] sm:grid">
+          <span className="hidden size-8 place-items-center rounded-xl border border-white/20 text-white/70 sm:grid">
             <Video className="h-4 w-4" />
           </span>
           <div className="min-w-0">
@@ -360,7 +445,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
           )}
         >
           <div className="flex h-14 items-center border-b border-white/8 px-5 text-sm font-medium">
-            <Sparkles className="mr-2 h-4 w-4 text-[#ff8758]" />
+            <Sparkles className="mr-2 h-4 w-4 text-[#5cc8ff]" />
             {t("agent")}
           </div>
           <div className="flex-1 space-y-4 overflow-y-auto p-5">
@@ -374,7 +459,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
                   className={cn(
                     "rounded-2xl p-4 text-sm leading-6",
                     message.role === "user"
-                      ? "ml-8 bg-[#ff7542]/10 text-white/75"
+                      ? "ml-8 bg-[#1677ff]/10 text-white/75"
                       : "mr-4 border border-white/8 bg-white/[0.025] text-white/50",
                   )}
                   key={message.id}
@@ -389,7 +474,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
             )}
           </div>
           <div className="border-t border-white/8 p-4">
-            <label className="block rounded-2xl border border-white/10 bg-white/[0.035] p-3 focus-within:border-[#ff7542]/40">
+            <label className="block rounded-2xl border border-white/10 bg-white/[0.035] p-3 focus-within:border-[#1677ff]/40">
               <span className="sr-only">{t("agent")}</span>
               <textarea
                 className="min-h-16 w-full resize-none bg-transparent text-sm text-white outline-none placeholder:text-white/28"
@@ -400,7 +485,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
               <span className="flex justify-end">
                 <button
                   aria-label={t("send")}
-                  className="grid size-8 place-items-center rounded-xl bg-[#ff7542] text-[#16130f] disabled:opacity-40"
+                  className="grid size-8 place-items-center rounded-xl bg-[#1677ff] text-white disabled:opacity-40"
                   disabled={!messageDraft.trim() || isWorking}
                   onClick={() => void sendMessage()}
                   type="button"
@@ -418,8 +503,17 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
             mobilePanel === "canvas" ? "flex" : "hidden",
           )}
         >
-          <div className="flex h-14 items-center border-b border-white/8 px-5">
+          <div className="flex h-14 items-center justify-between border-b border-white/8 px-5">
             <span className="text-sm font-medium">{t("canvas")}</span>
+            <button
+              className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3.5 py-2 text-xs text-white/65 transition hover:border-white/20 hover:text-white disabled:opacity-40"
+              disabled={!storyboard || isReviewing}
+              onClick={() => void evaluateProject()}
+              type="button"
+            >
+              <ScanSearch className="h-4 w-4" />
+              {t("review")}
+            </button>
           </div>
           <div className="flex-1 overflow-auto p-5 sm:p-8">
             {storyboard ? (
@@ -430,9 +524,9 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
                       className={cn(
                         "relative aspect-video overflow-hidden rounded-2xl border text-left transition",
                         selectedShotId === shot.id
-                          ? "border-[#ff7542]/70 ring-1 ring-[#ff7542]/30"
+                          ? "border-[#1677ff]/70 ring-1 ring-[#1677ff]/30"
                           : "border-white/8 hover:border-white/20",
-                        "bg-[radial-gradient(circle_at_70%_20%,rgba(255,117,66,0.26),transparent_30%),linear-gradient(140deg,#352219,#0d1712)]",
+                        "bg-[radial-gradient(circle_at_70%_20%,rgba(22,119,255,0.24),transparent_30%),linear-gradient(140deg,#17264b,#0b1220)]",
                       )}
                       key={shot.id}
                       onClick={() => {
@@ -462,7 +556,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
                   ))}
                   <button
                     aria-label={t("addStoryboard")}
-                    className="grid aspect-video place-items-center rounded-2xl border border-dashed border-white/12 text-white/30 transition hover:border-[#ff7542]/40 hover:text-[#ff9369]"
+                    className="grid aspect-video place-items-center rounded-2xl border border-dashed border-white/12 text-white/30 transition hover:border-[#1677ff]/40 hover:text-[#5cc8ff]"
                     onClick={() => setMobilePanel("agent")}
                     type="button"
                   >
@@ -472,7 +566,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
               </div>
             ) : (
               <div className="grid min-h-full place-items-center">
-                <div className="relative grid aspect-video w-full max-w-3xl place-items-center overflow-hidden rounded-3xl border border-white/8 bg-[radial-gradient(circle_at_50%_20%,rgba(255,117,66,0.12),transparent_35%),linear-gradient(145deg,#181510,#0d1411)] p-8">
+                <div className="relative grid aspect-video w-full max-w-3xl place-items-center overflow-hidden rounded-3xl border border-white/8 bg-[radial-gradient(circle_at_50%_20%,rgba(22,119,255,0.14),transparent_35%),linear-gradient(145deg,#141c2d,#0b1119)] p-8">
                   <div className="max-w-md text-center">
                     <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-white/10 bg-white/5">
                       <Film className="h-6 w-6 text-white/30" />
@@ -480,7 +574,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
                     <h2 className="mt-5 text-xl font-medium">{t("starterTitle")}</h2>
                     <p className="mt-2 text-sm leading-6 text-white/40">{t("starterBody")}</p>
                     <button
-                      className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#ff7542] px-5 py-3 text-sm font-semibold text-[#16130f] disabled:opacity-50"
+                      className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#1677ff] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
                       disabled={isWorking}
                       onClick={() => void createStarterStoryboard()}
                       type="button"
@@ -533,7 +627,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
                         className={cn(
                           "rounded-xl border px-2 py-3 text-center text-xs",
                           selectedShot.aspect_ratio === ratio
-                            ? "border-[#ff7542]/50 bg-[#ff7542]/10 text-[#ff9b77]"
+                            ? "border-[#1677ff]/50 bg-[#1677ff]/10 text-[#8fdcff]"
                             : "border-white/8 text-white/30",
                         )}
                         key={ratio}
@@ -554,7 +648,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
 
                 <div className="space-y-2 border-t border-white/8 pt-5">
                   {estimate ? (
-                    <p className="rounded-xl bg-[#ff7542]/8 px-3 py-2 text-sm text-[#ffb398]">
+                    <p className="rounded-xl bg-[#1677ff]/8 px-3 py-2 text-sm text-[#b8eaff]">
                       {t("estimatedCredits")}: {estimate.credits}
                     </p>
                   ) : null}
@@ -567,7 +661,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
                     {t("estimate")}
                   </button>
                   <button
-                    className="w-full rounded-xl bg-[#ff7542] px-4 py-3 text-sm font-semibold text-[#16130f] disabled:opacity-40"
+                    className="w-full rounded-xl bg-[#1677ff] px-4 py-3 text-sm font-semibold text-white disabled:opacity-40"
                     disabled={isWorking || !estimate || selectedShot.status === "completed"}
                     onClick={() => void generateShot()}
                     type="button"
@@ -596,7 +690,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
           <button
             className={cn(
               "flex flex-col items-center gap-1 py-3 text-[11px]",
-              mobilePanel === id ? "text-[#ff8d62]" : "text-white/35",
+              mobilePanel === id ? "text-[#5cc8ff]" : "text-white/35",
             )}
             key={id}
             onClick={() => setMobilePanel(id)}
@@ -620,19 +714,94 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
             className="w-full max-w-md rounded-3xl border border-white/12 bg-[#15120e] p-6 shadow-2xl shadow-black/50"
             role="dialog"
           >
-            <p className="text-xs uppercase tracking-[0.16em] text-[#ff8b60]">VideoAgent</p>
+            <p className="text-xs uppercase tracking-[0.16em] text-[#5cc8ff]">VideoAgent</p>
             <h2 id="generation-error-title" className="mt-3 text-2xl font-semibold">
               {t("generationError")}
             </h2>
             <button
               autoFocus
-              className="mt-6 rounded-full bg-[#ff7542] px-5 py-2.5 text-sm font-semibold text-[#16130f]"
+              className="mt-6 rounded-full bg-[#1677ff] px-5 py-2.5 text-sm font-semibold text-white"
               onClick={() => setGenerationErrorOpen(false)}
               type="button"
             >
               {t("dismiss")}
             </button>
           </div>
+        </div>
+      ) : null}
+      {reviewOpen ? (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-5 backdrop-blur-sm"
+          onPointerDown={(event) => {
+            if (event.target === event.currentTarget) setReviewOpen(false);
+          }}
+        >
+          <section
+            aria-labelledby="review-title"
+            aria-modal="true"
+            className="w-full max-w-2xl rounded-3xl border border-white/12 bg-[#15120e] p-6 shadow-2xl shadow-black/50"
+            role="dialog"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.16em] text-[#5cc8ff]">
+                  VideoAgent
+                </p>
+                <h2 id="review-title" className="mt-2 text-2xl font-semibold">
+                  {t("reviewTitle")}
+                </h2>
+              </div>
+              <button
+                aria-label={t("close")}
+                className="grid size-9 place-items-center rounded-full bg-white/5 text-white/55 hover:text-white"
+                onClick={() => setReviewOpen(false)}
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            {isReviewing || !evaluation ? (
+              <p className="py-16 text-center text-sm text-white/45">{t("reviewing")}</p>
+            ) : (
+              <div className="mt-6">
+                <div className="flex items-end gap-3">
+                  <strong className="font-display text-6xl font-medium leading-none">
+                    {evaluation.overall_score}
+                  </strong>
+                  <span className="pb-1 text-sm text-white/40">{t("overallScore")}</span>
+                </div>
+                <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                  {evaluation.metrics.map((metric) => (
+                    <div
+                      className="rounded-2xl border border-white/8 bg-white/[0.025] p-4"
+                      key={metric.key}
+                    >
+                      <div className="flex items-center justify-between text-sm">
+                        <span>{metricLabels[metric.key]}</span>
+                        <span className="text-white/45">{metric.score}</span>
+                      </div>
+                      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/8">
+                        <div
+                          className="h-full rounded-full bg-[#1677ff]"
+                          style={{ width: `${metric.score}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="mt-6 space-y-2">
+                  {evaluation.suggestions.map((suggestion) => (
+                    <p
+                      className="rounded-xl border border-white/8 px-4 py-3 text-sm text-white/60"
+                      key={suggestion.code}
+                    >
+                      {suggestionLabels[suggestion.code]}
+                    </p>
+                  ))}
+                </div>
+              </div>
+            )}
+          </section>
         </div>
       ) : null}
     </main>

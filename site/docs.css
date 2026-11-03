@@ -4,19 +4,19 @@
   --ink: #191611;
   --muted: #6f675d;
   --line: rgba(25, 22, 17, 0.14);
-  --accent: #b84722;
+  --accent: #0f6fd8;
   --display:
-    Fraunces, "Noto Serif SC", "Noto Serif CJK SC", "Source Han Serif SC",
-    "Songti SC", "STSong", "SimSun", serif;
+    Baskerville, "Iowan Old Style", "Palatino Linotype", "Book Antiqua",
+    Georgia, "Songti SC", "STSong", SimSun, serif;
   --body:
-    Manrope, "Segoe UI Variable Text", "PingFang SC", "Microsoft YaHei",
-    "Noto Sans SC", sans-serif;
+    Baskerville, "Iowan Old Style", "Palatino Linotype", "Book Antiqua",
+    Georgia, "Songti SC", "STSong", SimSun, serif;
 }
 
 html[lang="zh-CN"] {
   --display:
-    Fraunces, "Noto Serif SC", "Noto Serif CJK SC", "Source Han Serif SC",
-    "Songti SC", "STSong", "SimSun", serif;
+    Baskerville, "Iowan Old Style", "Palatino Linotype", "Book Antiqua",
+    Georgia, "Songti SC", "STSong", SimSun, serif;
 }
 
 * {
@@ -99,7 +99,7 @@ html[data-theme="dark"] {
   --ink: #f3ece1;
   --muted: #aaa096;
   --line: rgba(255, 255, 255, 0.13);
-  --accent: #ff8a5c;
+  --accent: #5cc8ff;
 }
 
 html[data-theme="dark"] .doc-header {
@@ -121,7 +121,7 @@ html[data-theme="dark"] code {
 }
 
 html[data-theme="dark"] blockquote {
-  background: rgba(255, 138, 92, 0.07);
+  background: rgba(22, 119, 255, 0.08);
   color: #d2c9be;
 }
 
