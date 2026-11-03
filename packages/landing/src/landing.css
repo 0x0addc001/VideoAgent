@@ -1697,7 +1697,33 @@ html[lang="zh-CN"] .va-landing select {
   place-items: center;
 }
 
+.hero-copy h1 > .hero-line-brand {
+  display: flex;
+  justify-content: center;
+  gap: clamp(8px, 0.8vw, 13px);
+}
+
+.hero-title-icon {
+  width: clamp(30px, 3vw, 44px);
+  height: clamp(30px, 3vw, 44px);
+  flex: 0 0 auto;
+  fill: #4facff;
+  stroke: #4facff;
+  stroke-width: 1.2;
+}
+
+.hero-line-text {
+  display: inline-grid;
+  place-items: center;
+  white-space: nowrap;
+}
+
 .hero-copy h1 > .hero-line > span {
+  grid-area: 1 / 1;
+  justify-self: center;
+}
+
+.hero-line-text > span {
   grid-area: 1 / 1;
   justify-self: center;
 }

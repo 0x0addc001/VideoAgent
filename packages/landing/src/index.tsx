@@ -151,9 +151,14 @@ function StreamingHeroTitle() {
 
   return (
     <h1 aria-label="VideoAgent You Are the Director" data-hero-stream="loop">
-      <span aria-hidden="true" className="hero-line">
-        <span className="hero-line-ghost">{renderHeroParts(HERO_LINE_ONE, lineOneLength)}</span>
-        <span className="hero-line-live">{renderHeroParts(HERO_LINE_ONE, visibleLineOne)}</span>
+      <span aria-hidden="true" className="hero-line hero-line-brand">
+        <Play className="hero-title-icon" />
+        <span className="hero-line-text">
+          <span className="hero-line-ghost">{renderHeroParts(HERO_LINE_ONE, lineOneLength)}</span>
+          <span className="hero-line-live">
+            {renderHeroParts(HERO_LINE_ONE, visibleLineOne)}
+          </span>
+        </span>
       </span>
       <span aria-hidden="true" className="hero-line">
         <span className="hero-line-ghost">{renderHeroParts(HERO_LINE_TWO, lineTwoLength)}</span>

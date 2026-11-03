@@ -69,6 +69,7 @@ describe("LandingPage", () => {
       "data-hero-stream",
       "loop",
     );
+    expect(container.querySelector(".hero-line-brand .hero-title-icon")).toBeInTheDocument();
     expect(container.querySelectorAll(".hero-line-ghost")).toHaveLength(2);
     expect(container.querySelector("#skills")).not.toBeInTheDocument();
     expect(container.querySelector("#assets")).not.toBeInTheDocument();
