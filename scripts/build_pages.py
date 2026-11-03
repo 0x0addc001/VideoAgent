@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / ".pages-build"
 WEB_PUBLIC = ROOT / "apps" / "web" / "public"
 DOCS = ROOT / "docs"
-DOCS_ASSET_VERSION = "12"
+DOCS_ASSET_VERSION = "13"
 
 DOCUMENTS = {
     "software-design.md": ("Software Design", "软件设计说明书"),

@@ -1487,23 +1487,7 @@ html[lang="zh-CN"] .va-landing select {
 }
 
 .site-header > nav > button[aria-current="page"] .nav-icon {
-  fill: none;
-  stroke: currentColor;
-}
-
-.site-header > nav > button:nth-of-type(1)[aria-current="page"] .nav-icon > path:last-child,
-.site-header > nav > button:nth-of-type(3)[aria-current="page"] .nav-icon > rect:first-child,
-.site-header > nav > button:nth-of-type(4)[aria-current="page"] .nav-icon > path:first-child,
-.site-header > nav > button:nth-of-type(5)[aria-current="page"] .nav-icon > path:first-child {
   fill: currentColor;
-}
-
-.site-header > nav > button:nth-of-type(2)[aria-current="page"] .nav-icon > rect {
-  fill: currentColor;
-}
-
-.site-header > nav > button:nth-of-type(3)[aria-current="page"] .nav-icon > path,
-.site-header > nav > button:nth-of-type(5)[aria-current="page"] .nav-icon > path:not(:first-child) {
   stroke: var(--background);
 }
 
@@ -1589,9 +1573,8 @@ html[lang="zh-CN"] .va-landing select {
 }
 
 .account-avatar-default {
-  border-color: rgba(133, 201, 255, 0.72);
-  background: rgba(125, 195, 255, 0.42);
-  backdrop-filter: blur(10px);
+  border-color: var(--accent);
+  background: var(--accent);
 }
 
 .notification-button svg {
@@ -2615,7 +2598,7 @@ html[lang="zh-CN"] .hero-copy h1 {
 }
 
 .brand {
-  gap: 12px;
+  gap: 8px;
   font-size: 1.25rem;
 }
 

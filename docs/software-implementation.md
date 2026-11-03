@@ -2,9 +2,9 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v1.1 |
+| 文档版本 | v1.2 |
 | 文档状态 | 当前实现基线 |
-| 编写日期 | 2026-11-02 |
+| 编写日期 | 2026-11-03 |
 | 对应设计 | `docs/software-design.md` |
 | 测试规范 | `docs/software-test-plan.md` |
 
@@ -18,9 +18,15 @@
 
 已经实现：
 
-- Next.js 中英文 Web 界面。
+- Next.js App Router Web 界面；公开产品入口当前固定英文，`/zh-CN` 重定向到 `/en`。
+- 正式站与 GitHub Pages 项目主页共享 `packages/landing` UI。
+- 左侧 Agents、Skills、Assets、Hots、Docs 导航和独立视图切换。
+- 蓝色播放键品牌、无框标签页图标和激活图标填充/线框反转。
+- 首页连续视频轮播、流式主标语、自定义透明下拉和 Action 生成入口。
+- Hots 社区卡片展示作者与喜欢数，发布记录保存在当前前端会话。
+- 内嵌文档阅读器、文档图标切换、固定深色主题、左侧可折叠目录和章节高亮。
 - 注册、登录、登出和服务端会话。
-- 用户级项目创建、列表和读取。
+- 用户级项目创建、列表、读取、重命名和归档。
 - 用户数据所有权隔离。
 - 多镜头故事板创建、读取和版本化替换。
 - LangGraph 单节点 Agent 编排。
@@ -33,8 +39,10 @@
 - Pippit 服务端授权；不再为每个 Web 用户单独绑定 Kling。
 - 任务状态 API 刷新。
 - 可选 Celery 后台轮询。
+- 故事板即时评估与前端审核弹窗。
 - Docker Compose 基础设施配置。
 - GitHub Actions CI 配置。
+- GitHub Pages 项目主页和 Markdown 文档构建。
 
 尚未实现：
 
@@ -44,6 +52,7 @@
 - 公开分享页面。
 - Alembic 正式迁移。
 - OpenAPI 客户端自动生成。
+- 持久化社区发布、点赞和社区后端 API。
 - CSRF 双重保护、分布式限流和生产级监控。
 
 ## 3. 仓库结构
@@ -57,6 +66,12 @@ VideoAgent/
 │   ├── src/i18n/                   # 路由、导航和请求配置
 │   ├── src/lib/                    # 前端工具函数
 │   └── tests/                      # Vitest 测试
+├── apps/landing/
+│   └── src/main.tsx                # GitHub Pages 项目主页入口
+├── packages/landing/
+│   ├── src/index.tsx               # 共享首页、导航、Hots、Docs
+│   ├── src/content.ts              # 英文内容与中文占位资源
+│   └── src/landing.css             # 共享视觉样式
 ├── services/api/
 │   ├── src/videoagent/
 │   │   ├── agent/                  # LangGraph 和 Planner
@@ -71,9 +86,10 @@ VideoAgent/
 │   │   └── main.py
 │   └── tests/
 ├── deploy/docker-compose.yml
-├── scripts/                        # Windows 开发脚本
+├── site/                           # 项目主页图标与文档主题资源
+├── scripts/                        # 启动、检查、Pages/文档构建
 ├── docs/
-├── .github/workflows/ci.yml
+├── .github/workflows/              # CI、Pages、安全扫描
 ├── package.json
 └── pnpm-workspace.yaml
 ```
@@ -84,7 +100,11 @@ VideoAgent/
 Browser
   │
   ├── Next.js :3000
-  │     └── HTTPS/fetch → FastAPI :8000/api/v1
+  │     ├── Route Handler /api/account/* → FastAPI :8000/api/v1
+  │     └── public/docs/*             → 内嵌文档
+  │
+  ├── GitHub Pages 项目主页
+  │     └── 共享 Landing UI（预览模式）
   │
   └── FastAPI
         ├── SQLite（当前开发默认）
@@ -99,6 +119,8 @@ Celery Worker（可选）
 ```
 
 当前本地开发中，浏览器直接访问 FastAPI 的 `8000` 端口。FastAPI 已配置本地 CORS。
+正式产品首页通过 Next.js Route Handler 代理账户与项目请求；项目工作区仍按
+`NEXT_PUBLIC_API_BASE_URL` 访问 FastAPI。
 
 生产环境规划通过反向代理保持同域：
 
@@ -235,11 +257,13 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 | `app/[locale]/login/page.tsx` | 登录页 |
 | `app/[locale]/projects/page.tsx` | 项目工作台入口 |
 | `app/[locale]/projects/[projectId]/page.tsx` | 项目编辑工作区 |
-| `packages/landing` | 右侧导航、黑白品牌、视频主视觉和多设定创作框 |
+| `apps/landing/src/main.tsx` | GitHub Pages 项目主页入口 |
+| `packages/landing` | 左侧导航、共享品牌、视频主视觉、创作框、Hots 和 Docs |
 | `locale-switcher.tsx` | 中英文切换 |
 | `auth-form.tsx` | 注册/登录请求 |
 | `projects-dashboard.tsx` | 项目列表、新建、重命名和删除 |
 | `project-workspace.tsx` | 自动开始首轮 Agent 对话、故事板、镜头设置和生成 |
+| `scripts/build_pages.py` | 生成文档 HTML、目录和 GitHub Pages 产物 |
 
 前端通过 `NEXT_PUBLIC_API_BASE_URL` 访问 FastAPI，所有鉴权请求设置 `credentials: "include"`。
 
@@ -247,18 +271,18 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 
 ## 8. 国际化实现
 
-支持的语言：
+保留的语言资源：
 
 ```text
 en
 zh-CN
 ```
 
-路由：
+当前公开路由：
 
 ```text
-/en
-/zh-CN
+/en        ✅ 正式入口
+/zh-CN     ↪ 重定向到 /en
 ```
 
 核心文件：
@@ -267,14 +291,14 @@ zh-CN
 - `src/i18n/routing.ts`：next-intl 路由。
 - `src/i18n/navigation.ts`：本地化 Link 和 Router。
 - `src/i18n/request.ts`：加载消息文件。
-- `src/proxy.ts`：语言前缀路由。
+- `src/proxy.ts`：语言前缀路由，并将 `zh-CN` 重定向到 `en`。
 - `messages/en.json`、`messages/zh-CN.json`：翻译资源。
 
 开发规则：
 
-- 两种语言的 Key 必须完全一致。
+- 两种语言的 Key 仍需保持一致，以便后续恢复中文版。
 - 后端返回稳定错误码，不在数据库保存前端展示文案。
-- 新页面必须同时添加中英文文案。
+- 新增内部翻译 Key 时同时维护中英文资源；公开 UI 当前仍只开放英文。
 - Agent 输出语言来自 `User.locale`。
 - 视频模型 Prompt 使用 `prompt_en`，中文解释保存在 `prompt_zh`。
 
@@ -370,6 +394,8 @@ task reference    → query-result   → JobStatus + result URL
 | GET | `/projects` | 当前用户项目列表 |
 | POST | `/projects` | 创建项目 |
 | GET | `/projects/{id}` | 读取项目 |
+| PATCH | `/projects/{id}` | 重命名项目 |
+| DELETE | `/projects/{id}` | 归档项目 |
 | GET | `/projects/{id}/messages` | 对话历史 |
 | POST | `/projects/{id}/messages` | Agent 生成故事板并保存对话 |
 | GET | `/projects/{id}/storyboard` | 获取故事板 |
@@ -447,8 +473,8 @@ cd D:\_Science\Agent\VideoAgent
 访问：
 
 ```text
-http://localhost:3000/zh-CN
 http://localhost:3000/en
+http://localhost:3000/zh-CN  → 重定向到 /en
 http://localhost:8000/docs
 ```
 
@@ -524,10 +550,11 @@ pnpm --dir apps/web build
 
 当前基线：
 
-- 后端 28 个测试。
-- 前端 5 个测试。
+- 后端 35 个测试。
+- 前端 14 个测试。
 - 后端测试使用临时 SQLite 文件。
 - Pippit 测试使用本地 Fake CLI，不访问真实生成网络。
+- 前端测试覆盖共享首页、导航、文档加载、自定义下拉、Hots 发布、创作提交和轮播行为。
 - 普通 CI 不执行付费生成。
 
 新增功能必须遵循：
@@ -607,6 +634,7 @@ pnpm --dir apps/web build
 | 数据库迁移 | 启动时 `create_all` | 引入 Alembic 后移除生产建表 |
 | 前端 API 类型 | 手写局部类型 | 从 OpenAPI 生成客户端 |
 | 实时状态 | 前端轮询 | 增加 Redis Pub/Sub + SSE |
+| Hots 发布 | 当前仅保存在前端会话 | 增加社区 Post、点赞和持久化 API |
 | 素材 | 未实现 | 增加 Asset、本地/S3 Storage Adapter |
 | 导出 | 未实现 | 增加 FFmpeg 合成 Worker |
 | CSRF | 尚未实现 | 为 Cookie 写接口增加 CSRF 防护 |
@@ -631,3 +659,4 @@ pnpm --dir apps/web build
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
 | v1.1 | 2026-11-02 | 将视频链路切换为服务端 Pippit CLI，移除 Web 用户级 Kling 绑定 |
+| v1.2 | 2026-11-03 | 对齐共享 Landing UI、Hots、自定义下拉、内嵌文档、当前 API 与测试数量 |

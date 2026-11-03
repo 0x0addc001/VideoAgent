@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Testing &amp; TDD · 软件测试与 TDD 规范" />
     <title>Testing & TDD · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=12" />
+    <link rel="stylesheet" href="../docs.css?v=13" />
   </head>
   <body data-document="software-test-plan.md">
     <main class="document-shell" id="document-shell">
@@ -35,14 +35,15 @@
 <a class="toc-link toc-level-3" href="#3-1-自动化覆盖目标">3.1 自动化覆盖目标</a>
 <a class="toc-link toc-level-3" href="#3-2-稳定性目标">3.2 稳定性目标</a>
 <a class="toc-link toc-level-2" href="#4-测试范围">4. 测试范围</a>
-<a class="toc-link toc-level-3" href="#4-1-纳入范围">4.1 纳入范围</a>
-<a class="toc-link toc-level-3" href="#4-2-暂不纳入">4.2 暂不纳入</a>
+<a class="toc-link toc-level-3" href="#4-1-当前已覆盖">4.1 当前已覆盖</a>
+<a class="toc-link toc-level-3" href="#4-2-目标能力测试">4.2 目标能力测试</a>
+<a class="toc-link toc-level-3" href="#4-3-暂不纳入">4.3 暂不纳入</a>
 <a class="toc-link toc-level-2" href="#5-测试分层">5. 测试分层</a>
 <a class="toc-link toc-level-3" href="#5-1-单元测试">5.1 单元测试</a>
 <a class="toc-link toc-level-3" href="#5-2-provider-契约测试">5.2 Provider 契约测试</a>
 <a class="toc-link toc-level-3" href="#5-3-api-测试">5.3 API 测试</a>
-<a class="toc-link toc-level-3" href="#5-4-集成测试">5.4 集成测试</a>
-<a class="toc-link toc-level-3" href="#5-5-e2e-测试">5.5 E2E 测试</a>
+<a class="toc-link toc-level-3" href="#5-4-集成测试-目标">5.4 集成测试（目标）</a>
+<a class="toc-link toc-level-3" href="#5-5-e2e-测试-目标">5.5 E2E 测试（目标）</a>
 <a class="toc-link toc-level-3" href="#5-6-非功能测试">5.6 非功能测试</a>
 <a class="toc-link toc-level-2" href="#6-tdd-开发流程">6. TDD 开发流程</a>
 <a class="toc-link toc-level-3" href="#6-1-单个功能流程">6.1 单个功能流程</a>
@@ -61,19 +62,19 @@
 <a class="toc-link toc-level-3" href="#9-5-pippit-cli-provider">9.5 Pippit CLI Provider</a>
 <a class="toc-link toc-level-3" href="#9-6-生成任务">9.6 生成任务</a>
 <a class="toc-link toc-level-3" href="#9-7-合成-导出与分享">9.7 合成、导出与分享</a>
-<a class="toc-link toc-level-3" href="#9-8-中英文与前端体验">9.8 中英文与前端体验</a>
+<a class="toc-link toc-level-3" href="#9-8-国际化-共享-ui-与前端体验">9.8 国际化、共享 UI 与前端体验</a>
 <a class="toc-link toc-level-3" href="#9-9-安全与隐私">9.9 安全与隐私</a>
 <a class="toc-link toc-level-2" href="#10-状态与恢复专项测试">10. 状态与恢复专项测试</a>
-<a class="toc-link toc-level-3" href="#10-1-langgraph-恢复">10.1 LangGraph 恢复</a>
+<a class="toc-link toc-level-3" href="#10-1-langgraph-恢复-目标">10.1 LangGraph 恢复（目标）</a>
 <a class="toc-link toc-level-3" href="#10-2-celery-故障">10.2 Celery 故障</a>
-<a class="toc-link toc-level-3" href="#10-3-sse-故障">10.3 SSE 故障</a>
+<a class="toc-link toc-level-3" href="#10-3-sse-故障-目标">10.3 SSE 故障（目标）</a>
 <a class="toc-link toc-level-2" href="#11-性能测试">11. 性能测试</a>
 <a class="toc-link toc-level-2" href="#12-可访问性与兼容性">12. 可访问性与兼容性</a>
 <a class="toc-link toc-level-3" href="#12-1-可访问性">12.1 可访问性</a>
 <a class="toc-link toc-level-3" href="#12-2-浏览器">12.2 浏览器</a>
 <a class="toc-link toc-level-2" href="#13-ci-质量门禁">13. CI 质量门禁</a>
 <a class="toc-link toc-level-3" href="#13-1-pull-request-门禁">13.1 Pull Request 门禁</a>
-<a class="toc-link toc-level-3" href="#13-2-nightly-门禁">13.2 Nightly 门禁</a>
+<a class="toc-link toc-level-3" href="#13-2-nightly-门禁-目标">13.2 Nightly 门禁（目标）</a>
 <a class="toc-link toc-level-3" href="#13-3-release-门禁">13.3 Release 门禁</a>
 <a class="toc-link toc-level-2" href="#14-pippit-真实测试流程">14. Pippit 真实测试流程</a>
 <a class="toc-link toc-level-3" href="#14-1-只读-smoke-test">14.1 只读 Smoke Test</a>
@@ -105,27 +106,31 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v1.0</td>
+<td>v1.1</td>
 </tr>
 <tr>
 <td>文档状态</td>
-<td>TDD 基线草案</td>
+<td>当前测试基线 + 后续目标</td>
 </tr>
 <tr>
 <td>编写日期</td>
-<td>2026-11-02</td>
+<td>2026-11-03</td>
 </tr>
 <tr>
 <td>适用范围</td>
-<td>Web、FastAPI、LangGraph、Celery、Pippit CLI、媒体处理</td>
+<td>共享 Landing UI、Next.js Web、FastAPI、LangGraph、Celery、Pippit CLI</td>
 </tr>
 <tr>
 <td>关联设计</td>
 <td><code>docs/software-design.md</code></td>
 </tr>
 <tr>
-<td>测试框架</td>
-<td>pytest、Vitest、Testing Library、Playwright</td>
+<td>当前测试框架</td>
+<td>pytest、Vitest、Testing Library</td>
+</tr>
+<tr>
+<td>目标 E2E 框架</td>
+<td>Playwright（尚未接入 CI）</td>
 </tr>
 </tbody></table></div>
 <h2 id="1-目的">1. 目的</h2>
@@ -198,8 +203,12 @@
 <td>契约测试覆盖状态、积分、提交和查询</td>
 </tr>
 <tr>
-<td>中英文界面</td>
-<td>所有 MVP 页面均有 E2E 场景</td>
+<td>公开英文界面</td>
+<td>首页、导航、创作提交和项目工作区有组件/API 测试</td>
+</tr>
+<tr>
+<td>中英文能力</td>
+<td>当前仅验证中文路由重定向；双语文案与 E2E 属于后续目标</td>
 </tr>
 </tbody></table></div>
 <p>覆盖率只是质量指标之一。以下任一情况不能被高覆盖率抵消：</p>
@@ -208,8 +217,9 @@
 <li>计费任务存在重复提交风险。</li>
 <li>用户能够访问其他用户的数据。</li>
 <li>Token 会出现在浏览器或日志中。</li>
-<li>中英文任一语言存在阻断流程的缺失文案。</li>
+<li>公开英文界面存在阻断流程的缺失文案；恢复中文后扩展到双语检查。</li>
 </ul>
+<p>当前自动化基线为后端 35 项、前端 14 项；E2E、真实基础设施和付费 Provider 测试不计入普通 CI。</p>
 <h3 id="3-2-稳定性目标">3.2 稳定性目标</h3>
 <ul>
 <li>CI 测试连续运行三次结果一致。</li>
@@ -218,27 +228,32 @@
 <li>所有 Flaky 测试必须建立跟踪记录，并在发布前修复或隔离。</li>
 </ul>
 <h2 id="4-测试范围">4. 测试范围</h2>
-<h3 id="4-1-纳入范围">4.1 纳入范围</h3>
+<h3 id="4-1-当前已覆盖">4.1 当前已覆盖</h3>
 <ul>
 <li>用户注册、登录、退出和会话。</li>
-<li>用户语言偏好。</li>
-<li>项目创建、读取、修改、归档和删除。</li>
-<li>项目数据所有权隔离。</li>
-<li>图片和视频上传。</li>
-<li>Agent 对话、结构化输出和工作流状态。</li>
-<li>中文和英文 Agent 输出。</li>
-<li>Pippit CLI 服务端授权状态和积分读取。</li>
-<li>Pippit CLI 命令参数、JSON 输出和任务状态映射。</li>
-<li>生成任务提交、轮询、取消、失败和恢复。</li>
-<li>任务幂等和重复扣费防护。</li>
-<li>Celery 消息重复、丢失和 Worker 重启。</li>
-<li>SSE 状态推送和断线重连。</li>
-<li>FFmpeg 合成、缩略图和 MP4 导出。</li>
-<li>公开分享链接、有效期和撤销。</li>
-<li>API 契约、输入校验、权限和错误码。</li>
-<li>安全、性能、可访问性和可观测性。</li>
+<li>项目创建、读取、重命名、归档和用户所有权隔离。</li>
+<li>故事板读取、整体替换、版本和镜头顺序。</li>
+<li>LangGraph 单节点故事板规划与本地确定性 Planner。</li>
+<li>Agent 对话持久化和结构化输出。</li>
+<li>Pippit CLI 服务端授权状态、积分读取、提交和查询映射。</li>
+<li>生成任务提交、状态刷新、幂等键和显式审批。</li>
+<li>可选 Celery 轮询任务。</li>
+<li>故事板即时评估。</li>
+<li>共享 Landing UI 导航、视频轮播、流式标题、文档加载、自定义下拉、Hots 元数据和本地发布。</li>
+<li><code>/zh-CN</code> 到 <code>/en</code> 的重定向。</li>
 </ul>
-<h3 id="4-2-暂不纳入">4.2 暂不纳入</h3>
+<h3 id="4-2-目标能力测试">4.2 目标能力测试</h3>
+<p>以下能力尚未实现，测试用例应随功能开发分批启用：</p>
+<ul>
+<li>图片和视频上传。</li>
+<li>完整多节点 Agent 审批和恢复工作流。</li>
+<li>任务取消、SSE 状态推送与断线重连。</li>
+<li>FFmpeg 合成、缩略图、MP4 导出。</li>
+<li>公开分享链接、有效期和撤销。</li>
+<li>持久化社区发布、点赞和权限控制。</li>
+<li>PostgreSQL、Redis、MinIO 和 Celery 生产集成。</li>
+</ul>
+<h3 id="4-3-暂不纳入">4.3 暂不纳入</h3>
 <ul>
 <li>未实现的支付和计费系统。</li>
 <li>多用户实时协作。</li>
@@ -258,28 +273,25 @@
 <li>Agent 节点输入输出。</li>
 <li>Provider 请求和响应映射。</li>
 <li>权限判断。</li>
-<li>幂等键生成和费用预算判断。</li>
-<li>分享 Token 生成与验证。</li>
-<li>FFmpeg 参数构造。</li>
-<li>中英文翻译键选择。</li>
+<li>幂等键行为。</li>
+<li>故事板即时评估指标。</li>
+<li>共享 Landing 导航、文档 iframe、下拉控件和本地 Hots 发布。</li>
+<li>中文路由重定向和翻译资源结构。</li>
 </ul>
-<p>单元测试不得访问网络、PostgreSQL、Redis、MinIO、Pippit 或真实 LLM。</p>
+<p>当前单元测试使用临时 SQLite 和 Fake CLI，不得访问真实 Pippit 网络。</p>
 <h3 id="5-2-provider-契约测试">5.2 Provider 契约测试</h3>
-<p>为 <code>VideoProvider</code> 定义共享契约测试，所有实现都必须通过：</p>
+<p>当前 Provider 契约覆盖：</p>
 <ul>
 <li><code>MockVideoProvider</code></li>
 <li><code>PippitVideoProvider</code></li>
 </ul>
 <p>至少验证：</p>
 <ul>
-<li>支持能力与声明的 Capability 一致。</li>
-<li>无效参数在调用 Provider 前被拒绝。</li>
-<li>Provider 错误被转换为标准错误码。</li>
 <li>任务提交返回稳定的 Provider Job ID。</li>
 <li>状态查询返回标准状态。</li>
-<li>取消能力不支持时返回明确错误。</li>
 <li>原始响应可以保存，但不直接进入领域模型。</li>
 </ul>
+<p>Capability 发现、取消方法和完整共享契约矩阵属于后续目标。</p>
 <h3 id="5-3-api-测试">5.3 API 测试</h3>
 <p>使用 FastAPI TestClient 或 ASGI Transport：</p>
 <ul>
@@ -287,13 +299,13 @@
 <li>响应 Schema。</li>
 <li>错误响应格式。</li>
 <li>认证和所有权。</li>
-<li>分页和排序。</li>
 <li><code>Idempotency-Key</code>。</li>
-<li>CSRF 和 Origin 校验。</li>
-<li>OpenAPI 契约是否与生成客户端一致。</li>
+<li>项目归档与资源隔离。</li>
+<li>故事板整体替换与 Agent 消息响应。</li>
 </ul>
-<h3 id="5-4-集成测试">5.4 集成测试</h3>
-<p>使用真实 PostgreSQL、Redis、MinIO 和 Celery Worker：</p>
+<p>分页、CSRF、Origin 校验和 OpenAPI 生成客户端属于后续门禁。</p>
+<h3 id="5-4-集成测试-目标">5.4 集成测试（目标）</h3>
+<p>当前仅使用临时 SQLite 和本地 Fake CLI。以下真实基础设施测试属于目标：</p>
 <ul>
 <li>数据库约束和事务。</li>
 <li>LangGraph Checkpoint 恢复。</li>
@@ -304,16 +316,15 @@
 <li>Pippit CLI 使用本地 Fake CLI 可执行文件或受控网络 Stub。</li>
 </ul>
 <p>集成测试使用 Testcontainers 或 Docker Compose，每个测试套件使用独立数据库和 Bucket。</p>
-<h3 id="5-5-e2e-测试">5.5 E2E 测试</h3>
-<p>使用 Playwright 覆盖：</p>
+<h3 id="5-5-e2e-测试-目标">5.5 E2E 测试（目标）</h3>
+<p>当前 CI 尚未运行 Playwright。目标覆盖：</p>
 <ul>
-<li>中文和英文完整用户流程。</li>
+<li>英文公开流程和 <code>/zh-CN</code> 重定向。</li>
 <li>登录或测试会话注入。</li>
 <li>创建项目。</li>
 <li>Agent 生成故事板。</li>
 <li>审批生成。</li>
 <li>Mock Provider 生成任务。</li>
-<li>SSE 状态更新。</li>
 <li>镜头编辑和重排。</li>
 <li>视频导出。</li>
 <li>公开分享页。</li>
@@ -418,6 +429,7 @@ PIPPIT_PAID_TEST_BUDGET&gt;0</code></pre>
 <li>数据库测试禁止连接共享生产数据库。</li>
 </ul>
 <h2 id="9-测试用例">9. 测试用例</h2>
+<p>本节是目标验收用例矩阵。已经实现的能力由当前自动化测试覆盖；素材、 CSRF、SSE、FFmpeg、导出和分享等用例在对应功能落地前属于待实现契约， 不能作为当前版本已经通过的证据。</p>
 <h3 id="9-1-认证-会话与权限">9.1 认证、会话与权限</h3>
 <div class="table-wrap"><table><thead><tr>
 <th>ID</th>
@@ -1020,7 +1032,7 @@ PIPPIT_PAID_TEST_BUDGET&gt;0</code></pre>
 <td>P0</td>
 </tr>
 </tbody></table></div>
-<h3 id="9-8-中英文与前端体验">9.8 中英文与前端体验</h3>
+<h3 id="9-8-国际化-共享-ui-与前端体验">9.8 国际化、共享 UI 与前端体验</h3>
 <div class="table-wrap"><table><thead><tr>
 <th>ID</th>
 <th>场景</th>
@@ -1030,52 +1042,38 @@ PIPPIT_PAID_TEST_BUDGET&gt;0</code></pre>
 </tr></thead><tbody>
 <tr>
 <td>I18N-001</td>
-<td>首次访问中文浏览器</td>
-<td>进入 <code>/zh-CN</code> 并加载中文</td>
-<td>E2E</td>
+<td>访问 <code>/zh-CN</code></td>
+<td>重定向到 <code>/en</code></td>
+<td>API/Frontend</td>
 <td>P0</td>
 </tr>
 <tr>
 <td>I18N-002</td>
-<td>首次访问英文浏览器</td>
-<td>进入 <code>/en</code> 并加载英文</td>
-<td>E2E</td>
+<td>访问 <code>/en</code></td>
+<td>加载英文公开 UI</td>
+<td>Frontend</td>
 <td>P0</td>
 </tr>
 <tr>
 <td>I18N-003</td>
-<td>登录用户切换语言</td>
-<td>路由、界面和用户偏好同步更新</td>
-<td>E2E</td>
-<td>P0</td>
+<td>直接调用注册/更新用户接口</td>
+<td>后端接受 <code>en</code> 与 <code>zh-CN</code> 偏好</td>
+<td>API</td>
+<td>P1</td>
 </tr>
 <tr>
 <td>I18N-004</td>
-<td>后端返回业务错误</td>
-<td>两种语言均显示对应翻译</td>
-<td>Frontend</td>
-<td>P0</td>
+<td>前端翻译资源结构</td>
+<td><code>en</code> 与 <code>zh-CN</code> Key 保持一致</td>
+<td>Unit</td>
+<td>P1</td>
 </tr>
 <tr>
 <td>I18N-005</td>
-<td>中文故事板使用英文 Prompt 模式</td>
-<td>中文说明与英文 Prompt 同时存在</td>
-<td>Unit/E2E</td>
+<td>恢复中文版后切换语言</td>
+<td>路由、界面和偏好同步</td>
+<td>E2E（目标）</td>
 <td>P1</td>
-</tr>
-<tr>
-<td>I18N-006</td>
-<td>日期和任务时间</td>
-<td>按 Locale 格式化且时区一致</td>
-<td>Frontend</td>
-<td>P1</td>
-</tr>
-<tr>
-<td>I18N-007</td>
-<td>翻译资源缺少 Key</td>
-<td>CI 检查失败，运行时显示安全回退</td>
-<td>Unit</td>
-<td>P0</td>
 </tr>
 <tr>
 <td>UI-001</td>
@@ -1093,17 +1091,17 @@ PIPPIT_PAID_TEST_BUDGET&gt;0</code></pre>
 </tr>
 <tr>
 <td>UI-003</td>
-<td>生成状态实时更新</td>
-<td>不需要刷新页面</td>
-<td>E2E</td>
+<td>生成状态轮询</td>
+<td>每 5 秒更新 Job 与 Shot 状态</td>
+<td>Integration</td>
 <td>P0</td>
 </tr>
 <tr>
 <td>UI-004</td>
 <td>SSE 断线后重连</td>
 <td>状态重新同步，不重复消息</td>
-<td>E2E</td>
-<td>P0</td>
+<td>E2E（目标）</td>
+<td>P1</td>
 </tr>
 <tr>
 <td>UI-005</td>
@@ -1115,14 +1113,14 @@ PIPPIT_PAID_TEST_BUDGET&gt;0</code></pre>
 <tr>
 <td>UI-006</td>
 <td>首页桌面导航</td>
-<td>五项带图标导航位于左侧，右上角显示语言、通知、积分和头像</td>
+<td>Agents、Skills、Assets、Hots、Docs 位于左侧</td>
 <td>Frontend</td>
 <td>P1</td>
 </tr>
 <tr>
 <td>UI-007</td>
 <td>首页多设定创作框</td>
-<td>提示词、风格、画幅和时长可组合提交</td>
+<td>提示词、风格、画幅、时长、模型、清晰度、音频和审核可组合提交</td>
 <td>Frontend</td>
 <td>P0</td>
 </tr>
@@ -1150,7 +1148,7 @@ PIPPIT_PAID_TEST_BUDGET&gt;0</code></pre>
 <tr>
 <td>UI-011</td>
 <td>社区瀑布流</td>
-<td>不同高度卡片流式排布，悬浮可点击“做同款”</td>
+<td>展示作者、喜欢数、发布卡片和“做同款”</td>
 <td>Frontend</td>
 <td>P1</td>
 </tr>
@@ -1160,6 +1158,34 @@ PIPPIT_PAID_TEST_BUDGET&gt;0</code></pre>
 <td>点击头像不跳转项目页</td>
 <td>Frontend</td>
 <td>P1</td>
+</tr>
+<tr>
+<td>UI-013</td>
+<td>自定义下拉</td>
+<td>展开层背景半透明、圆角且不被创作框裁切</td>
+<td>Frontend</td>
+<td>P0</td>
+</tr>
+<tr>
+<td>UI-014</td>
+<td>文档阅读器</td>
+<td>文档切换、目录跳转、折叠和固定深色主题可用</td>
+<td>Frontend</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>UI-015</td>
+<td>Hots 本地发布</td>
+<td>发布后当前会话显示作者、文本和 0 喜欢</td>
+<td>Frontend</td>
+<td>P1</td>
+</tr>
+<tr>
+<td>UI-016</td>
+<td>品牌和激活图标</td>
+<td>蓝色播放键一致，激活图标采用填充/线框反转</td>
+<td>Frontend</td>
+<td>P2</td>
 </tr>
 </tbody></table></div>
 <h3 id="9-9-安全与隐私">9.9 安全与隐私</h3>
@@ -1242,7 +1268,8 @@ PIPPIT_PAID_TEST_BUDGET&gt;0</code></pre>
 </tr>
 </tbody></table></div>
 <h2 id="10-状态与恢复专项测试">10. 状态与恢复专项测试</h2>
-<h3 id="10-1-langgraph-恢复">10.1 LangGraph 恢复</h3>
+<p>以下专项除 Celery 轮询外，多数属于完整工作流的目标验证。当前 LangGraph 只有一个 <code>plan_storyboard</code> 节点，不使用 Checkpoint。</p>
+<h3 id="10-1-langgraph-恢复-目标">10.1 LangGraph 恢复（目标）</h3>
 <p>测试以下状态保存与恢复：</p>
 <pre><code class="language-text">awaiting_plan_approval
 awaiting_generation_approval
@@ -1268,7 +1295,7 @@ await_export_approval</code></pre>
 <li>同一任务被重复投递。</li>
 </ul>
 <p>预期系统最终进入一致状态，不重复扣费，不丢失已成功的 Provider 任务。</p>
-<h3 id="10-3-sse-故障">10.3 SSE 故障</h3>
+<h3 id="10-3-sse-故障-目标">10.3 SSE 故障（目标）</h3>
 <ul>
 <li>浏览器断网后重连。</li>
 <li>FastAPI 重启。</li>
@@ -1282,12 +1309,10 @@ await_export_approval</code></pre>
 <ul>
 <li>普通 API 不含 Provider 调用时，P95 小于 300 ms。</li>
 <li>项目列表和故事板接口在 100 个镜头内保持可接受响应。</li>
-<li>SSE 心跳间隔 15–30 秒。</li>
 <li>单 Worker 可并发处理配置数量的查询任务。</li>
 <li>同一任务的并发提交只能成功一次。</li>
-<li>100 个前端事件连续到达时，界面不出现明显卡顿。</li>
 </ul>
-<p>性能测试不把 Pippit 推理时间计算为 API 响应时间。Provider 排队和生成时间单独统计。</p>
+<p>性能测试不把 Pippit 推理时间计算为 API 响应时间。Provider 排队和生成时间单独统计。 SSE 吞吐、心跳和重连性能测试随目标实时事件能力启用。</p>
 <h2 id="12-可访问性与兼容性">12. 可访问性与兼容性</h2>
 <h3 id="12-1-可访问性">12.1 可访问性</h3>
 <ul>
@@ -1308,22 +1333,35 @@ await_export_approval</code></pre>
 </ul>
 <h2 id="13-ci-质量门禁">13. CI 质量门禁</h2>
 <h3 id="13-1-pull-request-门禁">13.1 Pull Request 门禁</h3>
+<p>当前 CI 已执行：</p>
+<ul>
+<li>Ruff 检查和格式检查。</li>
+<li>mypy 严格类型检查。</li>
+<li>pytest 后端测试。</li>
+<li>Vitest 前端测试。</li>
+<li>TypeScript 检查。</li>
+<li>Next.js production build。</li>
+<li>敏感信息检查。</li>
+</ul>
 <p>以下任一失败阻止合并：</p>
 <ul>
 <li>Ruff 检查或格式化失败。</li>
 <li>mypy 类型检查失败。</li>
-<li>后端单元、API、契约测试失败。</li>
-<li>前端类型检查、Lint 或组件测试失败。</li>
-<li>OpenAPI 与生成客户端不一致。</li>
-<li>数据库迁移测试失败。</li>
+<li>后端单元、API 和 Provider 契约测试失败。</li>
+<li>前端类型检查或组件测试失败。</li>
 <li>新增高危依赖漏洞。</li>
 <li>命中敏感信息扫描。</li>
 </ul>
-<h3 id="13-2-nightly-门禁">13.2 Nightly 门禁</h3>
+<p>以下属于目标门禁：</p>
+<ul>
+<li>OpenAPI 与生成客户端一致性。</li>
+<li>数据库迁移测试。</li>
+</ul>
+<h3 id="13-2-nightly-门禁-目标">13.2 Nightly 门禁（目标）</h3>
 <ul>
 <li>PostgreSQL、Redis、MinIO 集成测试。</li>
 <li>Celery Worker 测试。</li>
-<li>Playwright 中文和英文 E2E。</li>
+<li>Playwright 英文公开流程和中文重定向 E2E。</li>
 <li>数据库迁移从空库升级。</li>
 <li>故障恢复测试。</li>
 <li>浏览器兼容性测试。</li>
@@ -1359,10 +1397,9 @@ await_export_approval</code></pre>
 <li>下载并校验媒体。</li>
 <li>记录任务和积分变化。</li>
 <li>验证重复请求不会再次提交。</li>
-<li>执行 FFmpeg 合成或单镜头导出。</li>
-<li>审核 UI、事件和数据库状态一致性。</li>
+<li>审核 UI、任务状态和数据库记录一致性。</li>
 </ol>
-<p>测试报告必须记录测试时的实时 Pippit 余额，不得在代码或文档中硬编码账户数值。 余额为 0 时跳过付费测试，不自动充值。</p>
+<p>测试报告必须记录测试时的实时 Pippit 余额，不得在代码或文档中硬编码账户数值。 余额为 0 时跳过付费测试，不自动充值。 FFmpeg 合成与导出验收在对应能力实现后再加入。</p>
 <h2 id="15-测试报告">15. 测试报告</h2>
 <p>每次 Release 生成测试摘要，包含：</p>
 <ul>
@@ -1405,6 +1442,7 @@ await_export_approval</code></pre>
 </tr>
 </tbody></table></div>
 <h2 id="17-tdd-实施顺序">17. TDD 实施顺序</h2>
+<p>当前进度：第 1–5 轮的大部分基础能力、第 7 轮的单节点 Agent、第 8 轮 Pippit/Mock Provider、第 9 轮的幂等与可选轮询已经落地；素材、SSE、 FFmpeg 和分享仍未实现。</p>
 <h3 id="第-1-轮-测试基础设施">第 1 轮：测试基础设施</h3>
 <ol>
 <li>配置 pytest、Vitest、Playwright。</li>
@@ -1483,44 +1521,40 @@ await_export_approval</code></pre>
 <th>主要测试</th>
 </tr></thead><tbody>
 <tr>
-<td>中英文界面与 Agent</td>
-<td>AUTH-009、AGENT-005/006、I18N-001 至 007</td>
+<td>英文公开界面与中文重定向</td>
+<td>I18N-001 至 004、UI-006 至 010</td>
 </tr>
 <tr>
 <td>项目管理和权限</td>
 <td>AUTH-008、PROJ-001 至 010、SEC-004</td>
 </tr>
 <tr>
-<td>素材上传</td>
-<td>ASSET-001 至 008、SEC-006</td>
-</tr>
-<tr>
-<td>Agent 工作流</td>
-<td>AGENT-001 至 012</td>
+<td>Agent 单节点故事板与评估</td>
+<td>AGENT-001 至 006、API 测试</td>
 </tr>
 <tr>
 <td>Pippit CLI Provider</td>
 <td>PIPPIT-001 至 012</td>
 </tr>
 <tr>
-<td>异步生成与恢复</td>
-<td>JOB-001 至 013</td>
+<td>生成、轮询与幂等</td>
+<td>JOB-001 至 013 中当前已实现部分</td>
 </tr>
 <tr>
-<td>视频合成与分享</td>
-<td>MEDIA-001 至 010</td>
+<td>Hots、文档和自定义控件</td>
+<td>UI-011 至 016</td>
 </tr>
 <tr>
 <td>Token 和隐私</td>
 <td>SEC-001 至 010</td>
 </tr>
 <tr>
-<td>实时状态</td>
-<td>UI-003/004、SSE 专项测试</td>
+<td>素材、SSE、合成与分享</td>
+<td>目标能力，当前未交付</td>
 </tr>
 <tr>
 <td>发布验收</td>
-<td>Release 门禁和 Pippit 真实测试流程</td>
+<td>CI、Pages 构建和 Pippit 真实测试流程</td>
 </tr>
 </tbody></table></div>
 <h2 id="19-风险和约束">19. 风险和约束</h2>
@@ -1562,18 +1596,22 @@ await_export_approval</code></pre>
 </tr>
 </tbody></table></div>
 <h2 id="20-完成标准">20. 完成标准</h2>
-<p>测试体系达到以下条件后，视为具备稳定 TDD 开发基础：</p>
+<p>当前基线：</p>
 <ol>
-<li>本地一条命令启动测试依赖。</li>
-<li>后端单元和 API 测试可在无网络环境运行。</li>
-<li>Mock Provider 可完成项目、故事板、生成和导出全流程。</li>
-<li>集成测试可验证 PostgreSQL、Redis、MinIO 和 Celery。</li>
-<li>中文和英文关键 E2E 用例稳定通过。</li>
-<li>CI 阻止失败测试、类型错误和契约不一致进入主分支。</li>
+<li>后端测试可使用临时 SQLite 和 Fake CLI 在无外部网络环境运行。</li>
+<li>Mock Provider 可完成故事板、积分估算、生成提交和任务状态查询。</li>
+<li>前端共享 UI、项目页面、认证和创作提交流程有组件测试。</li>
+<li>CI 阻止 Ruff、mypy、pytest、Vitest、TypeScript 或 Next Build 失败进入主分支。</li>
 <li>真实付费生成默认不在 CI 中运行。</li>
-<li>所有 P0 场景均有用例。</li>
-<li>每次发布生成可追溯的测试报告。</li>
-<li>新增功能遵循 Red–Green–Refactor，而不是实现后补测试。</li>
+<li>GitHub Pages 文档和项目主页构建成功。</li>
+<li>新增功能遵循 Red–Green–Refactor。</li>
+</ol>
+<p>目标 MVP 额外完成标准：</p>
+<ol>
+<li>素材上传、PostgreSQL/Redis/MinIO/Celery 集成测试可运行。</li>
+<li>英文完整流程和未来恢复后的中文流程有稳定 Playwright E2E。</li>
+<li>SSE、FFmpeg、导出与公开分享的 P0 场景有自动化用例。</li>
+<li>每次发布生成可追溯的完整测试报告。</li>
 </ol>
 <h2 id="21-变更记录">21. 变更记录</h2>
 <div class="table-wrap"><table><thead><tr>
@@ -1588,8 +1626,14 @@ await_export_approval</code></pre>
 <td>TDD 基线草案</td>
 <td>建立测试分层、用例和质量门禁</td>
 </tr>
+<tr>
+<td>v1.1</td>
+<td>2026-11-03</td>
+<td>当前基线</td>
+<td>对齐公开英文 UI、Hots、文档、单节点 Agent、当前 API 和 35/14 测试基线</td>
+</tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=12"></script>
+    <script src="../docs.js?v=13"></script>
   </body>
 </html>

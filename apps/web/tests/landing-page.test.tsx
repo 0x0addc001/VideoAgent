@@ -124,7 +124,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/software-design.html?v=12",
+      "/docs/software-design.html?v=13",
     );
     expect(container.querySelectorAll(".docs-tab-icon")).toHaveLength(4);
   });

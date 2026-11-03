@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Implementation Guide · 软件实现说明" />
     <title>Implementation Guide · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=12" />
+    <link rel="stylesheet" href="../docs.css?v=13" />
   </head>
   <body data-document="software-implementation.md">
     <main class="document-shell" id="document-shell">
@@ -74,7 +74,7 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v1.1</td>
+<td>v1.2</td>
 </tr>
 <tr>
 <td>文档状态</td>
@@ -82,7 +82,7 @@
 </tr>
 <tr>
 <td>编写日期</td>
-<td>2026-11-02</td>
+<td>2026-11-03</td>
 </tr>
 <tr>
 <td>对应设计</td>
@@ -99,9 +99,15 @@
 <h2 id="2-当前实现范围">2. 当前实现范围</h2>
 <p>已经实现：</p>
 <ul>
-<li>Next.js 中英文 Web 界面。</li>
+<li>Next.js App Router Web 界面；公开产品入口当前固定英文，<code>/zh-CN</code> 重定向到 <code>/en</code>。</li>
+<li>正式站与 GitHub Pages 项目主页共享 <code>packages/landing</code> UI。</li>
+<li>左侧 Agents、Skills、Assets、Hots、Docs 导航和独立视图切换。</li>
+<li>蓝色播放键品牌、无框标签页图标和激活图标填充/线框反转。</li>
+<li>首页连续视频轮播、流式主标语、自定义透明下拉和 Action 生成入口。</li>
+<li>Hots 社区卡片展示作者与喜欢数，发布记录保存在当前前端会话。</li>
+<li>内嵌文档阅读器、文档图标切换、固定深色主题、左侧可折叠目录和章节高亮。</li>
 <li>注册、登录、登出和服务端会话。</li>
-<li>用户级项目创建、列表和读取。</li>
+<li>用户级项目创建、列表、读取、重命名和归档。</li>
 <li>用户数据所有权隔离。</li>
 <li>多镜头故事板创建、读取和版本化替换。</li>
 <li>LangGraph 单节点 Agent 编排。</li>
@@ -114,8 +120,10 @@
 <li>Pippit 服务端授权；不再为每个 Web 用户单独绑定 Kling。</li>
 <li>任务状态 API 刷新。</li>
 <li>可选 Celery 后台轮询。</li>
+<li>故事板即时评估与前端审核弹窗。</li>
 <li>Docker Compose 基础设施配置。</li>
 <li>GitHub Actions CI 配置。</li>
+<li>GitHub Pages 项目主页和 Markdown 文档构建。</li>
 </ul>
 <p>尚未实现：</p>
 <ul>
@@ -125,6 +133,7 @@
 <li>公开分享页面。</li>
 <li>Alembic 正式迁移。</li>
 <li>OpenAPI 客户端自动生成。</li>
+<li>持久化社区发布、点赞和社区后端 API。</li>
 <li>CSRF 双重保护、分布式限流和生产级监控。</li>
 </ul>
 <h2 id="3-仓库结构">3. 仓库结构</h2>
@@ -136,6 +145,12 @@
 │   ├── src/i18n/                   # 路由、导航和请求配置
 │   ├── src/lib/                    # 前端工具函数
 │   └── tests/                      # Vitest 测试
+├── apps/landing/
+│   └── src/main.tsx                # GitHub Pages 项目主页入口
+├── packages/landing/
+│   ├── src/index.tsx               # 共享首页、导航、Hots、Docs
+│   ├── src/content.ts              # 英文内容与中文占位资源
+│   └── src/landing.css             # 共享视觉样式
 ├── services/api/
 │   ├── src/videoagent/
 │   │   ├── agent/                  # LangGraph 和 Planner
@@ -150,16 +165,21 @@
 │   │   └── main.py
 │   └── tests/
 ├── deploy/docker-compose.yml
-├── scripts/                        # Windows 开发脚本
+├── site/                           # 项目主页图标与文档主题资源
+├── scripts/                        # 启动、检查、Pages/文档构建
 ├── docs/
-├── .github/workflows/ci.yml
+├── .github/workflows/              # CI、Pages、安全扫描
 ├── package.json
 └── pnpm-workspace.yaml</code></pre>
 <h2 id="4-运行时架构">4. 运行时架构</h2>
 <pre><code class="language-text">Browser
   │
   ├── Next.js :3000
-  │     └── HTTPS/fetch → FastAPI :8000/api/v1
+  │     ├── Route Handler /api/account/* → FastAPI :8000/api/v1
+  │     └── public/docs/*             → 内嵌文档
+  │
+  ├── GitHub Pages 项目主页
+  │     └── 共享 Landing UI（预览模式）
   │
   └── FastAPI
         ├── SQLite（当前开发默认）
@@ -171,7 +191,7 @@ Celery Worker（可选）
   ├── Redis Broker
   ├── PostgreSQL/SQLite
   └── Pippit CLI query-result</code></pre>
-<p>当前本地开发中，浏览器直接访问 FastAPI 的 <code>8000</code> 端口。FastAPI 已配置本地 CORS。</p>
+<p>当前本地开发中，浏览器直接访问 FastAPI 的 <code>8000</code> 端口。FastAPI 已配置本地 CORS。 正式产品首页通过 Next.js Route Handler 代理账户与项目请求；项目工作区仍按 <code>NEXT_PUBLIC_API_BASE_URL</code> 访问 FastAPI。</p>
 <p>生产环境规划通过反向代理保持同域：</p>
 <pre><code class="language-text">https://example.com/       → Next.js
 https://example.com/api/   → FastAPI</code></pre>
@@ -359,8 +379,12 @@ https://example.com/api/   → FastAPI</code></pre>
 <td>项目编辑工作区</td>
 </tr>
 <tr>
+<td><code>apps/landing/src/main.tsx</code></td>
+<td>GitHub Pages 项目主页入口</td>
+</tr>
+<tr>
 <td><code>packages/landing</code></td>
-<td>右侧导航、黑白品牌、视频主视觉和多设定创作框</td>
+<td>左侧导航、共享品牌、视频主视觉、创作框、Hots 和 Docs</td>
 </tr>
 <tr>
 <td><code>locale-switcher.tsx</code></td>
@@ -378,30 +402,34 @@ https://example.com/api/   → FastAPI</code></pre>
 <td><code>project-workspace.tsx</code></td>
 <td>自动开始首轮 Agent 对话、故事板、镜头设置和生成</td>
 </tr>
+<tr>
+<td><code>scripts/build_pages.py</code></td>
+<td>生成文档 HTML、目录和 GitHub Pages 产物</td>
+</tr>
 </tbody></table></div>
 <p>前端通过 <code>NEXT_PUBLIC_API_BASE_URL</code> 访问 FastAPI，所有鉴权请求设置 <code>credentials: &quot;include&quot;</code>。</p>
 <p>当前前端请求类型是手写的局部 TypeScript 类型。后续应从 FastAPI OpenAPI 自动生成客户端，避免字段漂移。</p>
 <h2 id="8-国际化实现">8. 国际化实现</h2>
-<p>支持的语言：</p>
+<p>保留的语言资源：</p>
 <pre><code class="language-text">en
 zh-CN</code></pre>
-<p>路由：</p>
-<pre><code class="language-text">/en
-/zh-CN</code></pre>
+<p>当前公开路由：</p>
+<pre><code class="language-text">/en        ✅ 正式入口
+/zh-CN     ↪ 重定向到 /en</code></pre>
 <p>核心文件：</p>
 <ul>
 <li><code>src/i18n/config.ts</code>：语言列表和显示名称。</li>
 <li><code>src/i18n/routing.ts</code>：next-intl 路由。</li>
 <li><code>src/i18n/navigation.ts</code>：本地化 Link 和 Router。</li>
 <li><code>src/i18n/request.ts</code>：加载消息文件。</li>
-<li><code>src/proxy.ts</code>：语言前缀路由。</li>
+<li><code>src/proxy.ts</code>：语言前缀路由，并将 <code>zh-CN</code> 重定向到 <code>en</code>。</li>
 <li><code>messages/en.json</code>、<code>messages/zh-CN.json</code>：翻译资源。</li>
 </ul>
 <p>开发规则：</p>
 <ul>
-<li>两种语言的 Key 必须完全一致。</li>
+<li>两种语言的 Key 仍需保持一致，以便后续恢复中文版。</li>
 <li>后端返回稳定错误码，不在数据库保存前端展示文案。</li>
-<li>新页面必须同时添加中英文文案。</li>
+<li>新增内部翻译 Key 时同时维护中英文资源；公开 UI 当前仍只开放英文。</li>
 <li>Agent 输出语言来自 <code>User.locale</code>。</li>
 <li>视频模型 Prompt 使用 <code>prompt_en</code>，中文解释保存在 <code>prompt_zh</code>。</li>
 </ul>
@@ -554,6 +582,16 @@ task reference    → query-result   → JobStatus + result URL</code></pre>
 <td>读取项目</td>
 </tr>
 <tr>
+<td>PATCH</td>
+<td><code>/projects/{id}</code></td>
+<td>重命名项目</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/projects/{id}</code></td>
+<td>归档项目</td>
+</tr>
+<tr>
 <td>GET</td>
 <td><code>/projects/{id}/messages</code></td>
 <td>对话历史</td>
@@ -645,8 +683,8 @@ task reference    → query-result   → JobStatus + result URL</code></pre>
 .\scripts\dev-web.ps1</code></pre>
 <p>该脚本同样会统一控制台编码，并启动 Next.js 开发服务。</p>
 <p>访问：</p>
-<pre><code class="language-text">http://localhost:3000/zh-CN
-http://localhost:3000/en
+<pre><code class="language-text">http://localhost:3000/en
+http://localhost:3000/zh-CN  → 重定向到 /en
 http://localhost:8000/docs</code></pre>
 <h3 id="13-3-启动-celery">13.3 启动 Celery</h3>
 <p>先启动 Redis，然后：</p>
@@ -765,10 +803,11 @@ pnpm --dir apps/web typecheck
 pnpm --dir apps/web build</code></pre>
 <p>当前基线：</p>
 <ul>
-<li>后端 28 个测试。</li>
-<li>前端 5 个测试。</li>
+<li>后端 35 个测试。</li>
+<li>前端 14 个测试。</li>
 <li>后端测试使用临时 SQLite 文件。</li>
 <li>Pippit 测试使用本地 Fake CLI，不访问真实生成网络。</li>
+<li>前端测试覆盖共享首页、导航、文档加载、自定义下拉、Hots 发布、创作提交和轮播行为。</li>
 <li>普通 CI 不执行付费生成。</li>
 </ul>
 <p>新增功能必须遵循：</p>
@@ -861,6 +900,11 @@ pnpm --dir apps/web build</code></pre>
 <td>增加 Redis Pub/Sub + SSE</td>
 </tr>
 <tr>
+<td>Hots 发布</td>
+<td>当前仅保存在前端会话</td>
+<td>增加社区 Post、点赞和持久化 API</td>
+</tr>
+<tr>
 <td>素材</td>
 <td>未实现</td>
 <td>增加 Asset、本地/S3 Storage Adapter</td>
@@ -918,8 +962,13 @@ pnpm --dir apps/web build</code></pre>
 <td>2026-11-02</td>
 <td>将视频链路切换为服务端 Pippit CLI，移除 Web 用户级 Kling 绑定</td>
 </tr>
+<tr>
+<td>v1.2</td>
+<td>2026-11-03</td>
+<td>对齐共享 Landing UI、Hots、自定义下拉、内嵌文档、当前 API 与测试数量</td>
+</tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=12"></script>
+    <script src="../docs.js?v=13"></script>
   </body>
 </html>

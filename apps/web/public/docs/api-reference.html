@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent API Reference · API 接口文档" />
     <title>API Reference · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=12" />
+    <link rel="stylesheet" href="../docs.css?v=13" />
   </head>
   <body data-document="api-reference.md">
     <main class="document-shell" id="document-shell">
@@ -32,6 +32,7 @@
 <a class="toc-link toc-level-3" href="#current-user">Current User</a>
 <a class="toc-link toc-level-3" href="#update-locale">Update Locale</a>
 <a class="toc-link toc-level-3" href="#logout">Logout</a>
+<a class="toc-link toc-level-2" href="#health">Health</a>
 <a class="toc-link toc-level-2" href="#projects">Projects</a>
 <a class="toc-link toc-level-2" href="#storyboards">Storyboards</a>
 <a class="toc-link toc-level-3" href="#read-storyboard">Read Storyboard</a>
@@ -45,6 +46,7 @@
 <a class="toc-link toc-level-3" href="#job-status">Job Status</a>
 <a class="toc-link toc-level-3" href="#evaluate-storyboard">Evaluate Storyboard</a>
 <a class="toc-link toc-level-2" href="#pippit-provider">Pippit Provider</a>
+<a class="toc-link toc-level-2" href="#hots-publication">Hots Publication</a>
 <a class="toc-link toc-level-2" href="#errors">Errors</a>
         </nav>
       </aside>
@@ -54,6 +56,7 @@
 <p>Interactive OpenAPI documentation is available at:</p>
 <pre><code class="language-text">http://localhost:8000/docs
 http://localhost:8000/openapi.json</code></pre>
+<p>All endpoints require authentication except <code>/health</code>, <code>/auth/register</code>, and <code>/auth/login</code>. Browser clients must send the session cookie.</p>
 <h2 id="authentication">Authentication</h2>
 <p>The API uses an HttpOnly session cookie named <code>videoagent_session</code>. Browser clients must send requests with credentials enabled.</p>
 <h3 id="register">Register</h3>
@@ -80,6 +83,9 @@ http://localhost:8000/openapi.json</code></pre>
 <h3 id="logout">Logout</h3>
 <p><code>POST /auth/logout</code></p>
 <p>Revokes the current session and removes the session cookie.</p>
+<h2 id="health">Health</h2>
+<p><code>GET /health</code></p>
+<p>Returns API status and database dependency health. A database failure returns <code>503</code> with <code>status: &quot;degraded&quot;</code>.</p>
 <h2 id="projects">Projects</h2>
 <p>All project endpoints require authentication and are scoped to the current user. Another user's project returns <code>404</code>.</p>
 <div class="table-wrap"><table><thead><tr>
@@ -103,6 +109,11 @@ http://localhost:8000/openapi.json</code></pre>
 <td>Read a project</td>
 </tr>
 <tr>
+<td><code>PATCH</code></td>
+<td><code>/projects/{project_id}</code></td>
+<td>Rename a project</td>
+</tr>
+<tr>
 <td><code>DELETE</code></td>
 <td><code>/projects/{project_id}</code></td>
 <td>Archive a project</td>
@@ -112,6 +123,10 @@ http://localhost:8000/openapi.json</code></pre>
 <pre><code class="language-json">{
   &quot;title&quot;: &quot;Launch film&quot;,
   &quot;brief&quot;: &quot;A ten-second cinematic product launch&quot;
+}</code></pre>
+<p>Rename request:</p>
+<pre><code class="language-json">{
+  &quot;title&quot;: &quot;Launch film — final&quot;
 }</code></pre>
 <h2 id="storyboards">Storyboards</h2>
 <h3 id="read-storyboard">Read Storyboard</h3>
@@ -138,7 +153,7 @@ http://localhost:8000/openapi.json</code></pre>
 <pre><code class="language-json">{
   &quot;content&quot;: &quot;Turn the brief into a three-shot launch film&quot;
 }</code></pre>
-<p>The response includes the user message, VideoAgent reply, and updated storyboard.</p>
+<p>The response includes the user message, VideoAgent reply, and updated storyboard. This endpoint currently returns one JSON response and does not provide SSE or token streaming.</p>
 <h2 id="generation">Generation</h2>
 <h3 id="estimate-cost">Estimate Cost</h3>
 <p><code>POST /shots/{shot_id}/estimate</code></p>
@@ -199,6 +214,8 @@ http://localhost:8000/openapi.json</code></pre>
   &quot;credits&quot;: 42
 }</code></pre>
 <p>If the server CLI is not logged in, the credits endpoint returns <code>connected: false</code> and <code>credits: null</code>. A missing binary returns <code>503</code>; an upstream CLI failure returns <code>502</code>.</p>
+<h2 id="hots-publication">Hots Publication</h2>
+<p>Community publication in Hots is currently a frontend-only interaction and does not call this API. Posts are retained only for the active browser session; there is no community persistence or likes endpoint yet.</p>
 <h2 id="errors">Errors</h2>
 <p>Errors use the following shape:</p>
 <pre><code class="language-json">{
@@ -238,8 +255,12 @@ http://localhost:8000/openapi.json</code></pre>
 <td><code>502</code></td>
 <td>Upstream provider request failed</td>
 </tr>
+<tr>
+<td><code>503</code></td>
+<td>Required provider CLI is unavailable</td>
+</tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=12"></script>
+    <script src="../docs.js?v=13"></script>
   </body>
 </html>

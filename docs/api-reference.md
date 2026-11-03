@@ -13,6 +13,9 @@ http://localhost:8000/docs
 http://localhost:8000/openapi.json
 ```
 
+All endpoints require authentication except `/health`, `/auth/register`, and
+`/auth/login`. Browser clients must send the session cookie.
+
 ## Authentication
 
 The API uses an HttpOnly session cookie named `videoagent_session`.
@@ -63,6 +66,13 @@ Returns the authenticated user's ID, email, locale, and creation time.
 
 Revokes the current session and removes the session cookie.
 
+## Health
+
+`GET /health`
+
+Returns API status and database dependency health. A database failure returns
+`503` with `status: "degraded"`.
+
 ## Projects
 
 All project endpoints require authentication and are scoped to the current
@@ -73,6 +83,7 @@ user. Another user's project returns `404`.
 | `GET` | `/projects` | List active projects |
 | `POST` | `/projects` | Create a project |
 | `GET` | `/projects/{project_id}` | Read a project |
+| `PATCH` | `/projects/{project_id}` | Rename a project |
 | `DELETE` | `/projects/{project_id}` | Archive a project |
 
 Create request:
@@ -81,6 +92,14 @@ Create request:
 {
   "title": "Launch film",
   "brief": "A ten-second cinematic product launch"
+}
+```
+
+Rename request:
+
+```json
+{
+  "title": "Launch film — final"
 }
 ```
 
@@ -126,7 +145,8 @@ Create request:
 ```
 
 The response includes the user message, VideoAgent reply, and updated
-storyboard.
+storyboard. This endpoint currently returns one JSON response and does not
+provide SSE or token streaming.
 
 ## Generation
 
@@ -217,6 +237,12 @@ If the server CLI is not logged in, the credits endpoint returns `connected:
 false` and `credits: null`. A missing binary returns `503`; an upstream CLI
 failure returns `502`.
 
+## Hots Publication
+
+Community publication in Hots is currently a frontend-only interaction and
+does not call this API. Posts are retained only for the active browser
+session; there is no community persistence or likes endpoint yet.
+
 ## Errors
 
 Errors use the following shape:
@@ -242,3 +268,4 @@ Important status codes:
 | `409` | Configured provider is not active |
 | `422` | Request validation failed |
 | `502` | Upstream provider request failed |
+| `503` | Required provider CLI is unavailable |

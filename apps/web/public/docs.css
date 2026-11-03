@@ -304,6 +304,12 @@ table {
   min-width: 620px;
 }
 
+.document table th:first-child,
+.document table td:first-child {
+  width: 1%;
+  white-space: nowrap;
+}
+
 th,
 td {
   border-bottom: 1px solid var(--line);
