@@ -37,7 +37,7 @@ describe("LandingPage", () => {
     expect(nav?.querySelectorAll(".nav-icon")).toHaveLength(5);
     expect(container.querySelector(".language-button")).not.toBeInTheDocument();
     expect(container.querySelector(".notification-button svg")).toBeInTheDocument();
-    expect(container.querySelector(".brand-mark")).toHaveTextContent("VA");
+    expect(container.querySelector(".brand-mark .brand-play")).toBeInTheDocument();
     expect(composer).toBeInTheDocument();
     expect(composer?.querySelectorAll(".composer-select")).toHaveLength(7);
     expect(
@@ -108,9 +108,11 @@ describe("LandingPage", () => {
         (button) => button.textContent === "Hots",
       )!,
     );
-    expect(container.querySelector("#hots .community-card")).toHaveTextContent(
-      "Editorial vlog",
-    );
+    expect(
+      container.querySelector("#hots .community-card:not(.community-publish-card)"),
+    ).toHaveTextContent("Editorial vlog");
+    expect(container.querySelector(".community-author")).toHaveTextContent("Maya Chen");
+    expect(container.querySelector(".community-likes")).toHaveTextContent("128");
     expect(container.querySelector("#hots .community-action")).toHaveTextContent(
       "Make this",
     );
@@ -142,6 +144,29 @@ describe("LandingPage", () => {
     );
     expect(styleTrigger).toHaveTextContent("Cinematic");
     expect(container.querySelector(".composer-select-menu")).not.toBeInTheDocument();
+  });
+
+  it("publishes a Hots post from the app feed", () => {
+    const { container } = render(<LandingPage {...props} mode="app" />);
+
+    fireEvent.click(
+      [...container.querySelectorAll(".site-header button")].find(
+        (button) => button.textContent === "Hots",
+      )!,
+    );
+    fireEvent.click(container.querySelector(".community-publish-card")!);
+    fireEvent.change(container.querySelector(".publish-dialog textarea")!, {
+      target: { value: "A new film from my studio" },
+    });
+    fireEvent.click(
+      container.querySelector('.publish-dialog button[type="submit"]')!,
+    );
+
+    expect(
+      container.querySelector(".community-card:not(.community-publish-card)"),
+    ).toHaveTextContent("A new film from my studio");
+    expect(container.querySelector(".community-author")).toHaveTextContent("You");
+    expect(container.querySelector(".community-likes")).toHaveTextContent("0");
   });
 
   it("submits the home composer as a complete project draft", async () => {

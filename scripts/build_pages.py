@@ -222,7 +222,7 @@ def document_page(
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="description" content="VideoAgent {html.escape(title_en)} · {html.escape(title_zh)}" />
     <title>{document_title}</title>
-    <link rel="icon" href="../brand-mark.svg?v=12" type="image/svg+xml" />
+    <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
     <link rel="stylesheet" href="../docs.css?v={DOCS_ASSET_VERSION}" />
   </head>
   <body data-document="{html.escape(filename, quote=True)}">

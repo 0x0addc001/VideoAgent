@@ -8,7 +8,9 @@ import {
   Film,
   Flame,
   Gem,
+  Heart,
   Play,
+  Plus,
   UserRound,
   Video,
 } from "lucide-react";
@@ -37,6 +39,13 @@ export type LandingProjectDraft = {
   reviewMode: "auto" | "ask";
 };
 
+type PublishedHot = {
+  author: string;
+  likes: number;
+  prompt: string;
+  title: string;
+};
+
 export type LandingPageProps = {
   locale: LandingLocale;
   mode: LandingMode;
@@ -50,8 +59,7 @@ export type LandingPageProps = {
 function BrandMark() {
   return (
     <span className="brand-mark" data-tone="monochrome" aria-hidden="true">
-      <span className="brand-v">V</span>
-      <span className="brand-a">A</span>
+      <Play className="brand-play" />
     </span>
   );
 }
@@ -338,6 +346,9 @@ export function LandingPage({
   );
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [previewNoticeOpen, setPreviewNoticeOpen] = useState(false);
+  const [publishOpen, setPublishOpen] = useState(false);
+  const [publishDraft, setPublishDraft] = useState("");
+  const [publishedHots, setPublishedHots] = useState<PublishedHot[]>([]);
   const [displayCredits, setDisplayCredits] = useState(
     accountCredits === null ? "—" : String(accountCredits),
   );
@@ -441,6 +452,19 @@ export function LandingPage({
     return () => document.removeEventListener("keydown", closePreview);
   }, [previewNoticeOpen]);
 
+  useEffect(() => {
+    if (!publishOpen) return;
+
+    function closePublisher(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setPublishOpen(false);
+      }
+    }
+
+    document.addEventListener("keydown", closePublisher);
+    return () => document.removeEventListener("keydown", closePublisher);
+  }, [publishOpen]);
+
   async function submitProject(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const normalizedPrompt = prompt.trim();
@@ -478,6 +502,31 @@ export function LandingPage({
     setActiveView("agents");
     window.history.replaceState(null, "", "#agents");
     window.setTimeout(() => promptRef.current?.focus(), 250);
+  }
+
+  function openPublisher() {
+    if (mode === "project") {
+      setPreviewNoticeOpen(true);
+      return;
+    }
+    setPublishOpen(true);
+  }
+
+  function publishHot(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const value = publishDraft.trim();
+    if (!value) return;
+    setPublishedHots((current) => [
+      {
+        author: content.hots.you,
+        likes: 0,
+        prompt: value,
+        title: value.length > 42 ? `${value.slice(0, 42)}…` : value,
+      },
+      ...current,
+    ]);
+    setPublishDraft("");
+    setPublishOpen(false);
   }
 
   function openView(view: LandingView) {
@@ -803,14 +852,32 @@ export function LandingPage({
       {activeView === "hots" ? (
       <section className="section hots-section" id="hots">
         <div className="community-stream">
-          {content.hots.items.map((item, index) => (
+          <button
+            className="community-card community-publish-card"
+            onClick={openPublisher}
+            type="button"
+          >
+            <Plus aria-hidden="true" />
+            <span>{content.hots.publish}</span>
+          </button>
+          {[...publishedHots, ...content.hots.items].map((item, index) => (
             <button
               className={`community-card community-card-${(index % 5) + 1}`}
-              key={item.title}
+              key={`${item.author}-${item.title}-${index}`}
               onClick={() => usePrompt(item.prompt)}
               type="button"
             >
               <img alt="" src={videos[index % videos.length].poster} />
+              <span className="community-author">
+                <span className="community-author-mark" aria-hidden="true">
+                  {Array.from(item.author)[0]}
+                </span>
+                {item.author}
+              </span>
+              <span className="community-likes">
+                <Heart aria-hidden="true" />
+                {item.likes}
+              </span>
               <span className="community-card-title">{item.title}</span>
               <span className="community-action">{content.hots.makeThis} ↗</span>
             </button>
@@ -843,6 +910,58 @@ export function LandingPage({
             />
           </div>
         </section>
+      ) : null}
+
+      {publishOpen ? (
+        <div
+          className="preview-backdrop"
+          onPointerDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setPublishOpen(false);
+            }
+          }}
+        >
+          <form
+            aria-labelledby="publish-title"
+            aria-modal="true"
+            className="preview-dialog publish-dialog"
+            onSubmit={publishHot}
+            role="dialog"
+          >
+            <button
+              aria-label={content.hots.cancel}
+              className="preview-close"
+              onClick={() => setPublishOpen(false)}
+              type="button"
+            >
+              ×
+            </button>
+            <p className="preview-eyebrow">{content.nav.hots}</p>
+            <h2 id="publish-title">{content.hots.publishTitle}</h2>
+            <textarea
+              aria-label={content.hots.publishPlaceholder}
+              onChange={(event) => setPublishDraft(event.target.value)}
+              placeholder={content.hots.publishPlaceholder}
+              value={publishDraft}
+            />
+            <div className="publish-actions">
+              <button
+                className="publish-cancel"
+                onClick={() => setPublishOpen(false)}
+                type="button"
+              >
+                {content.hots.cancel}
+              </button>
+              <button
+                className="primary-action"
+                disabled={!publishDraft.trim()}
+                type="submit"
+              >
+                {content.hots.publishAction}
+              </button>
+            </div>
+          </form>
+        </div>
       ) : null}
 
       {previewNoticeOpen ? (

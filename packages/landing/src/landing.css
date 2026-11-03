@@ -1114,6 +1114,53 @@ html[lang="zh-CN"] .hero-description {
   line-height: 1.7;
 }
 
+.publish-dialog textarea {
+  width: 100%;
+  min-height: 132px;
+  resize: vertical;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.035);
+  color: var(--text);
+  font-family: var(--body);
+  font-size: 1rem;
+  line-height: 1.6;
+  outline: none;
+  padding: 15px 16px;
+}
+
+.publish-dialog textarea:focus {
+  border-color: rgba(79, 172, 255, 0.58);
+}
+
+.publish-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.publish-cancel {
+  min-height: 46px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0 18px;
+}
+
+.publish-dialog .primary-action {
+  min-height: 46px;
+  border-radius: 999px;
+  padding-inline: 18px;
+}
+
+.publish-dialog .primary-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
 .preview-eyebrow {
   margin: 0;
   color: var(--accent);
@@ -1440,8 +1487,24 @@ html[lang="zh-CN"] .va-landing select {
 }
 
 .site-header > nav > button[aria-current="page"] .nav-icon {
-  fill: currentColor;
+  fill: none;
   stroke: currentColor;
+}
+
+.site-header > nav > button:nth-of-type(1)[aria-current="page"] .nav-icon > path:last-child,
+.site-header > nav > button:nth-of-type(3)[aria-current="page"] .nav-icon > rect:first-child,
+.site-header > nav > button:nth-of-type(4)[aria-current="page"] .nav-icon > path:first-child,
+.site-header > nav > button:nth-of-type(5)[aria-current="page"] .nav-icon > path:first-child {
+  fill: currentColor;
+}
+
+.site-header > nav > button:nth-of-type(2)[aria-current="page"] .nav-icon > rect {
+  fill: currentColor;
+}
+
+.site-header > nav > button:nth-of-type(3)[aria-current="page"] .nav-icon > path,
+.site-header > nav > button:nth-of-type(5)[aria-current="page"] .nav-icon > path:not(:first-child) {
+  stroke: var(--background);
 }
 
 .site-header > nav .nav-dropdown summary {
@@ -1527,7 +1590,7 @@ html[lang="zh-CN"] .va-landing select {
 
 .account-avatar-default {
   border-color: rgba(133, 201, 255, 0.72);
-  background: rgba(57, 139, 255, 0.68);
+  background: rgba(125, 195, 255, 0.42);
   backdrop-filter: blur(10px);
 }
 
@@ -1768,8 +1831,12 @@ html[lang="zh-CN"] .hero-copy h1 {
 }
 
 .feature-section {
-  padding: 86px 0;
-  border-top: 1px solid var(--line);
+  padding: 20px 0 86px;
+  border-top: 0;
+}
+
+.hots-section {
+  padding-top: 20px;
 }
 
 .feature-heading {
@@ -1891,6 +1958,52 @@ html[lang="zh-CN"] .hero-copy h1 {
   column-gap: 12px;
 }
 
+.community-author,
+.community-likes {
+  position: absolute;
+  z-index: 2;
+  top: 14px;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(7, 10, 15, 0.56);
+  color: #f2f6ff;
+  font-size: 0.76rem;
+  line-height: 1;
+  padding: 7px 9px;
+  backdrop-filter: blur(12px);
+}
+
+.community-author {
+  left: 14px;
+  gap: 6px;
+}
+
+.community-author-mark {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(79, 172, 255, 0.24);
+  color: #8fdcff;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.community-likes {
+  right: 14px;
+  gap: 5px;
+}
+
+.community-likes svg {
+  width: 13px;
+  height: 13px;
+  color: #4facff;
+  fill: rgba(79, 172, 255, 0.24);
+}
+
 .community-card {
   position: relative;
   display: inline-block;
@@ -1982,6 +2095,33 @@ html[lang="zh-CN"] .hero-copy h1 {
 .community-card:focus-visible .community-action {
   opacity: 1;
   transform: translate(-50%, -50%);
+}
+
+.community-card.community-publish-card {
+  display: flex;
+  aspect-ratio: 4 / 3;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px dashed rgba(79, 172, 255, 0.58);
+  background: rgba(22, 119, 255, 0.075);
+  color: #4facff;
+  font-size: 1rem;
+}
+
+.community-card.community-publish-card::after {
+  display: none;
+}
+
+.community-card.community-publish-card:hover {
+  border-color: #4facff;
+  background: rgba(22, 119, 255, 0.13);
+}
+
+.community-card.community-publish-card svg {
+  width: 28px;
+  height: 28px;
+  stroke-width: 1.6;
 }
 
 .docs-view {
@@ -2192,6 +2332,7 @@ html[lang="zh-CN"] .hero-copy h1 {
   display: flex;
   width: max-content;
   height: 100%;
+  gap: 0;
   animation: hero-carousel 26s linear infinite;
   will-change: transform;
 }
@@ -2203,6 +2344,7 @@ html[lang="zh-CN"] .hero-copy h1 {
   left: auto;
   width: clamp(340px, 34vw, 560px);
   height: 100%;
+  margin: 0;
   flex: 0 0 clamp(340px, 34vw, 560px);
   aspect-ratio: auto;
   border: 0;
@@ -2352,10 +2494,11 @@ html[lang="zh-CN"] .hero-copy h1 {
   justify-content: center;
   gap: 8px;
   padding: 0 10px;
-  border: 1px solid rgba(71, 190, 255, 0.58);
+  border: 1px solid rgba(22, 119, 255, 0.42);
   border-radius: 14px;
-  background: rgba(22, 119, 255, 0.52);
-  box-shadow: 0 8px 28px rgba(0, 166, 255, 0.2);
+  background: rgba(22, 119, 255, 0.42);
+  box-shadow: none;
+  color: #d9ebff;
 }
 
 .composer-controls .composer-submit svg {
@@ -2451,27 +2594,24 @@ html[lang="zh-CN"] .hero-copy h1 {
   display: flex;
   width: 35px;
   height: 35px;
-  border: 1px solid #f2f6ff;
+  border: 0;
   border-radius: 0;
   background: transparent;
   align-items: center;
   justify-content: center;
-  gap: 1px;
-  color: #f2f6ff;
+  gap: 0;
+  color: #4facff;
   box-shadow: none;
   font-family: var(--display);
   font-size: 0.9rem;
-  font-weight: 600;
-  letter-spacing: -0.02em;
-}
-
-.brand-mark .brand-a {
-  color: #f2f6ff;
 }
 
 .brand-mark svg {
-  width: 21px;
-  stroke-width: 1.25;
+  width: 23px;
+  height: 23px;
+  fill: currentColor;
+  stroke: currentColor;
+  stroke-width: 1.4;
 }
 
 .brand {
@@ -2633,7 +2773,7 @@ html[lang="zh-CN"] .hero-copy h1 {
 .creation-composer {
   width: min(100%, 1140px);
   margin: 30px auto 0;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 30px;
   background: transparent;
@@ -2821,7 +2961,8 @@ html[lang="zh-CN"] .hero-copy h1 {
 }
 
 .composer-submit:hover:not(:disabled) {
-  background: #00b8ff;
+  border-color: rgba(22, 119, 255, 0.52);
+  background: rgba(22, 119, 255, 0.52);
   transform: translateY(-1px);
 }
 
