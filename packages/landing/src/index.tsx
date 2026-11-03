@@ -2,6 +2,7 @@
 
 import {
   Bell,
+  ChevronDown,
   Clapperboard,
   FileText,
   Film,
@@ -69,7 +70,7 @@ const HERO_LINE_TWO: HeroPart[] = [
   { text: "Director", accent: true },
 ];
 
-const DOCS_ASSET_VERSION = "11";
+const DOCS_ASSET_VERSION = "12";
 
 function heroPartsLength(parts: readonly HeroPart[]) {
   return parts.reduce((total, part) => total + Array.from(part.text).length, 0);
@@ -151,6 +152,82 @@ function StreamingHeroTitle() {
         <span className="hero-line-live">{renderHeroParts(HERO_LINE_TWO, visibleLineTwo)}</span>
       </span>
     </h1>
+  );
+}
+
+type ComposerSelectOption = {
+  label: string;
+  value: string;
+};
+
+type ComposerSelectProps = {
+  className?: string;
+  label: string;
+  onChange: (value: string) => void;
+  options: readonly ComposerSelectOption[];
+  value: string;
+};
+
+function ComposerSelect({
+  className = "",
+  label,
+  onChange,
+  options,
+  value,
+}: ComposerSelectProps) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+  const selectedOption = options.find((option) => option.value === value);
+  const visibleLabel = value === "auto" ? label : (selectedOption?.label ?? value);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      if (!rootRef.current?.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+    return () => document.removeEventListener("pointerdown", closeOnOutsidePointer);
+  }, [open]);
+
+  return (
+    <div className={`composer-select ${className}`.trim()} ref={rootRef}>
+      <button
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        aria-label={label}
+        className="composer-select-trigger"
+        onClick={() => setOpen((current) => !current)}
+        onKeyDown={(event) => {
+          if (event.key === "Escape") setOpen(false);
+        }}
+        type="button"
+      >
+        <span>{visibleLabel}</span>
+        <ChevronDown aria-hidden="true" className="composer-select-arrow" />
+      </button>
+      {open ? (
+        <div className="composer-select-menu" role="listbox">
+          {options.map((option) => (
+            <button
+              aria-selected={option.value === value}
+              className="composer-select-option"
+              key={option.value}
+              onClick={() => {
+                onChange(option.value);
+                setOpen(false);
+              }}
+              role="option"
+              type="button"
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -467,7 +544,7 @@ export function LandingPage({
         <div className="header-actions">
           <span
             aria-label={content.nav.account}
-            className="account-avatar"
+            className={`account-avatar${displayAvatar ? "" : " account-avatar-default"}`}
             title={content.nav.account}
           >
             {displayAvatar ?? <UserRound className="avatar-placeholder" />}
@@ -554,125 +631,96 @@ export function LandingPage({
               </div>
             </div>
             <div className="composer-controls" aria-label={content.composer.settingsLabel}>
-              <label className="composer-select">
-                <select
-                  aria-label={content.composer.styleLabel}
-                  onChange={(event) => setStyle(event.target.value)}
-                  value={style}
-                >
-                  <option value="auto">{content.composer.styleLabel}</option>
-                  {content.composer.styles.map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {content.composer.styleLabel} · {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="composer-select">
-                <select
-                  aria-label={content.composer.frameLabel}
-                  onChange={(event) =>
-                    setAspectRatio(event.target.value as LandingProjectDraft["aspectRatio"])
-                  }
-                  value={aspectRatio}
-                >
-                  <option value="auto">{content.composer.frameLabel}</option>
-                  {(["16:9", "9:16", "1:1"] as const).map((ratio) => (
-                    <option key={ratio} value={ratio}>
-                      {content.composer.frameLabel} · {ratio}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="composer-select">
-                <select
-                  aria-label={content.composer.lengthLabel}
-                  onChange={(event) =>
-                    setDurationSeconds(
-                      Number(event.target.value) as LandingProjectDraft["durationSeconds"],
-                    )
-                  }
-                  value={durationSeconds}
-                >
-                  <option value="auto">{content.composer.lengthLabel}</option>
-                  {[5, 10].map((duration) => (
-                    <option key={duration} value={duration}>
-                      {content.composer.lengthLabel} · {duration}
-                      {content.composer.seconds}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="composer-select composer-select-model">
-                <select
-                  aria-label={content.composer.modelLabel}
-                  onChange={(event) => setModel(event.target.value)}
-                  value={model}
-                >
-                  <option value="auto">{content.composer.modelLabel}</option>
-                  {content.composer.models
-                    .filter((option) => option !== "Auto")
-                    .map((option) => (
-                    <option key={option} value={option}>
-                      {content.composer.modelLabel} · {option}
-                    </option>
-                    ))}
-                </select>
-              </label>
-              <label className="composer-select">
-                <select
-                  aria-label={content.composer.resolutionLabel}
-                  onChange={(event) =>
-                    setResolution(
-                      event.target.value as LandingProjectDraft["resolution"],
-                    )
-                  }
-                  value={resolution}
-                >
-                  <option value="auto">{content.composer.resolutionLabel}</option>
-                  {content.composer.resolutions.map((option) => (
-                    <option key={option} value={option}>
-                      {content.composer.resolutionLabel} · {option}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="composer-select">
-                <select
-                  aria-label={content.composer.audioLabel}
-                  onChange={(event) =>
-                    setAudio(event.target.value as LandingProjectDraft["audio"])
-                  }
-                  value={audio}
-                >
-                  {content.composer.audioOptions.map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {option.id === "auto"
-                        ? content.composer.audioLabel
-                        : `${content.composer.audioLabel} · ${option.label}`}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="composer-select">
-                <select
-                  aria-label={content.composer.reviewLabel}
-                  onChange={(event) =>
-                    setReviewMode(
-                      event.target.value as LandingProjectDraft["reviewMode"],
-                    )
-                  }
-                  value={reviewMode}
-                >
-                  {content.composer.reviewOptions.map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {option.id === "auto"
-                        ? content.composer.reviewLabel
-                        : `${content.composer.reviewLabel} · ${option.label}`}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              <ComposerSelect
+                label={content.composer.styleLabel}
+                onChange={setStyle}
+                options={[
+                  { label: "Auto", value: "auto" },
+                  ...content.composer.styles.map((option) => ({
+                    label: option.label,
+                    value: option.id,
+                  })),
+                ]}
+                value={style}
+              />
+              <ComposerSelect
+                label={content.composer.frameLabel}
+                onChange={(value) =>
+                  setAspectRatio(value as LandingProjectDraft["aspectRatio"])
+                }
+                options={[
+                  { label: "Auto", value: "auto" },
+                  ...["16:9", "9:16", "1:1"].map((ratio) => ({
+                    label: ratio,
+                    value: ratio,
+                  })),
+                ]}
+                value={aspectRatio}
+              />
+              <ComposerSelect
+                label={content.composer.lengthLabel}
+                onChange={(value) =>
+                  setDurationSeconds(
+                    value === "auto"
+                      ? "auto"
+                      : (Number(value) as LandingProjectDraft["durationSeconds"]),
+                  )
+                }
+                options={[
+                  { label: "Auto", value: "auto" },
+                  ...[5, 10].map((duration) => ({
+                    label: `${duration}${content.composer.seconds}`,
+                    value: String(duration),
+                  })),
+                ]}
+                value={String(durationSeconds)}
+              />
+              <ComposerSelect
+                className="composer-select-model"
+                label={content.composer.modelLabel}
+                onChange={setModel}
+                options={[
+                  { label: "Auto", value: "auto" },
+                  ...content.composer.models
+                    .filter((option) => option !== "Auto" && option !== "自动")
+                    .map((option) => ({ label: option, value: option })),
+                ]}
+                value={model}
+              />
+              <ComposerSelect
+                label={content.composer.resolutionLabel}
+                onChange={(value) =>
+                  setResolution(value as LandingProjectDraft["resolution"])
+                }
+                options={[
+                  { label: "Auto", value: "auto" },
+                  ...content.composer.resolutions.map((option) => ({
+                    label: option,
+                    value: option,
+                  })),
+                ]}
+                value={resolution}
+              />
+              <ComposerSelect
+                label={content.composer.audioLabel}
+                onChange={(value) => setAudio(value as LandingProjectDraft["audio"])}
+                options={content.composer.audioOptions.map((option) => ({
+                  label: option.label,
+                  value: option.id,
+                }))}
+                value={audio}
+              />
+              <ComposerSelect
+                label={content.composer.reviewLabel}
+                onChange={(value) =>
+                  setReviewMode(value as LandingProjectDraft["reviewMode"])
+                }
+                options={content.composer.reviewOptions.map((option) => ({
+                  label: option.label,
+                  value: option.id,
+                }))}
+                value={reviewMode}
+              />
               <button
                 aria-label={content.composer.submit}
                 className="composer-submit"
@@ -782,6 +830,7 @@ export function LandingPage({
                 role="tab"
                 type="button"
               >
+                <FileText aria-hidden="true" className="docs-tab-icon" />
                 {document.label}
               </button>
             ))}

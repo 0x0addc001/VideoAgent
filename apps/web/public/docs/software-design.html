@@ -3,30 +3,91 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="VideoAgent Software Design" />
+    <meta name="description" content="VideoAgent Software Design · 软件设计说明书" />
     <title>Software Design · VideoAgent</title>
-    <link rel="icon" href="../brand-mark.svg?v=10" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=11" />
+    <link rel="icon" href="../brand-mark.svg?v=12" type="image/svg+xml" />
+    <link rel="stylesheet" href="../docs.css?v=12" />
   </head>
-  <body>
-    <header class="doc-header">
-      <a class="doc-brand" href="../">VideoAgent</a>
-      <span>/</span>
-      <span>Software Design</span>
-      <div class="doc-actions">
-        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme">
-          <span class="theme-icon" aria-hidden="true">◐</span>
-          <span class="theme-label">Dark</span>
+  <body data-document="software-design.md">
+    <main class="document-shell" id="document-shell">
+      <aside class="document-toc" id="document-toc">
+        <button
+          class="toc-toggle"
+          id="toc-toggle"
+          type="button"
+          aria-controls="toc-panel"
+          aria-expanded="true"
+          aria-label="Toggle document contents"
+        >
+          <span class="toc-toggle-icon" aria-hidden="true">☰</span>
+          <span class="toc-toggle-label">Contents</span>
+          <span class="toc-toggle-chevron" aria-hidden="true">‹</span>
         </button>
-      </div>
-    </header>
-    <main class="document-shell">
-      <aside class="document-meta">
-        <span>PROJECT DOCUMENT</span>
-        <strong>Software Design</strong>
-        <small>软件设计说明书</small>
+        <nav class="toc-panel" id="toc-panel" aria-label="Document contents">
+          <p class="toc-kicker">CONTENTS</p>
+          <a class="toc-link toc-level-1" href="#videoagent-软件设计说明书">VideoAgent 软件设计说明书</a>
+<a class="toc-link toc-level-2" href="#1-文档目的">1. 文档目的</a>
+<a class="toc-link toc-level-2" href="#2-产品概述">2. 产品概述</a>
+<a class="toc-link toc-level-2" href="#3-产品目标与范围">3. 产品目标与范围</a>
+<a class="toc-link toc-level-3" href="#3-1-mvp-目标">3.1 MVP 目标</a>
+<a class="toc-link toc-level-3" href="#3-2-mvp-不包含">3.2 MVP 不包含</a>
+<a class="toc-link toc-level-2" href="#4-用户与核心场景">4. 用户与核心场景</a>
+<a class="toc-link toc-level-3" href="#4-1-目标用户">4.1 目标用户</a>
+<a class="toc-link toc-level-3" href="#4-2-核心用户流程">4.2 核心用户流程</a>
+<a class="toc-link toc-level-2" href="#5-总体架构">5. 总体架构</a>
+<a class="toc-link toc-level-2" href="#6-技术栈">6. 技术栈</a>
+<a class="toc-link toc-level-2" href="#7-项目结构">7. 项目结构</a>
+<a class="toc-link toc-level-2" href="#8-模块划分">8. 模块划分</a>
+<a class="toc-link toc-level-2" href="#9-agent-设计">9. Agent 设计</a>
+<a class="toc-link toc-level-3" href="#9-1-基本策略">9.1 基本策略</a>
+<a class="toc-link toc-level-3" href="#9-2-主流程">9.2 主流程</a>
+<a class="toc-link toc-level-3" href="#9-3-工作流状态">9.3 工作流状态</a>
+<a class="toc-link toc-level-3" href="#9-4-agent-工具">9.4 Agent 工具</a>
+<a class="toc-link toc-level-3" href="#9-5-审批策略">9.5 审批策略</a>
+<a class="toc-link toc-level-2" href="#10-langgraph-与-celery">10. LangGraph 与 Celery</a>
+<a class="toc-link toc-level-2" href="#11-pippit-cli-集成">11. Pippit CLI 集成</a>
+<a class="toc-link toc-level-3" href="#11-1-连接方式">11.1 连接方式</a>
+<a class="toc-link toc-level-3" href="#11-2-provider-接口">11.2 Provider 接口</a>
+<a class="toc-link toc-level-3" href="#11-3-首版-pippit-能力">11.3 首版 Pippit 能力</a>
+<a class="toc-link toc-level-3" href="#11-4-凭据与进程安全">11.4 凭据与进程安全</a>
+<a class="toc-link toc-level-2" href="#12-数据模型">12. 数据模型</a>
+<a class="toc-link toc-level-2" href="#13-核心状态定义">13. 核心状态定义</a>
+<a class="toc-link toc-level-3" href="#13-1-项目状态">13.1 项目状态</a>
+<a class="toc-link toc-level-3" href="#13-2-镜头状态">13.2 镜头状态</a>
+<a class="toc-link toc-level-3" href="#13-3-生成任务状态">13.3 生成任务状态</a>
+<a class="toc-link toc-level-2" href="#14-api-设计">14. API 设计</a>
+<a class="toc-link toc-level-3" href="#14-1-通用规范">14.1 通用规范</a>
+<a class="toc-link toc-level-3" href="#14-2-主要接口">14.2 主要接口</a>
+<a class="toc-link toc-level-3" href="#14-3-sse-事件">14.3 SSE 事件</a>
+<a class="toc-link toc-level-2" href="#15-素材与媒体处理">15. 素材与媒体处理</a>
+<a class="toc-link toc-level-3" href="#15-1-上传">15.1 上传</a>
+<a class="toc-link toc-level-3" href="#15-2-生成结果">15.2 生成结果</a>
+<a class="toc-link toc-level-3" href="#15-3-导出">15.3 导出</a>
+<a class="toc-link toc-level-2" href="#16-前端设计">16. 前端设计</a>
+<a class="toc-link toc-level-3" href="#16-1-信息架构">16.1 信息架构</a>
+<a class="toc-link toc-level-3" href="#16-2-项目工作区">16.2 项目工作区</a>
+<a class="toc-link toc-level-3" href="#16-3-前端状态">16.3 前端状态</a>
+<a class="toc-link toc-level-2" href="#17-中英文支持">17. 中英文支持</a>
+<a class="toc-link toc-level-2" href="#18-安全与隐私">18. 安全与隐私</a>
+<a class="toc-link toc-level-2" href="#19-可靠性设计">19. 可靠性设计</a>
+<a class="toc-link toc-level-2" href="#20-可观测性">20. 可观测性</a>
+<a class="toc-link toc-level-2" href="#21-测试策略">21. 测试策略</a>
+<a class="toc-link toc-level-2" href="#22-配置项">22. 配置项</a>
+<a class="toc-link toc-level-2" href="#23-部署设计">23. 部署设计</a>
+<a class="toc-link toc-level-2" href="#24-实施阶段">24. 实施阶段</a>
+<a class="toc-link toc-level-3" href="#阶段-1-基础工程">阶段 1：基础工程</a>
+<a class="toc-link toc-level-3" href="#阶段-2-用户-项目和素材">阶段 2：用户、项目和素材</a>
+<a class="toc-link toc-level-3" href="#阶段-3-agent-与-mock-provider">阶段 3：Agent 与 Mock Provider</a>
+<a class="toc-link toc-level-3" href="#阶段-4-pippit-集成">阶段 4：Pippit 集成</a>
+<a class="toc-link toc-level-3" href="#阶段-5-合成与发布">阶段 5：合成与发布</a>
+<a class="toc-link toc-level-3" href="#阶段-6-测试和部署">阶段 6：测试和部署</a>
+<a class="toc-link toc-level-2" href="#25-验收标准">25. 验收标准</a>
+<a class="toc-link toc-level-2" href="#26-主要风险">26. 主要风险</a>
+<a class="toc-link toc-level-2" href="#27-待确认事项">27. 待确认事项</a>
+<a class="toc-link toc-level-2" href="#28-变更记录">28. 变更记录</a>
+        </nav>
       </aside>
-      <article class="document"><h1>VideoAgent 软件设计说明书</h1>
+      <article class="document"><h1 id="videoagent-软件设计说明书">VideoAgent 软件设计说明书</h1>
 <div class="table-wrap"><table><thead><tr>
 <th>属性</th>
 <th>内容</th>
@@ -60,10 +121,10 @@
 <td>Pippit CLI：Seedance 2.5 Draft、Seedance 2.5、Seedance 2.0 Fast VIP、Seedance 2.0 VIP、Seedance 2.0 Mini 体验版、Seedance 2.0 Mini、Wan 3.0、HappyHorse 1.1</td>
 </tr>
 </tbody></table></div>
-<h2>1. 文档目的</h2>
+<h2 id="1-文档目的">1. 文档目的</h2>
 <p>本文档描述 VideoAgent 的产品目标、系统架构、核心模块、Agent 编排、数据模型、接口规范、Pippit CLI 集成、安全策略、测试策略及部署方式，供产品、前端、后端、测试和运维研发人员共同参考。</p>
 <p>本文档是 MVP 实现基线。涉及外部服务能力变化、付费生成策略或生产部署架构的修改，应通过新的设计决策记录变更，不应直接修改历史决策。</p>
-<h2>2. 产品概述</h2>
+<h2 id="2-产品概述">2. 产品概述</h2>
 <p>VideoAgent 是一个面向内容创作者、营销人员和普通用户的 AI 视频创作平台。用户通过自然语言对话、上传素材或选择模板，在 Agent 协助下完成创意策划、故事板设计、视频镜头生成、结果审核及最终视频合成。</p>
 <p>系统同时提供：</p>
 <ul>
@@ -73,8 +134,8 @@
 <li><strong>项目管理：</strong> 保存项目状态、对话、素材、任务和导出结果。</li>
 </ul>
 <p>系统借鉴 Lumina 的对话式生成、Pippit 的创作模板和素材工作流，但采用可控制的镜头级故事板及 Provider 抽象，避免将业务流程绑定到单一视频模型。</p>
-<h2>3. 产品目标与范围</h2>
-<h3>3.1 MVP 目标</h3>
+<h2 id="3-产品目标与范围">3. 产品目标与范围</h2>
+<h3 id="3-1-mvp-目标">3.1 MVP 目标</h3>
 <ul>
 <li>当前公开界面固定为英文；中文路由统一重定向到英文。</li>
 <li>支持项目创建、编辑、恢复和删除。</li>
@@ -89,7 +150,7 @@
 <li>支持 MP4 下载和公开只读分享。</li>
 <li>保证 Pippit Access Key、CLI 登录文件和服务端路径不暴露给浏览器。</li>
 </ul>
-<h3>3.2 MVP 不包含</h3>
+<h3 id="3-2-mvp-不包含">3.2 MVP 不包含</h3>
 <ul>
 <li>订阅、充值或平台积分销售。</li>
 <li>多人实时协作。</li>
@@ -99,15 +160,15 @@
 <li>Provider 自动竞价或自动模型路由。</li>
 <li>移动端原生 App。</li>
 </ul>
-<h2>4. 用户与核心场景</h2>
-<h3>4.1 目标用户</h3>
+<h2 id="4-用户与核心场景">4. 用户与核心场景</h2>
+<h3 id="4-1-目标用户">4.1 目标用户</h3>
 <ul>
 <li>普通内容创作者。</li>
 <li>电商和产品营销人员。</li>
 <li>社交媒体运营人员。</li>
 <li>广告创意和短视频制作人员。</li>
 </ul>
-<h3>4.2 核心用户流程</h3>
+<h3 id="4-2-核心用户流程">4.2 核心用户流程</h3>
 <pre><code class="language-text">登录
   → 在首页多设定创作框描述创意
   → 提交时自动创建默认项目
@@ -120,7 +181,7 @@
   → 审核并重新生成镜头
   → 合成视频
   → 导出或分享</code></pre>
-<h2>5. 总体架构</h2>
+<h2 id="5-总体架构">5. 总体架构</h2>
 <pre><code class="language-text">┌─────────────────────────────────────────────────────────┐
 │ Next.js Web                                             │
 │ 对话 / 故事板 / 视频预览 / 时间线 / 中英文界面          │
@@ -152,7 +213,7 @@
 <li>API 代理必须关闭响应缓冲。</li>
 <li>使用同域 HttpOnly Cookie 管理会话。</li>
 </ul>
-<h2>6. 技术栈</h2>
+<h2 id="6-技术栈">6. 技术栈</h2>
 <div class="table-wrap"><table><thead><tr>
 <th>模块</th>
 <th>技术</th>
@@ -283,7 +344,7 @@
 </tr>
 </tbody></table></div>
 <p>依赖版本在项目初始化时锁定为稳定版本，并提交 <code>uv.lock</code>、<code>pnpm-lock.yaml</code> 等锁文件。</p>
-<h2>7. 项目结构</h2>
+<h2 id="7-项目结构">7. 项目结构</h2>
 <pre><code class="language-text">VideoAgent/
 ├── apps/
 │   └── web/
@@ -316,7 +377,7 @@
 ├── README.md
 └── .env.example</code></pre>
 <p>前后端契约以 FastAPI 生成的 OpenAPI 文档为准，前端客户端类型通过 OpenAPI 自动生成。</p>
-<h2>8. 模块划分</h2>
+<h2 id="8-模块划分">8. 模块划分</h2>
 <div class="table-wrap"><table><thead><tr>
 <th>模块</th>
 <th>职责</th>
@@ -382,8 +443,8 @@
 <td>视频合成和转码</td>
 </tr>
 </tbody></table></div>
-<h2>9. Agent 设计</h2>
-<h3>9.1 基本策略</h3>
+<h2 id="9-agent-设计">9. Agent 设计</h2>
+<h3 id="9-1-基本策略">9.1 基本策略</h3>
 <p>MVP 使用一个主 Agent 和多个确定性工作流节点，不采用无限制 ReAct 循环，也不在首版拆成多个自由对话 Agent。</p>
 <ul>
 <li>LangGraph 控制业务阶段和人工审批。</li>
@@ -392,7 +453,7 @@
 <li>Celery 执行耗时的外部任务。</li>
 <li>PostgreSQL 保存工作流检查点。</li>
 </ul>
-<h3>9.2 主流程</h3>
+<h3 id="9-2-主流程">9.2 主流程</h3>
 <pre><code class="language-text">intake
   → load_project_context
   → classify_intent
@@ -417,7 +478,7 @@ insufficient_credits
 provider_unavailable
 generation_failed
 cancelled</code></pre>
-<h3>9.3 工作流状态</h3>
+<h3 id="9-3-工作流状态">9.3 工作流状态</h3>
 <pre><code class="language-python">class VideoProjectState(TypedDict):
     project_id: UUID
     locale: Literal[&quot;en&quot;, &quot;zh-CN&quot;]
@@ -438,7 +499,7 @@ cancelled</code></pre>
 
     step: str
     last_error: str | None</code></pre>
-<h3>9.4 Agent 工具</h3>
+<h3 id="9-4-agent-工具">9.4 Agent 工具</h3>
 <p>只允许 Agent 使用业务级白名单工具：</p>
 <pre><code class="language-text">create_storyboard
 update_shot
@@ -457,7 +518,7 @@ export_video</code></pre>
 <li>执行任意 Shell 命令。</li>
 <li>访问用户未授权的其他项目。</li>
 </ul>
-<h3>9.5 审批策略</h3>
+<h3 id="9-5-审批策略">9.5 审批策略</h3>
 <p>以下动作必须由用户显式确认：</p>
 <ul>
 <li>提交任何可能计费的视频或图片生成。</li>
@@ -467,7 +528,7 @@ export_video</code></pre>
 <li>删除项目或素材。</li>
 </ul>
 <p>审批记录包含用户、项目、操作、参数摘要、预计费用和时间。</p>
-<h2>10. LangGraph 与 Celery</h2>
+<h2 id="10-langgraph-与-celery">10. LangGraph 与 Celery</h2>
 <p>LangGraph 和 Celery 职责分离：</p>
 <ul>
 <li>LangGraph 决定业务阶段。</li>
@@ -489,8 +550,8 @@ export_video</code></pre>
 <li>所有镜头完成后恢复 LangGraph 审核节点。</li>
 </ol>
 <p>具备不确定性的提交不能自动重发。提交超时但未获得 Provider Task ID 时，任务进入 <code>submission_uncertain</code>，通过查询账户近期任务进行人工或自动对账。</p>
-<h2>11. Pippit CLI 集成</h2>
-<h3>11.1 连接方式</h3>
+<h2 id="11-pippit-cli-集成">11. Pippit CLI 集成</h2>
+<h3 id="11-1-连接方式">11.1 连接方式</h3>
 <pre><code class="language-text">运维在 API 主机安装 Pippit CLI
   → 运维执行 pippit-tool-cli login
   → CLI 将设备凭据保存到操作系统安全存储
@@ -498,20 +559,20 @@ export_video</code></pre>
   → FastAPI 通过受限子进程调用 CLI
   → 读取 Pippit 账户状态和积分</code></pre>
 <p>Pippit 授权由服务端统一持有，不对每个 VideoAgent 用户单独发起 Kling 授权。所有用户共享当前 Pippit 账户及其积分池；如果未来需要用户级计费， 必须新增租户级凭据隔离和额度服务，不能直接复用该服务账户模型。</p>
-<h3>11.2 Provider 接口</h3>
+<h3 id="11-2-provider-接口">11.2 Provider 接口</h3>
 <pre><code class="language-python">class VideoProvider(Protocol):
     async def capabilities(self) -&gt; ProviderCapabilities: ...
     async def estimate(self, request: GenerationRequest) -&gt; CostEstimate: ...
     async def submit(self, request: GenerationRequest) -&gt; ProviderJob: ...
     async def status(self, job_id: str) -&gt; JobStatus: ...
     async def cancel(self, job_id: str) -&gt; None: ...</code></pre>
-<h3>11.3 首版 Pippit 能力</h3>
+<h3 id="11-3-首版-pippit-能力">11.3 首版 Pippit 能力</h3>
 <pre><code class="language-text">pippit-tool-cli status
 pippit-tool-cli get-credit-balance
 pippit-tool-cli generate-video
 pippit-tool-cli query-result</code></pre>
 <p>首版仅开放文本生成视频。Provider 使用参数数组启动 CLI，不经过 Shell 字符串拼接；stdout 仅接受 JSON，stderr 和完整命令参数不返回到浏览器。 模型与分辨率由服务端环境变量可选配置，留空时使用 CLI 服务的默认值。</p>
-<h3>11.4 凭据与进程安全</h3>
+<h3 id="11-4-凭据与进程安全">11.4 凭据与进程安全</h3>
 <ul>
 <li>CLI 登录文件由操作系统安全存储管理，不写入仓库或数据库。</li>
 <li><code>VIDEOAGENT_PIPPIT_ACCESS_KEY</code> 仅作为服务端秘密环境变量注入子进程。</li>
@@ -520,7 +581,7 @@ pippit-tool-cli query-result</code></pre>
 <li>子进程受超时控制；超时后终止进程，不自动重提计费任务。</li>
 <li>Web 进程必须只允许受信用户触发生成，并在调用前执行显式审批。</li>
 </ul>
-<h2>12. 数据模型</h2>
+<h2 id="12-数据模型">12. 数据模型</h2>
 <div class="table-wrap"><table><thead><tr>
 <th>表</th>
 <th>关键字段</th>
@@ -598,8 +659,8 @@ pippit-tool-cli query-result</code></pre>
 </tr>
 </tbody></table></div>
 <p>统一使用 UUID 主键、UTC 时间戳和数据库外键。Provider 原始响应保存在 <code>JSONB</code> 字段中，业务逻辑只消费标准化对象。</p>
-<h2>13. 核心状态定义</h2>
-<h3>13.1 项目状态</h3>
+<h2 id="13-核心状态定义">13. 核心状态定义</h2>
+<h3 id="13-1-项目状态">13.1 项目状态</h3>
 <pre><code class="language-text">draft
 planning
 awaiting_plan_approval
@@ -609,7 +670,7 @@ assembling
 completed
 failed
 archived</code></pre>
-<h3>13.2 镜头状态</h3>
+<h3 id="13-2-镜头状态">13.2 镜头状态</h3>
 <pre><code class="language-text">draft
 ready
 queued
@@ -617,7 +678,7 @@ generating
 completed
 failed
 cancelled</code></pre>
-<h3>13.3 生成任务状态</h3>
+<h3 id="13-3-生成任务状态">13.3 生成任务状态</h3>
 <pre><code class="language-text">pending
 submission_uncertain
 submitted
@@ -626,8 +687,8 @@ running
 succeeded
 failed
 cancelled</code></pre>
-<h2>14. API 设计</h2>
-<h3>14.1 通用规范</h3>
+<h2 id="14-api-设计">14. API 设计</h2>
+<h3 id="14-1-通用规范">14.1 通用规范</h3>
 <ul>
 <li>基础路径：<code>/api/v1</code>。</li>
 <li>认证：HttpOnly 服务端会话 Cookie。</li>
@@ -646,7 +707,7 @@ cancelled</code></pre>
     &quot;requestId&quot;: &quot;req_...&quot;
   }
 }</code></pre>
-<h3>14.2 主要接口</h3>
+<h3 id="14-2-主要接口">14.2 主要接口</h3>
 <div class="table-wrap"><table><thead><tr>
 <th>方法</th>
 <th>路径</th>
@@ -758,7 +819,7 @@ cancelled</code></pre>
 <td>健康检查</td>
 </tr>
 </tbody></table></div>
-<h3>14.3 SSE 事件</h3>
+<h3 id="14-3-sse-事件">14.3 SSE 事件</h3>
 <pre><code class="language-json">{
   &quot;event&quot;: &quot;job.updated&quot;,
   &quot;projectId&quot;: &quot;uuid&quot;,
@@ -777,8 +838,8 @@ cancelled</code></pre>
 <li><code>workflow.failed</code></li>
 </ul>
 <p>客户端断线重连时先调用 REST API 获取完整状态，再恢复 SSE，避免丢失事件。</p>
-<h2>15. 素材与媒体处理</h2>
-<h3>15.1 上传</h3>
+<h2 id="15-素材与媒体处理">15. 素材与媒体处理</h2>
+<h3 id="15-1-上传">15.1 上传</h3>
 <ol>
 <li>前端向 FastAPI 请求预签名上传 URL。</li>
 <li>浏览器直接上传到 MinIO/S3。</li>
@@ -786,22 +847,22 @@ cancelled</code></pre>
 <li>生成缩略图和媒体元数据。</li>
 <li>上传完成后才允许被镜头引用。</li>
 </ol>
-<h3>15.2 生成结果</h3>
+<h3 id="15-2-生成结果">15.2 生成结果</h3>
 <ul>
 <li>Provider 临时 URL 不直接作为长期播放地址。</li>
 <li>Worker 下载结果并保存到应用对象存储。</li>
 <li>记录时长、宽高、编码、文件大小和 checksum。</li>
 <li>失败下载按照安全退避策略重试。</li>
 </ul>
-<h3>15.3 导出</h3>
+<h3 id="15-3-导出">15.3 导出</h3>
 <ul>
 <li>使用 FFmpeg 参数数组调用，禁止字符串拼接 Shell 命令。</li>
 <li>统一分辨率、帧率和音频参数。</li>
 <li>输出 MP4，并生成封面缩略图。</li>
 <li>导出任务可取消，临时文件在完成或失败后清理。</li>
 </ul>
-<h2>16. 前端设计</h2>
-<h3>16.1 信息架构</h3>
+<h2 id="16-前端设计">16. 前端设计</h2>
+<h3 id="16-1-信息架构">16.1 信息架构</h3>
 <ul>
 <li>首页：右侧导航和居中的多设定创作聊天框；提交即创建项目。</li>
 <li>项目列表。</li>
@@ -812,7 +873,7 @@ cancelled</code></pre>
 <li>设置。</li>
 <li>公开分享页。</li>
 </ul>
-<h3>16.2 项目工作区</h3>
+<h3 id="16-2-项目工作区">16.2 项目工作区</h3>
 <p>桌面端采用三栏：</p>
 <pre><code class="language-text">Agent 对话 | 视频预览与故事板 | 镜头检查器</code></pre>
 <p>移动端采用标签页：</p>
@@ -828,7 +889,7 @@ cancelled</code></pre>
 <li>积分估算。</li>
 <li>生成和重试按钮。</li>
 </ul>
-<h3>16.3 前端状态</h3>
+<h3 id="16-3-前端状态">16.3 前端状态</h3>
 <ul>
 <li>TanStack Query：项目、镜头、任务、积分等服务端状态。</li>
 <li>Zustand：当前镜头、侧栏、播放器和时间线选择。</li>
@@ -836,7 +897,7 @@ cancelled</code></pre>
 <li>项目事件使用 SSE。</li>
 <li>不将 Provider 凭据、Access Key 或敏感任务内容写入 localStorage。</li>
 </ul>
-<h2>17. 中英文支持</h2>
+<h2 id="17-中英文支持">17. 中英文支持</h2>
 <p>路由：</p>
 <pre><code class="language-text">/en/...
 /zh-CN/...</code></pre>
@@ -857,7 +918,7 @@ cancelled</code></pre>
 <li>中英双语对照。</li>
 </ul>
 <p>后端 API 使用稳定错误码；用户可读文案由前端翻译资源提供。用户选择语言后同时保存到用户资料和 Cookie。</p>
-<h2>18. 安全与隐私</h2>
+<h2 id="18-安全与隐私">18. 安全与隐私</h2>
 <ul>
 <li>所有项目、镜头、任务和资产必须校验资源所有权。</li>
 <li>会话 Cookie 使用 HttpOnly、Secure、SameSite。</li>
@@ -873,7 +934,7 @@ cancelled</code></pre>
 <li>删除用户或断开 Provider 时删除相关凭据。</li>
 <li>日志不记录密码、Cookie、Token、Authorization Header。</li>
 </ul>
-<h2>19. 可靠性设计</h2>
+<h2 id="19-可靠性设计">19. 可靠性设计</h2>
 <ul>
 <li>Celery 使用延迟确认，避免 Worker 崩溃导致任务立即丢失。</li>
 <li>数据库任务状态为业务事实来源。</li>
@@ -884,7 +945,7 @@ cancelled</code></pre>
 <li>SSE 支持 Last-Event-ID 或“重新获取完整状态”的恢复方式。</li>
 <li>LangGraph Checkpoint 支持审批和失败后的恢复。</li>
 </ul>
-<h2>20. 可观测性</h2>
+<h2 id="20-可观测性">20. 可观测性</h2>
 <p>使用 structlog 输出结构化日志，至少包含：</p>
 <ul>
 <li><code>request_id</code></li>
@@ -908,7 +969,7 @@ cancelled</code></pre>
 <li>Worker 队列积压。</li>
 <li>FFmpeg 导出失败率。</li>
 </ul>
-<h2>21. 测试策略</h2>
+<h2 id="21-测试策略">21. 测试策略</h2>
 <p>测试以测试驱动开发为主要工作方式。详细测试范围、测试用例、覆盖目标和质量门禁见 <code>docs/software-test-plan.md</code>。</p>
 <p>整体原则：</p>
 <ul>
@@ -919,7 +980,7 @@ cancelled</code></pre>
 <li>Pippit 状态和余额只读 Smoke Test 使用受控服务账户。</li>
 <li>真实生成测试必须人工触发并显式限制次数和积分预算。</li>
 </ul>
-<h2>22. 配置项</h2>
+<h2 id="22-配置项">22. 配置项</h2>
 <p>后端至少需要：</p>
 <pre><code class="language-text">DATABASE_URL
 REDIS_URL
@@ -939,7 +1000,7 @@ LLM_BASE_URL
 LLM_API_KEY
 LLM_MODEL</code></pre>
 <p>所有敏感值通过环境变量或密钥管理服务提供，不提交到 Git。</p>
-<h2>23. 部署设计</h2>
+<h2 id="23-部署设计">23. 部署设计</h2>
 <p>本地开发使用 Docker Compose：</p>
 <pre><code class="language-text">web
 api
@@ -970,22 +1031,22 @@ reverse-proxy</code></pre>
 <li>更新 Worker。</li>
 <li>检查健康和 Provider 状态。</li>
 </ol>
-<h2>24. 实施阶段</h2>
-<h3>阶段 1：基础工程</h3>
+<h2 id="24-实施阶段">24. 实施阶段</h2>
+<h3 id="阶段-1-基础工程">阶段 1：基础工程</h3>
 <ul>
 <li>初始化目录和依赖。</li>
 <li>启动 Docker 服务。</li>
 <li>完成中英文设计系统和基础页面。</li>
 <li>建立 OpenAPI 前端客户端。</li>
 </ul>
-<h3>阶段 2：用户、项目和素材</h3>
+<h3 id="阶段-2-用户-项目和素材">阶段 2：用户、项目和素材</h3>
 <ul>
 <li>登录和会话。</li>
 <li>项目工作区。</li>
 <li>S3/MinIO 上传。</li>
 <li>故事板数据模型。</li>
 </ul>
-<h3>阶段 3：Agent 与 Mock Provider</h3>
+<h3 id="阶段-3-agent-与-mock-provider">阶段 3：Agent 与 Mock Provider</h3>
 <ul>
 <li>LangGraph 工作流。</li>
 <li>对话和结构化输出。</li>
@@ -993,27 +1054,27 @@ reverse-proxy</code></pre>
 <li>Celery 和 SSE。</li>
 <li>无积分消耗的完整模拟流程。</li>
 </ul>
-<h3>阶段 4：Pippit 集成</h3>
+<h3 id="阶段-4-pippit-集成">阶段 4：Pippit 集成</h3>
 <ul>
 <li>CLI 安装、服务端授权和凭据隔离。</li>
 <li>视频模型发现和参数适配。</li>
 <li>身份和积分查询。</li>
 <li>正式生成、轮询、下载和恢复。</li>
 </ul>
-<h3>阶段 5：合成与发布</h3>
+<h3 id="阶段-5-合成与发布">阶段 5：合成与发布</h3>
 <ul>
 <li>镜头审核。</li>
 <li>FFmpeg 合成。</li>
 <li>导出和公开分享。</li>
 </ul>
-<h3>阶段 6：测试和部署</h3>
+<h3 id="阶段-6-测试和部署">阶段 6：测试和部署</h3>
 <ul>
 <li>pytest、Playwright。</li>
 <li>安全和权限测试。</li>
 <li>Docker 部署。</li>
 <li>运维文档。</li>
 </ul>
-<h2>25. 验收标准</h2>
+<h2 id="25-验收标准">25. 验收标准</h2>
 <p>MVP 满足以下条件才视为完成：</p>
 <ol>
 <li>中文和英文界面均可完整使用。</li>
@@ -1029,7 +1090,7 @@ reverse-proxy</code></pre>
 <li>Pippit 状态和积分只读 Smoke Test 通过。</li>
 <li>在账户有积分且用户授权的情况下，至少完成一次真实视频生成和导出。</li>
 </ol>
-<h2>26. 主要风险</h2>
+<h2 id="26-主要风险">26. 主要风险</h2>
 <div class="table-wrap"><table><thead><tr>
 <th>风险</th>
 <th>应对措施</th>
@@ -1071,7 +1132,7 @@ reverse-proxy</code></pre>
 <td>统一翻译键、双语测试、Agent Locale 状态</td>
 </tr>
 </tbody></table></div>
-<h2>27. 待确认事项</h2>
+<h2 id="27-待确认事项">27. 待确认事项</h2>
 <p>以下事项不影响开始实现，但影响生产部署：</p>
 <ul>
 <li>使用哪个 OpenAI-compatible 模型服务平台。</li>
@@ -1081,7 +1142,7 @@ reverse-proxy</code></pre>
 <li>是否为服务端 Pippit 账户补充积分以执行真实生成验收。</li>
 <li>生产 Celery Broker 是否直接使用 RabbitMQ。</li>
 </ul>
-<h2>28. 变更记录</h2>
+<h2 id="28-变更记录">28. 变更记录</h2>
 <div class="table-wrap"><table><thead><tr>
 <th>版本</th>
 <th>日期</th>
@@ -1102,6 +1163,6 @@ reverse-proxy</code></pre>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=11"></script>
+    <script src="../docs.js?v=12"></script>
   </body>
 </html>

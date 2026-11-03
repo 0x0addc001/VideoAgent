@@ -1,31 +1,55 @@
-const themeToggle = document.querySelector("#theme-toggle");
-const themeLabel = themeToggle?.querySelector(".theme-label");
-const themeIcon = themeToggle?.querySelector(".theme-icon");
+const shell = document.querySelector("#document-shell");
+const toc = document.querySelector("#document-toc");
+const tocToggle = document.querySelector("#toc-toggle");
+const tocLinks = [...document.querySelectorAll(".toc-link")];
+const tocTargets = tocLinks
+  .map((link) => {
+    const id = link.getAttribute("href")?.slice(1);
+    return id ? document.getElementById(id) : null;
+  })
+  .filter((target) => target !== null);
 
-function preferredTheme() {
-  try {
-    const saved = window.localStorage.getItem("videoagent-docs-theme");
-    if (saved === "light" || saved === "dark") return saved;
-  } catch {
-    // Storage may be disabled.
-  }
-  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-}
-
-function applyTheme(theme) {
-  document.documentElement.dataset.theme = theme;
-  if (themeLabel) themeLabel.textContent = theme === "dark" ? "Light" : "Dark";
-  if (themeIcon) themeIcon.textContent = theme === "dark" ? "☀" : "◐";
-  themeToggle?.setAttribute("aria-pressed", String(theme === "dark"));
-  try {
-    window.localStorage.setItem("videoagent-docs-theme", theme);
-  } catch {
-    // Storage may be disabled.
+function setCollapsed(collapsed, persist = true) {
+  shell?.classList.toggle("toc-collapsed", collapsed);
+  toc?.setAttribute("data-collapsed", String(collapsed));
+  tocToggle?.setAttribute("aria-expanded", String(!collapsed));
+  if (persist) {
+    try {
+      window.localStorage.setItem("videoagent-docs-toc-collapsed", String(collapsed));
+    } catch {
+      // Storage may be disabled.
+    }
   }
 }
 
-applyTheme(preferredTheme());
+let initiallyCollapsed = window.matchMedia("(max-width: 780px)").matches;
+try {
+  const saved = window.localStorage.getItem("videoagent-docs-toc-collapsed");
+  if (saved === "true" || saved === "false") initiallyCollapsed = saved === "true";
+} catch {
+  // Storage may be disabled.
+}
+setCollapsed(initiallyCollapsed, false);
 
-themeToggle?.addEventListener("click", () => {
-  applyTheme(document.documentElement.dataset.theme === "dark" ? "light" : "dark");
+tocToggle?.addEventListener("click", () => {
+  setCollapsed(toc?.getAttribute("data-collapsed") !== "true");
 });
+
+function setActiveLink(target) {
+  for (const link of tocLinks) {
+    link.classList.toggle("is-active", link.getAttribute("href") === `#${target.id}`);
+  }
+}
+
+if ("IntersectionObserver" in window) {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      const visible = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+      if (visible[0]) setActiveLink(visible[0].target);
+    },
+    { rootMargin: "-12% 0px -72% 0px", threshold: [0, 1] },
+  );
+  tocTargets.forEach((target) => observer.observe(target));
+}

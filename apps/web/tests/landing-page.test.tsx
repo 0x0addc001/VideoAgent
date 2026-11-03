@@ -41,17 +41,17 @@ describe("LandingPage", () => {
     expect(composer).toBeInTheDocument();
     expect(composer?.querySelectorAll(".composer-select")).toHaveLength(7);
     expect(
-      [...(composer?.querySelectorAll("select") ?? [])].map((select) => select.value),
-    ).toEqual(["auto", "auto", "auto", "auto", "auto", "auto", "auto"]);
-    expect(composer).toHaveTextContent("Cinematic");
-    expect(composer).toHaveTextContent("16:9");
-    expect(composer).toHaveTextContent("5s");
+      [...(composer?.querySelectorAll(".composer-select-trigger") ?? [])].map(
+        (trigger) => trigger.textContent,
+      ),
+    ).toEqual(["Style", "Frame", "Length", "Model", "Quality", "Audio", "Review"]);
+    expect(composer?.querySelectorAll("select")).toHaveLength(0);
     expect(container.querySelector(".credit-count")).toHaveTextContent("0");
     expect(container.querySelector(".account-avatar svg")).toBeInTheDocument();
     expect(container.querySelector("a.account-summary")).not.toBeInTheDocument();
     const actionItems = [...container.querySelectorAll(".header-actions > *")];
     expect(actionItems.map((item) => item.className)).toEqual([
-      "account-avatar",
+      "account-avatar account-avatar-default",
       "credit-count",
       "notification-switcher",
     ]);
@@ -122,8 +122,26 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/software-design.html?v=11",
+      "/docs/software-design.html?v=12",
     );
+    expect(container.querySelectorAll(".docs-tab-icon")).toHaveLength(4);
+  });
+
+  it("uses a custom transparent settings menu", () => {
+    const { container } = render(<LandingPage {...props} />);
+    const styleTrigger = container.querySelector(
+      '.composer-select-trigger[aria-label="Style"]',
+    );
+
+    fireEvent.click(styleTrigger!);
+    expect(container.querySelector(".composer-select-menu")).toBeInTheDocument();
+    fireEvent.click(
+      [...container.querySelectorAll(".composer-select-option")].find(
+        (option) => option.textContent === "Cinematic",
+      )!,
+    );
+    expect(styleTrigger).toHaveTextContent("Cinematic");
+    expect(container.querySelector(".composer-select-menu")).not.toBeInTheDocument();
   });
 
   it("submits the home composer as a complete project draft", async () => {

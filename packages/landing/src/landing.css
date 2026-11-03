@@ -1525,6 +1525,12 @@ html[lang="zh-CN"] .va-landing select {
   background: #34d399;
 }
 
+.account-avatar-default {
+  border-color: rgba(133, 201, 255, 0.72);
+  background: rgba(57, 139, 255, 0.68);
+  backdrop-filter: blur(10px);
+}
+
 .notification-button svg {
   width: 19px;
   height: 19px;
@@ -1634,13 +1640,15 @@ html[lang="zh-CN"] .va-landing select {
   white-space: nowrap;
 }
 
-.hero-line {
+.hero-copy h1 > .hero-line {
   display: grid;
+  width: 100%;
   place-items: center;
 }
 
-.hero-line > span {
+.hero-copy h1 > .hero-line > span {
   grid-area: 1 / 1;
+  justify-self: center;
 }
 
 .hero-line-ghost {
@@ -1977,9 +1985,9 @@ html[lang="zh-CN"] .hero-copy h1 {
 }
 
 .docs-view {
-  height: calc(100svh - 28px);
+  height: calc(100svh - 20px);
   margin-left: 248px;
-  padding: 26px 26px 26px 0;
+  padding: 26px 26px 0 0;
 }
 
 .docs-tabs {
@@ -1990,21 +1998,42 @@ html[lang="zh-CN"] .hero-copy h1 {
 }
 
 .docs-tabs button {
+  display: inline-flex;
   min-height: 42px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  align-items: center;
+  gap: 8px;
+  border: 0;
   border-radius: 14px;
-  background: rgba(17, 15, 12, 0.78);
+  background: transparent;
   color: var(--muted);
   cursor: pointer;
   font-size: 1rem;
   padding: 0 14px;
 }
 
+.docs-tabs button:hover {
+  background: rgba(22, 119, 255, 0.14);
+  color: #8fdcff;
+}
+
 .docs-tabs button[aria-selected="true"] {
   border-color: transparent;
-  background: rgba(22, 119, 255, 0.22);
-  color: white;
+  background: transparent;
+  color: #4facff;
   box-shadow: none;
+}
+
+.docs-tab-icon {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  fill: none;
+  stroke-width: 1.6;
+}
+
+.docs-tabs button[aria-selected="true"] .docs-tab-icon {
+  fill: currentColor;
+  stroke: currentColor;
 }
 
 .docs-frame {
@@ -2211,7 +2240,7 @@ html[lang="zh-CN"] .hero-copy h1 {
 .composer-controls {
   display: flex;
   align-items: flex-end;
-  overflow-x: auto;
+  overflow: visible;
   flex-wrap: nowrap;
   gap: 5px;
   border-top: 0;
@@ -2219,6 +2248,7 @@ html[lang="zh-CN"] .hero-copy h1 {
 }
 
 .composer-select {
+  position: relative;
   min-width: 0;
   flex: 1 1 0;
 }
@@ -2227,40 +2257,92 @@ html[lang="zh-CN"] .hero-copy h1 {
   flex-grow: 1;
 }
 
-.composer-select > span {
-  color: #8f877d;
-  font-size: 0.82rem;
-  line-height: 1;
-}
-
-.composer-select select {
+.composer-select-trigger {
+  display: flex;
   width: 100%;
   min-height: 40px;
-  appearance: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   border: 1px solid rgba(22, 119, 255, 0.24);
   border-radius: 14px;
-  background-color: transparent;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='m1 1 5 5 5-5' fill='none' stroke='%234facff' stroke-width='1.5' stroke-linecap='square'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 11px center;
-  background-size: 10px 7px;
+  background: transparent;
   color: #ddd5ca;
   cursor: pointer;
   font-size: 1rem;
   font-weight: 600;
   outline: none;
-  padding: 0 18px 0 7px;
+  padding: 0 10px;
   text-align: center;
-  text-align-last: center;
   transition:
     border-color 160ms ease,
     background 160ms ease;
 }
 
-.composer-select select:hover,
-.composer-select select:focus {
+.composer-select-trigger > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.composer-select-arrow {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+  color: #4facff;
+  stroke-width: 1.8;
+  transition: transform 160ms ease;
+}
+
+.composer-select-trigger[aria-expanded="true"] .composer-select-arrow {
+  transform: rotate(180deg);
+}
+
+.composer-select-trigger:hover,
+.composer-select-trigger:focus-visible,
+.composer-select-trigger[aria-expanded="true"] {
   border-color: rgba(0, 184, 255, 0.66);
-  background-color: transparent;
+  background: transparent;
+}
+
+.composer-select-menu {
+  position: absolute;
+  z-index: 30;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  display: grid;
+  min-width: 100%;
+  width: max-content;
+  max-width: 240px;
+  overflow: hidden;
+  border: 1px solid rgba(79, 172, 255, 0.34);
+  border-radius: 14px;
+  background: rgba(8, 17, 30, 0.74);
+  padding: 6px;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(22px) saturate(135%);
+  transform: translateX(-50%);
+}
+
+.composer-select-option {
+  min-height: 38px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #b8b0a6;
+  cursor: pointer;
+  font-size: 0.96rem;
+  padding: 0 13px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.composer-select-option:hover,
+.composer-select-option:focus-visible,
+.composer-select-option[aria-selected="true"] {
+  background: rgba(22, 119, 255, 0.16);
+  color: #8fdcff;
+  outline: none;
 }
 
 .composer-controls .composer-submit {
@@ -2369,8 +2451,8 @@ html[lang="zh-CN"] .hero-copy h1 {
   display: flex;
   width: 35px;
   height: 35px;
-  border: 1px solid #4facff;
-  border-radius: 8px;
+  border: 1px solid #f2f6ff;
+  border-radius: 0;
   background: transparent;
   align-items: center;
   justify-content: center;
@@ -2384,7 +2466,7 @@ html[lang="zh-CN"] .hero-copy h1 {
 }
 
 .brand-mark .brand-a {
-  color: #4facff;
+  color: #f2f6ff;
 }
 
 .brand-mark svg {
@@ -2508,6 +2590,9 @@ html[lang="zh-CN"] .hero-copy h1 {
 
 .hero-title {
   display: grid;
+  width: 100%;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
   justify-items: center;
 }
 
@@ -2521,7 +2606,10 @@ html[lang="zh-CN"] .hero-copy h1 {
 }
 
 .hero-copy h1 {
-  max-width: 960px;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: clip;
   margin: 14px 0 18px;
   font-size: clamp(54px, 5.9vw, 88px);
   font-weight: 400;

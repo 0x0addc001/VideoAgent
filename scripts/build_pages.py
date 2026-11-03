@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / ".pages-build"
 WEB_PUBLIC = ROOT / "apps" / "web" / "public"
 DOCS = ROOT / "docs"
-DOCS_ASSET_VERSION = "11"
+DOCS_ASSET_VERSION = "12"
 
 DOCUMENTS = {
     "software-design.md": ("Software Design", "软件设计说明书"),
@@ -18,6 +18,26 @@ DOCUMENTS = {
     "software-test-plan.md": ("Testing & TDD", "软件测试与 TDD 规范"),
     "api-reference.md": ("API Reference", "API 接口文档"),
 }
+
+TocEntry = tuple[int, str, str]
+
+
+def plain_heading(text: str) -> str:
+    text = re.sub(r"`([^`]+)`", r"\1", text)
+    text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
+    return re.sub(r"[*_~]", "", text).strip()
+
+
+def heading_slug(text: str, used: set[str]) -> str:
+    base = re.sub(r"[^\w\u3400-\u9fff]+", "-", plain_heading(text).lower())
+    base = base.strip("-") or "section"
+    candidate = base
+    suffix = 2
+    while candidate in used:
+        candidate = f"{base}-{suffix}"
+        suffix += 1
+    used.add(candidate)
+    return candidate
 
 
 def inline_text(text: str) -> str:
@@ -54,9 +74,11 @@ def is_table_separator(line: str) -> bool:
     return bool(cells) and all(re.fullmatch(r":?-{3,}:?", cell) for cell in cells)
 
 
-def markdown_to_html(markdown: str) -> str:
+def markdown_to_html(markdown: str) -> tuple[str, list[TocEntry]]:
     lines = markdown.replace("\r\n", "\n").split("\n")
     output: list[str] = []
+    toc: list[TocEntry] = []
+    used_anchors: set[str] = set()
     paragraph: list[str] = []
     list_type: str | None = None
     index = 0
@@ -104,7 +126,11 @@ def markdown_to_html(markdown: str) -> str:
             flush_paragraph()
             close_list()
             level = len(heading.group(1))
-            output.append(f"<h{level}>{inline_text(heading.group(2))}</h{level}>")
+            anchor = heading_slug(heading.group(2), used_anchors)
+            toc.append((level, anchor, plain_heading(heading.group(2))))
+            output.append(
+                f'<h{level} id="{anchor}">{inline_text(heading.group(2))}</h{level}>'
+            )
             index += 1
             continue
 
@@ -168,38 +194,56 @@ def markdown_to_html(markdown: str) -> str:
 
     flush_paragraph()
     close_list()
-    return "\n".join(output)
+    return "\n".join(output), toc
 
 
-def document_page(filename: str, title_en: str, title_zh: str, body: str) -> str:
+def render_toc(entries: list[TocEntry]) -> str:
+    return "\n".join(
+        (
+            f'<a class="toc-link toc-level-{level}" href="#{html.escape(anchor, quote=True)}">'
+            f"{inline_text(label)}</a>"
+        )
+        for level, anchor, label in entries
+    )
+
+
+def document_page(
+    filename: str,
+    title_en: str,
+    title_zh: str,
+    body: str,
+    toc: list[TocEntry],
+) -> str:
     document_title = f"{title_en} · VideoAgent"
     return f"""<!doctype html>
 <html lang="zh-CN">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="VideoAgent {html.escape(title_en)}" />
+    <meta name="description" content="VideoAgent {html.escape(title_en)} · {html.escape(title_zh)}" />
     <title>{document_title}</title>
-    <link rel="icon" href="../brand-mark.svg?v=10" type="image/svg+xml" />
+    <link rel="icon" href="../brand-mark.svg?v=12" type="image/svg+xml" />
     <link rel="stylesheet" href="../docs.css?v={DOCS_ASSET_VERSION}" />
   </head>
-  <body>
-    <header class="doc-header">
-      <a class="doc-brand" href="../">VideoAgent</a>
-      <span>/</span>
-      <span>{html.escape(title_en)}</span>
-      <div class="doc-actions">
-        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme">
-          <span class="theme-icon" aria-hidden="true">◐</span>
-          <span class="theme-label">Dark</span>
+  <body data-document="{html.escape(filename, quote=True)}">
+    <main class="document-shell" id="document-shell">
+      <aside class="document-toc" id="document-toc">
+        <button
+          class="toc-toggle"
+          id="toc-toggle"
+          type="button"
+          aria-controls="toc-panel"
+          aria-expanded="true"
+          aria-label="Toggle document contents"
+        >
+          <span class="toc-toggle-icon" aria-hidden="true">☰</span>
+          <span class="toc-toggle-label">Contents</span>
+          <span class="toc-toggle-chevron" aria-hidden="true">‹</span>
         </button>
-      </div>
-    </header>
-    <main class="document-shell">
-      <aside class="document-meta">
-        <span>PROJECT DOCUMENT</span>
-        <strong>{html.escape(title_en)}</strong>
-        <small>{html.escape(title_zh)}</small>
+        <nav class="toc-panel" id="toc-panel" aria-label="Document contents">
+          <p class="toc-kicker">CONTENTS</p>
+          {render_toc(toc)}
+        </nav>
       </aside>
       <article class="document">{body}</article>
     </main>
@@ -227,9 +271,9 @@ def main() -> None:
         source = DOCS / filename
         if not source.exists():
             raise FileNotFoundError(f"Missing documentation source: {source}")
-        body = markdown_to_html(source.read_text(encoding="utf-8"))
+        body, toc = markdown_to_html(source.read_text(encoding="utf-8"))
         (docs_output / filename.replace(".md", ".html")).write_text(
-            document_page(filename, title_en, title_zh, body),
+            document_page(filename, title_en, title_zh, body, toc),
             encoding="utf-8",
         )
 

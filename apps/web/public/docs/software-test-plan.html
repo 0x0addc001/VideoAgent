@@ -3,30 +3,102 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="VideoAgent Testing &amp; TDD" />
+    <meta name="description" content="VideoAgent Testing &amp; TDD · 软件测试与 TDD 规范" />
     <title>Testing & TDD · VideoAgent</title>
-    <link rel="icon" href="../brand-mark.svg?v=10" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=11" />
+    <link rel="icon" href="../brand-mark.svg?v=12" type="image/svg+xml" />
+    <link rel="stylesheet" href="../docs.css?v=12" />
   </head>
-  <body>
-    <header class="doc-header">
-      <a class="doc-brand" href="../">VideoAgent</a>
-      <span>/</span>
-      <span>Testing &amp; TDD</span>
-      <div class="doc-actions">
-        <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Switch theme">
-          <span class="theme-icon" aria-hidden="true">◐</span>
-          <span class="theme-label">Dark</span>
+  <body data-document="software-test-plan.md">
+    <main class="document-shell" id="document-shell">
+      <aside class="document-toc" id="document-toc">
+        <button
+          class="toc-toggle"
+          id="toc-toggle"
+          type="button"
+          aria-controls="toc-panel"
+          aria-expanded="true"
+          aria-label="Toggle document contents"
+        >
+          <span class="toc-toggle-icon" aria-hidden="true">☰</span>
+          <span class="toc-toggle-label">Contents</span>
+          <span class="toc-toggle-chevron" aria-hidden="true">‹</span>
         </button>
-      </div>
-    </header>
-    <main class="document-shell">
-      <aside class="document-meta">
-        <span>PROJECT DOCUMENT</span>
-        <strong>Testing &amp; TDD</strong>
-        <small>软件测试与 TDD 规范</small>
+        <nav class="toc-panel" id="toc-panel" aria-label="Document contents">
+          <p class="toc-kicker">CONTENTS</p>
+          <a class="toc-link toc-level-1" href="#videoagent-软件测试与-tdd-规范">VideoAgent 软件测试与 TDD 规范</a>
+<a class="toc-link toc-level-2" href="#1-目的">1. 目的</a>
+<a class="toc-link toc-level-2" href="#2-测试原则">2. 测试原则</a>
+<a class="toc-link toc-level-3" href="#2-1-tdd-循环">2.1 TDD 循环</a>
+<a class="toc-link toc-level-3" href="#2-2-测试行为而非实现">2.2 测试行为而非实现</a>
+<a class="toc-link toc-level-3" href="#2-3-测试金字塔">2.3 测试金字塔</a>
+<a class="toc-link toc-level-2" href="#3-质量目标">3. 质量目标</a>
+<a class="toc-link toc-level-3" href="#3-1-自动化覆盖目标">3.1 自动化覆盖目标</a>
+<a class="toc-link toc-level-3" href="#3-2-稳定性目标">3.2 稳定性目标</a>
+<a class="toc-link toc-level-2" href="#4-测试范围">4. 测试范围</a>
+<a class="toc-link toc-level-3" href="#4-1-纳入范围">4.1 纳入范围</a>
+<a class="toc-link toc-level-3" href="#4-2-暂不纳入">4.2 暂不纳入</a>
+<a class="toc-link toc-level-2" href="#5-测试分层">5. 测试分层</a>
+<a class="toc-link toc-level-3" href="#5-1-单元测试">5.1 单元测试</a>
+<a class="toc-link toc-level-3" href="#5-2-provider-契约测试">5.2 Provider 契约测试</a>
+<a class="toc-link toc-level-3" href="#5-3-api-测试">5.3 API 测试</a>
+<a class="toc-link toc-level-3" href="#5-4-集成测试">5.4 集成测试</a>
+<a class="toc-link toc-level-3" href="#5-5-e2e-测试">5.5 E2E 测试</a>
+<a class="toc-link toc-level-3" href="#5-6-非功能测试">5.6 非功能测试</a>
+<a class="toc-link toc-level-2" href="#6-tdd-开发流程">6. TDD 开发流程</a>
+<a class="toc-link toc-level-3" href="#6-1-单个功能流程">6.1 单个功能流程</a>
+<a class="toc-link toc-level-3" href="#6-2-测试先行顺序">6.2 测试先行顺序</a>
+<a class="toc-link toc-level-3" href="#6-3-definition-of-done">6.3 Definition of Done</a>
+<a class="toc-link toc-level-2" href="#7-测试环境">7. 测试环境</a>
+<a class="toc-link toc-level-3" href="#7-1-本地测试">7.1 本地测试</a>
+<a class="toc-link toc-level-3" href="#7-2-ci-测试">7.2 CI 测试</a>
+<a class="toc-link toc-level-3" href="#7-3-真实-pippit-测试开关">7.3 真实 Pippit 测试开关</a>
+<a class="toc-link toc-level-2" href="#8-测试数据">8. 测试数据</a>
+<a class="toc-link toc-level-2" href="#9-测试用例">9. 测试用例</a>
+<a class="toc-link toc-level-3" href="#9-1-认证-会话与权限">9.1 认证、会话与权限</a>
+<a class="toc-link toc-level-3" href="#9-2-项目与故事板">9.2 项目与故事板</a>
+<a class="toc-link toc-level-3" href="#9-3-素材与存储">9.3 素材与存储</a>
+<a class="toc-link toc-level-3" href="#9-4-agent-与工作流">9.4 Agent 与工作流</a>
+<a class="toc-link toc-level-3" href="#9-5-pippit-cli-provider">9.5 Pippit CLI Provider</a>
+<a class="toc-link toc-level-3" href="#9-6-生成任务">9.6 生成任务</a>
+<a class="toc-link toc-level-3" href="#9-7-合成-导出与分享">9.7 合成、导出与分享</a>
+<a class="toc-link toc-level-3" href="#9-8-中英文与前端体验">9.8 中英文与前端体验</a>
+<a class="toc-link toc-level-3" href="#9-9-安全与隐私">9.9 安全与隐私</a>
+<a class="toc-link toc-level-2" href="#10-状态与恢复专项测试">10. 状态与恢复专项测试</a>
+<a class="toc-link toc-level-3" href="#10-1-langgraph-恢复">10.1 LangGraph 恢复</a>
+<a class="toc-link toc-level-3" href="#10-2-celery-故障">10.2 Celery 故障</a>
+<a class="toc-link toc-level-3" href="#10-3-sse-故障">10.3 SSE 故障</a>
+<a class="toc-link toc-level-2" href="#11-性能测试">11. 性能测试</a>
+<a class="toc-link toc-level-2" href="#12-可访问性与兼容性">12. 可访问性与兼容性</a>
+<a class="toc-link toc-level-3" href="#12-1-可访问性">12.1 可访问性</a>
+<a class="toc-link toc-level-3" href="#12-2-浏览器">12.2 浏览器</a>
+<a class="toc-link toc-level-2" href="#13-ci-质量门禁">13. CI 质量门禁</a>
+<a class="toc-link toc-level-3" href="#13-1-pull-request-门禁">13.1 Pull Request 门禁</a>
+<a class="toc-link toc-level-3" href="#13-2-nightly-门禁">13.2 Nightly 门禁</a>
+<a class="toc-link toc-level-3" href="#13-3-release-门禁">13.3 Release 门禁</a>
+<a class="toc-link toc-level-2" href="#14-pippit-真实测试流程">14. Pippit 真实测试流程</a>
+<a class="toc-link toc-level-3" href="#14-1-只读-smoke-test">14.1 只读 Smoke Test</a>
+<a class="toc-link toc-level-3" href="#14-2-付费生成测试">14.2 付费生成测试</a>
+<a class="toc-link toc-level-2" href="#15-测试报告">15. 测试报告</a>
+<a class="toc-link toc-level-2" href="#16-缺陷等级">16. 缺陷等级</a>
+<a class="toc-link toc-level-2" href="#17-tdd-实施顺序">17. TDD 实施顺序</a>
+<a class="toc-link toc-level-3" href="#第-1-轮-测试基础设施">第 1 轮：测试基础设施</a>
+<a class="toc-link toc-level-3" href="#第-2-轮-健康检查">第 2 轮：健康检查</a>
+<a class="toc-link toc-level-3" href="#第-3-轮-认证与权限">第 3 轮：认证与权限</a>
+<a class="toc-link toc-level-3" href="#第-4-轮-国际化">第 4 轮：国际化</a>
+<a class="toc-link toc-level-3" href="#第-5-轮-项目与故事板">第 5 轮：项目与故事板</a>
+<a class="toc-link toc-level-3" href="#第-6-轮-资产与存储">第 6 轮：资产与存储</a>
+<a class="toc-link toc-level-3" href="#第-7-轮-agent">第 7 轮：Agent</a>
+<a class="toc-link toc-level-3" href="#第-8-轮-provider-与-pippit">第 8 轮：Provider 与 Pippit</a>
+<a class="toc-link toc-level-3" href="#第-9-轮-任务执行">第 9 轮：任务执行</a>
+<a class="toc-link toc-level-3" href="#第-10-轮-媒体与分享">第 10 轮：媒体与分享</a>
+<a class="toc-link toc-level-3" href="#第-11-轮-e2e-与发布">第 11 轮：E2E 与发布</a>
+<a class="toc-link toc-level-2" href="#18-需求追溯">18. 需求追溯</a>
+<a class="toc-link toc-level-2" href="#19-风险和约束">19. 风险和约束</a>
+<a class="toc-link toc-level-2" href="#20-完成标准">20. 完成标准</a>
+<a class="toc-link toc-level-2" href="#21-变更记录">21. 变更记录</a>
+        </nav>
       </aside>
-      <article class="document"><h1>VideoAgent 软件测试与 TDD 规范</h1>
+      <article class="document"><h1 id="videoagent-软件测试与-tdd-规范">VideoAgent 软件测试与 TDD 规范</h1>
 <div class="table-wrap"><table><thead><tr>
 <th>属性</th>
 <th>内容</th>
@@ -56,11 +128,11 @@
 <td>pytest、Vitest、Testing Library、Playwright</td>
 </tr>
 </tbody></table></div>
-<h2>1. 目的</h2>
+<h2 id="1-目的">1. 目的</h2>
 <p>本文档定义 VideoAgent 的测试策略、测试分层、TDD 工作方式、环境要求、测试用例、质量门禁、缺陷等级和验收标准。</p>
 <p>测试不只用于验证完成后的代码，而是软件设计与实现的一部分。每项业务能力都应先通过失败测试明确行为，再实现代码使其通过，最后在不改变外部行为的前提下重构。</p>
-<h2>2. 测试原则</h2>
-<h3>2.1 TDD 循环</h3>
+<h2 id="2-测试原则">2. 测试原则</h2>
+<h3 id="2-1-tdd-循环">2.1 TDD 循环</h3>
 <p>所有核心业务能力遵循 Red–Green–Refactor：</p>
 <ol>
 <li><strong>Red：</strong> 根据验收场景编写一个最小失败测试。</li>
@@ -69,14 +141,14 @@
 <li><strong>Commit：</strong> 测试和实现可以在绿色状态后一起提交。</li>
 </ol>
 <p>禁止先完成大段实现，再事后补写只验证当前实现的测试。</p>
-<h3>2.2 测试行为而非实现</h3>
+<h3 id="2-2-测试行为而非实现">2.2 测试行为而非实现</h3>
 <ul>
 <li>测试公开行为、业务规则和接口契约。</li>
 <li>避免直接断言私有函数、内部调用顺序或数据库实现细节。</li>
 <li>外部 Provider 通过接口边界 Mock，不 Mock 被测系统自身的领域逻辑。</li>
 <li>时间、随机数和 UUID 使用可注入 Clock 或 ID Provider，保证测试确定性。</li>
 </ul>
-<h3>2.3 测试金字塔</h3>
+<h3 id="2-3-测试金字塔">2.3 测试金字塔</h3>
 <pre><code class="language-text">             E2E
          少量关键流程
         ─────────────────
@@ -95,8 +167,8 @@
 <li>E2E 和人工探索测试：5%–10%。</li>
 </ul>
 <p>比例是参考值，不应为了达到数量而编写低价值测试。</p>
-<h2>3. 质量目标</h2>
-<h3>3.1 自动化覆盖目标</h3>
+<h2 id="3-质量目标">3. 质量目标</h2>
+<h3 id="3-1-自动化覆盖目标">3.1 自动化覆盖目标</h3>
 <div class="table-wrap"><table><thead><tr>
 <th>范围</th>
 <th>目标</th>
@@ -138,15 +210,15 @@
 <li>Token 会出现在浏览器或日志中。</li>
 <li>中英文任一语言存在阻断流程的缺失文案。</li>
 </ul>
-<h3>3.2 稳定性目标</h3>
+<h3 id="3-2-稳定性目标">3.2 稳定性目标</h3>
 <ul>
 <li>CI 测试连续运行三次结果一致。</li>
 <li>非外部依赖测试的 Flaky Rate 低于 1%。</li>
 <li>同一失败测试重跑通过不能作为长期修复。</li>
 <li>所有 Flaky 测试必须建立跟踪记录，并在发布前修复或隔离。</li>
 </ul>
-<h2>4. 测试范围</h2>
-<h3>4.1 纳入范围</h3>
+<h2 id="4-测试范围">4. 测试范围</h2>
+<h3 id="4-1-纳入范围">4.1 纳入范围</h3>
 <ul>
 <li>用户注册、登录、退出和会话。</li>
 <li>用户语言偏好。</li>
@@ -166,7 +238,7 @@
 <li>API 契约、输入校验、权限和错误码。</li>
 <li>安全、性能、可访问性和可观测性。</li>
 </ul>
-<h3>4.2 暂不纳入</h3>
+<h3 id="4-2-暂不纳入">4.2 暂不纳入</h3>
 <ul>
 <li>未实现的支付和计费系统。</li>
 <li>多用户实时协作。</li>
@@ -176,8 +248,8 @@
 <li>Pippit 模型输出的艺术质量自动评分。</li>
 </ul>
 <p>视频艺术质量采用人工验收，自动化测试只验证任务、媒体格式和业务状态。</p>
-<h2>5. 测试分层</h2>
-<h3>5.1 单元测试</h3>
+<h2 id="5-测试分层">5. 测试分层</h2>
+<h3 id="5-1-单元测试">5.1 单元测试</h3>
 <p>后端使用 pytest，前端使用 Vitest。</p>
 <p>重点对象：</p>
 <ul>
@@ -192,7 +264,7 @@
 <li>中英文翻译键选择。</li>
 </ul>
 <p>单元测试不得访问网络、PostgreSQL、Redis、MinIO、Pippit 或真实 LLM。</p>
-<h3>5.2 Provider 契约测试</h3>
+<h3 id="5-2-provider-契约测试">5.2 Provider 契约测试</h3>
 <p>为 <code>VideoProvider</code> 定义共享契约测试，所有实现都必须通过：</p>
 <ul>
 <li><code>MockVideoProvider</code></li>
@@ -208,7 +280,7 @@
 <li>取消能力不支持时返回明确错误。</li>
 <li>原始响应可以保存，但不直接进入领域模型。</li>
 </ul>
-<h3>5.3 API 测试</h3>
+<h3 id="5-3-api-测试">5.3 API 测试</h3>
 <p>使用 FastAPI TestClient 或 ASGI Transport：</p>
 <ul>
 <li>HTTP 状态码。</li>
@@ -220,7 +292,7 @@
 <li>CSRF 和 Origin 校验。</li>
 <li>OpenAPI 契约是否与生成客户端一致。</li>
 </ul>
-<h3>5.4 集成测试</h3>
+<h3 id="5-4-集成测试">5.4 集成测试</h3>
 <p>使用真实 PostgreSQL、Redis、MinIO 和 Celery Worker：</p>
 <ul>
 <li>数据库约束和事务。</li>
@@ -232,7 +304,7 @@
 <li>Pippit CLI 使用本地 Fake CLI 可执行文件或受控网络 Stub。</li>
 </ul>
 <p>集成测试使用 Testcontainers 或 Docker Compose，每个测试套件使用独立数据库和 Bucket。</p>
-<h3>5.5 E2E 测试</h3>
+<h3 id="5-5-e2e-测试">5.5 E2E 测试</h3>
 <p>使用 Playwright 覆盖：</p>
 <ul>
 <li>中文和英文完整用户流程。</li>
@@ -247,7 +319,7 @@
 <li>公开分享页。</li>
 <li>错误、空状态和恢复。</li>
 </ul>
-<h3>5.6 非功能测试</h3>
+<h3 id="5-6-非功能测试">5.6 非功能测试</h3>
 <p>包括：</p>
 <ul>
 <li>安全。</li>
@@ -257,8 +329,8 @@
 <li>可观测性。</li>
 <li>浏览器兼容性。</li>
 </ul>
-<h2>6. TDD 开发流程</h2>
-<h3>6.1 单个功能流程</h3>
+<h2 id="6-tdd-开发流程">6. TDD 开发流程</h2>
+<h3 id="6-1-单个功能流程">6.1 单个功能流程</h3>
 <pre><code class="language-text">确认验收场景
   → 编写场景编号
   → 写最小失败测试
@@ -269,7 +341,7 @@
   → 运行受影响测试
   → 提交</code></pre>
 <p>“测试失败”必须是因为缺少目标行为，而不是导入路径、测试环境或语法错误。</p>
-<h3>6.2 测试先行顺序</h3>
+<h3 id="6-2-测试先行顺序">6.2 测试先行顺序</h3>
 <p>每个功能按以下顺序编写测试：</p>
 <ol>
 <li>领域失败用例。</li>
@@ -280,7 +352,7 @@
 <li>前端交互。</li>
 <li>E2E 验收。</li>
 </ol>
-<h3>6.3 Definition of Done</h3>
+<h3 id="6-3-definition-of-done">6.3 Definition of Done</h3>
 <p>一个任务只有满足以下条件才完成：</p>
 <ul>
 <li>验收场景有自动化测试或明确的人工测试步骤。</li>
@@ -293,8 +365,8 @@
 <li>安全日志不包含敏感信息。</li>
 <li>相关文档同步更新。</li>
 </ul>
-<h2>7. 测试环境</h2>
-<h3>7.1 本地测试</h3>
+<h2 id="7-测试环境">7. 测试环境</h2>
+<h3 id="7-1-本地测试">7.1 本地测试</h3>
 <pre><code class="language-text">PostgreSQL
 Redis
 MinIO
@@ -302,7 +374,7 @@ Mock Pippit CLI
 Mock Video Provider
 Mock LLM Provider</code></pre>
 <p>Pippit CLI 的 stdout JSON 契约通过本地 Fake CLI 模拟。真实 Pippit 网络测试默认关闭。</p>
-<h3>7.2 CI 测试</h3>
+<h3 id="7-2-ci-测试">7.2 CI 测试</h3>
 <p>普通 Pull Request 只运行：</p>
 <ul>
 <li>后端单元测试、API 测试和契约测试。</li>
@@ -321,7 +393,7 @@ Mock LLM Provider</code></pre>
 <li>Pippit CLI 状态和积分只读 Smoke Test。</li>
 <li>经人工授权的一次付费生成测试。</li>
 </ul>
-<h3>7.3 真实 Pippit 测试开关</h3>
+<h3 id="7-3-真实-pippit-测试开关">7.3 真实 Pippit 测试开关</h3>
 <p>真实测试必须同时满足：</p>
 <pre><code class="language-text">RUN_PIPPIT_LIVE_TESTS=1
 RUN_PIPPIT_PAID_TESTS=1
@@ -335,7 +407,7 @@ PIPPIT_PAID_TEST_BUDGET&gt;0</code></pre>
 <li>测试后核对任务和积分流水。</li>
 <li>默认 CI 中强制关闭。</li>
 </ul>
-<h2>8. 测试数据</h2>
+<h2 id="8-测试数据">8. 测试数据</h2>
 <ul>
 <li>只使用合成用户、合成图片和公开授权测试素材。</li>
 <li>不在 Fixture 中保存真实 Pippit Access Key 或 CLI 登录文件。</li>
@@ -345,8 +417,8 @@ PIPPIT_PAID_TEST_BUDGET&gt;0</code></pre>
 <li>测试结束后删除数据库记录、对象存储文件和临时媒体。</li>
 <li>数据库测试禁止连接共享生产数据库。</li>
 </ul>
-<h2>9. 测试用例</h2>
-<h3>9.1 认证、会话与权限</h3>
+<h2 id="9-测试用例">9. 测试用例</h2>
+<h3 id="9-1-认证-会话与权限">9.1 认证、会话与权限</h3>
 <div class="table-wrap"><table><thead><tr>
 <th>ID</th>
 <th>场景</th>
@@ -425,7 +497,7 @@ PIPPIT_PAID_TEST_BUDGET&gt;0</code></pre>
 <td>P0</td>
 </tr>
 </tbody></table></div>
-<h3>9.2 项目与故事板</h3>
+<h3 id="9-2-项目与故事板">9.2 项目与故事板</h3>
 <div class="table-wrap"><table><thead><tr>
 <th>ID</th>
 <th>场景</th>
@@ -518,7 +590,7 @@ PIPPIT_PAID_TEST_BUDGET&gt;0</code></pre>
 <td>P1</td>
 </tr>
 </tbody></table></div>
-<h3>9.3 素材与存储</h3>
+<h3 id="9-3-素材与存储">9.3 素材与存储</h3>
 <div class="table-wrap"><table><thead><tr>
 <th>ID</th>
 <th>场景</th>
@@ -583,7 +655,7 @@ PIPPIT_PAID_TEST_BUDGET&gt;0</code></pre>
 <td>P1</td>
 </tr>
 </tbody></table></div>
-<h3>9.4 Agent 与工作流</h3>
+<h3 id="9-4-agent-与工作流">9.4 Agent 与工作流</h3>
 <div class="table-wrap"><table><thead><tr>
 <th>ID</th>
 <th>场景</th>
@@ -676,7 +748,7 @@ PIPPIT_PAID_TEST_BUDGET&gt;0</code></pre>
 <td>P0</td>
 </tr>
 </tbody></table></div>
-<h3>9.5 Pippit CLI Provider</h3>
+<h3 id="9-5-pippit-cli-provider">9.5 Pippit CLI Provider</h3>
 <div class="table-wrap"><table><thead><tr>
 <th>ID</th>
 <th>场景</th>
@@ -769,7 +841,7 @@ PIPPIT_PAID_TEST_BUDGET&gt;0</code></pre>
 <td>P0</td>
 </tr>
 </tbody></table></div>
-<h3>9.6 生成任务</h3>
+<h3 id="9-6-生成任务">9.6 生成任务</h3>
 <div class="table-wrap"><table><thead><tr>
 <th>ID</th>
 <th>场景</th>
@@ -869,7 +941,7 @@ PIPPIT_PAID_TEST_BUDGET&gt;0</code></pre>
 <td>P1</td>
 </tr>
 </tbody></table></div>
-<h3>9.7 合成、导出与分享</h3>
+<h3 id="9-7-合成-导出与分享">9.7 合成、导出与分享</h3>
 <div class="table-wrap"><table><thead><tr>
 <th>ID</th>
 <th>场景</th>
@@ -948,7 +1020,7 @@ PIPPIT_PAID_TEST_BUDGET&gt;0</code></pre>
 <td>P0</td>
 </tr>
 </tbody></table></div>
-<h3>9.8 中英文与前端体验</h3>
+<h3 id="9-8-中英文与前端体验">9.8 中英文与前端体验</h3>
 <div class="table-wrap"><table><thead><tr>
 <th>ID</th>
 <th>场景</th>
@@ -1090,7 +1162,7 @@ PIPPIT_PAID_TEST_BUDGET&gt;0</code></pre>
 <td>P1</td>
 </tr>
 </tbody></table></div>
-<h3>9.9 安全与隐私</h3>
+<h3 id="9-9-安全与隐私">9.9 安全与隐私</h3>
 <div class="table-wrap"><table><thead><tr>
 <th>ID</th>
 <th>场景</th>
@@ -1169,8 +1241,8 @@ PIPPIT_PAID_TEST_BUDGET&gt;0</code></pre>
 <td>P0</td>
 </tr>
 </tbody></table></div>
-<h2>10. 状态与恢复专项测试</h2>
-<h3>10.1 LangGraph 恢复</h3>
+<h2 id="10-状态与恢复专项测试">10. 状态与恢复专项测试</h2>
+<h3 id="10-1-langgraph-恢复">10.1 LangGraph 恢复</h3>
 <p>测试以下状态保存与恢复：</p>
 <pre><code class="language-text">awaiting_plan_approval
 awaiting_generation_approval
@@ -1185,7 +1257,7 @@ await_export_approval</code></pre>
 <li>未审批状态无法跳过。</li>
 <li>已完成状态不会被重复执行。</li>
 </ul>
-<h3>10.2 Celery 故障</h3>
+<h3 id="10-2-celery-故障">10.2 Celery 故障</h3>
 <p>使用受控故障注入：</p>
 <ul>
 <li>Worker 在收到任务前退出。</li>
@@ -1196,7 +1268,7 @@ await_export_approval</code></pre>
 <li>同一任务被重复投递。</li>
 </ul>
 <p>预期系统最终进入一致状态，不重复扣费，不丢失已成功的 Provider 任务。</p>
-<h3>10.3 SSE 故障</h3>
+<h3 id="10-3-sse-故障">10.3 SSE 故障</h3>
 <ul>
 <li>浏览器断网后重连。</li>
 <li>FastAPI 重启。</li>
@@ -1205,7 +1277,7 @@ await_export_approval</code></pre>
 <li>客户端收到重复事件。</li>
 </ul>
 <p>客户端必须根据完整 REST 状态去重和校正。</p>
-<h2>11. 性能测试</h2>
+<h2 id="11-性能测试">11. 性能测试</h2>
 <p>MVP 基线：</p>
 <ul>
 <li>普通 API 不含 Provider 调用时，P95 小于 300 ms。</li>
@@ -1216,8 +1288,8 @@ await_export_approval</code></pre>
 <li>100 个前端事件连续到达时，界面不出现明显卡顿。</li>
 </ul>
 <p>性能测试不把 Pippit 推理时间计算为 API 响应时间。Provider 排队和生成时间单独统计。</p>
-<h2>12. 可访问性与兼容性</h2>
-<h3>12.1 可访问性</h3>
+<h2 id="12-可访问性与兼容性">12. 可访问性与兼容性</h2>
+<h3 id="12-1-可访问性">12.1 可访问性</h3>
 <ul>
 <li>目标为 WCAG 2.1 AA。</li>
 <li>所有表单具有关联 Label。</li>
@@ -1227,15 +1299,15 @@ await_export_approval</code></pre>
 <li>中英文页面不能因文字长度出现遮挡。</li>
 <li>视频状态不能只用颜色表达。</li>
 </ul>
-<h3>12.2 浏览器</h3>
+<h3 id="12-2-浏览器">12.2 浏览器</h3>
 <ul>
 <li>最新稳定版 Chrome。</li>
 <li>最新稳定版 Microsoft Edge。</li>
 <li>最新稳定版 Firefox。</li>
 <li>Safari 以发布前目标版本为准。</li>
 </ul>
-<h2>13. CI 质量门禁</h2>
-<h3>13.1 Pull Request 门禁</h3>
+<h2 id="13-ci-质量门禁">13. CI 质量门禁</h2>
+<h3 id="13-1-pull-request-门禁">13.1 Pull Request 门禁</h3>
 <p>以下任一失败阻止合并：</p>
 <ul>
 <li>Ruff 检查或格式化失败。</li>
@@ -1247,7 +1319,7 @@ await_export_approval</code></pre>
 <li>新增高危依赖漏洞。</li>
 <li>命中敏感信息扫描。</li>
 </ul>
-<h3>13.2 Nightly 门禁</h3>
+<h3 id="13-2-nightly-门禁">13.2 Nightly 门禁</h3>
 <ul>
 <li>PostgreSQL、Redis、MinIO 集成测试。</li>
 <li>Celery Worker 测试。</li>
@@ -1256,7 +1328,7 @@ await_export_approval</code></pre>
 <li>故障恢复测试。</li>
 <li>浏览器兼容性测试。</li>
 </ul>
-<h3>13.3 Release 门禁</h3>
+<h3 id="13-3-release-门禁">13.3 Release 门禁</h3>
 <ul>
 <li>所有自动化测试通过。</li>
 <li>无 P0/P1 未解决缺陷。</li>
@@ -1265,8 +1337,8 @@ await_export_approval</code></pre>
 <li>数据库备份与回滚步骤确认。</li>
 <li>经授权完成付费生成验收，或有明确风险接受记录。</li>
 </ul>
-<h2>14. Pippit 真实测试流程</h2>
-<h3>14.1 只读 Smoke Test</h3>
+<h2 id="14-pippit-真实测试流程">14. Pippit 真实测试流程</h2>
+<h3 id="14-1-只读-smoke-test">14.1 只读 Smoke Test</h3>
 <p>人工触发，不消耗积分：</p>
 <ol>
 <li>在 API 主机安装 <code>@pippit-dev/cli@1.0.48</code> 或更新版本。</li>
@@ -1276,7 +1348,7 @@ await_export_approval</code></pre>
 <li>调用 <code>/providers/pippit</code> 和 <code>/providers/pippit/credits</code>。</li>
 <li>验证日志不包含 Access Key 或 CLI 登录状态内容。</li>
 </ol>
-<h3>14.2 付费生成测试</h3>
+<h3 id="14-2-付费生成测试">14.2 付费生成测试</h3>
 <p>仅限发布前人工执行：</p>
 <ol>
 <li>记录起始积分。</li>
@@ -1291,7 +1363,7 @@ await_export_approval</code></pre>
 <li>审核 UI、事件和数据库状态一致性。</li>
 </ol>
 <p>测试报告必须记录测试时的实时 Pippit 余额，不得在代码或文档中硬编码账户数值。 余额为 0 时跳过付费测试，不自动充值。</p>
-<h2>15. 测试报告</h2>
+<h2 id="15-测试报告">15. 测试报告</h2>
 <p>每次 Release 生成测试摘要，包含：</p>
 <ul>
 <li>测试版本和 Commit。</li>
@@ -1305,7 +1377,7 @@ await_export_approval</code></pre>
 <li>Pippit 付费测试结果和积分使用。</li>
 <li>与上一版本的性能变化。</li>
 </ul>
-<h2>16. 缺陷等级</h2>
+<h2 id="16-缺陷等级">16. 缺陷等级</h2>
 <div class="table-wrap"><table><thead><tr>
 <th>等级</th>
 <th>定义</th>
@@ -1332,8 +1404,8 @@ await_export_approval</code></pre>
 <td>可进入后续迭代</td>
 </tr>
 </tbody></table></div>
-<h2>17. TDD 实施顺序</h2>
-<h3>第 1 轮：测试基础设施</h3>
+<h2 id="17-tdd-实施顺序">17. TDD 实施顺序</h2>
+<h3 id="第-1-轮-测试基础设施">第 1 轮：测试基础设施</h3>
 <ol>
 <li>配置 pytest、Vitest、Playwright。</li>
 <li>创建测试标记和目录。</li>
@@ -1341,44 +1413,44 @@ await_export_approval</code></pre>
 <li>建立测试数据库和迁移测试。</li>
 <li>配置 CI 报告。</li>
 </ol>
-<h3>第 2 轮：健康检查</h3>
+<h3 id="第-2-轮-健康检查">第 2 轮：健康检查</h3>
 <ul>
 <li>先写 <code>/health</code> 失败测试。</li>
 <li>实现最小 FastAPI 应用。</li>
 <li>增加数据库和 Redis 健康状态。</li>
 </ul>
-<h3>第 3 轮：认证与权限</h3>
+<h3 id="第-3-轮-认证与权限">第 3 轮：认证与权限</h3>
 <ul>
 <li>测试先行实现注册、登录、会话。</li>
 <li>测试先行实现项目所有权。</li>
 <li>测试先行实现 CSRF 和访问控制。</li>
 </ul>
-<h3>第 4 轮：国际化</h3>
+<h3 id="第-4-轮-国际化">第 4 轮：国际化</h3>
 <ul>
 <li>测试先行实现 <code>/en</code> 和 <code>/zh-CN</code>。</li>
 <li>测试语言切换和偏好保存。</li>
 <li>建立翻译键完整性检查。</li>
 </ul>
-<h3>第 5 轮：项目与故事板</h3>
+<h3 id="第-5-轮-项目与故事板">第 5 轮：项目与故事板</h3>
 <ul>
 <li>测试先行定义 Project、Shot 和状态迁移。</li>
 <li>实现版本控制和并发更新。</li>
 <li>实现故事板 API。</li>
 </ul>
-<h3>第 6 轮：资产与存储</h3>
+<h3 id="第-6-轮-资产与存储">第 6 轮：资产与存储</h3>
 <ul>
 <li>测试先行实现预签名和文件校验。</li>
 <li>实现素材元数据和缩略图。</li>
 <li>测试跨用户隔离。</li>
 </ul>
-<h3>第 7 轮：Agent</h3>
+<h3 id="第-7-轮-agent">第 7 轮：Agent</h3>
 <ul>
 <li>测试先行定义 Pydantic 输出。</li>
 <li>实现单节点 Agent。</li>
 <li>逐步加入创意、故事板、审批和审核节点。</li>
 <li>使用 Fake LLM 保证确定性。</li>
 </ul>
-<h3>第 8 轮：Provider 与 Pippit</h3>
+<h3 id="第-8-轮-provider-与-pippit">第 8 轮：Provider 与 Pippit</h3>
 <ul>
 <li>先定义 Provider 共享契约。</li>
 <li>先实现 Mock Provider。</li>
@@ -1386,26 +1458,26 @@ await_export_approval</code></pre>
 <li>测试状态、余额、提交和查询 JSON 映射。</li>
 <li>测试 CLI 缺失、超时、非零退出码和无效 JSON。</li>
 </ul>
-<h3>第 9 轮：任务执行</h3>
+<h3 id="第-9-轮-任务执行">第 9 轮：任务执行</h3>
 <ul>
 <li>测试幂等键和任务状态。</li>
 <li>实现 Celery 提交和轮询。</li>
 <li>注入 Worker 重启和重复投递。</li>
 <li>实现 SSE 和恢复。</li>
 </ul>
-<h3>第 10 轮：媒体与分享</h3>
+<h3 id="第-10-轮-媒体与分享">第 10 轮：媒体与分享</h3>
 <ul>
 <li>测试 FFmpeg 参数构造和失败处理。</li>
 <li>实现合成、导出和缩略图。</li>
 <li>测试分享 Token、过期和撤销。</li>
 </ul>
-<h3>第 11 轮：E2E 与发布</h3>
+<h3 id="第-11-轮-e2e-与发布">第 11 轮：E2E 与发布</h3>
 <ul>
 <li>使用 Mock Provider 完成中英文全流程。</li>
 <li>执行 Pippit 状态和积分只读测试。</li>
 <li>在用户批准预算后执行一次付费测试。</li>
 </ul>
-<h2>18. 需求追溯</h2>
+<h2 id="18-需求追溯">18. 需求追溯</h2>
 <div class="table-wrap"><table><thead><tr>
 <th>设计能力</th>
 <th>主要测试</th>
@@ -1451,7 +1523,7 @@ await_export_approval</code></pre>
 <td>Release 门禁和 Pippit 真实测试流程</td>
 </tr>
 </tbody></table></div>
-<h2>19. 风险和约束</h2>
+<h2 id="19-风险和约束">19. 风险和约束</h2>
 <div class="table-wrap"><table><thead><tr>
 <th>风险</th>
 <th>测试措施</th>
@@ -1489,7 +1561,7 @@ await_export_approval</code></pre>
 <td>Idempotency-Key、数据库锁、重复投递测试</td>
 </tr>
 </tbody></table></div>
-<h2>20. 完成标准</h2>
+<h2 id="20-完成标准">20. 完成标准</h2>
 <p>测试体系达到以下条件后，视为具备稳定 TDD 开发基础：</p>
 <ol>
 <li>本地一条命令启动测试依赖。</li>
@@ -1503,7 +1575,7 @@ await_export_approval</code></pre>
 <li>每次发布生成可追溯的测试报告。</li>
 <li>新增功能遵循 Red–Green–Refactor，而不是实现后补测试。</li>
 </ol>
-<h2>21. 变更记录</h2>
+<h2 id="21-变更记录">21. 变更记录</h2>
 <div class="table-wrap"><table><thead><tr>
 <th>版本</th>
 <th>日期</th>
@@ -1518,6 +1590,6 @@ await_export_approval</code></pre>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=11"></script>
+    <script src="../docs.js?v=12"></script>
   </body>
 </html>
