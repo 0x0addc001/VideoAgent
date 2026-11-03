@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="VideoAgent API" />
+    <title>API · VideoAgent</title>
+    <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
+    <link rel="stylesheet" href="../docs.css?v=14" />
+  </head>
+  <body data-document="api-reference.zh.html">
+    <main class="document-shell" id="document-shell">
+      <aside class="document-toc" id="document-toc">
+        <button
+          class="toc-toggle"
+          id="toc-toggle"
+          type="button"
+          aria-controls="toc-panel"
+          aria-expanded="true"
+          aria-label="目录"
+        >
+          <span class="toc-toggle-icon" aria-hidden="true">☰</span>
+          <span class="toc-toggle-label">目录</span>
+          <span class="toc-toggle-chevron" aria-hidden="true">‹</span>
+        </button>
+        <nav class="toc-panel" id="toc-panel" aria-label="目录">
+          <p class="toc-kicker">目录</p>
+          <a class="toc-link toc-level-1" href="#videoagent-api-接口文档">VideoAgent API 接口文档</a>
+<a class="toc-link toc-level-2" href="#健康检查">健康检查</a>
+<a class="toc-link toc-level-2" href="#认证">认证</a>
+<a class="toc-link toc-level-3" href="#注册">注册</a>
+<a class="toc-link toc-level-3" href="#登录">登录</a>
+<a class="toc-link toc-level-3" href="#当前用户">当前用户</a>
+<a class="toc-link toc-level-3" href="#更新语言偏好">更新语言偏好</a>
+<a class="toc-link toc-level-3" href="#退出">退出</a>
+<a class="toc-link toc-level-2" href="#项目">项目</a>
+<a class="toc-link toc-level-2" href="#故事板">故事板</a>
+<a class="toc-link toc-level-3" href="#读取">读取</a>
+<a class="toc-link toc-level-3" href="#整体替换">整体替换</a>
+<a class="toc-link toc-level-2" href="#agent-对话">Agent 对话</a>
+<a class="toc-link toc-level-3" href="#消息历史">消息历史</a>
+<a class="toc-link toc-level-3" href="#发送消息">发送消息</a>
+<a class="toc-link toc-level-2" href="#故事板即时评估">故事板即时评估</a>
+<a class="toc-link toc-level-2" href="#视频生成">视频生成</a>
+<a class="toc-link toc-level-3" href="#积分估算">积分估算</a>
+<a class="toc-link toc-level-3" href="#提交生成">提交生成</a>
+<a class="toc-link toc-level-3" href="#查询任务">查询任务</a>
+<a class="toc-link toc-level-2" href="#pippit-provider">Pippit Provider</a>
+<a class="toc-link toc-level-2" href="#hots-发布">Hots 发布</a>
+<a class="toc-link toc-level-2" href="#错误格式">错误格式</a>
+<a class="toc-link toc-level-2" href="#变更记录">变更记录</a>
+        </nav>
+      </aside>
+      <article class="document"><h1 id="videoagent-api-接口文档">VideoAgent API 接口文档</h1>
+<div class="table-wrap"><table><thead><tr>
+<th>属性</th>
+<th>内容</th>
+</tr></thead><tbody>
+<tr>
+<td>文档版本</td>
+<td>v1.1</td>
+</tr>
+<tr>
+<td>更新日期</td>
+<td>2026-11-03</td>
+</tr>
+<tr>
+<td>基础路径</td>
+<td><code>/api/v1</code></td>
+</tr>
+<tr>
+<td>认证方式</td>
+<td>HttpOnly Session Cookie</td>
+</tr>
+</tbody></table></div>
+<p>本地 OpenAPI 文档：</p>
+<pre><code class="language-text">http://localhost:8000/docs
+http://localhost:8000/openapi.json</code></pre>
+<p>除 <code>/health</code>、注册和登录外，所有接口都要求登录，并设置 <code>credentials: &quot;include&quot;</code>。</p>
+<h2 id="健康检查">健康检查</h2>
+<p><code>GET /health</code></p>
+<p>返回 API 状态和数据库依赖状态。数据库异常时返回 <code>503</code>，并标记为 <code>degraded</code>。</p>
+<h2 id="认证">认证</h2>
+<h3 id="注册">注册</h3>
+<p><code>POST /auth/register</code></p>
+<pre><code class="language-json">{
+  &quot;email&quot;: &quot;creator@example.com&quot;,
+  &quot;password&quot;: &quot;at-least-eight-characters&quot;,
+  &quot;locale&quot;: &quot;zh-CN&quot;
+}</code></pre>
+<p>后端仍接受 <code>en</code> 和 <code>zh-CN</code> 用户偏好；当前公开产品 UI 仅开放英文。</p>
+<h3 id="登录">登录</h3>
+<p><code>POST /auth/login</code></p>
+<pre><code class="language-json">{
+  &quot;email&quot;: &quot;creator@example.com&quot;,
+  &quot;password&quot;: &quot;at-least-eight-characters&quot;
+}</code></pre>
+<h3 id="当前用户">当前用户</h3>
+<p><code>GET /auth/me</code></p>
+<p>返回用户 ID、邮箱、语言偏好和创建时间。</p>
+<h3 id="更新语言偏好">更新语言偏好</h3>
+<p><code>PATCH /auth/me</code></p>
+<pre><code class="language-json">{
+  &quot;locale&quot;: &quot;en&quot;
+}</code></pre>
+<h3 id="退出">退出</h3>
+<p><code>POST /auth/logout</code></p>
+<p>撤销当前 Session 并清除 Cookie。</p>
+<h2 id="项目">项目</h2>
+<p>所有项目接口均校验当前用户所有权。访问其他用户的项目统一返回 <code>404</code>。</p>
+<div class="table-wrap"><table><thead><tr>
+<th>方法</th>
+<th>路径</th>
+<th>说明</th>
+</tr></thead><tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/projects</code></td>
+<td>当前用户项目列表</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/projects</code></td>
+<td>创建项目</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/projects/{project_id}</code></td>
+<td>读取项目</td>
+</tr>
+<tr>
+<td><code>PATCH</code></td>
+<td><code>/projects/{project_id}</code></td>
+<td>重命名项目</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/projects/{project_id}</code></td>
+<td>归档项目</td>
+</tr>
+</tbody></table></div>
+<p>创建项目：</p>
+<pre><code class="language-json">{
+  &quot;title&quot;: &quot;产品发布片&quot;,
+  &quot;brief&quot;: &quot;十秒电影感产品发布视频&quot;
+}</code></pre>
+<p>重命名：</p>
+<pre><code class="language-json">{
+  &quot;title&quot;: &quot;产品发布片 · 终版&quot;
+}</code></pre>
+<h2 id="故事板">故事板</h2>
+<h3 id="读取">读取</h3>
+<p><code>GET /projects/{project_id}/storyboard</code></p>
+<h3 id="整体替换">整体替换</h3>
+<p><code>PUT /projects/{project_id}/storyboard</code></p>
+<pre><code class="language-json">{
+  &quot;shots&quot;: [
+    {
+      &quot;description&quot;: &quot;开场产品亮相&quot;,
+      &quot;prompt_en&quot;: &quot;Cinematic product reveal with warm rim light&quot;,
+      &quot;prompt_zh&quot;: &quot;暖色轮廓光下的电影感产品亮相&quot;,
+      &quot;duration_seconds&quot;: 5,
+      &quot;aspect_ratio&quot;: &quot;16:9&quot;,
+      &quot;generation_mode&quot;: &quot;text_to_video&quot;
+    }
+  ]
+}</code></pre>
+<h2 id="agent-对话">Agent 对话</h2>
+<h3 id="消息历史">消息历史</h3>
+<p><code>GET /projects/{project_id}/messages</code></p>
+<h3 id="发送消息">发送消息</h3>
+<p><code>POST /projects/{project_id}/messages</code></p>
+<pre><code class="language-json">{
+  &quot;content&quot;: &quot;把需求整理成三个镜头的发布视频&quot;
+}</code></pre>
+<p>响应包含用户消息、Assistant 回复和最新故事板。</p>
+<p>当前接口返回普通 JSON，不提供 SSE 或 Token 流式响应。</p>
+<h2 id="故事板即时评估">故事板即时评估</h2>
+<p><code>POST /projects/{project_id}/evaluate</code></p>
+<p>返回：</p>
+<ul>
+<li>一致性</li>
+<li>覆盖度</li>
+<li>提示清晰度</li>
+<li>节奏</li>
+<li>综合分和修改建议</li>
+</ul>
+<p>示例：</p>
+<pre><code class="language-json">{
+  &quot;overall_score&quot;: 88,
+  &quot;metrics&quot;: [
+    { &quot;key&quot;: &quot;consistency&quot;, &quot;score&quot;: 92 },
+    { &quot;key&quot;: &quot;coverage&quot;, &quot;score&quot;: 100 },
+    { &quot;key&quot;: &quot;clarity&quot;, &quot;score&quot;: 84 },
+    { &quot;key&quot;: &quot;pacing&quot;, &quot;score&quot;: 80 }
+  ],
+  &quot;suggestions&quot;: [
+    { &quot;code&quot;: &quot;IMPROVE_PROMPTS&quot;, &quot;severity&quot;: &quot;medium&quot; }
+  ]
+}</code></pre>
+<h2 id="视频生成">视频生成</h2>
+<h3 id="积分估算">积分估算</h3>
+<p><code>POST /shots/{shot_id}/estimate</code></p>
+<h3 id="提交生成">提交生成</h3>
+<p><code>POST /shots/{shot_id}/generate</code></p>
+<p>必须携带：</p>
+<pre><code class="language-text">Idempotency-Key: unique-request-id</code></pre>
+<p>请求：</p>
+<pre><code class="language-json">{
+  &quot;approved&quot;: true
+}</code></pre>
+<p>未显式批准时返回 <code>403</code>。相同镜头和幂等键重复请求会返回已有任务，不会再次提交 Provider。</p>
+<h3 id="查询任务">查询任务</h3>
+<p><code>GET /jobs/{job_id}</code></p>
+<p>常见状态：</p>
+<pre><code class="language-text">pending
+submission_uncertain
+submitted
+queued
+running
+succeeded
+failed
+cancelled</code></pre>
+<p>当前前端每 5 秒轮询任务状态。Celery 启用时可由 Worker 轮询。</p>
+<h2 id="pippit-provider">Pippit Provider</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>方法</th>
+<th>路径</th>
+<th>说明</th>
+</tr></thead><tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/providers/pippit</code></td>
+<td>查询服务端 Pippit 登录状态</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/providers/pippit/credits</code></td>
+<td>查询 Pippit 积分余额</td>
+</tr>
+</tbody></table></div>
+<p>Pippit 授权由服务端统一持有。浏览器不会收到 Access Key 或 CLI 登录文件。 当前所有 VideoAgent 用户共享同一个配置的 Pippit 账户和积分池。</p>
+<p>状态响应：</p>
+<pre><code class="language-json">{
+  &quot;provider&quot;: &quot;pippit&quot;,
+  &quot;connected&quot;: true,
+  &quot;scope&quot;: &quot;server&quot;
+}</code></pre>
+<p>积分响应：</p>
+<pre><code class="language-json">{
+  &quot;provider&quot;: &quot;pippit&quot;,
+  &quot;connected&quot;: true,
+  &quot;credits&quot;: 42
+}</code></pre>
+<h2 id="hots-发布">Hots 发布</h2>
+<p>Hots 发布目前仅为前端当前会话交互，不调用后端 API。帖子、作者和 0 喜欢 不会持久化到数据库，也没有点赞接口。</p>
+<h2 id="错误格式">错误格式</h2>
+<pre><code class="language-json">{
+  &quot;error&quot;: {
+    &quot;code&quot;: &quot;PROJECT_NOT_FOUND&quot;,
+    &quot;message&quot;: &quot;The project was not found.&quot;,
+    &quot;details&quot;: {},
+    &quot;requestId&quot;: &quot;request-id&quot;
+  }
+}</code></pre>
+<p>常见状态码：</p>
+<div class="table-wrap"><table><thead><tr>
+<th>状态码</th>
+<th>含义</th>
+</tr></thead><tbody>
+<tr>
+<td><code>401</code></td>
+<td>未登录或 Session 过期</td>
+</tr>
+<tr>
+<td><code>403</code></td>
+<td>缺少显式生成审批</td>
+</tr>
+<tr>
+<td><code>404</code></td>
+<td>资源不存在或不属于当前用户</td>
+</tr>
+<tr>
+<td><code>409</code></td>
+<td>Provider 未就绪</td>
+</tr>
+<tr>
+<td><code>422</code></td>
+<td>请求校验失败</td>
+</tr>
+<tr>
+<td><code>502</code></td>
+<td>上游 Provider 请求失败</td>
+</tr>
+<tr>
+<td><code>503</code></td>
+<td>Provider CLI 不可用</td>
+</tr>
+</tbody></table></div>
+<h2 id="变更记录">变更记录</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>版本</th>
+<th>日期</th>
+<th>说明</th>
+</tr></thead><tbody>
+<tr>
+<td>v1.1</td>
+<td>2026-11-03</td>
+<td>增加中文版本，补充健康检查、项目重命名、评估与 Hots 当前边界</td>
+</tr>
+</tbody></table></div></article>
+    </main>
+    <script src="../docs.js?v=14"></script>
+  </body>
+</html>

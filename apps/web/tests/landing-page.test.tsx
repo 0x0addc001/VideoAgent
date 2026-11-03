@@ -21,6 +21,7 @@ const props = {
 
 afterEach(() => {
   window.history.replaceState({}, "", "/");
+  window.localStorage.clear();
 });
 
 describe("LandingPage", () => {
@@ -29,13 +30,15 @@ describe("LandingPage", () => {
     const nav = container.querySelector(".site-header > nav");
     const composer = container.querySelector(".creation-composer");
 
-    expect(nav?.textContent).toContain("Agents");
+    expect(container.querySelector(".site-header > nav")).toHaveTextContent(
+      "Agents",
+    );
     expect(nav?.textContent).toContain("Skills");
     expect(nav?.textContent).toContain("Assets");
     expect(nav?.textContent).toContain("Hots");
     expect(nav?.textContent).toContain("Docs");
     expect(nav?.querySelectorAll(".nav-icon")).toHaveLength(5);
-    expect(container.querySelector(".language-button")).not.toBeInTheDocument();
+    expect(container.querySelector(".language-button")).toBeInTheDocument();
     expect(container.querySelector(".notification-button svg")).toBeInTheDocument();
     expect(container.querySelector(".brand-mark .brand-play")).toBeInTheDocument();
     expect(composer).toBeInTheDocument();
@@ -54,6 +57,7 @@ describe("LandingPage", () => {
       "account-avatar account-avatar-default",
       "credit-count",
       "notification-switcher",
+      "language-switcher",
     ]);
     expect(container.querySelector("footer")).not.toBeInTheDocument();
     expect(container.querySelectorAll(".hero-video-frame")).toHaveLength(6);
@@ -88,9 +92,15 @@ describe("LandingPage", () => {
         (button) => button.textContent === "Skills",
       )!,
     );
-    expect(container.querySelector("#skills .feature-card")).toHaveTextContent(
-      "Storyboard",
+    expect(container.querySelector("#skills .skill-group-heading")).toHaveTextContent(
+      "Atomic skills",
     );
+    expect(container.querySelector("#skills .skill-code")).toHaveTextContent(
+      "text_to_video",
+    );
+    expect(container.querySelectorAll("#skills .skill-group")).toHaveLength(2);
+    expect(container.querySelector("#skills")).toHaveTextContent("Product film");
+    expect(container.querySelector("#skills")).toHaveTextContent("Short drama");
     expect(container.querySelector("#agents")).not.toBeInTheDocument();
     expect(container.querySelector(".review-skill")).toHaveTextContent("Instant review");
 
@@ -99,8 +109,17 @@ describe("LandingPage", () => {
         (button) => button.textContent === "Assets",
       )!,
     );
-    expect(container.querySelector("#assets .feature-card")).toHaveTextContent(
-      "Projects",
+    expect(container.querySelector("#assets .asset-card")).toHaveTextContent(
+      "Quiet Copenhagen",
+    );
+    expect(container.querySelector("#assets .asset-card")).toHaveTextContent(
+      "Today · 10:42",
+    );
+    expect(container.querySelector("#assets .asset-card")).toHaveTextContent(
+      "three-shot editorial vlog",
+    );
+    expect(container.querySelector("#assets .asset-card video")).toHaveAttribute(
+      "controls",
     );
     expect(container.querySelector("#skills")).not.toBeInTheDocument();
 
@@ -119,6 +138,11 @@ describe("LandingPage", () => {
     ).toHaveClass("community-card-title");
     expect(container.querySelector(".community-author")).toHaveTextContent("Maya Chen");
     expect(container.querySelector(".community-likes")).toHaveTextContent("128");
+    expect(container.querySelectorAll("#hots .community-card video")).toHaveLength(6);
+    expect(container.querySelector("#hots video")).toHaveAttribute("autoplay");
+    expect(
+      container.querySelector(".community-publish-card .community-publish-icon"),
+    ).toBeInTheDocument();
     expect(container.querySelector("#hots .community-action")).toHaveTextContent(
       "Make this",
     );
@@ -130,9 +154,28 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/software-design.html?v=13",
+      "/docs/software-design.html?v=14",
     );
     expect(container.querySelectorAll(".docs-tab-icon")).toHaveLength(4);
+    expect(
+      [...container.querySelectorAll(".docs-tabs button")].map((button) =>
+        button.textContent?.trim(),
+      ),
+    ).toEqual(["Design", "Impl", "Test", "API"]);
+
+    fireEvent.click(container.querySelector(".language-button")!);
+    fireEvent.click(
+      [...container.querySelectorAll(".language-options button")].find(
+        (button) => button.textContent === "中文",
+      )!,
+    );
+    expect(container.querySelector("#docs iframe")).toHaveAttribute(
+      "src",
+      "/docs/software-design.zh.html?v=14",
+    );
+    expect(container.querySelector(".site-header > nav")).toHaveTextContent(
+      "Agents",
+    );
   });
 
   it("uses a custom transparent settings menu", () => {

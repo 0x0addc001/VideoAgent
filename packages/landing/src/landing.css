@@ -351,7 +351,8 @@ button {
   padding: 6px;
 }
 
-.language-options a {
+.language-options a,
+.language-options button {
   display: block;
   width: 100%;
   border: 0;
@@ -365,7 +366,10 @@ button {
 }
 
 .language-options a:hover,
-.language-options a[aria-current="true"] {
+.language-options a[aria-current="true"],
+.language-options button:hover,
+.language-options button[aria-current="true"],
+.language-options button[aria-checked="true"] {
   background: rgba(255, 255, 255, 0.07);
 }
 
@@ -1519,7 +1523,7 @@ html[lang="zh-CN"] .va-landing select {
 .header-actions {
   display: grid;
   width: 100%;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   align-items: center;
   justify-items: center;
   gap: 0;
@@ -1609,9 +1613,9 @@ html[lang="zh-CN"] .va-landing select {
 
 .header-actions .language-options {
   top: auto;
-  right: auto;
+  right: 0;
   bottom: calc(100% + 10px);
-  left: 0;
+  left: auto;
 }
 
 .hero,
@@ -1888,6 +1892,103 @@ html[lang="zh-CN"] .hero-copy h1 {
   gap: 12px;
 }
 
+.asset-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.asset-card {
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 22px;
+  background: rgba(17, 21, 30, 0.72);
+}
+
+.asset-media {
+  overflow: hidden;
+  aspect-ratio: 16 / 9;
+  background: #050505;
+}
+
+.asset-media video {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.asset-info {
+  display: grid;
+  gap: 12px;
+  padding: 18px 20px 20px;
+}
+
+.asset-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.asset-title-row h2 {
+  margin: 0;
+  font-size: clamp(22px, 1.8vw, 28px);
+  line-height: 1.1;
+}
+
+.asset-title-row span {
+  flex: 0 0 auto;
+  border: 1px solid rgba(79, 172, 255, 0.28);
+  border-radius: 999px;
+  color: #8fdcff;
+  font-family: "Manrope", var(--body);
+  font-size: 0.72rem;
+  padding: 5px 8px;
+}
+
+.asset-info > p {
+  min-height: 3em;
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.asset-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  color: #8f877d;
+  font-family: "Manrope", var(--body);
+  font-size: 0.78rem;
+  padding-top: 12px;
+}
+
+.skill-groups {
+  display: grid;
+  gap: 30px;
+}
+
+.skill-group-heading {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.skill-group-heading > span {
+  color: var(--text);
+  font-size: clamp(24px, 2vw, 32px);
+}
+
+.skill-group-heading > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
 .feature-card {
   position: relative;
   display: flex;
@@ -1906,6 +2007,38 @@ html[lang="zh-CN"] .hero-copy h1 {
     border-color 160ms ease,
     background 160ms ease,
     transform 160ms ease;
+}
+
+.skill-card {
+  min-height: 176px;
+  justify-content: space-between;
+}
+
+.feature-card > .skill-code {
+  color: #4facff;
+  font-family: "Manrope", var(--body);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+}
+
+.skill-card-copy {
+  display: grid;
+  gap: 7px;
+  margin-top: 20px;
+}
+
+.skill-card-copy > strong {
+  font-size: clamp(24px, 2vw, 32px);
+  font-weight: 400;
+  line-height: 1.15;
+}
+
+.skill-card-copy > small {
+  color: #8fdcff;
+  font-family: "Manrope", var(--body);
+  font-size: 0.76rem;
+  line-height: 1.45;
 }
 
 .feature-card:hover {
@@ -1941,7 +2074,7 @@ html[lang="zh-CN"] .hero-copy h1 {
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  margin-top: 12px;
+  margin-top: 30px;
   border: 1px solid rgba(22, 119, 255, 0.38);
   border-radius: 22px;
   background:
@@ -2005,7 +2138,7 @@ html[lang="zh-CN"] .hero-copy h1 {
   align-items: center;
   border-radius: 999px;
   color: #f2f6ff;
-  font-size: 0.76rem;
+  font-size: 0.92rem;
   line-height: 1;
   padding: 4px 0;
 }
@@ -2016,13 +2149,13 @@ html[lang="zh-CN"] .hero-copy h1 {
 
 .community-author-mark {
   display: grid;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   place-items: center;
   border-radius: 50%;
   background: rgba(79, 172, 255, 0.24);
   color: #8fdcff;
-  font-size: 0.68rem;
+  font-size: 0.8rem;
   font-weight: 600;
 }
 
@@ -2073,13 +2206,15 @@ html[lang="zh-CN"] .hero-copy h1 {
   aspect-ratio: 5 / 4;
 }
 
-.community-card img {
+.community-card img,
+.community-card video {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
   opacity: 0.65;
+  pointer-events: none;
   transition:
     opacity 180ms ease,
     transform 300ms ease;
@@ -2093,7 +2228,7 @@ html[lang="zh-CN"] .hero-copy h1 {
 }
 
 .community-card-title {
-  font-size: 1.1rem;
+  font-size: 1.35rem;
   line-height: 1.25;
 }
 
@@ -2116,7 +2251,8 @@ html[lang="zh-CN"] .hero-copy h1 {
   backdrop-filter: blur(12px);
 }
 
-.community-card:hover img {
+.community-card:hover img,
+.community-card:hover video {
   opacity: 0.82;
   transform: scale(1.03);
 }
@@ -2136,7 +2272,7 @@ html[lang="zh-CN"] .hero-copy h1 {
   border: 1px dashed rgba(79, 172, 255, 0.58);
   background: rgba(22, 119, 255, 0.075);
   color: #4facff;
-  font-size: 1rem;
+  font-size: 1.15rem;
 }
 
 .community-card.community-publish-card::after {
@@ -2148,10 +2284,11 @@ html[lang="zh-CN"] .hero-copy h1 {
   background: rgba(22, 119, 255, 0.13);
 }
 
-.community-card.community-publish-card svg {
-  width: 28px;
-  height: 28px;
-  stroke-width: 1.6;
+.community-card.community-publish-card .community-publish-icon {
+  width: 32px;
+  height: 32px;
+  fill: currentColor;
+  stroke: currentColor;
 }
 
 .docs-view {
@@ -2335,7 +2472,8 @@ html[lang="zh-CN"] .hero-copy h1 {
     padding-top: 18px;
   }
 
-  .feature-grid {
+  .feature-grid,
+  .asset-grid {
     grid-template-columns: 1fr;
   }
 

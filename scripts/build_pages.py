@@ -10,13 +10,29 @@ ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / ".pages-build"
 WEB_PUBLIC = ROOT / "apps" / "web" / "public"
 DOCS = ROOT / "docs"
-DOCS_ASSET_VERSION = "13"
+DOCS_ASSET_VERSION = "14"
 
 DOCUMENTS = {
-    "software-design.md": ("Software Design", "软件设计说明书"),
-    "software-implementation.md": ("Implementation Guide", "软件实现说明"),
-    "software-test-plan.md": ("Testing & TDD", "软件测试与 TDD 规范"),
-    "api-reference.md": ("API Reference", "API 接口文档"),
+    "software-design": {
+        "title": "Design",
+        "en": "software-design.en.md",
+        "zh-CN": "software-design.md",
+    },
+    "software-implementation": {
+        "title": "Impl",
+        "en": "software-implementation.en.md",
+        "zh-CN": "software-implementation.md",
+    },
+    "software-test-plan": {
+        "title": "Test",
+        "en": "software-test-plan.en.md",
+        "zh-CN": "software-test-plan.md",
+    },
+    "api-reference": {
+        "title": "API",
+        "en": "api-reference.md",
+        "zh-CN": "api-reference.zh.md",
+    },
 }
 
 TocEntry = tuple[int, str, str]
@@ -209,18 +225,20 @@ def render_toc(entries: list[TocEntry]) -> str:
 
 def document_page(
     filename: str,
-    title_en: str,
-    title_zh: str,
+    title: str,
     body: str,
     toc: list[TocEntry],
+    lang: str,
 ) -> str:
-    document_title = f"{title_en} · VideoAgent"
+    document_title = f"{title} · VideoAgent"
+    contents_label = "目录" if lang == "zh-CN" else "Contents"
+    contents_kicker = "目录" if lang == "zh-CN" else "CONTENTS"
     return f"""<!doctype html>
-<html lang="zh-CN">
+<html lang="{html.escape(lang, quote=True)}">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="VideoAgent {html.escape(title_en)} · {html.escape(title_zh)}" />
+    <meta name="description" content="VideoAgent {html.escape(title)}" />
     <title>{document_title}</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
     <link rel="stylesheet" href="../docs.css?v={DOCS_ASSET_VERSION}" />
@@ -234,14 +252,14 @@ def document_page(
           type="button"
           aria-controls="toc-panel"
           aria-expanded="true"
-          aria-label="Toggle document contents"
+          aria-label="{contents_label}"
         >
           <span class="toc-toggle-icon" aria-hidden="true">☰</span>
-          <span class="toc-toggle-label">Contents</span>
+          <span class="toc-toggle-label">{contents_label}</span>
           <span class="toc-toggle-chevron" aria-hidden="true">‹</span>
         </button>
-        <nav class="toc-panel" id="toc-panel" aria-label="Document contents">
-          <p class="toc-kicker">CONTENTS</p>
+        <nav class="toc-panel" id="toc-panel" aria-label="{contents_label}">
+          <p class="toc-kicker">{contents_kicker}</p>
           {render_toc(toc)}
         </nav>
       </aside>
@@ -267,15 +285,19 @@ def main() -> None:
     docs_output = OUTPUT / "docs"
     docs_output.mkdir(parents=True, exist_ok=True)
 
-    for filename, (title_en, title_zh) in DOCUMENTS.items():
-        source = DOCS / filename
-        if not source.exists():
-            raise FileNotFoundError(f"Missing documentation source: {source}")
-        body, toc = markdown_to_html(source.read_text(encoding="utf-8"))
-        (docs_output / filename.replace(".md", ".html")).write_text(
-            document_page(filename, title_en, title_zh, body, toc),
-            encoding="utf-8",
-        )
+    for document_id, document in DOCUMENTS.items():
+        title = str(document["title"])
+        for lang, suffix in (("en", ""), ("zh-CN", ".zh")):
+            source_name = str(document[lang])
+            source = DOCS / source_name
+            if not source.exists():
+                raise FileNotFoundError(f"Missing documentation source: {source}")
+            body, toc = markdown_to_html(source.read_text(encoding="utf-8"))
+            output_name = f"{document_id}{suffix}.html"
+            (docs_output / output_name).write_text(
+                document_page(output_name, title, body, toc, lang),
+                encoding="utf-8",
+            )
 
     web_docs = WEB_PUBLIC / "docs"
     if web_docs.exists():

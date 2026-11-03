@@ -8,9 +8,9 @@ import {
   Film,
   Flame,
   Gem,
+  Globe2,
   Heart,
   Play,
-  Plus,
   UserRound,
   Video,
 } from "lucide-react";
@@ -78,7 +78,7 @@ const HERO_LINE_TWO: HeroPart[] = [
   { text: "Director", accent: true },
 ];
 
-const DOCS_ASSET_VERSION = "13";
+const DOCS_ASSET_VERSION = "14";
 
 function heroPartsLength(parts: readonly HeroPart[]) {
   return parts.reduce((total, part) => total + Array.from(part.text).length, 0);
@@ -351,6 +351,8 @@ export function LandingPage({
   const [activeDocument, setActiveDocument] = useState<string>(
     content.documents[0]?.path ?? "",
   );
+  const [docsLocale, setDocsLocale] = useState<LandingLocale>("en");
+  const [languageOpen, setLanguageOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [previewNoticeOpen, setPreviewNoticeOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
@@ -375,6 +377,7 @@ export function LandingPage({
   const [isCreating, setIsCreating] = useState(false);
   const [composerError, setComposerError] = useState<string | null>(null);
   const notificationRef = useRef<HTMLDivElement>(null);
+  const languageRef = useRef<HTMLDivElement>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -390,10 +393,21 @@ export function LandingPage({
     ) {
       setActiveView(hash);
     }
+    try {
+      const savedDocsLocale = window.localStorage.getItem("videoagent-docs-locale");
+      if (savedDocsLocale === "en" || savedDocsLocale === "zh-CN") {
+        setDocsLocale(savedDocsLocale);
+      }
+    } catch {
+      // Storage may be unavailable.
+    }
 
     function closeMenus(event: PointerEvent) {
       if (!notificationRef.current?.contains(event.target as Node)) {
         setNotificationsOpen(false);
+      }
+      if (!languageRef.current?.contains(event.target as Node)) {
+        setLanguageOpen(false);
       }
     }
 
@@ -541,6 +555,21 @@ export function LandingPage({
     window.history.replaceState(null, "", `#${view}`);
   }
 
+  function selectDocsLocale(nextLocale: LandingLocale) {
+    setDocsLocale(nextLocale);
+    setLanguageOpen(false);
+    try {
+      window.localStorage.setItem("videoagent-docs-locale", nextLocale);
+    } catch {
+      // Storage may be unavailable.
+    }
+  }
+
+  const activeDocumentSource =
+    docsLocale === "zh-CN"
+      ? activeDocument.replace(/\.html$/, ".zh.html")
+      : activeDocument;
+
   return (
     <main className="va-landing">
       <div className="page-grain" aria-hidden="true" />
@@ -621,6 +650,41 @@ export function LandingPage({
             </button>
             <div className="notification-panel" hidden={!notificationsOpen}>
               <p>{content.nav.emptyNotifications}</p>
+            </div>
+          </div>
+          <div className="language-switcher" ref={languageRef}>
+            <button
+              aria-expanded={languageOpen}
+              aria-label={content.nav.language}
+              className="language-button"
+              onClick={() => setLanguageOpen((current) => !current)}
+              title={`${content.nav.language}: ${docsLocale === "zh-CN" ? "中文" : "English"}`}
+              type="button"
+            >
+              <Globe2 aria-hidden="true" />
+            </button>
+            <div
+              aria-label={content.nav.language}
+              className="language-options"
+              hidden={!languageOpen}
+              role="menu"
+            >
+              <button
+                aria-checked={docsLocale === "en"}
+                onClick={() => selectDocsLocale("en")}
+                role="menuitemradio"
+                type="button"
+              >
+                English
+              </button>
+              <button
+                aria-checked={docsLocale === "zh-CN"}
+                onClick={() => selectDocsLocale("zh-CN")}
+                role="menuitemradio"
+                type="button"
+              >
+                中文
+              </button>
             </div>
           </div>
         </div>
@@ -799,18 +863,32 @@ export function LandingPage({
 
       {activeView === "skills" ? (
       <section className="section feature-section" id="skills">
-        <div className="feature-grid">
-          {content.skills.items.map((skill) => (
-            <button
-              className="feature-card"
-              key={skill.title}
-              onClick={() => usePrompt(skill.prompt)}
-              type="button"
-            >
-              <span>{skill.title}</span>
-              <p>{skill.body}</p>
-              <i aria-hidden="true">↗</i>
-            </button>
+        <div className="skill-groups">
+          {[content.skills.atomic, content.skills.workflows].map((group) => (
+            <section className="skill-group" key={group.label}>
+              <header className="skill-group-heading">
+                <span>{group.label}</span>
+                <p>{group.hint}</p>
+              </header>
+              <div className="feature-grid">
+                {group.items.map((skill) => (
+                  <button
+                    className="feature-card skill-card"
+                    key={skill.code}
+                    onClick={() => usePrompt(skill.prompt)}
+                    type="button"
+                  >
+                    <span className="skill-code">{skill.code}</span>
+                    <span className="skill-card-copy">
+                      <strong>{skill.title}</strong>
+                      <p>{skill.body}</p>
+                      {"flow" in skill ? <small>{skill.flow}</small> : null}
+                    </span>
+                    <i aria-hidden="true">↗</i>
+                  </button>
+                ))}
+              </div>
+            </section>
           ))}
         </div>
         <div className="review-skill">
@@ -831,27 +909,35 @@ export function LandingPage({
 
       {activeView === "assets" ? (
       <section className="section feature-section" id="assets">
-        <div className="feature-grid">
-          {content.assets.items.map((asset) =>
-            mode === "app" ? (
-              <a className="feature-card" href={`/${locale}${asset.href}`} key={asset.title}>
-                <span>{asset.title}</span>
-                <p>{asset.body}</p>
-                <i aria-hidden="true">↗</i>
-              </a>
-            ) : (
-              <button
-                className="feature-card"
-                key={asset.title}
-                onClick={() => setPreviewNoticeOpen(true)}
-                type="button"
-              >
-                <span>{asset.title}</span>
-                <p>{asset.body}</p>
-                <i aria-hidden="true">↗</i>
-              </button>
-            ),
-          )}
+        <div className="asset-grid">
+          {content.assets.items.map((asset) => (
+            <article className="asset-card" key={asset.title}>
+              <div className="asset-media">
+                <video
+                  aria-label={`${asset.title} preview`}
+                  controls
+                  loop
+                  muted
+                  playsInline
+                  poster={videos[asset.videoIndex].poster}
+                  preload="metadata"
+                >
+                  <source src={videos[asset.videoIndex].src} type="video/mp4" />
+                </video>
+              </div>
+              <div className="asset-info">
+                <div className="asset-title-row">
+                  <h2>{asset.title}</h2>
+                  <span>{asset.status}</span>
+                </div>
+                <p>{asset.summary}</p>
+                <div className="asset-meta">
+                  <span>{asset.updatedAt}</span>
+                  <span>{asset.duration}</span>
+                </div>
+              </div>
+            </article>
+          ))}
         </div>
       </section>
       ) : null}
@@ -864,7 +950,7 @@ export function LandingPage({
             onClick={openPublisher}
             type="button"
           >
-            <Plus aria-hidden="true" />
+            <Play aria-hidden="true" className="community-publish-icon" />
             <span>{content.hots.publish}</span>
           </button>
           {[...publishedHots, ...content.hots.items].map((item, index) => (
@@ -874,7 +960,17 @@ export function LandingPage({
               onClick={() => usePrompt(item.prompt)}
               type="button"
             >
-              <img alt="" src={videos[index % videos.length].poster} />
+              <video
+                aria-hidden="true"
+                autoPlay
+                loop
+                muted
+                playsInline
+                poster={videos[index % videos.length].poster}
+                preload="auto"
+              >
+                <source src={videos[index % videos.length].src} type="video/mp4" />
+              </video>
               <span className="community-card-content">
                 <span className="community-card-title">{item.title}</span>
                 <span className="community-card-meta">
@@ -915,8 +1011,8 @@ export function LandingPage({
           </div>
           <div className="docs-frame">
             <iframe
-              key={activeDocument}
-              src={`${docsBase}${activeDocument}?v=${DOCS_ASSET_VERSION}`}
+              key={`${activeDocument}-${docsLocale}`}
+              src={`${docsBase}${activeDocumentSource}?v=${DOCS_ASSET_VERSION}`}
               title={content.documents.find((document) => document.path === activeDocument)?.label}
             />
           </div>
