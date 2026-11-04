@@ -218,8 +218,8 @@ Chinese: product-requirements.zh.html
 
 The same pattern applies to all six documents in this order: PRD, Design,
 Interface, Impl, Test, and Ops. Docs search uses `docs-search.json` across both
-languages. The language selection is saved in `localStorage` under
-`videoagent-docs-locale`.
+languages. Docs language is derived from the current application language
+state and does not use an independent Docs-only cache.
 
 ## 10. Data Model
 

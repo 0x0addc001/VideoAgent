@@ -384,7 +384,7 @@ export function LandingPage({
   const [activeDocument, setActiveDocument] = useState<string>(
     content.documents[0]?.path ?? "",
   );
-  const [docsLocale, setDocsLocale] = useState<LandingLocale>("en");
+  const [docsLocale, setDocsLocale] = useState<LandingLocale>(locale);
   const [languageOpen, setLanguageOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [previewNoticeOpen, setPreviewNoticeOpen] = useState(false);
@@ -431,6 +431,7 @@ export function LandingPage({
   useEffect(() => {
     document.documentElement.lang = locale;
     document.title = content.documentTitle;
+    setDocsLocale(locale);
     const hash = window.location.hash.slice(1);
     if (
       hash === "agents" ||
@@ -441,15 +442,6 @@ export function LandingPage({
     ) {
       setActiveView(hash);
     }
-    try {
-      const savedDocsLocale = window.localStorage.getItem("videoagent-docs-locale");
-      if (savedDocsLocale === "en" || savedDocsLocale === "zh-CN") {
-        setDocsLocale(savedDocsLocale);
-      }
-    } catch {
-      // Storage may be unavailable.
-    }
-
     function closeMenus(event: PointerEvent) {
       if (!notificationRef.current?.contains(event.target as Node)) {
         setNotificationsOpen(false);
@@ -690,11 +682,6 @@ export function LandingPage({
     setDocsLocale(nextLocale);
     setDocsQuery("");
     setLanguageOpen(false);
-    try {
-      window.localStorage.setItem("videoagent-docs-locale", nextLocale);
-    } catch {
-      // Storage may be unavailable.
-    }
   }
 
   async function signOut() {

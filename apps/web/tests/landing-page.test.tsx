@@ -167,6 +167,9 @@ describe("LandingPage", () => {
     expect(
       container.querySelector(".community-publish-card .community-publish-icon"),
     ).toBeInTheDocument();
+    expect(container.querySelector(".community-publish-card")).toHaveTextContent(
+      "Publish video",
+    );
     expect(container.querySelector("#hots .community-action")).toHaveTextContent(
       "Make this",
     );

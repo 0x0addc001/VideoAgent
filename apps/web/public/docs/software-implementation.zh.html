@@ -428,6 +428,7 @@ zh-CN</code></pre>
 <li>两种语言的 Key 仍需保持一致，以便后续恢复中文版。</li>
 <li>后端返回稳定错误码，不在数据库保存前端展示文案。</li>
 <li>新增内部翻译 Key 时同时维护中英文资源；公开 UI 当前仍只开放英文。</li>
+<li>Docs 语言直接跟随当前应用语言状态，不使用独立的文档语言缓存。</li>
 <li>Agent 输出语言来自 <code>User.locale</code>。</li>
 <li>视频模型 Prompt 使用 <code>prompt_en</code>，中文解释保存在 <code>prompt_zh</code>。</li>
 </ul>

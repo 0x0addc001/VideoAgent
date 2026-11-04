@@ -302,7 +302,7 @@ video_agent/review</code></pre>
 <p>The product UI remains English. The globe control changes only Docs language.</p>
 <pre><code class="language-text">English: product-requirements.html
 Chinese: product-requirements.zh.html</code></pre>
-<p>The same pattern applies to all six documents in this order: PRD, Design, Interface, Impl, Test, and Ops. Docs search uses <code>docs-search.json</code> across both languages. The language selection is saved in <code>localStorage</code> under <code>videoagent-docs-locale</code>.</p>
+<p>The same pattern applies to all six documents in this order: PRD, Design, Interface, Impl, Test, and Ops. Docs search uses <code>docs-search.json</code> across both languages. Docs language is derived from the current application language state and does not use an independent Docs-only cache.</p>
 <h2 id="10-data-model">10. Data Model</h2>
 <div class="table-wrap"><table><thead><tr>
 <th>Table</th>
