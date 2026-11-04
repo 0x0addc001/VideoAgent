@@ -545,6 +545,21 @@ pippit-tool-cli query-result</code></pre>
 <td>对话消息</td>
 </tr>
 <tr>
+<td><code>workspace_folders</code></td>
+<td><code>id</code>, <code>owner_id</code>, <code>name</code></td>
+<td>历史对话的项目目录</td>
+</tr>
+<tr>
+<td><code>workspace_folder_items</code></td>
+<td><code>folder_id</code>, <code>project_id</code></td>
+<td>对话与项目目录的收纳关系</td>
+</tr>
+<tr>
+<td><code>project_workflows</code></td>
+<td><code>project_id</code>, <code>stage</code>, <code>status</code></td>
+<td>整体设定、大纲、剧本与生成审批状态</td>
+</tr>
+<tr>
 <td><code>storyboards</code></td>
 <td><code>id</code>, <code>project_id</code>, <code>version</code></td>
 <td>每个项目唯一的当前故事板</td>
@@ -707,6 +722,31 @@ cancelled</code></pre>
 </tr>
 <tr>
 <td>GET</td>
+<td><code>/workspace</code></td>
+<td>项目目录和最近对话</td>
+</tr>
+<tr>
+<td>POST/PATCH/DELETE</td>
+<td><code>/workspace/folders</code></td>
+<td>创建、重命名和删除项目目录</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td><code>/workspace/threads/{id}/folder</code></td>
+<td>收纳或移出历史对话</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/projects/{id}/workflow</code></td>
+<td>读取逐层审批状态</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/projects/{id}/workflow/decision</code></td>
+<td>批准、调整或自定义修改当前阶段</td>
+</tr>
+<tr>
+<td>GET</td>
 <td><code>/projects/{id}/storyboard</code></td>
 <td>获取故事板</td>
 </tr>
@@ -842,16 +882,20 @@ cancelled</code></pre>
 <li><code>Hots</code>：可搜索社区瀑布流，视频自动播放，展示标题、作者、喜欢数，并支持发布。</li>
 <li><code>Assets</code>：通过 Video 与 Skill 两个内部分页切换，支持搜索；Video 卡片悬浮静音播放，Skill 卡片不显示封面；卡片只展示权限和 <code>yyyy-mm-dd</code> 编辑时间。</li>
 <li><code>Docs</code>：按 PRD、Playbook、Arch、API、Dev、Test、Ops、FAQ、TODO 展示中英文文档，支持全文搜索。</li>
-<li>项目工作区：对话、Canvas、镜头检查器、生成和审核弹窗。</li>
+<li>项目工作区：可压缩历史导航、当前对话资产树、中央资产画布和右侧审批式 Agent 对话。</li>
 <li>品牌与浏览器标签页图标统一使用蓝色播放键；激活导航图标采用填充/线框反转。</li>
 <li>管理后台使用独立控制台布局，与用户创作界面隔离。</li>
 </ul>
 <h3 id="15-2-项目工作区">15.2 项目工作区</h3>
-<p>桌面端采用三栏：</p>
-<pre><code class="language-text">Agent 对话 | 视频预览与故事板 | 镜头检查器</code></pre>
+<p>桌面端采用四级工作区：</p>
+<pre><code class="language-text">历史导航（Projects / Recents）
+  → 当前对话资产树
+  → 选中的文档、图片、视频或镜头画布
+  → 带审批选项的 Agent 对话</code></pre>
 <p>移动端采用标签页：</p>
-<pre><code class="language-text">Agent | Canvas | Inspector</code></pre>
-<p>镜头检查器包含：</p>
+<pre><code class="language-text">History | Assets | Canvas | Agent</code></pre>
+<p>历史导航支持压缩，Recent 对话可拖入项目目录，也可拖回全部对话列表。Agent 按“整体设定 → 分集/分镜大纲 → 逐场剧本 → 可生成”推进；每一步都必须由用户 批准，调整与自定义意见不会跳过当前阶段。</p>
+<p>镜头画布包含：</p>
 <ul>
 <li>Prompt 中英文版本。</li>
 <li>生成模式。</li>

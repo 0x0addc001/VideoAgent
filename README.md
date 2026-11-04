@@ -16,6 +16,10 @@ Celery, or media processing.
 - Registration, login, logout, and server-side sessions.
 - User-scoped project CRUD foundation.
 - Multi-shot storyboards with versioned replacement.
+- A collapsible Projects/Recents history with drag-to-file conversation
+  organization.
+- Staged VideoAgent approvals for overall direction, episode and shot outline,
+  scene script, and generation readiness.
 - LangGraph agent orchestration.
 - Deterministic local planner and configurable OpenAI-compatible planner.
 - Credit estimation and explicit generation approval.
@@ -27,7 +31,8 @@ Celery, or media processing.
   API responses, and the repository.
 - Durable generation-job records with idempotency and API-driven status refresh.
 - Celery polling worker for long-running Pippit jobs.
-- Responsive landing page, authentication pages, project dashboard, and workspace.
+- Responsive landing page, authentication pages, and a history-first project
+  workspace with an asset tree, canvas, and approval-driven Agent chat.
 - Environment-allowlisted administration console for users, credits, jobs,
   invites, runtime switches, Provider state, and audit logs.
 

@@ -218,6 +218,10 @@ status
 <td>Message history and planning</td>
 </tr>
 <tr>
+<td><code>api.workspace</code></td>
+<td>Conversation history, project folders, filing, and staged approval</td>
+</tr>
+<tr>
 <td><code>api.generation</code></td>
 <td>Estimate, submit, job status</td>
 </tr>
@@ -252,6 +256,10 @@ status
 <tr>
 <td><code>services.credits</code></td>
 <td>Credit accounts, reservations, and refunds</td>
+</tr>
+<tr>
+<td><code>services.workflow</code></td>
+<td>Concept, outline, script, and ready state transitions</td>
 </tr>
 <tr>
 <td><code>providers.pippit</code></td>
@@ -297,7 +305,11 @@ status
 </tr>
 <tr>
 <td><code>project-workspace.tsx</code></td>
-<td>Conversation, canvas, inspector, generation, review</td>
+<td>History navigation, asset tree, canvas, approval-driven Agent chat, generation, and review</td>
+</tr>
+<tr>
+<td><code>lib/api.ts</code></td>
+<td>Host-aware API URL resolution for localhost and 127.0.0.1 development</td>
 </tr>
 <tr>
 <td><code>scripts/build_pages.py</code></td>
@@ -368,6 +380,18 @@ Chinese: product-requirements.zh.html</code></pre>
 <tr>
 <td><code>messages</code></td>
 <td>User/assistant content</td>
+</tr>
+<tr>
+<td><code>workspace_folders</code></td>
+<td>Project folders for conversation organization</td>
+</tr>
+<tr>
+<td><code>workspace_folder_items</code></td>
+<td>One-to-one conversation filing</td>
+</tr>
+<tr>
+<td><code>project_workflows</code></td>
+<td>Concept, outline, script, and generation approval state</td>
 </tr>
 <tr>
 <td><code>generation_jobs</code></td>
@@ -446,6 +470,26 @@ Chinese: product-requirements.zh.html</code></pre>
 <tr>
 <td><code>GET/POST</code></td>
 <td><code>/projects/{id}/messages</code></td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/workspace</code></td>
+</tr>
+<tr>
+<td><code>POST/PATCH/DELETE</code></td>
+<td><code>/workspace/folders</code></td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/workspace/threads/{id}/folder</code></td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/projects/{id}/workflow</code></td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/projects/{id}/workflow/decision</code></td>
 </tr>
 <tr>
 <td><code>GET/PUT</code></td>
@@ -592,7 +636,7 @@ pnpm --dir apps/web typecheck
 pnpm --dir apps/web build
 pnpm test:e2e
 python scripts\build_pages.py</code></pre>
-<p>Backend coverage currently consists of 54 tests, frontend coverage consists of 25 Vitest tests, and Playwright contains five no-fee browser flows. Playwright uses the Mock Provider for generation and therefore never consumes real Provider credits.</p></article>
+<p>Backend coverage currently consists of 56 tests, frontend coverage consists of 26 Vitest tests, and Playwright contains five no-fee browser flows. Playwright uses the Mock Provider for generation and therefore never consumes real Provider credits.</p></article>
     </main>
     <script src="../docs.js?v=29"></script>
   </body>

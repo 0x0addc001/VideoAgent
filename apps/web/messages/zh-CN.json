@@ -98,6 +98,9 @@
     "uploadReference": "上传参考素材",
     "uploading": "正在上传……",
     "uploadError": "参考素材上传失败。",
+    "folderError": "项目目录更新失败。",
+    "deleteFolderConfirm": "删除这个项目目录？对话不会被删除。",
+    "decisionError": "Agent 未能完成这一步，请重试。",
     "close": "关闭"
   },
   "common": {

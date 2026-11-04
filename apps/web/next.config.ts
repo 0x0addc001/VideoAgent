@@ -8,6 +8,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   agentRules: false,
   devIndicators: false,
+  allowedDevOrigins: ["localhost", "127.0.0.1"],
   transpilePackages: ["@videoagent/landing"],
 };
 

@@ -329,6 +329,9 @@ CLI 负责国内站 OAuth、MCP 传输和工具参数。Provider 适配器将 Kl
 | `projects` | `id`, `owner_id`, `title`, `state`, `brief` | 视频项目 |
 | `conversations` | `id`, `project_id` | 项目对话 |
 | `messages` | `id`, `role`, `content`, `metadata` | 对话消息 |
+| `workspace_folders` | `id`, `owner_id`, `name` | 历史对话的项目目录 |
+| `workspace_folder_items` | `folder_id`, `project_id` | 对话与项目目录的收纳关系 |
+| `project_workflows` | `project_id`, `stage`, `status` | 整体设定、大纲、剧本与生成审批状态 |
 | `storyboards` | `id`, `project_id`, `version` | 每个项目唯一的当前故事板 |
 | `shots` | `id`, `storyboard_id`, `index`, `prompt_en`, `prompt_zh`, `status` | 镜头定义 |
 | `provider_connections` | `id`, `user_id`, `provider`, `encrypted_tokens` | Provider 授权信息 |
@@ -424,6 +427,11 @@ cancelled
 | GET/POST | `/projects` | 项目列表和创建 |
 | GET/PATCH/DELETE | `/projects/{id}` | 读取、重命名和归档项目 |
 | GET/POST | `/projects/{id}/messages` | 读取历史或发送 Agent 消息 |
+| GET | `/workspace` | 项目目录和最近对话 |
+| POST/PATCH/DELETE | `/workspace/folders` | 创建、重命名和删除项目目录 |
+| PUT | `/workspace/threads/{id}/folder` | 收纳或移出历史对话 |
+| GET | `/projects/{id}/workflow` | 读取逐层审批状态 |
+| POST | `/projects/{id}/workflow/decision` | 批准、调整或自定义修改当前阶段 |
 | GET | `/projects/{id}/storyboard` | 获取故事板 |
 | PUT | `/projects/{id}/storyboard` | 整体替换故事板 |
 | PATCH | `/projects/{id}/storyboard/order` | 调整镜头顺序并保留 Shot ID |
@@ -462,25 +470,32 @@ cancelled
 - `Hots`：可搜索社区瀑布流，视频自动播放，展示标题、作者、喜欢数，并支持发布。
 - `Assets`：通过 Video 与 Skill 两个内部分页切换，支持搜索；Video 卡片悬浮静音播放，Skill 卡片不显示封面；卡片只展示权限和 `yyyy-mm-dd` 编辑时间。
 - `Docs`：按 PRD、Playbook、Arch、API、Dev、Test、Ops、FAQ、TODO 展示中英文文档，支持全文搜索。
-- 项目工作区：对话、Canvas、镜头检查器、生成和审核弹窗。
+- 项目工作区：可压缩历史导航、当前对话资产树、中央资产画布和右侧审批式 Agent 对话。
 - 品牌与浏览器标签页图标统一使用蓝色播放键；激活导航图标采用填充/线框反转。
 - 管理后台使用独立控制台布局，与用户创作界面隔离。
 
 ### 15.2 项目工作区
 
-桌面端采用三栏：
+桌面端采用四级工作区：
 
 ```text
-Agent 对话 | 视频预览与故事板 | 镜头检查器
+历史导航（Projects / Recents）
+  → 当前对话资产树
+  → 选中的文档、图片、视频或镜头画布
+  → 带审批选项的 Agent 对话
 ```
 
 移动端采用标签页：
 
 ```text
-Agent | Canvas | Inspector
+History | Assets | Canvas | Agent
 ```
 
-镜头检查器包含：
+历史导航支持压缩，Recent 对话可拖入项目目录，也可拖回全部对话列表。Agent
+按“整体设定 → 分集/分镜大纲 → 逐场剧本 → 可生成”推进；每一步都必须由用户
+批准，调整与自定义意见不会跳过当前阶段。
+
+镜头画布包含：
 
 - Prompt 中英文版本。
 - 生成模式。

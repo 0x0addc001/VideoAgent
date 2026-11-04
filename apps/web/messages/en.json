@@ -98,6 +98,9 @@
     "uploadReference": "Upload reference",
     "uploading": "Uploading...",
     "uploadError": "The reference could not be uploaded.",
+    "folderError": "The project folder could not be updated.",
+    "deleteFolderConfirm": "Delete this project folder? Conversations will not be deleted.",
+    "decisionError": "The agent could not complete this step. Try again.",
     "close": "Close"
   },
   "common": {

@@ -1,4 +1,4 @@
-from typing import Annotated, Literal
+from typing import Annotated, Literal, cast
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -15,11 +15,14 @@ from videoagent.schemas import (
     MessageList,
     MessageRead,
     StoryboardRead,
+    WorkflowStage,
+    WorkflowStateRead,
 )
 from videoagent.services.storyboards import (
     owned_project_or_404,
     replace_storyboard,
 )
+from videoagent.services.workflow import get_or_create_workflow
 
 router = APIRouter(prefix="/projects/{project_id}/messages", tags=["agent"])
 
@@ -66,6 +69,7 @@ async def create_agent_message(
 ) -> AgentTurnResponse:
     project = await owned_project_or_404(session, project_id, user.id)
     conversation = await get_conversation(session, project.id)
+    workflow = await get_or_create_workflow(session, project_id=project.id)
 
     user_message = Message(
         conversation_id=conversation.id,
@@ -81,6 +85,7 @@ async def create_agent_message(
         project_title=project.title,
         project_brief=project.brief,
         user_message=payload.content,
+        workflow_stage=cast(WorkflowStage, workflow.stage),
     )
     storyboard = await replace_storyboard(
         session,
@@ -105,6 +110,7 @@ async def create_agent_message(
         user_message=MessageRead.model_validate(user_message),
         assistant_message=MessageRead.model_validate(assistant_message),
         storyboard=StoryboardRead.model_validate(storyboard),
+        workflow=WorkflowStateRead.model_validate(workflow),
     )
 
 

@@ -296,6 +296,10 @@ https://example.com/api/   → FastAPI</code></pre>
 <td>对话和消息持久化</td>
 </tr>
 <tr>
+<td><code>api/workspace.py</code></td>
+<td>历史对话、项目目录、拖拽归档和逐层审批</td>
+</tr>
+<tr>
 <td><code>api/generation.py</code></td>
 <td>积分估算、生成提交和任务查询</td>
 </tr>
@@ -326,6 +330,10 @@ https://example.com/api/   → FastAPI</code></pre>
 <tr>
 <td><code>services/storyboards.py</code></td>
 <td>故事板领域操作</td>
+</tr>
+<tr>
+<td><code>services/workflow.py</code></td>
+<td>Concept、Outline、Script、Ready 状态迁移</td>
 </tr>
 <tr>
 <td><code>services/generation_jobs.py</code></td>
@@ -426,6 +434,10 @@ https://example.com/api/   → FastAPI</code></pre>
 <td>自动开始首轮 Agent 对话、故事板、镜头设置和生成</td>
 </tr>
 <tr>
+<td><code>lib/api.ts</code></td>
+<td>根据浏览器 Host 解析 API 地址，避免 localhost/127.0.0.1 跨站校验失败</td>
+</tr>
+<tr>
 <td><code>scripts/build_pages.py</code></td>
 <td>生成文档 HTML、目录与静态资源</td>
 </tr>
@@ -490,6 +502,18 @@ zh-CN</code></pre>
 <td>User/Assistant 消息</td>
 </tr>
 <tr>
+<td><code>workspace_folders</code></td>
+<td>历史对话的项目目录</td>
+</tr>
+<tr>
+<td><code>workspace_folder_items</code></td>
+<td>对话与项目目录的收纳关系</td>
+</tr>
+<tr>
+<td><code>project_workflows</code></td>
+<td>整体设定、分集/分镜大纲、逐场剧本与生成审批状态</td>
+</tr>
+<tr>
 <td><code>generation_jobs</code></td>
 <td>Provider 任务、幂等键和结果</td>
 </tr>
@@ -536,6 +560,7 @@ zh-CN</code></pre>
 <li><code>Project.owner_id</code> 决定资源权限。</li>
 <li><code>Storyboard.project_id</code> 唯一。</li>
 <li><code>Conversation.project_id</code> 唯一。</li>
+<li><code>WorkspaceFolderItem.project_id</code> 唯一，一个对话只能收纳在一个项目目录中。</li>
 <li><code>(Shot.storyboard_id, Shot.index)</code> 唯一。</li>
 <li><code>(GenerationJob.shot_id, GenerationJob.idempotency_key)</code> 唯一。</li>
 <li><code>(ProviderConnection.user_id, ProviderConnection.provider)</code> 唯一。</li>
@@ -652,6 +677,31 @@ task reference    → query-result   → JobStatus + result URL</code></pre>
 <td>POST</td>
 <td><code>/projects/{id}/messages</code></td>
 <td>Agent 生成故事板并保存对话</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/workspace</code></td>
+<td>项目目录与全部历史对话</td>
+</tr>
+<tr>
+<td>POST/PATCH/DELETE</td>
+<td><code>/workspace/folders</code></td>
+<td>管理项目目录</td>
+</tr>
+<tr>
+<td>PUT</td>
+<td><code>/workspace/threads/{id}/folder</code></td>
+<td>收纳或移出历史对话</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/projects/{id}/workflow</code></td>
+<td>当前逐层审批状态</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/projects/{id}/workflow/decision</code></td>
+<td>批准、调整或自定义修改</td>
 </tr>
 <tr>
 <td>GET</td>
@@ -1020,13 +1070,13 @@ pnpm --dir apps/web typecheck
 pnpm --dir apps/web build</code></pre>
 <p>测试组成：</p>
 <ul>
-<li>后端 54 个测试。</li>
-<li>前端 25 个测试。</li>
+<li>后端 56 个测试。</li>
+<li>前端 26 个测试。</li>
 <li>Playwright 5 个端到端测试。</li>
 <li>后端测试使用临时 SQLite 文件。</li>
 <li>Pippit 测试使用本地 Fake CLI，不访问真实生成网络。</li>
 <li>Kling Provider 测试使用 Fake MCP client，不触发付费生成。</li>
-<li>前端测试覆盖共享首页、导航、文档加载、自定义下拉、Hots 发布、创作提交和轮播行为。</li>
+<li>前端测试覆盖共享首页、导航、文档加载、自定义下拉、Hots 发布、创作提交、历史目录和逐层审批。</li>
 <li>Playwright 使用 Mock Provider 验证提交、轮询/落地、导出、下载和分享，不访问付费 Provider。</li>
 <li>管理测试覆盖白名单权限、积分调整、账号停用、邀请码、注册关闭和生成开关。</li>
 <li>普通 CI 不执行付费生成。</li>

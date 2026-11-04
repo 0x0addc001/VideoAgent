@@ -369,6 +369,56 @@ class Message(Base):
     conversation: Mapped[Conversation] = relationship(back_populates="messages")
 
 
+class WorkspaceFolder(Base):
+    __tablename__ = "workspace_folders"
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    owner_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+    )
+    name: Mapped[str] = mapped_column(String(120))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+
+class WorkspaceFolderItem(Base):
+    __tablename__ = "workspace_folder_items"
+
+    folder_id: Mapped[UUID] = mapped_column(
+        ForeignKey("workspace_folders.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    project_id: Mapped[UUID] = mapped_column(
+        ForeignKey("projects.id", ondelete="CASCADE"),
+        primary_key=True,
+        unique=True,
+        index=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class ProjectWorkflow(Base):
+    __tablename__ = "project_workflows"
+
+    project_id: Mapped[UUID] = mapped_column(
+        ForeignKey("projects.id", ondelete="CASCADE"),
+        primary_key=True,
+    )
+    stage: Mapped[str] = mapped_column(String(32), default="concept")
+    status: Mapped[str] = mapped_column(String(32), default="awaiting_approval")
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+
 class ProviderConnection(Base):
     __tablename__ = "provider_connections"
     __table_args__ = (UniqueConstraint("user_id", "provider"),)

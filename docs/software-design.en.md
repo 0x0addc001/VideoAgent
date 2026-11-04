@@ -242,6 +242,9 @@ sound cue, or proof first.
 | `shots` | Ordered prompts, duration, frame, mode, and status |
 | `conversations` | One conversation per project |
 | `messages` | User and assistant messages |
+| `workspace_folders` | Project folders for conversation organization |
+| `workspace_folder_items` | Conversation-to-folder filing |
+| `project_workflows` | Concept, outline, script, and generation approval state |
 | `generation_jobs` | Provider task, idempotency key, status, result |
 | `provider_connections` | Provider authorization metadata |
 | `oauth_flows` | OAuth transaction state |
@@ -265,6 +268,8 @@ Base path: `/api/v1`
 | Storyboards | `GET` and `PUT /projects/{id}/storyboard` |
 | Storyboard order | `PATCH /projects/{id}/storyboard/order` |
 | Agent | Get messages, send a message |
+| Workspace | Folders, recent conversations, and drag-to-file conversation organization |
+| Workflow | Read and decide concept, outline, and script approval stages |
 | Evaluation | `POST /projects/{id}/evaluate` |
 | Generation | Estimate, submit, job status |
 | Providers | Pippit status and credits |
@@ -295,6 +300,15 @@ The shared Landing UI owns:
 - An isolated `/admin` control room for internal operations.
 - Reference uploads, delivery downloads, cover preview, and share-link creation
   in the project workspace.
+- A collapsible conversation history with Projects and Recents, plus drag-to-file
+  organization.
+- A three-part canvas: current-conversation asset tree, selected asset/document
+  canvas, and approval-driven VideoAgent conversation.
+
+The project workspace progresses through overall direction, episode and shot
+outline, scene script, and generation-ready states. Each transition requires an
+explicit user decision. Refinement and custom instructions remain on the current
+stage.
 
 ## 13. Documentation Language
 

@@ -365,6 +365,18 @@ query-result</code></pre>
 <td>User and assistant messages</td>
 </tr>
 <tr>
+<td><code>workspace_folders</code></td>
+<td>Project folders for conversation organization</td>
+</tr>
+<tr>
+<td><code>workspace_folder_items</code></td>
+<td>Conversation-to-folder filing</td>
+</tr>
+<tr>
+<td><code>project_workflows</code></td>
+<td>Concept, outline, script, and generation approval state</td>
+</tr>
+<tr>
 <td><code>generation_jobs</code></td>
 <td>Provider task, idempotency key, status, result</td>
 </tr>
@@ -436,6 +448,14 @@ query-result</code></pre>
 <td>Get messages, send a message</td>
 </tr>
 <tr>
+<td>Workspace</td>
+<td>Folders, recent conversations, and drag-to-file conversation organization</td>
+</tr>
+<tr>
+<td>Workflow</td>
+<td>Read and decide concept, outline, and script approval stages</td>
+</tr>
+<tr>
 <td>Evaluation</td>
 <td><code>POST /projects/{id}/evaluate</code></td>
 </tr>
@@ -484,7 +504,12 @@ query-result</code></pre>
 <li>An isolated <code>/admin</code> control room for internal operations.</li>
 <li>Reference uploads, delivery downloads, cover preview, and share-link creation</li>
 <p>in the project workspace.</p>
+<li>A collapsible conversation history with Projects and Recents, plus drag-to-file</li>
+<p>organization.</p>
+<li>A three-part canvas: current-conversation asset tree, selected asset/document</li>
+<p>canvas, and approval-driven VideoAgent conversation.</p>
 </ul>
+<p>The project workspace progresses through overall direction, episode and shot outline, scene script, and generation-ready states. Each transition requires an explicit user decision. Refinement and custom instructions remain on the current stage.</p>
 <h2 id="13-documentation-language">13. Documentation Language</h2>
 <ul>
 <li>The globe button beside notifications controls documentation language.</li>

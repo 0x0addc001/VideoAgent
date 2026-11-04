@@ -29,7 +29,8 @@ async def test_local_agent_turns_user_brief_into_bilingual_storyboard(client):
     body = response.json()
     assert body["user_message"]["role"] == "user"
     assert body["assistant_message"]["role"] == "assistant"
-    assert "故事板" in body["assistant_message"]["content"]
+    assert "整体设定" in body["assistant_message"]["content"]
+    assert body["workflow"]["stage"] == "concept"
     assert len(body["storyboard"]["shots"]) == 3
     assert all(shot["prompt_en"] for shot in body["storyboard"]["shots"])
     assert all(shot["prompt_zh"] for shot in body["storyboard"]["shots"])

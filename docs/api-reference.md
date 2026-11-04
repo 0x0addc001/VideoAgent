@@ -108,6 +108,11 @@ user. Another user's project returns `404`.
 | `GET` | `/projects/{project_id}` | Read a project |
 | `PATCH` | `/projects/{project_id}` | Rename a project |
 | `DELETE` | `/projects/{project_id}` | Archive a project |
+| `GET` | `/workspace` | List project folders and all recent conversations |
+| `POST` | `/workspace/folders` | Create a project folder |
+| `PATCH` | `/workspace/folders/{folder_id}` | Rename a project folder |
+| `DELETE` | `/workspace/folders/{folder_id}` | Delete a folder without deleting conversations |
+| `PUT` | `/workspace/threads/{project_id}/folder` | File or unfile a conversation |
 
 Create request:
 
@@ -184,7 +189,30 @@ Shot IDs, generated assets, generation history, and project continuity.
 ```
 
 The response includes the user message, VideoAgent reply, and updated
-storyboard as JSON.
+storyboard as JSON. The response also includes the current approval stage.
+
+### Read Workflow
+
+`GET /projects/{project_id}/workflow`
+
+The workflow progresses through `concept`, `outline`, `script`, and `ready`.
+`concept` establishes the creative direction, `outline` defines episodes and
+shots, and `script` develops the scene-level production text. Generation is
+only enabled after the script is approved and the state becomes `ready`.
+
+### Submit Workflow Decision
+
+`POST /projects/{project_id}/workflow/decision`
+
+```json
+{
+  "choice": "approve",
+  "instruction": null
+}
+```
+
+`choice` is `approve`, `refine`, or `custom`. Refinements preserve the current
+stage. An approval advances one stage and creates the next refinement level.
 
 ## Generation
 

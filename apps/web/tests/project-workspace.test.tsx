@@ -51,6 +51,37 @@ describe("ProjectWorkspace", () => {
       if (url.endsWith("/projects/project-1/assets") && !init?.method) {
         return Promise.resolve(Response.json({ items: [] }));
       }
+      if (url.endsWith("/workspace") && !init?.method) {
+        return Promise.resolve(
+          Response.json({
+            folders: [],
+            recents: [
+              {
+                id: "project-1",
+                title: "Copenhagen morning",
+                brief: "A quiet Copenhagen morning told in one shot",
+                folder_id: null,
+                message_count: 2,
+                preview: "I shaped this into a first treatment.",
+                stage: "ready",
+                status: "approved",
+                created_at: "2026-11-03T00:00:00Z",
+                updated_at: "2026-11-03T00:00:00Z",
+              },
+            ],
+          }),
+        );
+      }
+      if (url.endsWith("/projects/project-1/workflow") && !init?.method) {
+        return Promise.resolve(
+          Response.json({
+            project_id: "project-1",
+            stage: "ready",
+            status: "approved",
+            updated_at: "2026-11-03T00:00:00Z",
+          }),
+        );
+      }
       if (url.endsWith("/projects/project-1/messages") && init?.method === "POST") {
         return Promise.resolve(
           Response.json({
@@ -94,6 +125,12 @@ describe("ProjectWorkspace", () => {
                   status: "draft",
                 },
               ],
+            },
+            workflow: {
+              project_id: "project-1",
+              stage: "ready",
+              status: "approved",
+              updated_at: "2026-11-03T00:00:01Z",
             },
           }),
         );
@@ -176,7 +213,7 @@ describe("ProjectWorkspace", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    const { container } = render(
+    render(
       <NextIntlClientProvider locale="en" messages={en}>
         <ProjectWorkspace projectId="project-1" />
       </NextIntlClientProvider>,
@@ -197,22 +234,11 @@ describe("ProjectWorkspace", () => {
       await screen.findByLabelText("I shaped this into a first treatment."),
     ).toBeVisible();
     expect(screen.getAllByText("A quiet Copenhagen morning")).not.toHaveLength(0);
-    expect(container.querySelector("h1")).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Assets" })).toHaveAttribute(
-      "href",
-      "/#assets",
-    );
-
-    vi.spyOn(window, "confirm").mockReturnValue(true);
-    fireEvent.click(
-      screen.getByRole("button", { name: "Generate current video" }),
-    );
     expect(
-      await screen.findAllByText(
-        "Generation started for: A quiet Copenhagen morning",
-      ),
+      screen.getAllByRole("heading", { name: "Copenhagen morning" }),
     ).not.toHaveLength(0);
-
+    expect(screen.getAllByText("Recents").length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole("button", { name: /Shot 01/ }));
     fireEvent.click(screen.getByRole("button", { name: "Move shot later" }));
     await waitFor(() =>
       expect(fetchMock).toHaveBeenCalledWith(
@@ -231,6 +257,119 @@ describe("ProjectWorkspace", () => {
     expect(screen.getByText("Consistency")).toBeVisible();
     expect(
       screen.getByText("Add subject, environment, and action details to prompts."),
+    ).toBeVisible();
+  });
+
+  it("shows approval options and advances only after the user approves", async () => {
+    window.history.replaceState({}, "", "/en/projects/project-approval");
+    const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith("/projects/project-approval") && !init?.method) {
+        return Promise.resolve(
+          Response.json({
+            id: "project-approval",
+            title: "Layered story",
+            brief: "A short branded drama",
+            state: "draft",
+            created_at: "2026-11-03T00:00:00Z",
+            updated_at: "2026-11-03T00:00:00Z",
+          }),
+        );
+      }
+      if (url.endsWith("/projects/project-approval/storyboard")) {
+        return Promise.resolve(
+          Response.json({
+            id: "storyboard-approval",
+            project_id: "project-approval",
+            version: 1,
+            shots: [],
+          }),
+        );
+      }
+      if (url.endsWith("/projects/project-approval/messages")) {
+        return Promise.resolve(
+          Response.json({
+            items: [
+              {
+                id: "assistant-approval",
+                role: "assistant",
+                content: "Review the overall creative direction.",
+                created_at: "2026-11-03T00:00:01Z",
+              },
+            ],
+          }),
+        );
+      }
+      if (url.endsWith("/projects/project-approval/assets")) {
+        return Promise.resolve(Response.json({ items: [] }));
+      }
+      if (url.endsWith("/workspace")) {
+        return Promise.resolve(Response.json({ folders: [], recents: [] }));
+      }
+      if (url.endsWith("/projects/project-approval/workflow") && !init?.method) {
+        return Promise.resolve(
+          Response.json({
+            project_id: "project-approval",
+            stage: "concept",
+            status: "awaiting_approval",
+            updated_at: "2026-11-03T00:00:00Z",
+          }),
+        );
+      }
+      if (url.endsWith("/workflow/decision") && init?.method === "POST") {
+        expect(init.body).toBe(JSON.stringify({ choice: "approve" }));
+        return Promise.resolve(
+          Response.json({
+            user_message: {
+              id: "approved-message",
+              role: "user",
+              content: "Approve concept",
+              created_at: "2026-11-03T00:00:02Z",
+            },
+            assistant_message: {
+              id: "outline-message",
+              role: "assistant",
+              content: "The outline is ready for review.",
+              created_at: "2026-11-03T00:00:03Z",
+            },
+            storyboard: {
+              id: "storyboard-approval",
+              project_id: "project-approval",
+              version: 2,
+              shots: [],
+            },
+            workflow: {
+              project_id: "project-approval",
+              stage: "outline",
+              status: "awaiting_approval",
+              updated_at: "2026-11-03T00:00:03Z",
+            },
+          }),
+        );
+      }
+      throw new Error(`Unexpected request: ${init?.method ?? "GET"} ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <NextIntlClientProvider locale="en" messages={en}>
+        <ProjectWorkspace projectId="project-approval" />
+      </NextIntlClientProvider>,
+    );
+
+    expect(
+      await screen.findByRole("button", { name: "Continue with this direction" }),
+    ).toBeVisible();
+    fireEvent.click(
+      screen.getByRole("button", { name: "Continue with this direction" }),
+    );
+
+    expect((await screen.findAllByText("Episode outline")).length).toBeGreaterThan(0);
+    expect(
+      screen.getByLabelText("The outline is ready for review."),
+    ).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "Custom instruction" }),
     ).toBeVisible();
   });
 });

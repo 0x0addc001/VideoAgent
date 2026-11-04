@@ -7,7 +7,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from videoagent.api.dependencies import get_current_user, get_session
 from videoagent.errors import AppError
-from videoagent.models import Project, ProjectState, User
+from videoagent.models import Project, ProjectState, ProjectWorkflow, User
 from videoagent.schemas import ProjectCreate, ProjectList, ProjectRead, ProjectUpdate
 
 router = APIRouter(prefix="/projects", tags=["projects"])
@@ -39,6 +39,14 @@ async def create_project(
         state=ProjectState.DRAFT.value,
     )
     session.add(project)
+    await session.flush()
+    session.add(
+        ProjectWorkflow(
+            project_id=project.id,
+            stage="concept",
+            status="awaiting_approval",
+        )
+    )
     await session.commit()
     await session.refresh(project)
     return ProjectRead.model_validate(project)

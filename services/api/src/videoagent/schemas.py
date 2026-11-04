@@ -176,6 +176,80 @@ class ProjectList(BaseModel):
     items: list[ProjectRead]
 
 
+WorkflowStage = Literal["concept", "outline", "script", "ready"]
+WorkflowStatus = Literal["awaiting_approval", "approved"]
+
+
+class WorkflowStateRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    project_id: UUID
+    stage: WorkflowStage
+    status: WorkflowStatus
+    updated_at: datetime
+
+
+class WorkspaceFolderCreate(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+
+    @field_validator("name")
+    @classmethod
+    def name_must_not_be_blank(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("Folder name must not be blank")
+        return normalized
+
+
+class WorkspaceFolderRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    name: str
+    created_at: datetime
+    updated_at: datetime
+
+
+class WorkspaceThreadRead(BaseModel):
+    id: UUID
+    title: str
+    brief: str
+    folder_id: UUID | None
+    message_count: int
+    preview: str | None
+    stage: WorkflowStage
+    status: WorkflowStatus
+    created_at: datetime
+    updated_at: datetime
+
+
+class WorkspaceRead(BaseModel):
+    folders: list[WorkspaceFolderRead]
+    recents: list[WorkspaceThreadRead]
+
+
+class WorkspaceThreadMove(BaseModel):
+    folder_id: UUID | None = None
+
+
+WorkflowDecision = Literal["approve", "refine", "custom"]
+
+
+class WorkflowDecisionRequest(BaseModel):
+    choice: WorkflowDecision
+    instruction: str | None = Field(default=None, max_length=20_000)
+
+    @field_validator("instruction")
+    @classmethod
+    def instruction_must_not_be_blank(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("Instruction must not be blank")
+        return normalized
+
+
 GenerationMode = Literal["text_to_video", "image_to_video"]
 AspectRatio = Literal["16:9", "9:16", "1:1"]
 ShotStatus = Literal["draft", "ready", "queued", "generating", "completed", "failed", "cancelled"]
@@ -360,6 +434,14 @@ class AgentTurnResponse(BaseModel):
     user_message: MessageRead
     assistant_message: MessageRead
     storyboard: StoryboardRead
+    workflow: WorkflowStateRead
+
+
+class WorkflowDecisionRead(BaseModel):
+    user_message: MessageRead
+    assistant_message: MessageRead
+    storyboard: StoryboardRead
+    workflow: WorkflowStateRead
 
 
 class MessageList(BaseModel):

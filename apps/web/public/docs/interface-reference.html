@@ -42,6 +42,8 @@
 <a class="toc-link toc-level-2" href="#videoagent-conversation">VideoAgent Conversation</a>
 <a class="toc-link toc-level-3" href="#list-messages">List Messages</a>
 <a class="toc-link toc-level-3" href="#send-message">Send Message</a>
+<a class="toc-link toc-level-3" href="#read-workflow">Read Workflow</a>
+<a class="toc-link toc-level-3" href="#submit-workflow-decision">Submit Workflow Decision</a>
 <a class="toc-link toc-level-2" href="#generation">Generation</a>
 <a class="toc-link toc-level-3" href="#estimate-cost">Estimate Cost</a>
 <a class="toc-link toc-level-3" href="#generate-shot">Generate Shot</a>
@@ -176,6 +178,31 @@ http://localhost:8000/openapi.json</code></pre>
 <td><code>/projects/{project_id}</code></td>
 <td>Archive a project</td>
 </tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/workspace</code></td>
+<td>List project folders and all recent conversations</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/workspace/folders</code></td>
+<td>Create a project folder</td>
+</tr>
+<tr>
+<td><code>PATCH</code></td>
+<td><code>/workspace/folders/{folder_id}</code></td>
+<td>Rename a project folder</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/workspace/folders/{folder_id}</code></td>
+<td>Delete a folder without deleting conversations</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/workspace/threads/{project_id}/folder</code></td>
+<td>File or unfile a conversation</td>
+</tr>
 </tbody></table></div>
 <p>Create request:</p>
 <pre><code class="language-json">{
@@ -220,7 +247,17 @@ http://localhost:8000/openapi.json</code></pre>
 <pre><code class="language-json">{
   &quot;content&quot;: &quot;Turn the brief into a three-shot launch film&quot;
 }</code></pre>
-<p>The response includes the user message, VideoAgent reply, and updated storyboard as JSON.</p>
+<p>The response includes the user message, VideoAgent reply, and updated storyboard as JSON. The response also includes the current approval stage.</p>
+<h3 id="read-workflow">Read Workflow</h3>
+<p><code>GET /projects/{project_id}/workflow</code></p>
+<p>The workflow progresses through <code>concept</code>, <code>outline</code>, <code>script</code>, and <code>ready</code>. <code>concept</code> establishes the creative direction, <code>outline</code> defines episodes and shots, and <code>script</code> develops the scene-level production text. Generation is only enabled after the script is approved and the state becomes <code>ready</code>.</p>
+<h3 id="submit-workflow-decision">Submit Workflow Decision</h3>
+<p><code>POST /projects/{project_id}/workflow/decision</code></p>
+<pre><code class="language-json">{
+  &quot;choice&quot;: &quot;approve&quot;,
+  &quot;instruction&quot;: null
+}</code></pre>
+<p><code>choice</code> is <code>approve</code>, <code>refine</code>, or <code>custom</code>. Refinements preserve the current stage. An approval advances one stage and creates the next refinement level.</p>
 <h2 id="generation">Generation</h2>
 <h3 id="estimate-cost">Estimate Cost</h3>
 <p><code>POST /shots/{shot_id}/estimate</code></p>

@@ -19,6 +19,7 @@ class PlanningContext(BaseModel):
     project_title: str
     project_brief: str
     user_message: str
+    workflow_stage: Literal["concept", "outline", "script", "ready"] = "concept"
 
 
 class StoryboardPlanner(Protocol):
@@ -84,16 +85,39 @@ class LocalStoryboardPlanner:
                 generation_mode="text_to_video",
             ),
         ]
-        message = (
-            "我已经生成一版包含三个镜头的故事板。你可以先调整说明和提示词，再批准生成。"
-            if chinese
-            else (
-                "I drafted a three-shot storyboard. Review and refine it "
-                "before approving generation."
-            )
-        )
+        messages = {
+            "concept": (
+                "我先确定整体设定：题材、受众、核心冲突、情绪和视觉方向。确认后我再展开分集与分镜。"
+                if chinese
+                else (
+                    "I have framed the creative direction: story, audience, dramatic "
+                    "question, tone, and visual language. Approve it before I expand the outline."
+                )
+            ),
+            "outline": (
+                "整体设定已锁定。这是分集与分镜大纲，重点检查叙事推进、冲突升级和收束。"
+                if chinese
+                else (
+                    "The overall direction is locked. Review this episode and shot outline "
+                    "for progression, escalation, and a clear ending."
+                )
+            ),
+            "script": (
+                "分镜大纲已锁定。这是逐场剧本，包含动作、对白或旁白、镜头、光线和声音。"
+                if chinese
+                else (
+                    "The outline is locked. Review the scene script, including action, "
+                    "dialogue or voice-over, camera, light, and sound."
+                )
+            ),
+            "ready": (
+                "剧本已批准，可以进入镜头生成。"
+                if chinese
+                else "The script is approved and ready for shot generation."
+            ),
+        }
         return StoryboardPlan(
-            assistant_message=message,
+            assistant_message=messages[context.workflow_stage],
             storyboard=StoryboardReplace(shots=shots),
         )
 
@@ -111,10 +135,26 @@ class OpenAIStoryboardPlanner:
         self._structured = self._chat.with_structured_output(StoryboardPlan)
 
     async def plan(self, context: PlanningContext) -> StoryboardPlan:
+        stage_instruction = {
+            "concept": (
+                "Keep the assistant message focused on the overall creative treatment, "
+                "audience, conflict, tone, and visual direction."
+            ),
+            "outline": (
+                "Keep the assistant message focused on the episode and shot outline, "
+                "progression, escalation, and ending."
+            ),
+            "script": (
+                "Keep the assistant message focused on the scene-by-scene production script "
+                "with action, dialogue, camera, light, and sound."
+            ),
+            "ready": "Confirm that the approved script is ready for generation.",
+        }[context.workflow_stage]
         prompt = (
             "Create a production-ready three-shot video storyboard. "
             "Return prompts in English and a Chinese prompt when the locale is zh-CN. "
             "Each shot must be between 1 and 15 seconds. "
+            f"Workflow stage: {context.workflow_stage}. {stage_instruction} "
             f"Locale: {context.locale}. Project: {context.project_title}. "
             f"Brief: {context.project_brief}. User request: {context.user_message}"
         )

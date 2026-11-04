@@ -129,6 +129,11 @@ Component tests cover:
 - Assets switches between Video and Skill tabs without repeating type labels.
 - Video assets preview on hover; Skill assets have no cover.
 - Composer menus stay inside the viewport.
+- Conversation history shows Projects and Recents; folders support creation,
+  rename, deletion, and drag-to-file organization.
+- Stage approval options cover overall direction, episode and shot outline, and
+  scene script; custom instructions keep the current stage.
+- Shot estimation and generation remain disabled until the script is approved.
 - Search, language, notifications, credits, and avatar controls use
   translucent surfaces.
 - Avatar opens login and registration when signed out and sign-out when signed in.
@@ -139,7 +144,7 @@ Playwright uses the real Next.js UI, FastAPI service, SQLite, and Mock Provider
 to verify:
 
 ```text
-register → home prompt → create project → Agent storyboard → upload
+register → home prompt → create project → three approvals → select shot → upload
 → estimate → generate → poll/materialize → export → download → share
 ```
 

@@ -225,6 +225,7 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 | `api/projects.py` | 项目列表、创建和读取 |
 | `api/storyboards.py` | 故事板读取和替换 |
 | `api/agent.py` | 对话和消息持久化 |
+| `api/workspace.py` | 历史对话、项目目录、拖拽归档和逐层审批 |
 | `api/generation.py` | 积分估算、生成提交和任务查询 |
 | `api/evaluation.py` | 项目故事板即时评估 |
 | `api/providers.py` | Pippit 服务端状态和积分余额 |
@@ -233,6 +234,7 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 | `api/admin.py` | 管理总览、用户、积分、任务、邀请码、设置、审计 |
 | `middleware.py` | 同源写请求校验与请求限流 |
 | `services/storyboards.py` | 故事板领域操作 |
+| `services/workflow.py` | Concept、Outline、Script、Ready 状态迁移 |
 | `services/generation_jobs.py` | Job 刷新和 Shot 状态联动 |
 | `services/evaluation.py` | 一致性、覆盖、清晰度和节奏指标计算 |
 | `services/media.py` | 文件校验、结果落地、FFmpeg 合成、封面与分享 |
@@ -261,6 +263,7 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 | `locale-switcher.tsx` | 中英文切换 |
 | `auth-form.tsx` | 注册/登录请求 |
 | `project-workspace.tsx` | 自动开始首轮 Agent 对话、故事板、镜头设置和生成 |
+| `lib/api.ts` | 根据浏览器 Host 解析 API 地址，避免 localhost/127.0.0.1 跨站校验失败 |
 | `scripts/build_pages.py` | 生成文档 HTML、目录与静态资源 |
 
 前端通过 `NEXT_PUBLIC_API_BASE_URL` 访问 FastAPI，所有鉴权请求设置 `credentials: "include"`。
@@ -309,6 +312,9 @@ ORM 表：
 | `shots` | 镜头 Prompt、比例、时长和状态 |
 | `conversations` | 每个项目唯一的对话 |
 | `messages` | User/Assistant 消息 |
+| `workspace_folders` | 历史对话的项目目录 |
+| `workspace_folder_items` | 对话与项目目录的收纳关系 |
+| `project_workflows` | 整体设定、分集/分镜大纲、逐场剧本与生成审批状态 |
 | `generation_jobs` | Provider 任务、幂等键和结果 |
 | `provider_connections` | Provider 授权信息 |
 | `oauth_flows` | OAuth 事务状态 |
@@ -326,6 +332,7 @@ ORM 表：
 - `Project.owner_id` 决定资源权限。
 - `Storyboard.project_id` 唯一。
 - `Conversation.project_id` 唯一。
+- `WorkspaceFolderItem.project_id` 唯一，一个对话只能收纳在一个项目目录中。
 - `(Shot.storyboard_id, Shot.index)` 唯一。
 - `(GenerationJob.shot_id, GenerationJob.idempotency_key)` 唯一。
 - `(ProviderConnection.user_id, ProviderConnection.provider)` 唯一。
@@ -401,6 +408,11 @@ task reference    → query-result   → JobStatus + result URL
 | DELETE | `/projects/{id}` | 归档项目 |
 | GET | `/projects/{id}/messages` | 对话历史 |
 | POST | `/projects/{id}/messages` | Agent 生成故事板并保存对话 |
+| GET | `/workspace` | 项目目录与全部历史对话 |
+| POST/PATCH/DELETE | `/workspace/folders` | 管理项目目录 |
+| PUT | `/workspace/threads/{id}/folder` | 收纳或移出历史对话 |
+| GET | `/projects/{id}/workflow` | 当前逐层审批状态 |
+| POST | `/projects/{id}/workflow/decision` | 批准、调整或自定义修改 |
 | GET | `/projects/{id}/storyboard` | 获取故事板 |
 | PUT | `/projects/{id}/storyboard` | 整体替换故事板 |
 | PATCH | `/projects/{id}/storyboard/order` | 调整镜头顺序并保留 Shot ID 与资产 |
@@ -586,13 +598,13 @@ pnpm --dir apps/web build
 
 测试组成：
 
-- 后端 54 个测试。
-- 前端 25 个测试。
+- 后端 56 个测试。
+- 前端 26 个测试。
 - Playwright 5 个端到端测试。
 - 后端测试使用临时 SQLite 文件。
 - Pippit 测试使用本地 Fake CLI，不访问真实生成网络。
 - Kling Provider 测试使用 Fake MCP client，不触发付费生成。
-- 前端测试覆盖共享首页、导航、文档加载、自定义下拉、Hots 发布、创作提交和轮播行为。
+- 前端测试覆盖共享首页、导航、文档加载、自定义下拉、Hots 发布、创作提交、历史目录和逐层审批。
 - Playwright 使用 Mock Provider 验证提交、轮询/落地、导出、下载和分享，不访问付费 Provider。
 - 管理测试覆盖白名单权限、积分调整、账号停用、邀请码、注册关闭和生成开关。
 - 普通 CI 不执行付费生成。

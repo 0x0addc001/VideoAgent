@@ -20,6 +20,20 @@ test("runs a complete mock video workflow without paid generation", async ({
   await expect(page).toHaveURL(/\/en\/projects\/[^/?]+/);
 
   await expect(page.getByText("Cinematic establishing shot").first()).toBeVisible();
+  for (let stage = 0; stage < 3; stage += 1) {
+    const decisionResponse = page.waitForResponse(
+      (response) =>
+        response.request().method() === "POST" &&
+        response.url().endsWith("/workflow/decision"),
+    );
+    await page
+      .getByRole("button", { name: "Continue with this direction" })
+      .click();
+    expect((await decisionResponse).status()).toBe(200);
+  }
+  await expect(page.getByText("Ready to generate").first()).toBeVisible();
+
+  await page.getByRole("button", { name: /Shot 01/ }).click();
   const reorderResponsePromise = page.waitForResponse(
     (response) =>
       response.request().method() === "PATCH" &&
@@ -27,7 +41,7 @@ test("runs a complete mock video workflow without paid generation", async ({
   );
   await page.getByRole("button", { name: "Move shot later" }).click();
   expect((await reorderResponsePromise).status()).toBe(200);
-  await page.locator('input[type="file"]').setInputFiles({
+  await page.getByLabel("Upload reference").setInputFiles({
     name: "reference.png",
     mimeType: "image/png",
     buffer: Buffer.from(
@@ -37,7 +51,7 @@ test("runs a complete mock video workflow without paid generation", async ({
   });
   await expect(page.getByText("1 uploaded references")).toBeVisible();
 
-  await page.getByRole("button", { name: "Estimate cost" }).click();
+  await page.getByRole("button", { name: "Estimate credits" }).click();
   await expect(page.getByText("Estimated credits: 5")).toBeVisible();
   const pollResponsePromise = page.waitForResponse(
     (response) =>

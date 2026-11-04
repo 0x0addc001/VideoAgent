@@ -159,6 +159,7 @@ status
 | `api.projects` | Project lifecycle and ownership |
 | `api.storyboards` | Storyboard read/replace |
 | `api.agent` | Message history and planning |
+| `api.workspace` | Conversation history, project folders, filing, and staged approval |
 | `api.generation` | Estimate, submit, job status |
 | `api.evaluation` | Storyboard review |
 | `api.providers` | Pippit status and credits |
@@ -168,6 +169,7 @@ status
 | `middleware` | Same-origin write checks and request limits |
 | `services.media` | Validation, result materialization, FFmpeg, covers, and sharing |
 | `services.credits` | Credit accounts, reservations, and refunds |
+| `services.workflow` | Concept, outline, script, and ready state transitions |
 | `providers.pippit` | CLI process and JSON adaptation |
 | `providers.kling` | Kling MCP tool adapter and task mapping |
 | `providers.kling_cli` | China-region Kling CLI submission, status, identity, and credits |
@@ -182,7 +184,8 @@ status
 | `packages/landing/src/index.tsx` | Shared nav, composer, Skills, Hots, Docs |
 | `packages/landing/src/content.ts` | English UI and Chinese resources |
 | `app-landing-page.tsx` | Product home project creation |
-| `project-workspace.tsx` | Conversation, canvas, inspector, generation, review |
+| `project-workspace.tsx` | History navigation, asset tree, canvas, approval-driven Agent chat, generation, and review |
+| `lib/api.ts` | Host-aware API URL resolution for localhost and 127.0.0.1 development |
 | `scripts/build_pages.py` | bilingual Docs build |
 
 Assets is the unified index for projects and generated media. A project detail
@@ -254,6 +257,9 @@ locale state.
 | `shots` | Prompt, frame, duration, status |
 | `conversations` | One per project |
 | `messages` | User/assistant content |
+| `workspace_folders` | Project folders for conversation organization |
+| `workspace_folder_items` | One-to-one conversation filing |
+| `project_workflows` | Concept, outline, script, and generation approval state |
 | `generation_jobs` | Provider task and idempotency |
 | `provider_connections` | Legacy OAuth storage |
 | `oauth_flows` | Legacy OAuth state |
@@ -277,6 +283,11 @@ locale state.
 | `GET/POST` | `/projects` |
 | `GET/PATCH/DELETE` | `/projects/{id}` |
 | `GET/POST` | `/projects/{id}/messages` |
+| `GET` | `/workspace` |
+| `POST/PATCH/DELETE` | `/workspace/folders` |
+| `PUT` | `/workspace/threads/{id}/folder` |
+| `GET` | `/projects/{id}/workflow` |
+| `POST` | `/projects/{id}/workflow/decision` |
 | `GET/PUT` | `/projects/{id}/storyboard` |
 | `PATCH` | `/projects/{id}/storyboard/order` |
 | `POST` | `/projects/{id}/evaluate` |
@@ -360,7 +371,7 @@ pnpm test:e2e
 python scripts\build_pages.py
 ```
 
-Backend coverage currently consists of 54 tests, frontend coverage consists of
-25 Vitest tests, and Playwright contains five no-fee browser flows. Playwright
+Backend coverage currently consists of 56 tests, frontend coverage consists of
+26 Vitest tests, and Playwright contains five no-fee browser flows. Playwright
 uses the Mock Provider for generation and therefore never consumes real
 Provider credits.

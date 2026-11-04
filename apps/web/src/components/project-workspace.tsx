@@ -5,14 +5,28 @@ import {
   ArrowRight,
   ArrowUp,
   Check,
+  ChevronDown,
+  ChevronRight,
+  CircleCheck,
+  Clapperboard,
   Download,
+  FileText,
   Film,
+  Folder,
+  FolderOpen,
+  GripVertical,
+  Image,
+  Layers3,
   MessageCircleMore,
-  PanelRight,
+  MessageSquareText,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Pencil,
   Plus,
   ScanSearch,
   Share2,
   Sparkles,
+  Trash2,
   Upload,
   Video,
   WandSparkles,
@@ -20,8 +34,17 @@ import {
 } from "lucide-react";
 import { StreamingText } from "@videoagent/landing";
 import { useLocale, useTranslations } from "next-intl";
-import { useEffect, useMemo, useState } from "react";
+import {
+  DragEvent,
+  FormEvent,
+  type ReactNode,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Link } from "@/i18n/navigation";
+import { resolveApiBaseUrl } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 type Project = {
@@ -69,7 +92,56 @@ type AgentTurn = {
   user_message: Message;
   assistant_message: Message;
   storyboard: Storyboard;
+  workflow: WorkflowState;
 };
+
+type WorkflowStage = "concept" | "outline" | "script" | "ready";
+
+type WorkflowState = {
+  project_id: string;
+  stage: WorkflowStage;
+  status: "awaiting_approval" | "approved";
+  updated_at: string;
+};
+
+type WorkflowDecisionResponse = {
+  user_message: Message;
+  assistant_message: Message;
+  storyboard: Storyboard;
+  workflow: WorkflowState;
+};
+
+type WorkspaceFolder = {
+  id: string;
+  name: string;
+  created_at: string;
+  updated_at: string;
+};
+
+type WorkspaceThread = {
+  id: string;
+  title: string;
+  brief: string;
+  folder_id: string | null;
+  message_count: number;
+  preview: string | null;
+  stage: WorkflowStage;
+  status: "awaiting_approval" | "approved";
+  created_at: string;
+  updated_at: string;
+};
+
+type WorkspaceData = {
+  folders: WorkspaceFolder[];
+  recents: WorkspaceThread[];
+};
+
+type CanvasSelection =
+  | { kind: "brief" }
+  | { kind: "storyboard" }
+  | { kind: "document"; document: "outline" | "script" }
+  | { kind: "shot"; shotId: string }
+  | { kind: "asset"; assetId: string };
 
 type GenerationJob = {
   id: string;
@@ -137,12 +209,767 @@ type Evaluation = {
   suggestions: EvaluationSuggestion[];
 };
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api/v1";
+const API_BASE_URL = resolveApiBaseUrl();
 const PRODUCTION_SETTINGS_MARKER = /\n+\s*Production settings:/i;
 
 function creativeBrief(brief: string) {
   return brief.split(PRODUCTION_SETTINGS_MARKER, 1)[0]?.trim() || brief.trim();
+}
+
+function workspaceCopy(locale: string) {
+  const chinese = locale.startsWith("zh");
+  return chinese
+    ? {
+        projects: "Projects",
+        recent: "Recents",
+        conversations: "全部对话",
+        newFolder: "新建项目",
+        folderName: "项目名称",
+        save: "保存",
+        cancel: "取消",
+        rename: "重命名项目",
+        delete: "删除项目",
+        deleteConfirm: "删除这个项目目录？对话不会被删除。",
+        dropHere: "拖入对话以收纳",
+        leaveFolder: "拖到这里移出项目",
+        collapse: "收起导航",
+        expand: "展开导航",
+        docs: "文档",
+        assets: "当前对话资产",
+        noAssets: "当前对话还没有资产。",
+        brief: "整体设定",
+        storyboard: "故事板",
+        script: "剧本",
+        outline: "分集与分镜大纲",
+        media: "媒体",
+        uploads: "上传素材",
+        generated: "生成素材",
+        exported: "成片与导出",
+        stage: "审批阶段",
+        stageConcept: "整体设定",
+        stageOutline: "分集/分镜大纲",
+        stageScript: "逐场剧本",
+        stageReady: "可以生成",
+        awaiting: "等待你的批准",
+        approved: "已批准",
+        approve: "批准并继续",
+        refine: "让 Agent 调整",
+        custom: "自定义修改",
+        customPlaceholder: "输入你的修改意见，Agent 会保持当前阶段并重新规划……",
+        apply: "发送修改",
+        decisionError: "Agent 未能完成这一步，请重试。",
+        folderError: "项目目录更新失败。",
+        chatPlaceholder: "描述下一步，或向 VideoAgent 提问……",
+        send: "发送",
+        review: "即时评估",
+        export: "导出成片",
+        exportReady: "成片已就绪",
+        download: "下载",
+        share: "分享",
+        shot: "镜头",
+        duration: "时长",
+        ratio: "画面比例",
+        estimate: "估算积分",
+        generate: "生成镜头",
+        generating: "生成中……",
+        upload: "上传素材",
+        uploading: "上传中……",
+        current: "当前",
+        keep: "按当前方向推进",
+        adjustTone: "增强情绪张力",
+        adjustPace: "收紧节奏",
+        adjustHook: "强化开场钩子",
+        addBeat: "增加一个叙事节拍",
+        commercial: "增强商业转化感",
+        readyMessage: "剧本已批准。选择镜头即可估算和生成。",
+      }
+    : {
+        projects: "Projects",
+        recent: "Recents",
+        conversations: "All conversations",
+        newFolder: "New project",
+        folderName: "Project name",
+        save: "Save",
+        cancel: "Cancel",
+        rename: "Rename project",
+        delete: "Delete project",
+        deleteConfirm: "Delete this project folder? Conversations will not be deleted.",
+        dropHere: "Drop a conversation here",
+        leaveFolder: "Drop here to remove from project",
+        collapse: "Collapse navigation",
+        expand: "Expand navigation",
+        docs: "Docs",
+        assets: "Conversation assets",
+        noAssets: "No assets in this conversation yet.",
+        brief: "Creative direction",
+        storyboard: "Storyboard",
+        script: "Script",
+        outline: "Episode & shot outline",
+        media: "Media",
+        uploads: "Uploads",
+        generated: "Generated",
+        exported: "Exports",
+        stage: "Approval stage",
+        stageConcept: "Overall direction",
+        stageOutline: "Episode outline",
+        stageScript: "Scene script",
+        stageReady: "Ready to generate",
+        awaiting: "Waiting for your approval",
+        approved: "Approved",
+        approve: "Approve and continue",
+        refine: "Ask the agent to refine",
+        custom: "Custom instruction",
+        customPlaceholder:
+          "Describe a change. The agent will stay on this stage and plan again…",
+        apply: "Send instruction",
+        decisionError: "The agent could not complete this step. Try again.",
+        folderError: "The project folder could not be updated.",
+        chatPlaceholder: "Describe the next move or ask VideoAgent…",
+        send: "Send",
+        review: "Review",
+        export: "Export film",
+        exportReady: "Export ready",
+        download: "Download",
+        share: "Share",
+        shot: "Shot",
+        duration: "Duration",
+        ratio: "Aspect ratio",
+        estimate: "Estimate credits",
+        generate: "Generate shot",
+        generating: "Generating…",
+        upload: "Upload asset",
+        uploading: "Uploading…",
+        current: "Current",
+        keep: "Continue with this direction",
+        adjustTone: "Raise the emotional stakes",
+        adjustPace: "Tighten the pacing",
+        adjustHook: "Sharpen the opening hook",
+        addBeat: "Add another story beat",
+        commercial: "Make it more commercial",
+        readyMessage: "The script is approved. Choose a shot to estimate and generate.",
+      };
+}
+
+type WorkspaceHistoryProps = {
+  activeProjectId: string;
+  collapsed: boolean;
+  draggingThreadId: string | null;
+  locale: string;
+  openFolders: string[];
+  workspace: WorkspaceData;
+  onBeginDrag: (event: DragEvent<HTMLElement>, threadId: string) => void;
+  onDeleteFolder: (folder: WorkspaceFolder) => void;
+  onDrop: (event: DragEvent<HTMLElement>, folderId: string | null) => void;
+  onNewFolder: () => void;
+  onRenameFolder: (folder: WorkspaceFolder) => void;
+  onToggleCollapsed: () => void;
+  onToggleFolder: (folderId: string) => void;
+};
+
+function WorkspaceHistory({
+  activeProjectId,
+  collapsed,
+  draggingThreadId,
+  locale,
+  openFolders,
+  workspace,
+  onBeginDrag,
+  onDeleteFolder,
+  onDrop,
+  onNewFolder,
+  onRenameFolder,
+  onToggleCollapsed,
+  onToggleFolder,
+}: WorkspaceHistoryProps) {
+  const copy = workspaceCopy(locale);
+  const dateFormatter = new Intl.DateTimeFormat(
+    locale.startsWith("zh") ? "zh-CN" : "en",
+    { month: "short", day: "numeric" },
+  );
+
+  if (collapsed) {
+    return (
+      <aside className="flex min-h-0 shrink-0 flex-col items-center border-r border-white/[0.07] bg-[#0d0c0a] py-3">
+        <span className="grid size-10 place-items-center rounded-xl bg-[#1677ff] text-white">
+          <Clapperboard className="h-5 w-5" />
+        </span>
+        <button
+          aria-label={copy.expand}
+          className="mt-4 grid size-9 place-items-center rounded-xl text-white/50 hover:bg-white/[0.06] hover:text-white"
+          onClick={onToggleCollapsed}
+          type="button"
+        >
+          <PanelLeftOpen className="h-4 w-4" />
+        </button>
+        <div className="mt-5 grid gap-2">
+          <span
+            className="grid size-9 place-items-center rounded-xl text-white/35"
+            title={`${copy.projects}: ${workspace.folders.length}`}
+          >
+            <Folder className="h-4 w-4" />
+          </span>
+          <span
+            className="grid size-9 place-items-center rounded-xl text-white/35"
+            title={`${copy.recent}: ${workspace.recents.length}`}
+          >
+            <MessageSquareText className="h-4 w-4" />
+          </span>
+        </div>
+        <Link
+          aria-label={copy.docs}
+          className="mt-auto grid size-9 place-items-center rounded-xl text-white/35 hover:bg-white/[0.06] hover:text-white"
+          href="/#docs"
+          title={copy.docs}
+        >
+          <FileText className="h-4 w-4" />
+        </Link>
+      </aside>
+    );
+  }
+
+  const recentThreads = workspace.recents;
+  const assignedByFolder = new Map<string, WorkspaceThread[]>();
+  for (const thread of recentThreads) {
+    if (!thread.folder_id) continue;
+    const items = assignedByFolder.get(thread.folder_id) ?? [];
+    items.push(thread);
+    assignedByFolder.set(thread.folder_id, items);
+  }
+
+  function threadRow(thread: WorkspaceThread) {
+    return (
+      <Link
+        aria-current={thread.id === activeProjectId ? "page" : undefined}
+        className={cn(
+          "group relative block rounded-xl border px-3 py-2.5 transition",
+          thread.id === activeProjectId
+            ? "border-[#1677ff]/35 bg-[#1677ff]/10"
+            : "border-transparent hover:border-white/[0.08] hover:bg-white/[0.035]",
+        )}
+        draggable
+        href={`/projects/${thread.id}`}
+        key={thread.id}
+        onDragStart={(event) => onBeginDrag(event, thread.id)}
+      >
+        <span className="flex items-start gap-2.5">
+          <GripVertical className="mt-0.5 h-3.5 w-3.5 shrink-0 text-white/15 group-hover:text-white/35" />
+          <span className="min-w-0 flex-1">
+            <span className="flex items-center gap-2">
+              <strong className="truncate text-[13px] font-medium text-white/78">
+                {thread.title}
+              </strong>
+              {thread.status === "awaiting_approval" ? (
+                <span className="ml-auto size-1.5 shrink-0 rounded-full bg-[#1677ff]" />
+              ) : null}
+            </span>
+            <span className="mt-1 line-clamp-1 text-[12px] leading-5 text-white/32">
+              {thread.preview || thread.brief}
+            </span>
+            <span className="mt-1 block text-[11px] text-white/22">
+              {dateFormatter.format(new Date(thread.updated_at))}
+            </span>
+          </span>
+        </span>
+      </Link>
+    );
+  }
+
+  return (
+    <aside className="flex w-[292px] min-h-0 shrink-0 flex-col border-r border-white/[0.07] bg-[#0d0c0a]">
+      <div className="flex h-14 items-center justify-between border-b border-white/[0.07] px-4">
+        <Link className="flex items-center gap-2.5 text-[15px] font-semibold" href="/">
+          <span className="grid size-8 place-items-center rounded-lg bg-[#1677ff] text-white">
+            <PlayIcon />
+          </span>
+          VideoAgent
+        </Link>
+        <button
+          aria-label={copy.collapse}
+          className="grid size-8 place-items-center rounded-lg text-white/40 hover:bg-white/[0.06] hover:text-white"
+          onClick={onToggleCollapsed}
+          type="button"
+        >
+          <PanelLeftClose className="h-4 w-4" />
+        </button>
+      </div>
+
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
+        <div className="flex items-center justify-between px-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/32">
+            {copy.projects}
+          </p>
+          <button
+            aria-label={copy.newFolder}
+            className="grid size-7 place-items-center rounded-lg text-white/35 hover:bg-white/[0.06] hover:text-white"
+            onClick={onNewFolder}
+            type="button"
+          >
+            <Plus className="h-4 w-4" />
+          </button>
+        </div>
+        <div className="mt-2 space-y-1">
+          {workspace.folders.length === 0 ? (
+            <button
+              className="w-full rounded-xl border border-dashed border-white/[0.09] px-3 py-3 text-left text-[12px] text-white/28 hover:border-[#1677ff]/30"
+              onClick={onNewFolder}
+              type="button"
+            >
+              {copy.newFolder}
+            </button>
+          ) : null}
+          {workspace.folders.map((folder) => {
+            const folderThreads = assignedByFolder.get(folder.id) ?? [];
+            const open = openFolders.includes(folder.id);
+            return (
+              <div
+                className={cn(
+                  "rounded-xl border border-transparent transition",
+                  draggingThreadId && "border-[#1677ff]/15 bg-[#1677ff]/[0.03]",
+                )}
+                key={folder.id}
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={(event) => onDrop(event, folder.id)}
+              >
+                <div className="group flex items-center">
+                  <button
+                    className="flex min-w-0 flex-1 items-center gap-2 px-2 py-2 text-left text-[13px] text-white/62"
+                    onClick={() => onToggleFolder(folder.id)}
+                    type="button"
+                  >
+                    {open ? (
+                      <ChevronDown className="h-3.5 w-3.5 text-white/30" />
+                    ) : (
+                      <ChevronRight className="h-3.5 w-3.5 text-white/30" />
+                    )}
+                    {open ? (
+                      <FolderOpen className="h-4 w-4 text-[#6eb8ff]" />
+                    ) : (
+                      <Folder className="h-4 w-4 text-[#6eb8ff]" />
+                    )}
+                    <span className="truncate">{folder.name}</span>
+                    <span className="ml-auto text-[11px] text-white/24">
+                      {folderThreads.length}
+                    </span>
+                  </button>
+                  <button
+                    aria-label={copy.rename}
+                    className="mr-0.5 hidden size-7 place-items-center rounded-lg text-white/30 hover:bg-white/[0.06] hover:text-white group-hover:grid"
+                    onClick={() => onRenameFolder(folder)}
+                    type="button"
+                  >
+                    <Pencil className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    aria-label={copy.delete}
+                    className="mr-1 hidden size-7 place-items-center rounded-lg text-white/30 hover:bg-red-400/10 hover:text-red-300 group-hover:grid"
+                    onClick={() => onDeleteFolder(folder)}
+                    type="button"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+                {open ? (
+                  <div className="space-y-1 px-2 pb-2 pl-6">
+                    {folderThreads.length === 0 ? (
+                      <p className="rounded-lg border border-dashed border-white/[0.08] px-3 py-2 text-[11px] text-white/24">
+                        {copy.dropHere}
+                      </p>
+                    ) : (
+                      folderThreads.map(threadRow)
+                    )}
+                  </div>
+                ) : null}
+              </div>
+            );
+          })}
+        </div>
+
+        <div
+          className="mt-6"
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={(event) => onDrop(event, null)}
+        >
+          <div className="flex items-center justify-between px-2">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/32">
+              {copy.recent}
+            </p>
+            <span className="text-[11px] text-white/22">{recentThreads.length}</span>
+          </div>
+          <p className="mt-1 px-2 text-[11px] text-white/18">{copy.leaveFolder}</p>
+          <div className="mt-2 space-y-1">
+            {recentThreads.length === 0 ? (
+              <p className="px-3 py-4 text-[12px] text-white/25">{copy.conversations}</p>
+            ) : (
+              recentThreads.map(threadRow)
+            )}
+          </div>
+        </div>
+      </div>
+
+      <div className="border-t border-white/[0.07] p-3">
+        <Link
+          className="flex items-center gap-2 rounded-xl px-3 py-2 text-[12px] text-white/38 hover:bg-white/[0.05] hover:text-white"
+          href="/#docs"
+        >
+          <FileText className="h-4 w-4" />
+          {copy.docs}
+        </Link>
+      </div>
+    </aside>
+  );
+}
+
+function PlayIcon() {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 24 24">
+      <path d="M8 5.5v13l10-6.5-10-6.5Z" fill="currentColor" />
+    </svg>
+  );
+}
+
+type ApprovalCardProps = {
+  copy: ReturnType<typeof workspaceCopy>;
+  customOpen: boolean;
+  customValue: string;
+  isWorking: boolean;
+  stage: WorkflowStage;
+  onCustomOpen: () => void;
+  onCustomValue: (value: string) => void;
+  onDecision: (
+    choice: "approve" | "refine" | "custom",
+    instruction?: string,
+  ) => void;
+};
+
+function ApprovalCard({
+  copy,
+  customOpen,
+  customValue,
+  isWorking,
+  stage,
+  onCustomOpen,
+  onCustomValue,
+  onDecision,
+}: ApprovalCardProps) {
+  const options =
+    stage === "concept"
+      ? [
+          { label: copy.keep, choice: "approve" as const },
+          { label: copy.adjustTone, choice: "refine" as const },
+          { label: copy.commercial, choice: "refine" as const },
+        ]
+      : stage === "outline"
+        ? [
+            { label: copy.keep, choice: "approve" as const },
+            { label: copy.addBeat, choice: "refine" as const },
+            { label: copy.adjustPace, choice: "refine" as const },
+          ]
+        : [
+            { label: copy.keep, choice: "approve" as const },
+            { label: copy.adjustHook, choice: "refine" as const },
+            { label: copy.adjustPace, choice: "refine" as const },
+          ];
+
+  return (
+    <div className="rounded-2xl border border-[#1677ff]/25 bg-[#1677ff]/[0.055] p-3.5">
+      <div className="flex items-center gap-2">
+        <span className="size-2 rounded-full bg-[#1677ff]" />
+        <p className="text-[12px] font-medium text-[#9bd3ff]">{copy.awaiting}</p>
+      </div>
+      <div className="mt-3 space-y-2">
+        {options.map((option) => (
+          <button
+            className="flex w-full items-center justify-between rounded-xl border border-white/[0.09] bg-black/15 px-3 py-2.5 text-left text-[12px] text-white/70 transition hover:border-[#1677ff]/35 hover:bg-[#1677ff]/[0.07] hover:text-white"
+            disabled={isWorking}
+            key={`${option.choice}-${option.label}`}
+            onClick={() =>
+              onDecision(
+                option.choice,
+                option.choice === "approve" ? undefined : option.label,
+              )
+            }
+            type="button"
+          >
+            {option.label}
+            <ChevronRight className="h-3.5 w-3.5 text-white/25" />
+          </button>
+        ))}
+        <button
+          className={cn(
+            "flex w-full items-center justify-between rounded-xl border px-3 py-2.5 text-left text-[12px] transition",
+            customOpen
+              ? "border-[#1677ff]/40 bg-[#1677ff]/[0.08] text-white"
+              : "border-dashed border-white/[0.12] text-white/55 hover:border-white/25 hover:text-white",
+          )}
+          onClick={onCustomOpen}
+          type="button"
+        >
+          {copy.custom}
+          <Pencil className="h-3.5 w-3.5" />
+        </button>
+        {customOpen ? (
+          <div className="rounded-xl border border-white/[0.09] bg-black/20 p-2">
+            <textarea
+              autoFocus
+              className="min-h-20 w-full resize-none bg-transparent px-2 py-1 text-[12px] leading-5 text-white outline-none placeholder:text-white/25"
+              onChange={(event) => onCustomValue(event.target.value)}
+              placeholder={copy.customPlaceholder}
+              value={customValue}
+            />
+            <button
+              className="mt-1 w-full rounded-lg bg-[#1677ff] px-3 py-2 text-[12px] font-semibold text-white disabled:opacity-40"
+              disabled={isWorking || !customValue.trim()}
+              onClick={() => onDecision("custom", customValue)}
+              type="button"
+            >
+              {copy.apply}
+            </button>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
+type AssetsTreeProps = {
+  assets: Asset[];
+  copy: ReturnType<typeof workspaceCopy>;
+  isWorking: boolean;
+  selected: CanvasSelection;
+  storyboard: Storyboard | null;
+  workflow: WorkflowState | null;
+  onSelect: (selection: CanvasSelection) => void;
+  onUpload: (file: File) => void;
+};
+
+function AssetsTree({
+  assets,
+  copy,
+  isWorking,
+  selected,
+  storyboard,
+  workflow,
+  onSelect,
+  onUpload,
+}: AssetsTreeProps) {
+  const [sections, setSections] = useState({
+    story: true,
+    shots: true,
+    media: true,
+    exports: true,
+  });
+  const selectedClass =
+    "border-[#1677ff]/30 bg-[#1677ff]/[0.08] text-white";
+  const idleClass =
+    "border-transparent text-white/50 hover:border-white/[0.07] hover:bg-white/[0.03] hover:text-white/75";
+
+  function sectionButton(
+    key: keyof typeof sections,
+    label: string,
+    icon: ReactNode,
+  ) {
+    return (
+      <button
+        className="flex w-full items-center gap-2 px-2 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.13em] text-white/30 hover:text-white/55"
+        onClick={() =>
+          setSections((current) => ({ ...current, [key]: !current[key] }))
+        }
+        type="button"
+      >
+        {sections[key] ? (
+          <ChevronDown className="h-3 w-3" />
+        ) : (
+          <ChevronRight className="h-3 w-3" />
+        )}
+        {icon}
+        {label}
+      </button>
+    );
+  }
+
+  return (
+    <aside className="flex w-[232px] min-h-0 shrink-0 flex-col border-r border-white/[0.07] bg-[#0b0a08]">
+      <div className="flex h-14 items-center justify-between border-b border-white/[0.07] px-4">
+        <span className="flex items-center gap-2 text-[12px] font-medium text-white/62">
+          <Layers3 className="h-4 w-4 text-[#6eb8ff]" />
+          {copy.assets}
+        </span>
+        <label className="grid size-7 cursor-pointer place-items-center rounded-lg text-white/35 hover:bg-white/[0.06] hover:text-white">
+          <Upload className="h-3.5 w-3.5" />
+          <input
+            accept="image/*,video/*,audio/*"
+            aria-label={copy.upload}
+            className="sr-only"
+            disabled={isWorking}
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              event.currentTarget.value = "";
+              if (file) onUpload(file);
+            }}
+            type="file"
+          />
+        </label>
+      </div>
+      <div className="min-h-0 flex-1 overflow-y-auto p-2">
+        <button
+          className={cn(
+            "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
+            selected.kind === "brief" ? selectedClass : idleClass,
+          )}
+          onClick={() => onSelect({ kind: "brief" })}
+          type="button"
+        >
+          <FileText className="h-3.5 w-3.5" />
+          {copy.brief}
+        </button>
+        <button
+          className={cn(
+            "mt-1 flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
+            selected.kind === "storyboard" ? selectedClass : idleClass,
+          )}
+          onClick={() => onSelect({ kind: "storyboard" })}
+          type="button"
+        >
+          <Clapperboard className="h-3.5 w-3.5" />
+          {copy.storyboard}
+        </button>
+
+        <div className="mt-3">
+          {sectionButton("story", copy.script, <FileText className="h-3 w-3" />)}
+          {sections.story ? (
+            <div className="space-y-1 pl-3">
+              <button
+                className={cn(
+                  "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
+                  selected.kind === "document" && selected.document === "outline"
+                    ? selectedClass
+                    : idleClass,
+                )}
+                onClick={() => onSelect({ kind: "document", document: "outline" })}
+                type="button"
+              >
+                <CircleCheck
+                  className={cn(
+                    "h-3.5 w-3.5",
+                    workflow &&
+                      ["outline", "script", "ready"].includes(workflow.stage)
+                      ? "text-emerald-300"
+                      : "text-white/20",
+                  )}
+                />
+                {copy.outline}
+              </button>
+              <button
+                className={cn(
+                  "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
+                  selected.kind === "document" && selected.document === "script"
+                    ? selectedClass
+                    : idleClass,
+                )}
+                onClick={() => onSelect({ kind: "document", document: "script" })}
+                type="button"
+              >
+                <CircleCheck
+                  className={cn(
+                    "h-3.5 w-3.5",
+                    workflow && ["script", "ready"].includes(workflow.stage)
+                      ? "text-emerald-300"
+                      : "text-white/20",
+                  )}
+                />
+                {copy.script}
+              </button>
+            </div>
+          ) : null}
+        </div>
+
+        <div className="mt-3">
+          {sectionButton("shots", copy.shot, <Film className="h-3 w-3" />)}
+          {sections.shots ? (
+            <div className="space-y-1 pl-3">
+              {storyboard?.shots.map((shot) => (
+                <button
+                  className={cn(
+                    "flex w-full items-start gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
+                    selected.kind === "shot" && selected.shotId === shot.id
+                      ? selectedClass
+                      : idleClass,
+                  )}
+                  key={shot.id}
+                  onClick={() => onSelect({ kind: "shot", shotId: shot.id })}
+                  type="button"
+                >
+                  <span className="mt-0.5 text-[10px] text-[#6eb8ff]">
+                    {String(shot.index + 1).padStart(2, "0")}
+                  </span>
+                  <span className="line-clamp-2">{shot.description}</span>
+                </button>
+              ))}
+              {!storyboard ? (
+                <p className="px-3 py-2 text-[11px] text-white/20">{copy.noAssets}</p>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+
+        <div className="mt-3">
+          {sectionButton("media", copy.media, <Image className="h-3 w-3" />)}
+          {sections.media ? (
+            <div className="space-y-1 pl-3">
+              {assets
+                .filter((asset) => !["export", "cover"].includes(asset.kind))
+                .map((asset) => (
+                  <button
+                    className={cn(
+                      "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
+                      selected.kind === "asset" && selected.assetId === asset.id
+                        ? selectedClass
+                        : idleClass,
+                    )}
+                    key={asset.id}
+                    onClick={() => onSelect({ kind: "asset", assetId: asset.id })}
+                    type="button"
+                  >
+                    {asset.content_type.startsWith("video/") ? (
+                      <Video className="h-3.5 w-3.5" />
+                    ) : (
+                      <Image className="h-3.5 w-3.5" />
+                    )}
+                    <span className="truncate">{asset.filename}</span>
+                  </button>
+                ))}
+            </div>
+          ) : null}
+        </div>
+
+        <div className="mt-3">
+          {sectionButton("exports", copy.exported, <Download className="h-3 w-3" />)}
+          {sections.exports ? (
+            <div className="space-y-1 pl-3">
+              {assets
+                .filter((asset) => ["export", "cover"].includes(asset.kind))
+                .map((asset) => (
+                  <button
+                    className={cn(
+                      "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
+                      selected.kind === "asset" && selected.assetId === asset.id
+                        ? selectedClass
+                        : idleClass,
+                    )}
+                    key={asset.id}
+                    onClick={() => onSelect({ kind: "asset", assetId: asset.id })}
+                    type="button"
+                  >
+                    <Film className="h-3.5 w-3.5" />
+                    <span className="truncate">{asset.filename}</span>
+                  </button>
+                ))}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </aside>
+  );
 }
 
 export function ProjectWorkspace({ projectId }: { projectId: string }) {
@@ -169,14 +996,40 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
   const [isExporting, setIsExporting] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [isReordering, setIsReordering] = useState(false);
-  const [mobilePanel, setMobilePanel] = useState<"agent" | "canvas" | "inspector">("canvas");
+  const [mobilePanel, setMobilePanel] = useState<
+    "agent" | "canvas" | "inspector" | "assets" | "history"
+  >("canvas");
+  const [workspace, setWorkspace] = useState<WorkspaceData>({
+    folders: [],
+    recents: [],
+  });
+  const [workflow, setWorkflow] = useState<WorkflowState | null>(null);
+  const [historyCollapsed, setHistoryCollapsed] = useState(false);
+  const [openFolders, setOpenFolders] = useState<string[]>([]);
+  const [selectedCanvas, setSelectedCanvas] = useState<CanvasSelection>({
+    kind: "brief",
+  });
+  const [folderDialogOpen, setFolderDialogOpen] = useState(false);
+  const [folderName, setFolderName] = useState("");
+  const [renamingFolder, setRenamingFolder] = useState<WorkspaceFolder | null>(null);
+  const [draggingThreadId, setDraggingThreadId] = useState<string | null>(null);
+  const [customDecisionOpen, setCustomDecisionOpen] = useState(false);
+  const [customDecision, setCustomDecision] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     let active = true;
 
     async function load() {
       try {
-        const [projectResponse, storyboardResponse, messagesResponse, assetsResponse] = await Promise.all([
+        const [
+          projectResponse,
+          storyboardResponse,
+          messagesResponse,
+          assetsResponse,
+          workspaceResponse,
+          workflowResponse,
+        ] = await Promise.all([
           fetch(`${API_BASE_URL}/projects/${projectId}`, { credentials: "include" }),
           fetch(`${API_BASE_URL}/projects/${projectId}/storyboard`, {
             credentials: "include",
@@ -187,6 +1040,12 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
           fetch(`${API_BASE_URL}/projects/${projectId}/assets`, {
             credentials: "include",
           }),
+          fetch(`${API_BASE_URL}/workspace`, { credentials: "include" }).catch(
+            () => null,
+          ),
+          fetch(`${API_BASE_URL}/projects/${projectId}/workflow`, {
+            credentials: "include",
+          }).catch(() => null),
         ]);
         if (!active) return;
         if (projectResponse.status === 404) {
@@ -202,6 +1061,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
           const nextStoryboard = (await storyboardResponse.json()) as Storyboard;
           setStoryboard(nextStoryboard);
           setSelectedShotId(nextStoryboard.shots[0]?.id ?? null);
+          setSelectedCanvas({ kind: "storyboard" });
         }
         let nextMessages: Message[] = [];
         if (messagesResponse.ok) {
@@ -210,6 +1070,14 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
         }
         if (assetsResponse.ok) {
           setAssets(((await assetsResponse.json()) as { items: Asset[] }).items);
+        }
+        if (workspaceResponse?.ok) {
+          const nextWorkspace = (await workspaceResponse.json()) as WorkspaceData;
+          setWorkspace(nextWorkspace);
+          setOpenFolders(nextWorkspace.folders.map((folder) => folder.id));
+        }
+        if (workflowResponse?.ok) {
+          setWorkflow((await workflowResponse.json()) as WorkflowState);
         }
         const shouldStart =
           new URLSearchParams(window.location.search).get("start") === "1" &&
@@ -230,6 +1098,8 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
             setMessages([turn.user_message, turn.assistant_message]);
             setStoryboard(turn.storyboard);
             setSelectedShotId(turn.storyboard.shots[0]?.id ?? null);
+            setSelectedCanvas({ kind: "storyboard" });
+            if (turn.workflow) setWorkflow(turn.workflow);
           }
         }
         setStatus("ready");
@@ -243,6 +1113,23 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
       active = false;
     };
   }, [projectId]);
+
+  useEffect(() => {
+    setHistoryCollapsed(
+      window.localStorage.getItem("videoagent.workspace.history-collapsed") === "1",
+    );
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem(
+      "videoagent.workspace.history-collapsed",
+      historyCollapsed ? "1" : "0",
+    );
+  }, [historyCollapsed]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView?.({ block: "end" });
+  }, [messages]);
 
   useEffect(() => {
     if (!activeJob) return;
@@ -294,6 +1181,138 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
   const canExport = Boolean(
     storyboard?.shots.some((shot) => shot.status === "completed"),
   );
+  const selectedAsset =
+    selectedCanvas.kind === "asset"
+      ? assets.find((asset) => asset.id === selectedCanvas.assetId) ?? null
+      : null;
+  const canvasShot =
+    selectedCanvas.kind === "shot"
+      ? storyboard?.shots.find((shot) => shot.id === selectedCanvas.shotId) ?? null
+      : null;
+
+  async function refreshWorkspace() {
+    const response = await fetch(`${API_BASE_URL}/workspace`, {
+      credentials: "include",
+    }).catch(() => null);
+    if (response?.ok) {
+      setWorkspace((await response.json()) as WorkspaceData);
+    }
+  }
+
+  async function saveFolder(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const name = folderName.trim();
+    if (!name) return;
+    const isRename = Boolean(renamingFolder);
+    const response = await fetch(
+      isRename
+        ? `${API_BASE_URL}/workspace/folders/${renamingFolder?.id}`
+        : `${API_BASE_URL}/workspace/folders`,
+      {
+        method: isRename ? "PATCH" : "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name }),
+      },
+    ).catch(() => null);
+    if (!response?.ok) {
+      setActionError(t("folderError"));
+      return;
+    }
+    const folder = (await response.json()) as WorkspaceFolder;
+    if (!isRename) {
+      setOpenFolders((current) => [...current, folder.id]);
+    }
+    setFolderName("");
+    setRenamingFolder(null);
+    setFolderDialogOpen(false);
+    await refreshWorkspace();
+  }
+
+  async function deleteFolder(folder: WorkspaceFolder) {
+    if (!window.confirm(t("deleteFolderConfirm"))) return;
+    const response = await fetch(
+      `${API_BASE_URL}/workspace/folders/${folder.id}`,
+      {
+        method: "DELETE",
+        credentials: "include",
+      },
+    ).catch(() => null);
+    if (!response?.ok) {
+      setActionError(t("folderError"));
+      return;
+    }
+    await refreshWorkspace();
+  }
+
+  async function moveThread(projectId: string, folderId: string | null) {
+    const response = await fetch(
+      `${API_BASE_URL}/workspace/threads/${projectId}/folder`,
+      {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ folder_id: folderId }),
+      },
+    ).catch(() => null);
+    if (!response?.ok) {
+      setActionError(t("folderError"));
+      return;
+    }
+    setDraggingThreadId(null);
+    await refreshWorkspace();
+  }
+
+  function beginThreadDrag(event: DragEvent<HTMLElement>, threadId: string) {
+    setDraggingThreadId(threadId);
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", threadId);
+  }
+
+  function dropThread(event: DragEvent<HTMLElement>, folderId: string | null) {
+    event.preventDefault();
+    const projectId = event.dataTransfer.getData("text/plain") || draggingThreadId;
+    if (projectId) void moveThread(projectId, folderId);
+  }
+
+  async function decideWorkflow(
+    choice: "approve" | "refine" | "custom",
+    instruction?: string,
+  ) {
+    if (!project || isWorking) return;
+    if (choice === "custom" && !instruction?.trim()) return;
+    setIsWorking(true);
+    setActionError(null);
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/projects/${project.id}/workflow/decision`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ choice, instruction }),
+        },
+      );
+      if (!response.ok) throw new Error("workflow-decision-failed");
+      const decision = (await response.json()) as WorkflowDecisionResponse;
+      setMessages((current) => [
+        ...current,
+        decision.user_message,
+        decision.assistant_message,
+      ]);
+      setStoryboard(decision.storyboard);
+      setSelectedShotId(decision.storyboard.shots[0]?.id ?? null);
+      setWorkflow(decision.workflow);
+      setSelectedCanvas({ kind: "storyboard" });
+      setCustomDecision("");
+      setCustomDecisionOpen(false);
+      await refreshWorkspace();
+    } catch {
+      setActionError(t("decisionError"));
+    } finally {
+      setIsWorking(false);
+    }
+  }
 
   async function createStarterStoryboard() {
     if (!project) return;
@@ -347,10 +1366,13 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
       const turn = (await response.json()) as AgentTurn;
       setMessages((current) => [...current, turn.user_message, turn.assistant_message]);
       setStoryboard(turn.storyboard);
+      if (turn.workflow) setWorkflow(turn.workflow);
       setSelectedShotId(turn.storyboard.shots[0]?.id ?? null);
+      setSelectedCanvas({ kind: "storyboard" });
       setEstimate(null);
       setMessageDraft("");
-      setMobilePanel("inspector");
+      setMobilePanel("canvas");
+      await refreshWorkspace();
     } catch {
       setActionError(t("agentIntro"));
     } finally {
@@ -563,6 +1585,9 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
         ...payload.items,
         ...current,
       ]);
+      if (payload.items[0]) {
+        setSelectedCanvas({ kind: "asset", assetId: payload.items[0].id });
+      }
     } catch {
       setActionError(t("exportError"));
     } finally {
@@ -625,312 +1650,364 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
     );
   }
 
+  const copy = workspaceCopy(locale);
+  const stageLabels: Record<WorkflowStage, string> = {
+    concept: copy.stageConcept,
+    outline: copy.stageOutline,
+    script: copy.stageScript,
+    ready: copy.stageReady,
+  };
+  const stageIndex = workflow
+    ? ["concept", "outline", "script", "ready"].indexOf(workflow.stage)
+    : 0;
+  const canvasTitle =
+    selectedCanvas.kind === "brief"
+      ? copy.brief
+      : selectedCanvas.kind === "storyboard"
+        ? copy.storyboard
+        : selectedCanvas.kind === "document"
+          ? copy[selectedCanvas.document]
+          : selectedCanvas.kind === "shot"
+            ? canvasShot?.description ?? copy.shot
+            : selectedAsset?.filename ?? copy.media;
+
+  function selectShot(shot: Shot) {
+    setSelectedShotId(shot.id);
+    setSelectedCanvas({ kind: "shot", shotId: shot.id });
+    setEstimate(null);
+    setMobilePanel("canvas");
+  }
+
   return (
-    <main className="flex h-screen min-h-[680px] flex-col overflow-hidden bg-[#11100d] text-white">
-      <header className="flex h-16 shrink-0 items-center justify-between border-b border-white/8 px-4 sm:px-6">
-        <div className="flex min-w-0 items-center gap-3">
-          <Link
-            aria-label={t("back")}
-            className="grid size-9 place-items-center rounded-xl border border-white/10 text-white/55 transition hover:text-white"
-            href="/#assets"
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-          <span className="hidden size-8 place-items-center rounded-xl border border-white/20 text-white/70 sm:grid">
-            <Video className="h-4 w-4" />
-          </span>
-          <div className="min-w-0">
-            <div
-              aria-level={1}
-              className="truncate text-base font-semibold"
-              role="heading"
+    <main className="flex h-screen min-h-[680px] overflow-hidden bg-[#080807] text-white">
+      <div className="hidden xl:flex">
+        <WorkspaceHistory
+          activeProjectId={project.id}
+          collapsed={historyCollapsed}
+          draggingThreadId={draggingThreadId}
+          locale={locale}
+          onBeginDrag={beginThreadDrag}
+          onDeleteFolder={(folder) => void deleteFolder(folder)}
+          onDrop={dropThread}
+          onNewFolder={() => {
+            setRenamingFolder(null);
+            setFolderName("");
+            setFolderDialogOpen(true);
+          }}
+          onRenameFolder={(folder) => {
+            setRenamingFolder(folder);
+            setFolderName(folder.name);
+            setFolderDialogOpen(true);
+          }}
+          onToggleCollapsed={() => setHistoryCollapsed((current) => !current)}
+          onToggleFolder={(folderId) =>
+            setOpenFolders((current) =>
+              current.includes(folderId)
+                ? current.filter((id) => id !== folderId)
+                : [...current, folderId],
+            )
+          }
+          openFolders={openFolders}
+          workspace={workspace}
+        />
+      </div>
+
+      <section className="flex min-w-0 flex-1 flex-col">
+        <header className="flex h-14 shrink-0 items-center justify-between border-b border-white/[0.07] bg-[#0b0a08] px-4">
+          <div className="flex min-w-0 items-center gap-3">
+            <button
+              aria-label={copy.expand}
+              className="grid size-8 place-items-center rounded-lg text-white/45 hover:bg-white/[0.06] hover:text-white xl:hidden"
+              onClick={() => setMobilePanel("history")}
+              type="button"
             >
-              {project.title}
-            </div>
-            <p className="truncate text-xs text-white/35">
-              {storyboard
-                ? t("shotCount", { count: storyboard.shots.length })
-                : t("planFirst")}
-            </p>
-          </div>
-        </div>
-      </header>
-
-      <div className="grid min-h-0 flex-1 lg:grid-cols-[340px_1fr_320px]">
-        <aside
-          className={cn(
-            "min-h-0 flex-col border-r border-white/8 bg-[#14120e] lg:flex",
-            mobilePanel === "agent" ? "flex" : "hidden",
-          )}
-        >
-          <div className="flex h-14 items-center border-b border-white/8 px-5 text-sm font-medium">
-            <Sparkles className="mr-2 h-4 w-4 text-[#5cc8ff]" />
-            {t("agent")}
-          </div>
-          <div className="flex-1 space-y-4 overflow-y-auto p-5">
-            {messages.length === 0 ? (
-              <div className="rounded-2xl border border-white/8 bg-white/[0.025] p-4 text-sm leading-6 text-white/50">
-                <StreamingText text={t("agentIntro")} />
-              </div>
-            ) : (
-              messages.map((message) => (
+              <PanelLeftOpen className="h-4 w-4" />
+            </button>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2">
                 <div
-                  className={cn(
-                    "rounded-2xl p-4 text-sm leading-6",
-                    message.role === "user"
-                      ? "ml-8 bg-[#1677ff]/10 text-white/75"
-                      : "mr-4 border border-white/8 bg-white/[0.025] text-white/50",
-                  )}
-                  key={message.id}
+                  aria-level={1}
+                  className="truncate text-[14px] font-semibold"
+                  role="heading"
                 >
-                  {message.role === "user" ? (
-                    message.content
-                  ) : (
-                    <StreamingText text={message.content} />
-                  )}
+                  {project.title}
                 </div>
-              ))
-            )}
-          </div>
-          {selectedShot ? (
-            <div className="border-t border-white/8 p-4">
-              <div className="rounded-2xl border border-[#1677ff]/20 bg-[#1677ff]/[0.055] p-3">
-                <p className="text-[11px] uppercase tracking-[0.14em] text-[#8fdcff]">
-                  {t("currentShot")}
-                </p>
-                <p className="mt-1 line-clamp-1 text-sm text-white/70">
-                  {selectedShot.description}
-                </p>
-                <div className="mt-3 flex items-center gap-2">
-                  <button
-                    className="rounded-lg border border-white/10 px-3 py-2 text-xs text-white/55 hover:text-white"
-                    onClick={() => setMobilePanel("inspector")}
-                    type="button"
-                  >
-                    {t("agentAdjust")}
-                  </button>
-                  <button
-                    className="flex-1 rounded-lg bg-[#1677ff] px-3 py-2 text-xs font-semibold text-white disabled:opacity-40"
-                    disabled={isWorking || selectedShot.status === "completed"}
-                    onClick={() => void generateFromAgent()}
-                    type="button"
-                  >
-                    {selectedShot.status === "completed"
-                      ? t("completed")
-                      : isWorking
-                        ? t("generating")
-                        : t("agentGenerate")}
-                  </button>
-                </div>
+                <span className="rounded-full border border-[#1677ff]/25 bg-[#1677ff]/[0.08] px-2 py-0.5 text-[10px] text-[#91d1ff]">
+                  {workflow ? stageLabels[workflow.stage] : copy.stageConcept}
+                </span>
               </div>
-            </div>
-          ) : null}
-          <div className="border-t border-white/8 p-4">
-            <label className="block rounded-2xl border border-white/10 bg-white/[0.035] p-3 focus-within:border-[#1677ff]/40">
-              <span className="sr-only">{t("agent")}</span>
-              <textarea
-                className="min-h-16 w-full resize-none bg-transparent text-sm text-white outline-none placeholder:text-white/28"
-                onChange={(event) => setMessageDraft(event.target.value)}
-                placeholder={t("agentPlaceholder")}
-                value={messageDraft}
-              />
-              <span className="flex justify-end">
-                <button
-                  aria-label={t("send")}
-                  className="grid size-8 place-items-center rounded-xl bg-[#1677ff] text-white disabled:opacity-40"
-                  disabled={!messageDraft.trim() || isWorking}
-                  onClick={() => void sendMessage()}
-                  type="button"
-                >
-                  <ArrowUp className="h-4 w-4" />
-                </button>
-              </span>
-            </label>
-          </div>
-        </aside>
-
-        <section
-          className={cn(
-            "min-h-0 flex-col bg-[#0d0c0a] lg:flex",
-            mobilePanel === "canvas" ? "flex" : "hidden",
-          )}
-        >
-          <div className="flex h-14 items-center justify-between border-b border-white/8 px-5">
-            <span className="text-sm font-medium">{t("canvas")}</span>
-            <div className="flex items-center gap-2">
-              <button
-                className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3.5 py-2 text-xs text-white/65 transition hover:border-white/20 hover:text-white disabled:opacity-40"
-                disabled={!storyboard || isReviewing}
-                onClick={() => void evaluateProject()}
-                type="button"
-              >
-                <ScanSearch className="h-4 w-4" />
-                {t("review")}
-              </button>
-              <button
-                className="inline-flex items-center gap-2 rounded-full bg-[#1677ff] px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-[#2b86ff] disabled:opacity-40"
-                disabled={!canExport || isExporting}
-                onClick={() => void exportProject()}
-                type="button"
-              >
-                <Download className="h-4 w-4" />
-                {isExporting ? t("exporting") : t("export")}
-              </button>
-            </div>
-          </div>
-          <div className="flex-1 overflow-auto p-5 sm:p-8">
-            {storyboard ? (
-              <div className="mx-auto grid max-w-5xl gap-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {storyboard.shots.map((shot) => (
-                    <button
-                      className={cn(
-                        "relative aspect-video overflow-hidden rounded-2xl border text-left transition",
-                        selectedShotId === shot.id
-                          ? "border-[#1677ff]/70 ring-1 ring-[#1677ff]/30"
-                          : "border-white/8 hover:border-white/20",
-                        "bg-[radial-gradient(circle_at_70%_20%,rgba(22,119,255,0.24),transparent_30%),linear-gradient(140deg,#17264b,#0b1220)]",
-                      )}
-                      key={shot.id}
-                      onClick={() => {
-                        setSelectedShotId(shot.id);
-                        setEstimate(null);
-                        setMobilePanel("inspector");
-                      }}
-                      type="button"
-                    >
-                      <span className="absolute left-4 top-4 rounded-full bg-black/30 px-2.5 py-1 text-[10px] font-semibold tracking-[0.12em] backdrop-blur">
-                        {String(shot.index + 1).padStart(2, "0")}
-                      </span>
-                      {shot.status === "completed" ? (
-                        <span className="absolute right-4 top-4 grid size-7 place-items-center rounded-full bg-emerald-400 text-[#122016]">
-                          <Check className="h-4 w-4" />
-                        </span>
-                      ) : null}
-                      <span className="absolute inset-x-4 bottom-4">
-                        <span className="line-clamp-2 text-sm leading-5 text-white/80">
-                          {shot.description}
-                        </span>
-                        <span className="mt-2 block text-[10px] uppercase tracking-[0.15em] text-white/35">
-                          {shot.duration_seconds}s · {shot.aspect_ratio}
-                        </span>
-                      </span>
-                    </button>
-                  ))}
-                  <button
-                    aria-label={t("addStoryboard")}
-                    className="grid aspect-video place-items-center rounded-2xl border border-dashed border-white/12 text-white/30 transition hover:border-[#1677ff]/40 hover:text-[#5cc8ff]"
-                    onClick={() => setMobilePanel("agent")}
-                    type="button"
-                  >
-                    <Plus className="h-5 w-5" />
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <div className="grid min-h-full place-items-center">
-                <div className="relative grid aspect-video w-full max-w-3xl place-items-center overflow-hidden rounded-3xl border border-white/8 bg-[radial-gradient(circle_at_50%_20%,rgba(22,119,255,0.14),transparent_35%),linear-gradient(145deg,#141c2d,#0b1119)] p-8">
-                  <div className="max-w-md text-center">
-                    <span className="mx-auto grid size-14 place-items-center rounded-2xl border border-white/10 bg-white/5">
-                      <Film className="h-6 w-6 text-white/30" />
-                    </span>
-                    <h2 className="mt-5 text-xl font-medium">{t("starterTitle")}</h2>
-                    <p className="mt-2 text-sm leading-6 text-white/40">{t("starterBody")}</p>
-                    <button
-                      className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#1677ff] px-5 py-3 text-sm font-semibold text-white disabled:opacity-50"
-                      disabled={isWorking}
-                      onClick={() => void createStarterStoryboard()}
-                      type="button"
-                    >
-                      <WandSparkles className="h-4 w-4" />
-                      {t("createStarter")}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-            {actionError ? (
-              <p aria-live="polite" className="mx-auto mt-4 max-w-5xl text-sm text-red-300">
-                {actionError}
+              <p className="mt-0.5 text-[11px] text-white/25">
+                {storyboard ? t("shotCount", { count: storyboard.shots.length }) : t("planFirst")}
               </p>
-            ) : null}
-            {exportedAssets.length > 0 ? (
-              <section className="mx-auto mt-6 max-w-5xl rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.04] p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <h2 className="text-sm font-semibold">{t("exportReady")}</h2>
-                    <p className="mt-1 text-xs text-white/40">
-                      {exportedAssets.length} {t("exportVariants")}
-                    </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="mr-2 hidden items-center gap-1 md:flex">
+              {(["concept", "outline", "script", "ready"] as WorkflowStage[]).map(
+                (stage, index) => (
+                  <span
+                    className={cn(
+                      "h-1.5 rounded-full transition-all",
+                      index <= stageIndex
+                        ? "w-7 bg-[#1677ff]"
+                        : "w-3.5 bg-white/10",
+                    )}
+                    key={stage}
+                    title={stageLabels[stage]}
+                  />
+                ),
+              )}
+            </div>
+            <button
+              className="hidden items-center gap-1.5 rounded-lg border border-white/[0.09] px-3 py-2 text-[11px] text-white/48 hover:border-white/20 hover:text-white sm:flex"
+              disabled={!storyboard || isReviewing}
+              onClick={() => void evaluateProject()}
+              type="button"
+            >
+              <ScanSearch className="h-3.5 w-3.5" />
+              {copy.review}
+            </button>
+            <button
+              className="flex items-center gap-1.5 rounded-lg bg-[#1677ff] px-3 py-2 text-[11px] font-semibold text-white disabled:opacity-35"
+              disabled={!canExport || isExporting}
+              onClick={() => void exportProject()}
+              type="button"
+            >
+              <Download className="h-3.5 w-3.5" />
+              {copy.export}
+            </button>
+          </div>
+        </header>
+
+        <div className="grid min-h-0 flex-1 lg:grid-cols-[232px_minmax(0,1fr)_390px]">
+          <div
+            className={cn(
+              "min-h-0 lg:flex",
+              mobilePanel === "assets" ? "flex" : "hidden",
+            )}
+          >
+            <AssetsTree
+              assets={assets}
+              copy={copy}
+              isWorking={isWorking}
+              onSelect={(selection) => {
+                setSelectedCanvas(selection);
+                if (selection.kind === "shot") setSelectedShotId(selection.shotId);
+                setMobilePanel("canvas");
+              }}
+              onUpload={(file) => void uploadReference(file)}
+              selected={selectedCanvas}
+              storyboard={storyboard}
+              workflow={workflow}
+            />
+          </div>
+
+          <section
+            className={cn(
+              "min-h-0 min-w-0 flex-col bg-[#0b0a08] lg:flex",
+              mobilePanel === "canvas" ? "flex" : "hidden",
+            )}
+          >
+            <div className="flex h-12 shrink-0 items-center justify-between border-b border-white/[0.07] px-5">
+              <span className="truncate text-[12px] font-medium text-white/58">
+                {canvasTitle}
+              </span>
+              <span className="text-[10px] uppercase tracking-[0.14em] text-white/22">
+                {copy.stage} · {workflow ? stageLabels[workflow.stage] : stageLabels.concept}
+              </span>
+            </div>
+            <div className="min-h-0 flex-1 overflow-y-auto">
+              {selectedCanvas.kind === "brief" ? (
+                <article className="mx-auto max-w-4xl px-6 py-10 sm:px-10">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6eb8ff]">
+                    {copy.brief}
+                  </p>
+                  <h2 className="mt-4 max-w-3xl font-display text-4xl leading-tight text-white/90">
+                    {project.title}
+                  </h2>
+                  <p className="mt-7 whitespace-pre-wrap text-[15px] leading-8 text-white/52">
+                    {creativeBrief(project.brief)}
+                  </p>
+                  <div className="mt-10 grid gap-3 sm:grid-cols-3">
+                    {(["concept", "outline", "script"] as WorkflowStage[]).map(
+                      (stage, index) => (
+                        <div
+                          className={cn(
+                            "rounded-2xl border p-4",
+                            index <= stageIndex
+                              ? "border-[#1677ff]/22 bg-[#1677ff]/[0.045]"
+                              : "border-white/[0.07] bg-white/[0.015]",
+                          )}
+                          key={stage}
+                        >
+                          <span className="text-[10px] uppercase tracking-[0.15em] text-white/25">
+                            0{index + 1}
+                          </span>
+                          <p className="mt-2 text-[13px] text-white/65">{stageLabels[stage]}</p>
+                        </div>
+                      ),
+                    )}
                   </div>
-                  {exportCover ? (
-                    <img
-                      alt={t("exportCover")}
-                      className="h-16 w-24 rounded-lg object-cover"
-                      src={mediaUrl(exportCover.content_url)}
-                    />
-                  ) : null}
-                </div>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {exportedAssets.map((asset) => (
-                    <div className="flex items-center gap-1" key={asset.id}>
-                      <a
-                        className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-2 text-xs text-white/70 hover:border-white/20 hover:text-white"
-                        download={asset.filename}
-                        href={mediaUrl(asset.content_url)}
-                      >
-                        <Download className="h-3.5 w-3.5" />
-                        {asset.filename}
-                      </a>
+                </article>
+              ) : null}
+
+              {selectedCanvas.kind === "storyboard" ||
+              selectedCanvas.kind === "document" ? (
+                <article className="mx-auto max-w-4xl px-6 py-8 sm:px-10">
+                  <div className="flex items-start justify-between gap-5 border-b border-white/[0.07] pb-6">
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6eb8ff]">
+                        {selectedCanvas.kind === "document"
+                          ? copy[selectedCanvas.document]
+                          : copy.storyboard}
+                      </p>
+                      <h2 className="mt-3 line-clamp-2 font-display text-2xl leading-tight text-white/88">
+                        {selectedCanvas.kind === "document"
+                          ? selectedCanvas.document === "outline"
+                            ? copy.stageOutline
+                            : copy.stageScript
+                          : project.title}
+                      </h2>
+                    </div>
+                    {storyboard ? (
+                      <span className="shrink-0 rounded-lg border border-white/[0.08] px-3 py-2 text-[10px] text-white/28">
+                        v{storyboard.version}
+                      </span>
+                    ) : null}
+                  </div>
+                  {storyboard ? (
+                    <div className="mt-6 space-y-3">
+                      {storyboard.shots.map((shot) => (
+                        <button
+                          className="group w-full rounded-2xl border border-white/[0.07] bg-white/[0.018] p-5 text-left transition hover:border-[#1677ff]/25 hover:bg-[#1677ff]/[0.025]"
+                          key={shot.id}
+                          onClick={() => selectShot(shot)}
+                          type="button"
+                        >
+                          <div className="flex items-center justify-between gap-4">
+                            <span className="text-[10px] font-semibold tracking-[0.16em] text-[#6eb8ff]">
+                              {copy.shot} {String(shot.index + 1).padStart(2, "0")}
+                            </span>
+                            <span className="text-[10px] text-white/22">
+                              {shot.duration_seconds}s · {shot.aspect_ratio}
+                            </span>
+                          </div>
+                          <h3 className="mt-3 text-[15px] font-medium leading-7 text-white/78">
+                            {shot.description}
+                          </h3>
+                          <p className="mt-2 line-clamp-2 text-[12px] leading-6 text-white/32">
+                            {locale.startsWith("zh") && shot.prompt_zh
+                              ? shot.prompt_zh
+                              : shot.prompt_en}
+                          </p>
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="mt-10 rounded-2xl border border-dashed border-white/[0.1] p-10 text-center text-white/30">
+                      {t("starterBody")}
                       <button
-                        aria-label={`${t("share")} ${asset.filename}`}
-                        className="grid size-8 place-items-center rounded-full border border-white/10 text-white/55 hover:text-white disabled:opacity-40"
-                        disabled={isSharing}
-                        onClick={() => void shareExport(asset)}
+                        className="mx-auto mt-5 flex items-center gap-2 rounded-lg bg-[#1677ff] px-4 py-2.5 text-[12px] font-semibold text-white disabled:opacity-40"
+                        disabled={isWorking}
+                        onClick={() => void createStarterStoryboard()}
                         type="button"
                       >
-                        <Share2 className="h-3.5 w-3.5" />
+                        <WandSparkles className="h-4 w-4" />
+                        {t("createStarter")}
                       </button>
                     </div>
-                  ))}
-                </div>
-                {shareLink ? (
-                  <label className="mt-4 block text-xs text-white/45">
-                    <span>{t("shareReady")}</span>
-                    <input
-                      className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-white/75"
-                      readOnly
-                      value={mediaUrl(shareLink.share_url)}
-                    />
-                  </label>
-                ) : null}
-              </section>
-            ) : null}
-          </div>
-        </section>
+                  )}
+                </article>
+              ) : null}
 
-        <aside
-          className={cn(
-            "min-h-0 flex-col border-l border-white/8 bg-[#14120e] lg:flex",
-            mobilePanel === "inspector" ? "flex" : "hidden",
-          )}
-        >
-          <div className="flex h-14 items-center border-b border-white/8 px-5 text-sm font-medium">
-            <PanelRight className="mr-2 h-4 w-4 text-white/45" />
-            {t("shotInspector")}
-          </div>
-          <div className="flex-1 overflow-y-auto p-5">
-            {selectedShot ? (
-              <div className="space-y-6">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-xs uppercase tracking-[0.15em] text-white/30">
-                    {selectedShot.index + 1} / {storyboard?.shots.length ?? 0}
-                  </span>
-                  <div className="flex items-center gap-1">
+              {selectedCanvas.kind === "shot" && canvasShot ? (
+                <article className="mx-auto max-w-4xl px-6 py-8 sm:px-10">
+                  <div className="aspect-video overflow-hidden rounded-2xl border border-white/[0.08] bg-[radial-gradient(circle_at_72%_20%,rgba(22,119,255,0.26),transparent_28%),linear-gradient(145deg,#13213d,#080c13)] p-6">
+                    <div className="flex h-full flex-col justify-between">
+                      <div className="flex items-center justify-between">
+                        <span className="rounded-full bg-black/25 px-3 py-1.5 text-[10px] font-semibold tracking-[0.14em] backdrop-blur">
+                          {copy.shot} {String(canvasShot.index + 1).padStart(2, "0")}
+                        </span>
+                        {canvasShot.status === "completed" ? (
+                          <span className="grid size-8 place-items-center rounded-full bg-emerald-400 text-[#122016]">
+                            <Check className="h-4 w-4" />
+                          </span>
+                        ) : null}
+                      </div>
+                      <div>
+                        <p className="max-w-2xl font-display text-2xl leading-tight text-white/85">
+                          {canvasShot.description}
+                        </p>
+                        <p className="mt-3 text-[11px] text-white/35">
+                          {canvasShot.duration_seconds}s · {canvasShot.aspect_ratio}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_260px]">
+                    <div className="rounded-2xl border border-white/[0.07] p-5">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/28">
+                        Prompt
+                      </p>
+                      <p className="mt-3 whitespace-pre-wrap text-[13px] leading-7 text-white/48">
+                        {locale.startsWith("zh") && canvasShot.prompt_zh
+                          ? canvasShot.prompt_zh
+                          : canvasShot.prompt_en}
+                      </p>
+                    </div>
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="rounded-xl border border-white/[0.07] p-3">
+                          <p className="text-[10px] text-white/24">{copy.ratio}</p>
+                          <p className="mt-1 text-[12px] text-white/65">
+                            {canvasShot.aspect_ratio}
+                          </p>
+                        </div>
+                        <div className="rounded-xl border border-white/[0.07] p-3">
+                          <p className="text-[10px] text-white/24">{copy.duration}</p>
+                          <p className="mt-1 text-[12px] text-white/65">
+                            {canvasShot.duration_seconds}s
+                          </p>
+                        </div>
+                      </div>
+                      {estimate ? (
+                        <p className="rounded-xl bg-[#1677ff]/[0.08] px-3 py-2 text-[11px] text-[#a8ddff]">
+                          {t("estimatedCredits")}: {estimate.credits}
+                        </p>
+                      ) : null}
+                      <button
+                        className="w-full rounded-xl border border-white/[0.09] px-4 py-2.5 text-[12px] text-white/58 hover:border-white/20 hover:text-white disabled:opacity-35"
+                        disabled={isWorking}
+                        onClick={() => void estimateShot()}
+                        type="button"
+                      >
+                        {copy.estimate}
+                      </button>
+                      <button
+                        className="w-full rounded-xl bg-[#1677ff] px-4 py-2.5 text-[12px] font-semibold text-white disabled:opacity-35"
+                        disabled={
+                          isWorking ||
+                          !estimate ||
+                          canvasShot.status === "completed" ||
+                          workflow?.status !== "approved"
+                        }
+                        onClick={() => void generateShot()}
+                        type="button"
+                      >
+                        {isWorking
+                          ? copy.generating
+                          : canvasShot.status === "completed"
+                            ? t("completed")
+                            : copy.generate}
+                      </button>
+                    </div>
+                  </div>
+                  <div className="mt-5 flex items-center gap-2">
                     <button
                       aria-label={t("moveEarlier")}
-                      className="grid size-8 place-items-center rounded-lg border border-white/8 text-white/45 transition hover:border-white/18 hover:text-white disabled:opacity-20"
-                      disabled={isReordering || selectedShot.index === 0}
+                      className="grid size-9 place-items-center rounded-lg border border-white/[0.08] text-white/40 disabled:opacity-20"
+                      disabled={isReordering || canvasShot.index === 0}
                       onClick={() => void moveSelectedShot(-1)}
                       type="button"
                     >
@@ -938,136 +2015,352 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
                     </button>
                     <button
                       aria-label={t("moveLater")}
-                      className="grid size-8 place-items-center rounded-lg border border-white/8 text-white/45 transition hover:border-white/18 hover:text-white disabled:opacity-20"
+                      className="grid size-9 place-items-center rounded-lg border border-white/[0.08] text-white/40 disabled:opacity-20"
                       disabled={
                         isReordering ||
-                        selectedShot.index === (storyboard?.shots.length ?? 1) - 1
+                        canvasShot.index === (storyboard?.shots.length ?? 1) - 1
                       }
                       onClick={() => void moveSelectedShot(1)}
                       type="button"
                     >
                       <ArrowRight className="h-4 w-4" />
                     </button>
+                    <label className="ml-auto flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-white/[0.1] px-3 py-2 text-[11px] text-white/42 hover:border-[#1677ff]/35 hover:text-white">
+                      <Upload className="h-3.5 w-3.5" />
+                      {isWorking ? copy.uploading : copy.upload}
+                      <input
+                        accept="image/*,video/*,audio/*"
+                        aria-label={t("uploadReference")}
+                        className="sr-only"
+                        disabled={isWorking}
+                        onChange={(event) => {
+                          const file = event.target.files?.[0];
+                          event.currentTarget.value = "";
+                          if (file) void uploadReference(file);
+                        }}
+                        type="file"
+                      />
+                    </label>
+                    <span className="text-[10px] text-white/24">
+                      {assets.filter((asset) => asset.kind === "upload").length}{" "}
+                      {t("referenceCount")}
+                    </span>
                   </div>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.15em] text-white/30">
-                    Prompt
-                  </p>
-                  <p className="mt-3 rounded-xl border border-white/8 bg-white/[0.025] p-3 text-sm leading-6 text-white/55">
-                    {locale.startsWith("zh") && selectedShot.prompt_zh
-                      ? selectedShot.prompt_zh
-                      : selectedShot.prompt_en}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.15em] text-white/30">
-                    {t("aspectRatio")}
-                  </p>
-                  <div className="mt-3 grid grid-cols-3 gap-2">
-                    {["16:9", "9:16", "1:1"].map((ratio) => (
-                      <span
-                        className={cn(
-                          "rounded-xl border px-2 py-3 text-center text-xs",
-                          selectedShot.aspect_ratio === ratio
-                            ? "border-[#1677ff]/50 bg-[#1677ff]/10 text-[#8fdcff]"
-                            : "border-white/8 text-white/30",
-                        )}
-                        key={ratio}
-                      >
-                        {ratio}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div>
-                  <p className="text-xs uppercase tracking-[0.15em] text-white/30">
-                    {t("duration")}
-                  </p>
-                  <div className="mt-3 rounded-xl border border-white/8 px-3 py-3 text-sm text-white/55">
-                    {selectedShot.duration_seconds}s
-                  </div>
-                </div>
+                </article>
+              ) : null}
 
-                <div className="space-y-2 border-t border-white/8 pt-5">
-                  {estimate ? (
-                    <p className="rounded-xl bg-[#1677ff]/8 px-3 py-2 text-sm text-[#b8eaff]">
-                      {t("estimatedCredits")}: {estimate.credits}
-                    </p>
-                  ) : null}
-                  <button
-                    className="w-full rounded-xl border border-white/10 px-4 py-3 text-sm text-white/70 transition hover:border-white/20 hover:text-white disabled:opacity-40"
-                    disabled={isWorking}
-                    onClick={() => void estimateShot()}
-                    type="button"
-                  >
-                    {t("estimate")}
-                  </button>
-                  <button
-                    className="w-full rounded-xl bg-[#1677ff] px-4 py-3 text-sm font-semibold text-white disabled:opacity-40"
-                    disabled={isWorking || !estimate || selectedShot.status === "completed"}
-                    onClick={() => void generateShot()}
-                    type="button"
-                  >
-                    {isWorking
-                      ? t("generating")
-                      : selectedShot.status === "completed"
-                        ? t("completed")
-                        : t("generate")}
-                  </button>
-                </div>
-                <div className="border-t border-white/8 pt-5">
-                  <p className="text-xs uppercase tracking-[0.15em] text-white/30">
-                    {t("references")}
-                  </p>
-                  <p className="mt-2 text-xs leading-5 text-white/35">
-                    {assets.filter((asset) => asset.kind === "upload").length}{" "}
-                    {t("referenceCount")}
-                  </p>
-                  <label className="mt-3 flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-white/12 px-4 py-3 text-sm text-white/55 transition hover:border-[#1677ff]/40 hover:text-white">
-                    <Upload className="h-4 w-4" />
-                    {isWorking ? t("uploading") : t("uploadReference")}
-                    <input
-                      accept="image/*,video/*,audio/*"
-                      className="sr-only"
-                      disabled={isWorking}
-                      onChange={(event) => {
-                        const file = event.target.files?.[0];
-                        event.currentTarget.value = "";
-                        if (file) void uploadReference(file);
-                      }}
-                      type="file"
-                    />
-                  </label>
-                </div>
-              </div>
-            ) : (
-              <p className="text-sm leading-6 text-white/30">{t("noShot")}</p>
-            )}
-          </div>
-        </aside>
-      </div>
+              {selectedCanvas.kind === "asset" && selectedAsset ? (
+                <article className="mx-auto max-w-4xl px-6 py-8 sm:px-10">
+                  <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-black/30">
+                    {selectedAsset.content_type.startsWith("video/") ? (
+                      <video
+                        className="max-h-[65vh] w-full bg-black"
+                        controls
+                        playsInline
+                        src={mediaUrl(selectedAsset.content_url)}
+                      />
+                    ) : selectedAsset.content_type.startsWith("image/") ? (
+                      <img
+                        alt={selectedAsset.filename}
+                        className="max-h-[65vh] w-full object-contain"
+                        src={mediaUrl(selectedAsset.content_url)}
+                      />
+                    ) : (
+                      <div className="grid min-h-80 place-items-center">
+                        <FileText className="h-12 w-12 text-white/18" />
+                      </div>
+                    )}
+                  </div>
+                  <div className="mt-5 flex items-center justify-between gap-4">
+                    <div>
+                      <h2 className="text-[15px] font-medium">{selectedAsset.filename}</h2>
+                      <p className="mt-1 text-[11px] text-white/28">
+                        {selectedAsset.content_type} ·{" "}
+                        {(selectedAsset.byte_size / 1024 / 1024).toFixed(1)} MB
+                      </p>
+                    </div>
+                    <a
+                      className="flex items-center gap-2 rounded-lg border border-white/[0.09] px-3 py-2 text-[11px] text-white/55 hover:text-white"
+                      download={selectedAsset.filename}
+                      href={mediaUrl(selectedAsset.content_url)}
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      {copy.download}
+                    </a>
+                  </div>
+                </article>
+              ) : null}
 
-      <nav className="grid grid-cols-3 border-t border-white/8 bg-[#14120e] lg:hidden">
-        {[
-          { id: "agent" as const, label: t("agent"), icon: MessageCircleMore },
-          { id: "canvas" as const, label: t("canvas"), icon: Film },
-          { id: "inspector" as const, label: t("inspector"), icon: PanelRight },
-        ].map(({ id, label, icon: Icon }) => (
-          <button
+              {actionError ? (
+                <p
+                  aria-live="polite"
+                  className="mx-auto mt-3 max-w-4xl px-6 text-[12px] text-red-300 sm:px-10"
+                >
+                  {actionError}
+                </p>
+              ) : null}
+
+              {exportedAssets.length > 0 ? (
+                <section className="mx-auto mt-5 max-w-4xl px-6 pb-10 sm:px-10">
+                  <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.04] p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <h2 className="text-[13px] font-semibold">{copy.exportReady}</h2>
+                        <p className="mt-1 text-[11px] text-white/32">
+                          {exportedAssets.length} {t("exportVariants")}
+                        </p>
+                      </div>
+                      {exportCover ? (
+                        <img
+                          alt={t("exportCover")}
+                          className="h-14 w-20 rounded-lg object-cover"
+                          src={mediaUrl(exportCover.content_url)}
+                        />
+                      ) : null}
+                    </div>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {exportedAssets.map((asset) => (
+                        <div className="flex items-center gap-1" key={asset.id}>
+                          <a
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-white/[0.09] px-3 py-2 text-[11px] text-white/62 hover:border-white/20 hover:text-white"
+                            download={asset.filename}
+                            href={mediaUrl(asset.content_url)}
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                            {asset.filename}
+                          </a>
+                          <button
+                            aria-label={`${copy.share} ${asset.filename}`}
+                            className="grid size-8 place-items-center rounded-lg border border-white/[0.09] text-white/45 hover:text-white disabled:opacity-35"
+                            disabled={isSharing}
+                            onClick={() => void shareExport(asset)}
+                            type="button"
+                          >
+                            <Share2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                    {shareLink ? (
+                      <label className="mt-3 block text-[11px] text-white/38">
+                        <span>{t("shareReady")}</span>
+                        <input
+                          className="mt-2 w-full rounded-lg border border-white/[0.09] bg-black/20 px-3 py-2 text-white/70"
+                          readOnly
+                          value={mediaUrl(shareLink.share_url)}
+                        />
+                      </label>
+                    ) : null}
+                  </div>
+                </section>
+              ) : null}
+            </div>
+          </section>
+
+          <aside
             className={cn(
-              "flex flex-col items-center gap-1 py-3 text-[11px]",
-              mobilePanel === id ? "text-[#5cc8ff]" : "text-white/35",
+              "min-h-0 flex-col border-l border-white/[0.07] bg-[#0d0c0a] lg:flex",
+              mobilePanel === "agent" ? "flex" : "hidden",
             )}
-            key={id}
-            onClick={() => setMobilePanel(id)}
-            type="button"
           >
-            <Icon className="h-4 w-4" />
-            {label}
-          </button>
-        ))}
-      </nav>
+            <div className="flex h-12 shrink-0 items-center justify-between border-b border-white/[0.07] px-4">
+              <span className="flex items-center gap-2 text-[12px] font-medium text-white/65">
+                <span className="grid size-6 place-items-center rounded-lg bg-[#1677ff]/15 text-[#7bc6ff]">
+                  <Sparkles className="h-3.5 w-3.5" />
+                </span>
+                VideoAgent
+              </span>
+              <span className="text-[10px] text-white/24">
+                {workflow?.status === "approved" ? copy.approved : copy.awaiting}
+              </span>
+            </div>
+            <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-5">
+              {messages.length === 0 ? (
+                <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-4 text-[12px] leading-6 text-white/45">
+                  <StreamingText text={t("agentIntro")} />
+                </div>
+              ) : (
+                messages.map((message) => (
+                  <div
+                    className={cn(
+                      "rounded-2xl px-4 py-3 text-[12px] leading-6",
+                      message.role === "user"
+                        ? "ml-8 border border-[#1677ff]/20 bg-[#1677ff]/[0.075] text-white/78"
+                        : "mr-3 border border-white/[0.07] bg-white/[0.02] text-white/52",
+                    )}
+                    key={message.id}
+                  >
+                    {message.role === "user" ? (
+                      message.content
+                    ) : (
+                      <div className="max-h-64 overflow-y-auto pr-1">
+                        <StreamingText text={message.content} />
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+              {workflow?.stage === "ready" ? (
+                <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.045] px-4 py-3 text-[12px] leading-6 text-emerald-200/75">
+                  {copy.readyMessage}
+                </div>
+              ) : null}
+              <div ref={messagesEndRef} />
+            </div>
+            {workflow?.status === "awaiting_approval" && workflow.stage !== "ready" ? (
+              <div className="shrink-0 border-t border-white/[0.07] p-3">
+                <ApprovalCard
+                  copy={copy}
+                  customOpen={customDecisionOpen}
+                  customValue={customDecision}
+                  isWorking={isWorking}
+                  onCustomOpen={() => setCustomDecisionOpen((current) => !current)}
+                  onCustomValue={setCustomDecision}
+                  onDecision={(choice, instruction) =>
+                    void decideWorkflow(choice, instruction)
+                  }
+                  stage={workflow.stage}
+                />
+              </div>
+            ) : null}
+            <div className="shrink-0 border-t border-white/[0.07] p-3">
+              <label className="block rounded-2xl border border-white/[0.09] bg-white/[0.025] p-3 focus-within:border-[#1677ff]/35">
+                <span className="sr-only">{t("agent")}</span>
+                <textarea
+                  className="min-h-16 w-full resize-none bg-transparent text-[12px] leading-6 text-white outline-none placeholder:text-white/24"
+                  onChange={(event) => setMessageDraft(event.target.value)}
+                  placeholder={copy.chatPlaceholder}
+                  value={messageDraft}
+                />
+                <span className="flex items-center justify-between">
+                  <span className="text-[10px] text-white/20">
+                    {workflow ? stageLabels[workflow.stage] : copy.stageConcept}
+                  </span>
+                  <button
+                    aria-label={copy.send}
+                    className="grid size-8 place-items-center rounded-xl bg-[#1677ff] text-white disabled:opacity-35"
+                    disabled={!messageDraft.trim() || isWorking}
+                    onClick={() => void sendMessage()}
+                    type="button"
+                  >
+                    <ArrowUp className="h-4 w-4" />
+                  </button>
+                </span>
+              </label>
+            </div>
+          </aside>
+        </div>
+
+        <nav className="grid grid-cols-4 border-t border-white/[0.07] bg-[#0d0c0a] lg:hidden">
+          {[
+            { id: "history" as const, label: copy.recent, icon: MessageSquareText },
+            { id: "assets" as const, label: copy.assets, icon: Layers3 },
+            { id: "canvas" as const, label: t("canvas"), icon: Film },
+            { id: "agent" as const, label: t("agent"), icon: MessageCircleMore },
+          ].map(({ id, label, icon: Icon }) => (
+            <button
+              className={cn(
+                "flex flex-col items-center gap-1 py-2.5 text-[10px]",
+                mobilePanel === id ? "text-[#6eb8ff]" : "text-white/30",
+              )}
+              key={id}
+              onClick={() => setMobilePanel(id)}
+              type="button"
+            >
+              <Icon className="h-4 w-4" />
+              {label}
+            </button>
+          ))}
+        </nav>
+      </section>
+
+      {mobilePanel === "history" ? (
+        <div className="fixed inset-0 z-40 flex bg-black/60 backdrop-blur-sm xl:hidden">
+          <WorkspaceHistory
+            activeProjectId={project.id}
+            collapsed={false}
+            draggingThreadId={draggingThreadId}
+            locale={locale}
+            onBeginDrag={beginThreadDrag}
+            onDeleteFolder={(folder) => void deleteFolder(folder)}
+            onDrop={dropThread}
+            onNewFolder={() => {
+              setRenamingFolder(null);
+              setFolderName("");
+              setFolderDialogOpen(true);
+            }}
+            onRenameFolder={(folder) => {
+              setRenamingFolder(folder);
+              setFolderName(folder.name);
+              setFolderDialogOpen(true);
+            }}
+            onToggleCollapsed={() => setMobilePanel("canvas")}
+            onToggleFolder={(folderId) =>
+              setOpenFolders((current) =>
+                current.includes(folderId)
+                  ? current.filter((id) => id !== folderId)
+                  : [...current, folderId],
+              )
+            }
+            openFolders={openFolders}
+            workspace={workspace}
+          />
+        </div>
+      ) : null}
+
+      {folderDialogOpen ? (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-5 backdrop-blur-sm"
+          onPointerDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setFolderDialogOpen(false);
+              setRenamingFolder(null);
+            }
+          }}
+        >
+          <form
+            aria-label={renamingFolder ? copy.rename : copy.newFolder}
+            className="w-full max-w-sm rounded-2xl border border-white/[0.1] bg-[#15130f] p-5"
+            onSubmit={(event) => void saveFolder(event)}
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-[15px] font-semibold">
+                {renamingFolder ? copy.rename : copy.newFolder}
+              </h2>
+              <button
+                aria-label={copy.cancel}
+                className="grid size-8 place-items-center rounded-lg text-white/35 hover:bg-white/[0.06] hover:text-white"
+                onClick={() => {
+                  setFolderDialogOpen(false);
+                  setRenamingFolder(null);
+                }}
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <label className="mt-5 block text-[12px] text-white/45">
+              {copy.folderName}
+              <input
+                autoFocus
+                className="mt-2 w-full rounded-xl border border-white/[0.09] bg-black/20 px-4 py-3 text-white outline-none focus:border-[#1677ff]/40"
+                maxLength={120}
+                onChange={(event) => setFolderName(event.target.value)}
+                required
+                value={folderName}
+              />
+            </label>
+            <button
+              className="mt-4 w-full rounded-xl bg-[#1677ff] px-4 py-2.5 text-[12px] font-semibold text-white disabled:opacity-35"
+              disabled={!folderName.trim()}
+              type="submit"
+            >
+              {copy.save}
+            </button>
+          </form>
+        </div>
+      ) : null}
+
       {generationErrorOpen ? (
         <div
           className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-5 backdrop-blur-sm"
@@ -1078,16 +2371,18 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
           <div
             aria-labelledby="generation-error-title"
             aria-modal="true"
-            className="w-full max-w-md rounded-3xl border border-white/12 bg-[#15120e] p-6 shadow-2xl shadow-black/50"
+            className="w-full max-w-md rounded-2xl border border-white/[0.12] bg-[#15120e] p-6"
             role="dialog"
           >
-            <p className="text-xs uppercase tracking-[0.16em] text-[#5cc8ff]">VideoAgent</p>
-            <h2 id="generation-error-title" className="mt-3 text-2xl font-semibold">
+            <p className="text-[10px] uppercase tracking-[0.16em] text-[#5cc8ff]">
+              VideoAgent
+            </p>
+            <h2 id="generation-error-title" className="mt-3 text-xl font-semibold">
               {t("generationError")}
             </h2>
             <button
               autoFocus
-              className="mt-6 rounded-full bg-[#1677ff] px-5 py-2.5 text-sm font-semibold text-white"
+              className="mt-6 rounded-lg bg-[#1677ff] px-5 py-2.5 text-[12px] font-semibold text-white"
               onClick={() => setGenerationErrorOpen(false)}
               type="button"
             >
@@ -1096,6 +2391,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
           </div>
         </div>
       ) : null}
+
       {reviewOpen ? (
         <div
           className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-5 backdrop-blur-sm"
@@ -1106,21 +2402,21 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
           <section
             aria-labelledby="review-title"
             aria-modal="true"
-            className="w-full max-w-2xl rounded-3xl border border-white/12 bg-[#15120e] p-6 shadow-2xl shadow-black/50"
+            className="w-full max-w-xl rounded-2xl border border-white/[0.12] bg-[#15120e] p-6"
             role="dialog"
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs uppercase tracking-[0.16em] text-[#5cc8ff]">
+                <p className="text-[10px] uppercase tracking-[0.16em] text-[#5cc8ff]">
                   VideoAgent
                 </p>
-                <h2 id="review-title" className="mt-2 text-2xl font-semibold">
+                <h2 id="review-title" className="mt-2 text-xl font-semibold">
                   {t("reviewTitle")}
                 </h2>
               </div>
               <button
                 aria-label={t("close")}
-                className="grid size-9 place-items-center rounded-full bg-white/5 text-white/55 hover:text-white"
+                className="grid size-8 place-items-center rounded-lg bg-white/[0.04] text-white/45 hover:text-white"
                 onClick={() => setReviewOpen(false)}
                 type="button"
               >
@@ -1128,26 +2424,28 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
               </button>
             </div>
             {isReviewing || !evaluation ? (
-              <p className="py-16 text-center text-sm text-white/45">{t("reviewing")}</p>
+              <p className="py-16 text-center text-[12px] text-white/40">{t("reviewing")}</p>
             ) : (
-              <div className="mt-6">
+              <div className="mt-5">
                 <div className="flex items-end gap-3">
-                  <strong className="font-display text-6xl font-medium leading-none">
+                  <strong className="font-display text-5xl font-medium leading-none">
                     {evaluation.overall_score}
                   </strong>
-                  <span className="pb-1 text-sm text-white/40">{t("overallScore")}</span>
+                  <span className="pb-1 text-[12px] text-white/35">
+                    {t("overallScore")}
+                  </span>
                 </div>
-                <div className="mt-6 grid gap-3 sm:grid-cols-2">
+                <div className="mt-5 grid gap-2 sm:grid-cols-2">
                   {evaluation.metrics.map((metric) => (
                     <div
-                      className="rounded-2xl border border-white/8 bg-white/[0.025] p-4"
+                      className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-3"
                       key={metric.key}
                     >
-                      <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center justify-between text-[12px]">
                         <span>{metricLabels[metric.key]}</span>
-                        <span className="text-white/45">{metric.score}</span>
+                        <span className="text-white/35">{metric.score}</span>
                       </div>
-                      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/8">
+                      <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/[0.06]">
                         <div
                           className="h-full rounded-full bg-[#1677ff]"
                           style={{ width: `${metric.score}%` }}
@@ -1156,10 +2454,10 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
                     </div>
                   ))}
                 </div>
-                <div className="mt-6 space-y-2">
+                <div className="mt-5 space-y-2">
                   {evaluation.suggestions.map((suggestion) => (
                     <p
-                      className="rounded-xl border border-white/8 px-4 py-3 text-sm text-white/60"
+                      className="rounded-xl border border-white/[0.07] px-3 py-2.5 text-[12px] text-white/52"
                       key={suggestion.code}
                     >
                       {suggestionLabels[suggestion.code]}

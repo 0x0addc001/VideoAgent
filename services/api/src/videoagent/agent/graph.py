@@ -14,6 +14,7 @@ class AgentState(TypedDict, total=False):
     project_title: str
     project_brief: str
     user_message: str
+    workflow_stage: Literal["concept", "outline", "script", "ready"]
     plan: StoryboardPlan | None
 
 
@@ -25,6 +26,7 @@ class StoryboardAgent:
                 project_title=state["project_title"],
                 project_brief=state["project_brief"],
                 user_message=state["user_message"],
+                workflow_stage=state["workflow_stage"],
             )
             return {"plan": await planner.plan(context)}
 
@@ -41,6 +43,7 @@ class StoryboardAgent:
         project_title: str,
         project_brief: str,
         user_message: str,
+        workflow_stage: Literal["concept", "outline", "script", "ready"] = "concept",
     ) -> StoryboardPlan:
         result = cast(
             dict[str, object],
@@ -50,6 +53,7 @@ class StoryboardAgent:
                     "project_title": project_title,
                     "project_brief": project_brief,
                     "user_message": user_message,
+                    "workflow_stage": workflow_stage,
                 }
             ),
         )

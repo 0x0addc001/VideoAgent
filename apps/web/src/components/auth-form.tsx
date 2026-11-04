@@ -4,6 +4,7 @@ import { ArrowRight, LoaderCircle } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
 import { FormEvent, useEffect, useState } from "react";
 import { Link, useRouter } from "@/i18n/navigation";
+import { resolveApiBaseUrl } from "@/lib/api";
 
 type AuthMode = "register" | "login";
 
@@ -11,8 +12,7 @@ type AuthFormProps = {
   mode: AuthMode;
 };
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api/v1";
+const API_BASE_URL = resolveApiBaseUrl();
 
 export function AuthForm({ mode }: AuthFormProps) {
   const t = useTranslations("auth");

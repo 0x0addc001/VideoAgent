@@ -42,6 +42,8 @@
 <a class="toc-link toc-level-2" href="#agent-对话">Agent 对话</a>
 <a class="toc-link toc-level-3" href="#消息历史">消息历史</a>
 <a class="toc-link toc-level-3" href="#发送消息">发送消息</a>
+<a class="toc-link toc-level-3" href="#读取工作流">读取工作流</a>
+<a class="toc-link toc-level-3" href="#提交审批">提交审批</a>
 <a class="toc-link toc-level-2" href="#故事板即时评估">故事板即时评估</a>
 <a class="toc-link toc-level-2" href="#视频生成">视频生成</a>
 <a class="toc-link toc-level-3" href="#积分估算">积分估算</a>
@@ -173,6 +175,31 @@ http://localhost:8000/openapi.json</code></pre>
 <td><code>/projects/{project_id}</code></td>
 <td>归档项目</td>
 </tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/workspace</code></td>
+<td>项目目录与全部历史对话</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/workspace/folders</code></td>
+<td>创建项目目录</td>
+</tr>
+<tr>
+<td><code>PATCH</code></td>
+<td><code>/workspace/folders/{folder_id}</code></td>
+<td>重命名项目目录</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/workspace/folders/{folder_id}</code></td>
+<td>删除目录但保留对话</td>
+</tr>
+<tr>
+<td><code>PUT</code></td>
+<td><code>/workspace/threads/{project_id}/folder</code></td>
+<td>将对话收纳到目录或移出目录</td>
+</tr>
 </tbody></table></div>
 <p>创建项目：</p>
 <pre><code class="language-json">{
@@ -217,7 +244,17 @@ http://localhost:8000/openapi.json</code></pre>
 <pre><code class="language-json">{
   &quot;content&quot;: &quot;把需求整理成三个镜头的发布视频&quot;
 }</code></pre>
-<p>响应包含用户消息、Assistant 回复和最新故事板。</p>
+<p>响应包含用户消息、Assistant 回复、最新故事板和当前审批阶段。</p>
+<h3 id="读取工作流">读取工作流</h3>
+<p><code>GET /projects/{project_id}/workflow</code></p>
+<p>工作流依次经过 <code>concept</code>、<code>outline</code>、<code>script</code> 和 <code>ready</code>。<code>concept</code> 确认整体 设定，<code>outline</code> 确认分集与分镜大纲，<code>script</code> 确认逐场剧本。只有剧本获批且状态 进入 <code>ready</code> 后才允许生成。</p>
+<h3 id="提交审批">提交审批</h3>
+<p><code>POST /projects/{project_id}/workflow/decision</code></p>
+<pre><code class="language-json">{
+  &quot;choice&quot;: &quot;approve&quot;,
+  &quot;instruction&quot;: null
+}</code></pre>
+<p><code>choice</code> 为 <code>approve</code>、<code>refine</code> 或 <code>custom</code>。调整和自定义意见保持当前阶段； 批准会进入下一层细化。</p>
 <h2 id="故事板即时评估">故事板即时评估</h2>
 <p><code>POST /projects/{project_id}/evaluate</code></p>
 <p>返回：</p>

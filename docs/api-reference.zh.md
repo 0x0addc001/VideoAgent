@@ -96,6 +96,11 @@ http://localhost:8000/openapi.json
 | `GET` | `/projects/{project_id}` | 读取项目 |
 | `PATCH` | `/projects/{project_id}` | 重命名项目 |
 | `DELETE` | `/projects/{project_id}` | 归档项目 |
+| `GET` | `/workspace` | 项目目录与全部历史对话 |
+| `POST` | `/workspace/folders` | 创建项目目录 |
+| `PATCH` | `/workspace/folders/{folder_id}` | 重命名项目目录 |
+| `DELETE` | `/workspace/folders/{folder_id}` | 删除目录但保留对话 |
+| `PUT` | `/workspace/threads/{project_id}/folder` | 将对话收纳到目录或移出目录 |
 
 创建项目：
 
@@ -171,7 +176,29 @@ http://localhost:8000/openapi.json
 }
 ```
 
-响应包含用户消息、Assistant 回复和最新故事板。
+响应包含用户消息、Assistant 回复、最新故事板和当前审批阶段。
+
+### 读取工作流
+
+`GET /projects/{project_id}/workflow`
+
+工作流依次经过 `concept`、`outline`、`script` 和 `ready`。`concept` 确认整体
+设定，`outline` 确认分集与分镜大纲，`script` 确认逐场剧本。只有剧本获批且状态
+进入 `ready` 后才允许生成。
+
+### 提交审批
+
+`POST /projects/{project_id}/workflow/decision`
+
+```json
+{
+  "choice": "approve",
+  "instruction": null
+}
+```
+
+`choice` 为 `approve`、`refine` 或 `custom`。调整和自定义意见保持当前阶段；
+批准会进入下一层细化。
 
 ## 故事板即时评估
 
