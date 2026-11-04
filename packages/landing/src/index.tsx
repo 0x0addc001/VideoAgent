@@ -911,6 +911,7 @@ export function LandingPage({
             </div>
             <div className="composer-controls" aria-label={content.composer.settingsLabel}>
               <ComposerSelect
+                className="composer-select-skill"
                 label={content.composer.skillLabel}
                 onChange={setSkill}
                 options={[

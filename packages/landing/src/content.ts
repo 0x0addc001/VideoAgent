@@ -80,6 +80,13 @@ export const landingContent = {
       items: [
         {
           userId: "video_agent",
+          skillId: "search_all_resources",
+          title: "Search all resources",
+          body: "Find projects, videos, skills, community posts, and documentation.",
+          prompt: "Search all VideoAgent resources for:",
+        },
+        {
+          userId: "video_agent",
           skillId: "text_to_video",
           title: "Text to video",
           body: "Generate one clip from a written prompt.",
@@ -126,6 +133,13 @@ export const landingContent = {
           title: "Video edit",
           body: "Apply prompt-directed changes to existing footage.",
           prompt: "Edit the existing video with these changes:",
+        },
+        {
+          userId: "video_agent",
+          skillId: "style_transfer",
+          title: "Style transfer",
+          body: "Apply a reference style while preserving structure and motion.",
+          prompt: "Apply the reference visual style while preserving subject structure and motion:",
         },
         {
           userId: "video_agent",
@@ -396,6 +410,13 @@ export const landingContent = {
       items: [
         {
           userId: "video_agent",
+          skillId: "search_all_resources",
+          title: "搜索全部资源",
+          body: "搜索项目、视频、Skill、社区作品和文档。",
+          prompt: "在 VideoAgent 的全部资源中搜索：",
+        },
+        {
+          userId: "video_agent",
           skillId: "text_to_video",
           title: "文生视频",
           body: "根据文字提示生成单个视频片段。",
@@ -442,6 +463,13 @@ export const landingContent = {
           title: "视频编辑",
           body: "按提示词修改现有视频内容。",
           prompt: "按以下要求编辑现有视频：",
+        },
+        {
+          userId: "video_agent",
+          skillId: "style_transfer",
+          title: "风格迁移",
+          body: "应用参考风格，同时保持主体结构和动作。",
+          prompt: "应用参考画面的视觉风格，并保持主体结构与动作：",
         },
         {
           userId: "video_agent",

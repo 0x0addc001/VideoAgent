@@ -49,6 +49,7 @@ describe("LandingPage", () => {
     expect(container.querySelector(".brand-mark .brand-play")).toBeInTheDocument();
     expect(composer).toBeInTheDocument();
     expect(composer?.querySelectorAll(".composer-select")).toHaveLength(8);
+    expect(composer?.querySelector(".composer-select-skill")).toBeInTheDocument();
     expect(
       [...(composer?.querySelectorAll(".composer-select-trigger") ?? [])].map(
         (trigger) => trigger.textContent,
@@ -99,12 +100,14 @@ describe("LandingPage", () => {
       )!,
     );
     expect(container.querySelector("#skills .skill-code")).toHaveTextContent(
-      "video_agent/text_to_video",
+      "video_agent/search_all_resources",
     );
     expect(container.querySelectorAll("#skills .skill-group")).toHaveLength(0);
     expect(
       container.querySelectorAll("#skills .skill-card:not(.skill-publish-card)"),
-    ).toHaveLength(12);
+    ).toHaveLength(14);
+    expect(container.querySelector("#skills")).toHaveTextContent("Search all resources");
+    expect(container.querySelector("#skills")).toHaveTextContent("Style transfer");
     expect(container.querySelector("#skills")).toHaveTextContent("Product film");
     expect(container.querySelector("#skills")).toHaveTextContent("Short drama");
     expect(container.querySelector("#skills")).toHaveTextContent("Storyboard review");

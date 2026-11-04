@@ -72,6 +72,7 @@ video_agent/<skill_id>
 Examples:
 
 ```text
+video_agent/search_all_resources
 video_agent/text_to_video
 video_agent/image_to_video
 video_agent/reference_to_video
@@ -79,6 +80,7 @@ video_agent/first_last_frame
 video_agent/motion_control
 video_agent/video_extend
 video_agent/video_edit
+video_agent/style_transfer
 video_agent/video_upscale
 video_agent/product_film
 video_agent/creator_vlog

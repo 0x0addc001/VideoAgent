@@ -196,6 +196,7 @@ Skills use one flat, searchable catalogue. Every card shows its
 
 | Skill ID | Input and result |
 | --- | --- |
+| `video_agent/search_all_resources` | Search projects, videos, skills, Hots, and Docs |
 | `video_agent/text_to_video` | Text prompt to one video clip |
 | `video_agent/image_to_video` | Still image to controlled motion |
 | `video_agent/reference_to_video` | Image, video, or audio references to a generated clip |
@@ -203,6 +204,7 @@ Skills use one flat, searchable catalogue. Every card shows its
 | `video_agent/motion_control` | Driving-video motion applied to a subject image |
 | `video_agent/video_extend` | Continue an existing clip |
 | `video_agent/video_edit` | Prompt-directed modification of existing footage |
+| `video_agent/style_transfer` | Apply a reference style while preserving structure and motion |
 | `video_agent/video_upscale` | Raise video resolution up to 4K |
 | `video_agent/product_film` | A composed product-video workflow |
 | `video_agent/creator_vlog` | A composed creator-vlog workflow |

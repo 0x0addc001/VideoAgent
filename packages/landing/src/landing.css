@@ -2763,6 +2763,16 @@ html[lang="zh-CN"] .hero-copy h1 {
   flex-grow: 1;
 }
 
+.composer-select-skill .composer-select-menu {
+  right: auto;
+  left: 0;
+  width: 280px;
+  max-width: min(320px, calc(100vw - 280px));
+  max-height: 320px;
+  overflow-y: auto;
+  transform: none;
+}
+
 .composer-select-trigger {
   display: flex;
   width: 100%;
