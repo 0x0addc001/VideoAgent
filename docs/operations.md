@@ -10,7 +10,8 @@
 
 VideoAgent 按三层内容运营：
 
-1. `video_agent` 命名空间下的官方 Skill。
+1. 原厂商 Skill 与跨 Provider 工作流，分别使用 `kling`、`pippit` 或
+   `video_agent` 命名空间。
 2. 用户发布的 Skill 与 Hots 作品。
 3. 项目产出的 Assets 成品与半成品。
 
@@ -25,7 +26,7 @@ VideoAgent 按三层内容运营：
 
 ## 3. 官方 Skill 运营
 
-- 官方 user_id 固定为 `video_agent`。
+- 原厂商能力使用厂商 user_id（如 `kling`）；跨 Provider 工作流使用 `video_agent`。
 - Skill ID 稳定、小写，并使用下划线分隔。
 - 每个 Skill 说明输入、输出、Provider 依赖和积分影响。
 - Skill 变更同步更新 PRD、Design 和 Test。

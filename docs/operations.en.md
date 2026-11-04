@@ -10,7 +10,8 @@
 
 VideoAgent operates three content layers:
 
-1. Official Skills under the `video_agent` namespace.
+1. Provider-native Skills and cross-provider workflows under their respective
+   `kling`, `pippit`, or `video_agent` namespaces.
 2. User-published Skills and Hots entries.
 3. Project outputs stored in Assets.
 
@@ -27,7 +28,8 @@ VideoAgent operates three content layers:
 
 ## 3. Official Skill Operations
 
-- Official user namespace: `video_agent`.
+- Provider-native capabilities use their provider namespace, such as `kling`;
+  cross-provider workflows use `video_agent`.
 - Skill IDs are stable, lowercase, and underscore-separated.
 - Every Skill states its input, output, provider dependency, and credit impact.
 - Skill changes update PRD, Design, and Test.

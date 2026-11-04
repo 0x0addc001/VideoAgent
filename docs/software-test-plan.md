@@ -97,7 +97,7 @@ Pippit 测试使用本地 Fake CLI，覆盖状态、积分、提交、查询、�
 - Hots 元数据顺序：标题在作者与喜欢数之上。
 - 每张 Hots 卡片包含自动播放、静音、循环视频。
 - 发布入口使用蓝色播放键。
-- Skills 使用 `user_id/skill_id` 的单一搜索目录。
+- Skills 使用 `user_id/skill_id` 的单一搜索目录，原厂商能力使用厂商命名空间。
 - Playbook 正确填充提示词、Skill、Hook、风格、画幅、时长和审核设置。
 - 再次点击当前 Playbook 会恢复应用前状态。
 - Hots 场景卡片进入 Agents 时选中对应 Skill 和提示词。

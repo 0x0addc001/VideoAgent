@@ -71,20 +71,23 @@ Skills 使用统一目录，并以任务型卡片组织。
 官方 Skill ID 格式：
 
 ```text
-video_agent/<skill_id>
+<provider_or_product>/<skill_id>
 ```
+
+Kling 原生能力使用 `kling` 命名空间；跨 Provider 工作流和产品级 Skill 使用
+`video_agent`。
 
 示例：
 
 ```text
 video_agent/search_all_resources
-video_agent/text_to_video
-video_agent/image_to_video
-video_agent/reference_to_video
-video_agent/first_last_frame
-video_agent/motion_control
-video_agent/video_extend
-video_agent/video_edit
+kling/text_to_video
+kling/image_to_video
+kling/reference_to_video
+kling/first_last_frame
+kling/motion_control
+kling/video_extend
+kling/video_edit
 video_agent/style_transfer
 video_agent/video_upscale
 video_agent/product_film
@@ -191,7 +194,7 @@ TODO
 1. 导航顺序为 Agents、Skills、Hots、Assets、Docs。
 2. Agents 可以选择 Skill。
 3. Skills 使用统一的可搜索目录，并显示 `user_id/skill_id`。
-4. 官方 Skill 使用 `video_agent` 命名空间。
+4. 原厂商能力使用厂商命名空间，跨 Provider 工作流使用 `video_agent`。
 5. 用户可以发布 Skill。
 6. Review 使用统一 Skill 卡片。
 7. Hots 和 Assets 均提供顶部搜索。

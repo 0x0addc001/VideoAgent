@@ -100,7 +100,8 @@ Component tests cover:
 - Hots metadata order: title above author and likes.
 - Every Hots card contains an autoplaying muted looping video.
 - Publish entry uses the blue play icon.
-- Skills is one searchable catalogue with `user_id/skill_id` labels.
+- Skills is one searchable catalogue with `user_id/skill_id` labels;
+  provider-native capabilities use the provider namespace.
 - Production playbooks fill the prompt and recommended Skill, Hook, style,
   frame, duration, and review settings.
 - Re-clicking the active playbook restores the prior composer state.

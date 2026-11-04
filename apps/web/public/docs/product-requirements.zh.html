@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent PRD" />
     <title>PRD · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=22" />
+    <link rel="stylesheet" href="../docs.css?v=23" />
   </head>
   <body data-document="product-requirements.zh.html">
     <main class="document-shell" id="document-shell">
@@ -99,16 +99,17 @@ Docs</code></pre>
 <h3 id="5-1-skill-目录">5.1 Skill 目录</h3>
 <p>Skills 使用统一目录，并以任务型卡片组织。</p>
 <p>官方 Skill ID 格式：</p>
-<pre><code class="language-text">video_agent/&lt;skill_id&gt;</code></pre>
+<pre><code class="language-text">&lt;provider_or_product&gt;/&lt;skill_id&gt;</code></pre>
+<p>Kling 原生能力使用 <code>kling</code> 命名空间；跨 Provider 工作流和产品级 Skill 使用 <code>video_agent</code>。</p>
 <p>示例：</p>
 <pre><code class="language-text">video_agent/search_all_resources
-video_agent/text_to_video
-video_agent/image_to_video
-video_agent/reference_to_video
-video_agent/first_last_frame
-video_agent/motion_control
-video_agent/video_extend
-video_agent/video_edit
+kling/text_to_video
+kling/image_to_video
+kling/reference_to_video
+kling/first_last_frame
+kling/motion_control
+kling/video_extend
+kling/video_edit
 video_agent/style_transfer
 video_agent/video_upscale
 video_agent/product_film
@@ -232,7 +233,7 @@ TODO</code></pre>
 <li>导航顺序为 Agents、Skills、Hots、Assets、Docs。</li>
 <li>Agents 可以选择 Skill。</li>
 <li>Skills 使用统一的可搜索目录，并显示 <code>user_id/skill_id</code>。</li>
-<li>官方 Skill 使用 <code>video_agent</code> 命名空间。</li>
+<li>原厂商能力使用厂商命名空间，跨 Provider 工作流使用 <code>video_agent</code>。</li>
 <li>用户可以发布 Skill。</li>
 <li>Review 使用统一 Skill 卡片。</li>
 <li>Hots 和 Assets 均提供顶部搜索。</li>
@@ -249,6 +250,6 @@ TODO</code></pre>
 <li>模型下拉框展示全部可用视频模型。</li>
 </ol></article>
     </main>
-    <script src="../docs.js?v=22"></script>
+    <script src="../docs.js?v=23"></script>
   </body>
 </html>

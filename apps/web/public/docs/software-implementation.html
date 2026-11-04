@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Impl" />
     <title>Impl · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=22" />
+    <link rel="stylesheet" href="../docs.css?v=23" />
   </head>
   <body data-document="software-implementation.html">
     <main class="document-shell" id="document-shell">
@@ -268,15 +268,15 @@ status
 </tr>
 </tbody></table></div>
 <h2 id="8-skills-implementation">8. Skills Implementation</h2>
-<p>Skills is one flat searchable catalogue. Cards show <code>user_id/skill_id</code> and preload actionable prompts into the Agents composer:</p>
+<p>Skills is one flat searchable catalogue. Cards show <code>user_id/skill_id</code> and preload actionable prompts into the Agents composer. Provider-native capabilities use the provider namespace, while cross-provider workflows use <code>video_agent</code>:</p>
 <pre><code class="language-text">video_agent/search_all_resources
-video_agent/text_to_video
-video_agent/image_to_video
-video_agent/reference_to_video
-video_agent/first_last_frame
-video_agent/motion_control
-video_agent/video_extend
-video_agent/video_edit
+kling/text_to_video
+kling/image_to_video
+kling/reference_to_video
+kling/first_last_frame
+kling/motion_control
+kling/video_extend
+kling/video_edit
 video_agent/style_transfer
 video_agent/video_upscale
 video_agent/product_film
@@ -443,6 +443,6 @@ pnpm --dir apps/web typecheck
 pnpm --dir apps/web build
 python scripts\build_pages.py</code></pre></article>
     </main>
-    <script src="../docs.js?v=22"></script>
+    <script src="../docs.js?v=23"></script>
   </body>
 </html>

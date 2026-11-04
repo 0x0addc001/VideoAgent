@@ -416,7 +416,7 @@ cancelled
 
 - 公共入口：左侧导航、连续视频背景、居中创作框、灵感快捷项和八项生成设置。
 - `Agents`：首页创作入口和 VideoAgent 对话。
-- `Skills`：统一可搜索 Skill 目录，卡片显示 `user_id/skill_id`，用户可发布 Skill。
+- `Skills`：统一可搜索 Skill 目录，卡片显示 `user_id/skill_id`；Kling 原生能力使用 `kling`，跨 Provider 工作流使用 `video_agent`，用户可发布 Skill。
 - `Agents`：首页提供产品广告、创作者 Vlog、微短剧、音乐 MV、视频本地化和批量测款六类 Playbook；选择后统一设置提示词、Skill、Hook、风格、画幅、时长和审核模式，再次点击当前项会恢复应用前草稿。
 - Skills 目录还覆盖视频本地化、批量变体、剧本助手、智能预演、运镜设计、音乐 MV、参考复刻和外部 Agent 接力。
 - `Hots`：可搜索社区瀑布流，视频自动播放，展示标题、作者、喜欢数，并支持发布。

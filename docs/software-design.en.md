@@ -173,19 +173,20 @@ or vendor details.
 ## 9. Skills Catalogue
 
 Skills use one flat, searchable catalogue. Every card shows its
-`user_id/skill_id` identifier at the upper left. Official skills use the
-`video_agent` namespace.
+`user_id/skill_id` identifier at the upper left. Provider-native capabilities
+use the provider namespace, such as `kling`; cross-provider workflows and
+product-level Skills use `video_agent`.
 
 | Skill ID | Input and result |
 | --- | --- |
 | `video_agent/search_all_resources` | Search projects, videos, skills, Hots, and Docs |
-| `video_agent/text_to_video` | Text prompt to one video clip |
-| `video_agent/image_to_video` | Still image to controlled motion |
-| `video_agent/reference_to_video` | Image, video, or audio references to a generated clip |
-| `video_agent/first_last_frame` | Opening and closing frames to a continuous transition |
-| `video_agent/motion_control` | Driving-video motion applied to a subject image |
-| `video_agent/video_extend` | Continue an existing clip |
-| `video_agent/video_edit` | Prompt-directed modification of existing footage |
+| `kling/text_to_video` | Text prompt to one video clip |
+| `kling/image_to_video` | Still image to controlled motion |
+| `kling/reference_to_video` | Image, video, or audio references to a generated clip |
+| `kling/first_last_frame` | Opening and closing frames to a continuous transition |
+| `kling/motion_control` | Driving-video motion applied to a subject image |
+| `kling/video_extend` | Continue an existing clip |
+| `kling/video_edit` | Prompt-directed modification of existing footage |
 | `video_agent/style_transfer` | Apply a reference style while preserving structure and motion |
 | `video_agent/video_upscale` | Raise video resolution up to 4K |
 | `video_agent/product_film` | A composed product-video workflow |

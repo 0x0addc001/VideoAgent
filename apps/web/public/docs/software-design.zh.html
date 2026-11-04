@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Design" />
     <title>Design · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=22" />
+    <link rel="stylesheet" href="../docs.css?v=23" />
   </head>
   <body data-document="software-design.zh.html">
     <main class="document-shell" id="document-shell">
@@ -670,7 +670,7 @@ cancelled</code></pre>
 <ul>
 <li>公共入口：左侧导航、连续视频背景、居中创作框、灵感快捷项和八项生成设置。</li>
 <li><code>Agents</code>：首页创作入口和 VideoAgent 对话。</li>
-<li><code>Skills</code>：统一可搜索 Skill 目录，卡片显示 <code>user_id/skill_id</code>，用户可发布 Skill。</li>
+<li><code>Skills</code>：统一可搜索 Skill 目录，卡片显示 <code>user_id/skill_id</code>；Kling 原生能力使用 <code>kling</code>，跨 Provider 工作流使用 <code>video_agent</code>，用户可发布 Skill。</li>
 <li><code>Agents</code>：首页提供产品广告、创作者 Vlog、微短剧、音乐 MV、视频本地化和批量测款六类 Playbook；选择后统一设置提示词、Skill、Hook、风格、画幅、时长和审核模式，再次点击当前项会恢复应用前草稿。</li>
 <li>Skills 目录还覆盖视频本地化、批量变体、剧本助手、智能预演、运镜设计、音乐 MV、参考复刻和外部 Agent 接力。</li>
 <li><code>Hots</code>：可搜索社区瀑布流，视频自动播放，展示标题、作者、喜欢数，并支持发布。</li>
@@ -827,6 +827,6 @@ Celery + Redis</code></pre>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=22"></script>
+    <script src="../docs.js?v=23"></script>
   </body>
 </html>

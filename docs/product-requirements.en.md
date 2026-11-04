@@ -81,20 +81,23 @@ Skills use one flat catalogue with task-oriented cards.
 Official skill IDs use:
 
 ```text
-video_agent/<skill_id>
+<provider_or_product>/<skill_id>
 ```
+
+Kling-native capabilities use the `kling` namespace. Cross-provider workflows
+and product-level Skills use `video_agent`.
 
 Examples:
 
 ```text
 video_agent/search_all_resources
-video_agent/text_to_video
-video_agent/image_to_video
-video_agent/reference_to_video
-video_agent/first_last_frame
-video_agent/motion_control
-video_agent/video_extend
-video_agent/video_edit
+kling/text_to_video
+kling/image_to_video
+kling/reference_to_video
+kling/first_last_frame
+kling/motion_control
+kling/video_extend
+kling/video_edit
 video_agent/style_transfer
 video_agent/video_upscale
 video_agent/product_film
@@ -204,7 +207,8 @@ Docs requirements:
 1. Navigation order is Agents, Skills, Hots, Assets, Docs.
 2. Agents can choose a Skill.
 3. Skills is one searchable flat catalogue using `user_id/skill_id`.
-4. Official Skills use the `video_agent` namespace.
+4. Provider-native capabilities use provider namespaces; cross-provider
+   workflows use `video_agent`.
 5. Users can publish a Skill.
 6. Review appears as a normal Skill card.
 7. Hots and Assets both provide top search.

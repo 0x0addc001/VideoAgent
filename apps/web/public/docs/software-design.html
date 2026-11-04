@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Design" />
     <title>Design · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=22" />
+    <link rel="stylesheet" href="../docs.css?v=23" />
   </head>
   <body data-document="software-design.html">
     <main class="document-shell" id="document-shell">
@@ -221,7 +221,7 @@ query-result</code></pre>
 <h3 id="8-2-kling-mcp">8.2 Kling MCP</h3>
 <p>Kling MCP exposes text-to-video, image-to-video, first/last-frame, motion control, and Omni-Ref tools. OAuth is managed by the connector. The provider adapter maps task state, errors, and result URLs into the shared <code>VideoProvider</code> contract so the project workflow does not depend on protocol or vendor details.</p>
 <h2 id="9-skills-catalogue">9. Skills Catalogue</h2>
-<p>Skills use one flat, searchable catalogue. Every card shows its <code>user_id/skill_id</code> identifier at the upper left. Official skills use the <code>video_agent</code> namespace.</p>
+<p>Skills use one flat, searchable catalogue. Every card shows its <code>user_id/skill_id</code> identifier at the upper left. Provider-native capabilities use the provider namespace, such as <code>kling</code>; cross-provider workflows and product-level Skills use <code>video_agent</code>.</p>
 <div class="table-wrap"><table><thead><tr>
 <th>Skill ID</th>
 <th>Input and result</th>
@@ -231,31 +231,31 @@ query-result</code></pre>
 <td>Search projects, videos, skills, Hots, and Docs</td>
 </tr>
 <tr>
-<td><code>video_agent/text_to_video</code></td>
+<td><code>kling/text_to_video</code></td>
 <td>Text prompt to one video clip</td>
 </tr>
 <tr>
-<td><code>video_agent/image_to_video</code></td>
+<td><code>kling/image_to_video</code></td>
 <td>Still image to controlled motion</td>
 </tr>
 <tr>
-<td><code>video_agent/reference_to_video</code></td>
+<td><code>kling/reference_to_video</code></td>
 <td>Image, video, or audio references to a generated clip</td>
 </tr>
 <tr>
-<td><code>video_agent/first_last_frame</code></td>
+<td><code>kling/first_last_frame</code></td>
 <td>Opening and closing frames to a continuous transition</td>
 </tr>
 <tr>
-<td><code>video_agent/motion_control</code></td>
+<td><code>kling/motion_control</code></td>
 <td>Driving-video motion applied to a subject image</td>
 </tr>
 <tr>
-<td><code>video_agent/video_extend</code></td>
+<td><code>kling/video_extend</code></td>
 <td>Continue an existing clip</td>
 </tr>
 <tr>
-<td><code>video_agent/video_edit</code></td>
+<td><code>kling/video_edit</code></td>
 <td>Prompt-directed modification of existing footage</td>
 </tr>
 <tr>
@@ -463,6 +463,6 @@ Celery + Redis</code></pre>
 <p>suggestions hide as soon as non-whitespace input exists.</p>
 </ol></article>
     </main>
-    <script src="../docs.js?v=22"></script>
+    <script src="../docs.js?v=23"></script>
   </body>
 </html>

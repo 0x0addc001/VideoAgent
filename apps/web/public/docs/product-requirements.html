@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent PRD" />
     <title>PRD · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=22" />
+    <link rel="stylesheet" href="../docs.css?v=23" />
   </head>
   <body data-document="product-requirements.html">
     <main class="document-shell" id="document-shell">
@@ -106,16 +106,17 @@ Avatar</code></pre>
 <h3 id="5-1-catalogue">5.1 Catalogue</h3>
 <p>Skills use one flat catalogue with task-oriented cards.</p>
 <p>Official skill IDs use:</p>
-<pre><code class="language-text">video_agent/&lt;skill_id&gt;</code></pre>
+<pre><code class="language-text">&lt;provider_or_product&gt;/&lt;skill_id&gt;</code></pre>
+<p>Kling-native capabilities use the <code>kling</code> namespace. Cross-provider workflows and product-level Skills use <code>video_agent</code>.</p>
 <p>Examples:</p>
 <pre><code class="language-text">video_agent/search_all_resources
-video_agent/text_to_video
-video_agent/image_to_video
-video_agent/reference_to_video
-video_agent/first_last_frame
-video_agent/motion_control
-video_agent/video_extend
-video_agent/video_edit
+kling/text_to_video
+kling/image_to_video
+kling/reference_to_video
+kling/first_last_frame
+kling/motion_control
+kling/video_extend
+kling/video_edit
 video_agent/style_transfer
 video_agent/video_upscale
 video_agent/product_film
@@ -242,7 +243,8 @@ TODO</code></pre>
 <li>Navigation order is Agents, Skills, Hots, Assets, Docs.</li>
 <li>Agents can choose a Skill.</li>
 <li>Skills is one searchable flat catalogue using <code>user_id/skill_id</code>.</li>
-<li>Official Skills use the <code>video_agent</code> namespace.</li>
+<li>Provider-native capabilities use provider namespaces; cross-provider</li>
+<p>workflows use <code>video_agent</code>.</p>
 <li>Users can publish a Skill.</li>
 <li>Review appears as a normal Skill card.</li>
 <li>Hots and Assets both provide top search.</li>
@@ -261,6 +263,6 @@ TODO</code></pre>
 <li>The Model selector exposes all available video models.</li>
 </ol></article>
     </main>
-    <script src="../docs.js?v=22"></script>
+    <script src="../docs.js?v=23"></script>
   </body>
 </html>

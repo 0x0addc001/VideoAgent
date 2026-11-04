@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Impl" />
     <title>Impl · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=22" />
+    <link rel="stylesheet" href="../docs.css?v=23" />
   </head>
   <body data-document="software-implementation.zh.html">
     <main class="document-shell" id="document-shell">
@@ -97,7 +97,7 @@
 <li>首页连续视频轮播、流式主标语、Skill/Hook 选择器、场景 Playbook、自定义透明下拉和 Action 生成入口。</li>
 <li>创作输入框根据 <code>scrollHeight</code> 自动增高，并在输入非空时隐藏示例灵感；Playbook 保持可用，重复点击当前项会恢复应用前草稿。</li>
 <li>模型下拉框使用统一模型元数据，展示 Pippit 8 个、Kling 7 个当前可用的视频模型及 Provider。</li>
-<li>Skills 使用单一可搜索目录，显示 <code>user_id/skill_id</code>，支持发布 Skill。</li>
+<li>Skills 使用单一可搜索目录，显示 <code>user_id/skill_id</code>；原厂商能力使用厂商命名空间（如 <code>kling</code>），跨 Provider 工作流使用 <code>video_agent</code>。</li>
 <li>Hots 支持搜索、循环视频、作者、喜欢数、发布，以及带 Skill 的场景复用。</li>
 <li>Assets 使用瀑布流，并通过 Video/Skill 内部分页区分类型；Video 卡片悬浮静音播放，Skill 卡片无封面并展示 private/public 和 <code>yyyy-mm-dd</code> 编辑时间。</li>
 <li>八份中英文文档、全文搜索、统一深色阅读主题、左侧可折叠目录和章节高亮。</li>
@@ -860,6 +860,6 @@ pnpm --dir apps/web build</code></pre>
 <li>设计或实现边界变化已更新本文档。</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=22"></script>
+    <script src="../docs.js?v=23"></script>
   </body>
 </html>

@@ -19,7 +19,7 @@
 - 首页连续视频轮播、流式主标语、Skill/Hook 选择器、场景 Playbook、自定义透明下拉和 Action 生成入口。
 - 创作输入框根据 `scrollHeight` 自动增高，并在输入非空时隐藏示例灵感；Playbook 保持可用，重复点击当前项会恢复应用前草稿。
 - 模型下拉框使用统一模型元数据，展示 Pippit 8 个、Kling 7 个当前可用的视频模型及 Provider。
-- Skills 使用单一可搜索目录，显示 `user_id/skill_id`，支持发布 Skill。
+- Skills 使用单一可搜索目录，显示 `user_id/skill_id`；原厂商能力使用厂商命名空间（如 `kling`），跨 Provider 工作流使用 `video_agent`。
 - Hots 支持搜索、循环视频、作者、喜欢数、发布，以及带 Skill 的场景复用。
 - Assets 使用瀑布流，并通过 Video/Skill 内部分页区分类型；Video 卡片悬浮静音播放，Skill 卡片无封面并展示 private/public 和 `yyyy-mm-dd` 编辑时间。
 - 八份中英文文档、全文搜索、统一深色阅读主题、左侧可折叠目录和章节高亮。

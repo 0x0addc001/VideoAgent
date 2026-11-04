@@ -123,6 +123,9 @@ describe("LandingPage", () => {
       container.querySelectorAll("#skills .skill-card:not(.skill-publish-card)"),
     ).toHaveLength(22);
     expect(container.querySelector("#skills")).toHaveTextContent("Search all resources");
+    expect(container.querySelector("#skills")).toHaveTextContent(
+      "kling/text_to_video",
+    );
     expect(container.querySelector("#skills")).toHaveTextContent("Style transfer");
     expect(container.querySelector("#skills")).toHaveTextContent("Product film");
     expect(container.querySelector("#skills")).toHaveTextContent("Short drama");
@@ -204,7 +207,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/product-requirements.html?v=22",
+      "/docs/product-requirements.html?v=23",
     );
     expect(container.querySelectorAll(".docs-tab-icon")).toHaveLength(8);
     expect(
@@ -219,7 +222,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/faq.html?v=22",
+      "/docs/faq.html?v=23",
     );
 
     fireEvent.click(container.querySelector(".language-button")!);
@@ -230,7 +233,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/faq.zh.html?v=22",
+      "/docs/faq.zh.html?v=23",
     );
     expect(
       [...container.querySelectorAll(".docs-tabs button")].map((button) =>
@@ -487,14 +490,14 @@ describe("LandingPage", () => {
       )!,
     );
     const skillCard = [...container.querySelectorAll("#skills .skill-card")].find(
-      (card) => card.textContent?.includes("video_agent/text_to_video"),
+      (card) => card.textContent?.includes("kling/text_to_video"),
     )!;
     fireEvent.click(skillCard);
 
     expect(container.querySelector("#agents")).toBeInTheDocument();
     expect(
       container.querySelector('.composer-select-trigger[aria-label="Skill"]'),
-    ).toHaveTextContent("video_agent/text_to_video");
+    ).toHaveTextContent("kling/text_to_video");
     expect(container.querySelector(".creation-composer textarea")).toHaveValue(
       "Create a five-second cinematic clip from this idea:",
     );
@@ -598,7 +601,7 @@ describe("LandingPage", () => {
     fireEvent.click(container.querySelector(".docs-search-results button")!);
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/operations.html?v=22",
+      "/docs/operations.html?v=23",
     );
   });
 

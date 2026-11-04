@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Ops" />
     <title>Ops · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=22" />
+    <link rel="stylesheet" href="../docs.css?v=23" />
   </head>
   <body data-document="operations.html">
     <main class="document-shell" id="document-shell">
@@ -59,7 +59,8 @@
 <h2 id="1-operating-model">1. Operating Model</h2>
 <p>VideoAgent operates three content layers:</p>
 <ol>
-<li>Official Skills under the <code>video_agent</code> namespace.</li>
+<li>Provider-native Skills and cross-provider workflows under their respective</li>
+<p><code>kling</code>, <code>pippit</code>, or <code>video_agent</code> namespaces.</p>
 <li>User-published Skills and Hots entries.</li>
 <li>Project outputs stored in Assets.</li>
 </ol>
@@ -76,7 +77,8 @@
 </ul>
 <h2 id="3-official-skill-operations">3. Official Skill Operations</h2>
 <ul>
-<li>Official user namespace: <code>video_agent</code>.</li>
+<li>Provider-native capabilities use their provider namespace, such as <code>kling</code>;</li>
+<p>cross-provider workflows use <code>video_agent</code>.</p>
 <li>Skill IDs are stable, lowercase, and underscore-separated.</li>
 <li>Every Skill states its input, output, provider dependency, and credit impact.</li>
 <li>Skill changes update PRD, Design, and Test.</li>
@@ -152,6 +154,6 @@
 <li>Documentation: search success and zero broken bilingual links.</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=22"></script>
+    <script src="../docs.js?v=23"></script>
   </body>
 </html>
