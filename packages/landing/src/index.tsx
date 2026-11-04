@@ -615,6 +615,11 @@ export function LandingPage({
     window.setTimeout(() => promptRef.current?.focus(), 250);
   }
 
+  function useSkill(skillId: string, value: string) {
+    setSkill(skillId);
+    usePrompt(value);
+  }
+
   function openPublisher() {
     if (mode === "project") {
       setPreviewNoticeOpen(true);
@@ -988,7 +993,7 @@ export function LandingPage({
                 onChange={setSkill}
                 options={[
                   { label: "Auto", value: "auto" },
-                  ...content.skills.items.map((item) => ({
+                  ...[...publishedSkills, ...content.skills.items].map((item) => ({
                     label: `${item.userId}/${item.skillId}`,
                     value: item.skillId,
                   })),
@@ -1132,7 +1137,7 @@ export function LandingPage({
             <button
               className="feature-card skill-card"
               key={`${item.userId}/${item.skillId}`}
-              onClick={() => usePrompt(item.prompt)}
+              onClick={() => useSkill(item.skillId, item.prompt)}
               type="button"
             >
               <span className="skill-code">

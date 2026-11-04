@@ -3,12 +3,10 @@
 | 属性 | 内容 |
 | --- | --- |
 | 文档版本 | v1.2 |
-| 文档状态 | 已评审通过 |
-| 编写日期 | 2026-11-03 |
-| 产品名称 | VideoAgent |
+| 更新日期 | 2026-11-04 |
 | 后端技术 | Python + FastAPI |
 | 前端技术 | Next.js + TypeScript |
-| 当前视频服务 | Pippit CLI（主链路）、Mock Provider（本地与测试）；CLI 侧可用模型包括 Seedance 2.5 Draft、Seedance 2.5、Seedance 2.0 Fast VIP、Seedance 2.0 VIP、Seedance 2.0 Mini 体验版、Seedance 2.0 Mini、Wan 3.0、HappyHorse 1.1 |
+| 模型技术 | Seedance 2.5 Draft（Pippit）、Seedance 2.5（Pippit）、Seedance 2.0 Fast VIP（Pippit）、Seedance 2.0 VIP（Pippit）、Seedance 2.0 Mini 体验版（Pippit）、Seedance 2.0 Mini（Pippit）、Wan 3.0（Pippit）、HappyHorse 1.1（Pippit） |
 
 ## 1. 文档目的
 

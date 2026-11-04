@@ -3,8 +3,7 @@
 | 属性 | 内容 |
 | --- | --- |
 | 文档版本 | v1.1 |
-| 文档状态 | 当前测试基线 + 后续目标 |
-| 编写日期 | 2026-11-03 |
+| 更新日期 | 2026-11-04 |
 | 适用范围 | 共享 Landing UI、Next.js Web、FastAPI、LangGraph、Celery、Pippit CLI |
 | 关联设计 | `docs/software-design.md` |
 | 当前测试框架 | pytest、Vitest、Testing Library |
@@ -83,7 +82,7 @@
 - Token 会出现在浏览器或日志中。
 - 公开英文界面存在阻断流程的缺失文案；恢复中文后扩展到双语检查。
 
-当前自动化基线为后端 35 项、前端 18 项；E2E、真实基础设施和付费 Provider
+当前自动化基线为后端 35 项、前端 19 项；E2E、真实基础设施和付费 Provider
 测试不计入普通 CI。
 
 ### 3.2 稳定性目标

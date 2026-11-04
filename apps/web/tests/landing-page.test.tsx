@@ -358,6 +358,28 @@ describe("LandingPage", () => {
     );
   });
 
+  it("opens a skill in Agents with the matching skill selected", () => {
+    const { container } = render(<LandingPage {...props} />);
+
+    fireEvent.click(
+      [...container.querySelectorAll(".site-header button")].find(
+        (button) => button.textContent === "Skills",
+      )!,
+    );
+    const skillCard = [...container.querySelectorAll("#skills .skill-card")].find(
+      (card) => card.textContent?.includes("video_agent/text_to_video"),
+    )!;
+    fireEvent.click(skillCard);
+
+    expect(container.querySelector("#agents")).toBeInTheDocument();
+    expect(
+      container.querySelector('.composer-select-trigger[aria-label="Skill"]'),
+    ).toHaveTextContent("video_agent/text_to_video");
+    expect(container.querySelector(".creation-composer textarea")).toHaveValue(
+      "Create a five-second cinematic clip from this idea:",
+    );
+  });
+
   it("searches bilingual documentation", async () => {
     vi.stubGlobal(
       "fetch",

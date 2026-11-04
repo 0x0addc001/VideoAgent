@@ -3,9 +3,7 @@
 | Attribute | Value |
 | --- | --- |
 | Document version | v1.0 |
-| Status | Current product baseline |
 | Updated | 2026-11-04 |
-| Product | VideoAgent |
 
 ## 1. Product Goal
 

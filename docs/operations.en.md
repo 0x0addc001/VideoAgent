@@ -3,7 +3,6 @@
 | Attribute | Value |
 | --- | --- |
 | Document version | v1.0 |
-| Status | Operations baseline |
 | Updated | 2026-11-04 |
 | Scope | Product launch, community, providers, support, metrics |
 

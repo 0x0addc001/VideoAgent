@@ -3,8 +3,7 @@
 | Attribute | Value |
 | --- | --- |
 | Document version | v1.1 |
-| Status | Current automated baseline and target plan |
-| Updated | 2026-11-03 |
+| Updated | 2026-11-04 |
 | Current frameworks | pytest, Vitest, Testing Library |
 | Target E2E framework | Playwright |
 
@@ -62,7 +61,7 @@ Frontend:
 - English-to-Chinese Docs switching.
 - Project list, authentication form, and project workspace.
 
-Current baseline: 35 backend tests and 18 frontend tests.
+Current baseline: 35 backend tests and 19 frontend tests.
 
 ## 5. Target Coverage
 
@@ -192,4 +191,4 @@ Only with explicit user approval and budget:
 
 | Version | Date | Description |
 | --- | --- | --- |
-| v1.1 | 2026-11-04 | Align current 35/18 baseline, Skills, Hots, Assets, bilingual Docs, and target tests |
+| v1.1 | 2026-11-04 | Align current 35/19 baseline, Skills, Hots, Assets, bilingual Docs, and target tests |

@@ -3,8 +3,7 @@
 | Attribute | Value |
 | --- | --- |
 | Document version | v1.2 |
-| Status | Current implementation baseline |
-| Updated | 2026-11-03 |
+| Updated | 2026-11-04 |
 | Design reference | `software-design.en.md` |
 | Test reference | `software-test-plan.en.md` |
 
@@ -308,7 +307,7 @@ pnpm --dir apps/web build
 python scripts\build_pages.py
 ```
 
-Current baseline: 35 backend tests and 18 frontend tests. Playwright and paid
+Current baseline: 35 backend tests and 19 frontend tests. Playwright and paid
 provider tests are not part of normal CI.
 
 ## 15. Known Gaps

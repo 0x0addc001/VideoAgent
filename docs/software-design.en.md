@@ -3,12 +3,10 @@
 | Attribute | Value |
 | --- | --- |
 | Document version | v1.2 |
-| Status | Current baseline and target design |
-| Updated | 2026-11-03 |
-| Product | VideoAgent |
+| Updated | 2026-11-04 |
 | Backend | Python + FastAPI |
 | Frontend | Next.js + TypeScript |
-| Default video provider | Pippit CLI; Mock Provider for local and automated tests |
+| Model technology | Seedance 2.5 Draft (Pippit), Seedance 2.5 (Pippit), Seedance 2.0 Fast VIP (Pippit), Seedance 2.0 VIP (Pippit), Seedance 2.0 Mini Preview (Pippit), Seedance 2.0 Mini (Pippit), Wan 3.0 (Pippit), HappyHorse 1.1 (Pippit) |
 
 ## 1. Purpose
 
