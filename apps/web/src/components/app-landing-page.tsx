@@ -42,7 +42,7 @@ export function AppLandingPage() {
       (option) => option.id === draft.model,
     );
     const modelLabel = model
-      ? `${model.provider}/${model.label}`
+      ? model.label
       : draft.model;
     const settings =
       `Production settings: ${draft.skill} · Hook ${draft.hook} · ${style} · ` +

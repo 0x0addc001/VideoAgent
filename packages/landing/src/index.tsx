@@ -1247,7 +1247,7 @@ export function LandingPage({
                   ...content.composer.models
                     .filter((option) => option.id !== "auto")
                     .map((option) => ({
-                      label: `${option.provider}/${option.label}`,
+                      label: option.label,
                       value: option.id,
                     })),
                 ]}
