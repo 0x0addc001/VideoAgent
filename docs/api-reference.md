@@ -1,5 +1,16 @@
 # VideoAgent Interface Reference
 
+| Attribute | Value |
+| --- | --- |
+| Document version | v1.2 |
+| Updated | 2026-11-04 |
+| Base path | `/api/v1` |
+| Authentication | HttpOnly Session Cookie |
+| Request format | JSON with `credentials: "include"` |
+| API style | REST with job polling; SSE is a target capability |
+| Billable generation | Explicit approval plus `Idempotency-Key` |
+| OpenAPI | `/docs` and `/openapi.json` |
+
 Base URL:
 
 ```text

@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.1 |
+| Document version | v1.2 |
 | Updated | 2026-11-04 |
 | Scope | Product launch, community, providers, support, metrics |
 
@@ -24,7 +24,7 @@ Before public launch:
 
 - Complete authentication and credit-usage acceptance.
 - Verify Pippit CLI authorization on the deployment host.
-- Publish the six Docs: PRD, Design, Interface, Impl, Test, Ops.
+- Publish the seven Docs: PRD, Design, Interface, Impl, Test, Ops, FAQ.
 - Verify English and Chinese Docs switching.
 - Verify that project creation, storyboard planning, generation approval, and
   job polling work with the configured provider.
@@ -143,5 +143,6 @@ Never ask users to provide access keys, cookies, or CLI session files.
 
 | Version | Date | Description |
 | --- | --- | --- |
+| v1.2 | 2026-11-04 | Add launch checks for the FAQ document |
 | v1.1 | 2026-11-04 | Add scenario playbook curation, Skill-backed community reuse, and external Agent handoff boundaries |
 | v1.0 | 2026-11-04 | Initial operations strategy for Skills, Hots, Assets, Docs, providers, and releases |

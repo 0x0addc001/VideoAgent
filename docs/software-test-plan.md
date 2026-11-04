@@ -2,7 +2,7 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v1.4 |
+| 文档版本 | v1.5 |
 | 更新日期 | 2026-11-04 |
 | 适用范围 | 共享 Landing UI、Next.js Web、FastAPI、LangGraph、Celery、Pippit CLI |
 | 关联设计 | `docs/software-design.md` |
@@ -478,6 +478,7 @@ CSRF、SSE、FFmpeg、导出和分享等用例在对应功能落地前属于待�
 | UI-023 | 创作 Playbook | 选择场景后自动填充提示词、Skill、Hook、风格、画幅、时长和审核模式 | Frontend | P0 |
 | UI-026 | Playbook 取消选择 | 再次点击当前 Playbook 后取消激活，并恢复应用前草稿 | Frontend | P1 |
 | UI-027 | 完整模型目录 | Model 下拉框展示 Pippit 8 个、Kling 7 个当前可用视频模型及 Provider | Frontend | P0 |
+| UI-028 | 文档完整性 | Interface 开头展示属性表，Docs 包含 FAQ 中英文版本 | Frontend | P1 |
 | UI-024 | Hots 场景复用 | 点击场景卡片进入 Agents，并选中对应 Skill 与提示词 | Frontend | P0 |
 | UI-025 | 输入框空态与自适应 | 多行输入时输入框向下增高；输入非空时隐藏灵感和 Playbook | Frontend | P1 |
 | UI-020 | 顶部控件与下拉方向 | 搜索、语言、通知、积分和头像保持半透明，相关菜单向下展开 | Frontend | P1 |
@@ -811,3 +812,4 @@ FFmpeg 和分享仍未实现。
 | v1.2 | 2026-11-04 | 当前基线 | 增加 Playbook 与 Hots 场景 Skill 复用，当前前端基线为 22 个测试 |
 | v1.3 | 2026-11-04 | 当前基线 | 增加输入框自动增高与空态建议回归用例，当前前端基线为 23 个测试 |
 | v1.4 | 2026-11-04 | 当前基线 | 增加完整实时模型目录验证，当前前端基线为 24 个测试 |
+| v1.5 | 2026-11-04 | 当前基线 | 增加 FAQ 导航与接口属性表验证 |

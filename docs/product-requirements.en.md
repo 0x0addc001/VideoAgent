@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.3 |
+| Document version | v1.4 |
 | Updated | 2026-11-04 |
 
 ## 1. Product Goal
@@ -58,7 +58,8 @@ shows the account email and a sign-out action.
 - The Model selector lists every currently available video model and labels
   each option with its Pippit or Kling provider.
 - The prompt editor grows downward as wrapped text or line count increases.
-- Idea prompts and production playbooks are visible only when the prompt is empty.
+- Idea prompts are visible only when the prompt is empty; production playbooks
+  remain available for switching.
 - A user can select a Skill before starting.
 - Composer setting menus open above or below the trigger based on viewport
   space and remain inside the visible area.
@@ -162,6 +163,7 @@ Interface
 Impl
 Test
 Ops
+FAQ
 ```
 
 English labels and Chinese short labels:
@@ -174,6 +176,7 @@ English labels and Chinese short labels:
 | Impl | 实现 |
 | Test | 测试 |
 | Ops | 运营 |
+| FAQ | 问答 |
 
 Docs requirements:
 
@@ -216,7 +219,7 @@ Docs requirements:
 10. Assets uses internal Video and Skill tabs and shows permission and
     `yyyy-mm-dd` edit time.
 11. Assets uses a waterfall layout; videos preview on hover and Skill cards have no cover.
-12. Docs includes PRD, Design, Interface, Impl, Test, and Ops in order.
+12. Docs includes PRD, Design, Interface, Impl, Test, Ops, and FAQ in order.
 13. Docs search and bilingual switching work.
 14. Avatar provides login, registration, or sign-out based on session state.
 15. Production playbooks fill the prompt and recommended production settings.

@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.5 |
+| Document version | v1.6 |
 | Updated | 2026-11-04 |
 | Backend | Python + FastAPI |
 | Frontend | Next.js + TypeScript |
@@ -309,7 +309,7 @@ need the product runtime.
 - English documents are generated as `*.html`.
 - Chinese documents are generated as `*.zh.html`.
 - Document tabs are fixed as `PRD`, `Design`, `Interface`, `Impl`, `Test`, and
-  `Ops`.
+  `Ops`, plus `FAQ`.
 
 ## 14. Security and Reliability
 
@@ -352,7 +352,7 @@ FFmpeg workers, Alembic migrations, and a reverse proxy.
 9. Skills is a flat searchable catalogue using `user_id/skill_id`, with
    workflows and Review presented as normal skill cards.
 10. Documentation can switch between English and Chinese without changing the
-    product UI and follows the complete six-document order.
+    product UI and follows the complete seven-document order.
 11. Production playbooks and Skill-backed Hots scenarios provide editable,
     reusable starting points.
 12. The prompt editor grows with stacked or wrapped content, and empty-state
@@ -362,6 +362,7 @@ FFmpeg workers, Alembic migrations, and a reverse proxy.
 
 | Version | Date | Description |
 | --- | --- | --- |
+| v1.6 | 2026-11-04 | Add bilingual interview FAQ and document API/interface metadata |
 | v1.5 | 2026-11-04 | Rename the documented attribute to Model and expose the complete live video-model catalogue |
 | v1.4 | 2026-11-04 | Add auto-growing prompt input and empty-state-only idea suggestions |
 | v1.3 | 2026-11-04 | Add production playbooks, Hook control, scenario Skills, and reusable Hots scenarios |

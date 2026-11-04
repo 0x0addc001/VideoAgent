@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Interface" />
     <title>Interface · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=19" />
+    <link rel="stylesheet" href="../docs.css?v=20" />
   </head>
   <body data-document="interface-reference.html">
     <main class="document-shell" id="document-shell">
@@ -51,6 +51,43 @@
         </nav>
       </aside>
       <article class="document"><h1 id="videoagent-interface-reference">VideoAgent Interface Reference</h1>
+<div class="table-wrap"><table><thead><tr>
+<th>Attribute</th>
+<th>Value</th>
+</tr></thead><tbody>
+<tr>
+<td>Document version</td>
+<td>v1.2</td>
+</tr>
+<tr>
+<td>Updated</td>
+<td>2026-11-04</td>
+</tr>
+<tr>
+<td>Base path</td>
+<td><code>/api/v1</code></td>
+</tr>
+<tr>
+<td>Authentication</td>
+<td>HttpOnly Session Cookie</td>
+</tr>
+<tr>
+<td>Request format</td>
+<td>JSON with <code>credentials: &quot;include&quot;</code></td>
+</tr>
+<tr>
+<td>API style</td>
+<td>REST with job polling; SSE is a target capability</td>
+</tr>
+<tr>
+<td>Billable generation</td>
+<td>Explicit approval plus <code>Idempotency-Key</code></td>
+</tr>
+<tr>
+<td>OpenAPI</td>
+<td><code>/docs</code> and <code>/openapi.json</code></td>
+</tr>
+</tbody></table></div>
 <p>Base URL:</p>
 <pre><code class="language-text">http://localhost:8000/api/v1</code></pre>
 <p>Interactive OpenAPI documentation is available at:</p>
@@ -261,6 +298,6 @@ http://localhost:8000/openapi.json</code></pre>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=19"></script>
+    <script src="../docs.js?v=20"></script>
   </body>
 </html>

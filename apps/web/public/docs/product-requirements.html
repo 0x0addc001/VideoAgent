@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent PRD" />
     <title>PRD · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=19" />
+    <link rel="stylesheet" href="../docs.css?v=20" />
   </head>
   <body data-document="product-requirements.html">
     <main class="document-shell" id="document-shell">
@@ -48,7 +48,7 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v1.3</td>
+<td>v1.4</td>
 </tr>
 <tr>
 <td>Updated</td>
@@ -88,7 +88,8 @@ Avatar</code></pre>
 <li>The Model selector lists every currently available video model and labels</li>
 <p>each option with its Pippit or Kling provider.</p>
 <li>The prompt editor grows downward as wrapped text or line count increases.</li>
-<li>Idea prompts and production playbooks are visible only when the prompt is empty.</li>
+<li>Idea prompts are visible only when the prompt is empty; production playbooks</li>
+<p>remain available for switching.</p>
 <li>A user can select a Skill before starting.</li>
 <li>Composer setting menus open above or below the trigger based on viewport</li>
 <p>space and remain inside the visible area.</p>
@@ -173,7 +174,8 @@ Design
 Interface
 Impl
 Test
-Ops</code></pre>
+Ops
+FAQ</code></pre>
 <p>English labels and Chinese short labels:</p>
 <div class="table-wrap"><table><thead><tr>
 <th>English</th>
@@ -202,6 +204,10 @@ Ops</code></pre>
 <tr>
 <td>Ops</td>
 <td>运营</td>
+</tr>
+<tr>
+<td>FAQ</td>
+<td>问答</td>
 </tr>
 </tbody></table></div>
 <p>Docs requirements:</p>
@@ -245,7 +251,7 @@ Ops</code></pre>
 <li>Assets uses internal Video and Skill tabs and shows permission and</li>
 <p><code>yyyy-mm-dd</code> edit time.</p>
 <li>Assets uses a waterfall layout; videos preview on hover and Skill cards have no cover.</li>
-<li>Docs includes PRD, Design, Interface, Impl, Test, and Ops in order.</li>
+<li>Docs includes PRD, Design, Interface, Impl, Test, Ops, and FAQ in order.</li>
 <li>Docs search and bilingual switching work.</li>
 <li>Avatar provides login, registration, or sign-out based on session state.</li>
 <li>Production playbooks fill the prompt and recommended production settings.</li>
@@ -256,6 +262,6 @@ Ops</code></pre>
 <li>The Model selector exposes all currently available video models.</li>
 </ol></article>
     </main>
-    <script src="../docs.js?v=19"></script>
+    <script src="../docs.js?v=20"></script>
   </body>
 </html>

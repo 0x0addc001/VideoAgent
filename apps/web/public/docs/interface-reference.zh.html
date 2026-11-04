@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Interface" />
     <title>Interface · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=19" />
+    <link rel="stylesheet" href="../docs.css?v=20" />
   </head>
   <body data-document="interface-reference.zh.html">
     <main class="document-shell" id="document-shell">
@@ -58,11 +58,11 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v1.1</td>
+<td>v1.2</td>
 </tr>
 <tr>
 <td>更新日期</td>
-<td>2026-11-03</td>
+<td>2026-11-04</td>
 </tr>
 <tr>
 <td>基础路径</td>
@@ -71,6 +71,22 @@
 <tr>
 <td>认证方式</td>
 <td>HttpOnly Session Cookie</td>
+</tr>
+<tr>
+<td>请求格式</td>
+<td>JSON，并设置 <code>credentials: &quot;include&quot;</code></td>
+</tr>
+<tr>
+<td>API 风格</td>
+<td>REST + 任务轮询；SSE 属于目标能力</td>
+</tr>
+<tr>
+<td>计费生成</td>
+<td>显式审批 + <code>Idempotency-Key</code></td>
+</tr>
+<tr>
+<td>OpenAPI</td>
+<td><code>/docs</code> 与 <code>/openapi.json</code></td>
 </tr>
 </tbody></table></div>
 <p>本地 OpenAPI 文档：</p>
@@ -310,6 +326,6 @@ cancelled</code></pre>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=19"></script>
+    <script src="../docs.js?v=20"></script>
   </body>
 </html>

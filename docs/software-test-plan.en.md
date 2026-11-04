@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.4 |
+| Document version | v1.5 |
 | Updated | 2026-11-04 |
 | Current frameworks | pytest, Vitest, Testing Library |
 | Target E2E framework | Playwright |
@@ -124,7 +124,7 @@ Current component tests should continue to cover:
 - The textarea grows with multiline content, and idea suggestions disappear while
   the prompt contains non-whitespace text.
 - The Model selector includes all 15 live video models and labels each provider.
-- Docs labels are `PRD`, `Design`, `Interface`, `Impl`, `Test`, and `Ops`.
+- Docs labels are `PRD`, `Design`, `Interface`, `Impl`, `Test`, `Ops`, and `FAQ`.
 - Globe control changes only Docs source and language.
 - Skills, Hots, Assets, and Docs search controls stay pinned while content
   scrolls.
@@ -201,6 +201,7 @@ Only with explicit user approval and budget:
 
 | Version | Date | Description |
 | --- | --- | --- |
+| v1.5 | 2026-11-04 | Add FAQ navigation and interface metadata verification |
 | v1.4 | 2026-11-04 | Add complete live model-catalogue verification; current frontend baseline is 24 tests |
 | v1.3 | 2026-11-04 | Add auto-growing prompt and empty-state suggestion coverage; current frontend baseline is 23 tests |
 | v1.2 | 2026-11-04 | Add playbook and Skill-backed Hots scenarios; align current 35/22 frontend baseline |

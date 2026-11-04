@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.5 |
+| Document version | v1.6 |
 | Updated | 2026-11-04 |
 | Design reference | `software-design.en.md` |
 | Test reference | `software-test-plan.en.md` |
@@ -29,7 +29,7 @@ features.
 - Searchable Assets waterfall with internal Video/Skill tabs, permission, and
   `yyyy-mm-dd` edit date; videos preview on hover, Skill cards have no cover,
   and cards do not repeat type labels.
-- Searchable bilingual Docs with six documents, a collapsible table of contents,
+- Searchable bilingual Docs with seven documents, a collapsible table of contents,
   and full-text lookup across languages.
 - Registration, login, logout, server-side sessions, and user isolation.
 - Project create, list, read, rename, and archive.
@@ -235,8 +235,8 @@ English: product-requirements.html
 Chinese: product-requirements.zh.html
 ```
 
-The same pattern applies to all six documents in this order: PRD, Design,
-Interface, Impl, Test, and Ops. Docs search uses `docs-search.json` across both
+The same pattern applies to all seven documents in this order: PRD, Design,
+Interface, Impl, Test, Ops, and FAQ. Docs search uses `docs-search.json` across both
 languages. Docs language is derived from the current application language
 state and does not use an independent Docs-only cache.
 
@@ -346,6 +346,7 @@ provider tests are not part of normal CI.
 
 | Version | Date | Description |
 | --- | --- | --- |
+| v1.6 | 2026-11-04 | Add the bilingual FAQ document and interface metadata table |
 | v1.5 | 2026-11-04 | Synchronize the Model selector with all live Pippit and Kling video models |
 | v1.4 | 2026-11-04 | Add auto-growing prompt sizing and empty-state-only idea suggestions |
 | v1.3 | 2026-11-04 | Add production playbooks, Hook selector, scenario Skills, and Skill-backed Hots reuse |

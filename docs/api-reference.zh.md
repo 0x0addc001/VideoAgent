@@ -2,10 +2,14 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v1.1 |
-| 更新日期 | 2026-11-03 |
+| 文档版本 | v1.2 |
+| 更新日期 | 2026-11-04 |
 | 基础路径 | `/api/v1` |
 | 认证方式 | HttpOnly Session Cookie |
+| 请求格式 | JSON，并设置 `credentials: "include"` |
+| API 风格 | REST + 任务轮询；SSE 属于目标能力 |
+| 计费生成 | 显式审批 + `Idempotency-Key` |
+| OpenAPI | `/docs` 与 `/openapi.json` |
 
 本地 OpenAPI 文档：
 

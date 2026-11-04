@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent PRD" />
     <title>PRD · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=19" />
+    <link rel="stylesheet" href="../docs.css?v=20" />
   </head>
   <body data-document="product-requirements.zh.html">
     <main class="document-shell" id="document-shell">
@@ -48,7 +48,7 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v1.3</td>
+<td>v1.4</td>
 </tr>
 <tr>
 <td>更新日期</td>
@@ -86,7 +86,7 @@ Docs</code></pre>
 <li>创作框支持 Skill、Hook、风格、画幅、时长、模型、清晰度、音频和审核设定。</li>
 <li>模型选择器展示全部当前可用的视频模型，并标注 Pippit 或 Kling Provider。</li>
 <li>输入框随文字行数或自动换行向下扩展。</li>
-<li>灵感提示和创作 Playbook 仅在输入框为空时显示。</li>
+<li>示例灵感仅在输入框为空时显示，创作 Playbook 保持可用并可切换。</li>
 <li>用户可以在开始创作前选择一个 Skill。</li>
 <li>创作设定的菜单根据视口剩余空间自动向上或向下展开，并始终限制在可视区域内。</li>
 <li>创作场景提供产品广告、创作者 Vlog、微短剧、音乐 MV、视频本地化和批量测款的一键起点。</li>
@@ -164,7 +164,8 @@ Design
 Interface
 Impl
 Test
-Ops</code></pre>
+Ops
+FAQ</code></pre>
 <p>中文缩写：</p>
 <div class="table-wrap"><table><thead><tr>
 <th>英文</th>
@@ -193,6 +194,10 @@ Ops</code></pre>
 <tr>
 <td>Ops</td>
 <td>运营</td>
+</tr>
+<tr>
+<td>FAQ</td>
+<td>问答</td>
 </tr>
 </tbody></table></div>
 <p>文档要求：</p>
@@ -235,7 +240,7 @@ Ops</code></pre>
 <li>Hots 卡片自动播放，标题位于作者与喜欢数上方。</li>
 <li>Assets 通过 Video/Skill 内部分页区分类型，并展示权限和 <code>yyyy-mm-dd</code> 编辑时间。</li>
 <li>Assets 使用瀑布流；Video 悬浮预览，Skill 卡片不显示封面。</li>
-<li>Docs 依次包含 PRD、Design、Interface、Impl、Test、Ops。</li>
+<li>Docs 依次包含 PRD、Design、Interface、Impl、Test、Ops、FAQ。</li>
 <li>Docs 搜索和双语切换可用。</li>
 <li>头像根据登录状态提供登录、注册或退出。</li>
 <li>创作 Playbook 可填充提示词和推荐制作参数。</li>
@@ -245,6 +250,6 @@ Ops</code></pre>
 <li>模型下拉框展示全部当前可用的视频模型。</li>
 </ol></article>
     </main>
-    <script src="../docs.js?v=19"></script>
+    <script src="../docs.js?v=20"></script>
   </body>
 </html>

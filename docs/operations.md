@@ -2,7 +2,7 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v1.1 |
+| 文档版本 | v1.2 |
 | 更新日期 | 2026-11-04 |
 | 范围 | 产品发布、社区、Provider、支持、指标 |
 
@@ -23,7 +23,7 @@ VideoAgent 按三层内容运营：
 
 - 完成认证和积分消耗验收。
 - 确认部署主机上的 Pippit CLI 已授权。
-- 发布 PRD、Design、Interface、Impl、Test、Ops 六份文档。
+- 发布 PRD、Design、Interface、Impl、Test、Ops、FAQ 七份文档。
 - 验证中英文文档切换。
 - 验证项目创建、故事板规划、生成审批和任务轮询。
 - 确认浏览器包、日志和 API 响应中不存在 Provider 凭据。
@@ -130,5 +130,6 @@ VideoAgent 按三层内容运营：
 
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
+| v1.2 | 2026-11-04 | 增加 FAQ 文档发布检查 |
 | v1.1 | 2026-11-04 | 增加场景 Playbook 运营、社区 Skill 复用和外部 Agent 接力边界 |
 | v1.0 | 2026-11-04 | 建立 Skill、Hots、Assets、Docs、Provider 和发布运营基线 |
