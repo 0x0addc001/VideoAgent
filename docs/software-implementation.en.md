@@ -2,10 +2,11 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.6 |
+| Document version | v1.7 |
 | Updated | 2026-11-04 |
-| Design reference | `software-design.en.md` |
-| Test reference | `software-test-plan.en.md` |
+| Backend framework | Python + FastAPI |
+| Frontend framework | Next.js + TypeScript |
+| Model | Pippit/Seedance 2.5 Draft, Pippit/Seedance 2.5, Pippit/Seedance 2.0 Fast VIP, Pippit/Seedance 2.0 VIP, Pippit/Seedance 2.0 Mini Preview, Pippit/Seedance 2.0 Mini, Pippit/Wan 3.0, Pippit/HappyHorse 1.1, Kling/Kling Video 2.5, Kling/Kling Video 2.6, Kling/Kling Video O1, Kling/Kling Video 3.0, Kling/Kling Video 3.0 Omni, Kling/Kling Video 3.0 Turbo, Kling/Kling Video 4.0, Kling/Kling 2.6 Motion Control, Kling/Kling 3.0 Motion Control, Kling/Kling Image 3.0 Omni, Kling/Kling Image O1, Kling/Kling Image 3.0, Kling/Kling Image 2.1 |
 
 ## 1. Purpose
 

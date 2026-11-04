@@ -2,10 +2,11 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v1.6 |
+| 文档版本 | v1.7 |
 | 更新日期 | 2026-11-04 |
-| 对应设计 | `docs/software-design.md` |
-| 测试规范 | `docs/software-test-plan.md` |
+| 后端框架 | Python + FastAPI |
+| 前端框架 | Next.js + TypeScript |
+| 模型 | Pippit/Seedance 2.5 Draft、Pippit/Seedance 2.5、Pippit/Seedance 2.0 Fast VIP、Pippit/Seedance 2.0 VIP、Pippit/Seedance 2.0 Mini 体验版、Pippit/Seedance 2.0 Mini、Pippit/Wan 3.0、Pippit/HappyHorse 1.1、Kling/Kling Video 2.5、Kling/Kling Video 2.6、Kling/Kling Video O1、Kling/Kling Video 3.0、Kling/Kling Video 3.0 Omni、Kling/Kling Video 3.0 Turbo、Kling/Kling Video 4.0、Kling/Kling 2.6 Motion Control、Kling/Kling 3.0 Motion Control、Kling/Kling Image 3.0 Omni、Kling/Kling Image O1、Kling/Kling Image 3.0、Kling/Kling Image 2.1 |
 
 ## 1. 文档目的
 

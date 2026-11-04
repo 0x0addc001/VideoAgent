@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent FAQ" />
     <title>FAQ · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=25" />
+    <link rel="stylesheet" href="../docs.css?v=26" />
   </head>
   <body data-document="faq.zh.html">
     <main class="document-shell" id="document-shell">
@@ -29,7 +29,7 @@
 <a class="toc-link toc-level-2" href="#q1-videoagent-的主编排应怎样设计">Q1. VideoAgent 的主编排应怎样设计？</a>
 <a class="toc-link toc-level-2" href="#q2-用户说-只改第三镜-其他不要动-系统应如何实现">Q2. 用户说“只改第三镜，其他不要动”，系统应如何实现？</a>
 <a class="toc-link toc-level-2" href="#q3-一个可生成的专业镜头-至少需要哪些字段">Q3. 一个可生成的专业镜头，至少需要哪些字段？</a>
-<a class="toc-link toc-level-2" href="#q4-如何让-llm-大语言模型-输出真正可执行">Q4. 如何让 LLM（大语言模型）输出真正可执行？</a>
+<a class="toc-link toc-level-2" href="#q4-如何让-llm-输出真正可执行">Q4. 如何让 LLM 输出真正可执行？</a>
 <a class="toc-link toc-level-2" href="#q5-mcp-模型上下文协议-和-cli-命令行接口-应该怎么选">Q5. MCP（模型上下文协议）和 CLI（命令行接口）应该怎么选？</a>
 <a class="toc-link toc-level-2" href="#q6-生成任务超时后怎么办">Q6. 生成任务超时后怎么办？</a>
 <a class="toc-link toc-level-2" href="#q7-videoagent-的评测应该怎么做">Q7. VideoAgent 的评测应该怎么做？</a>
@@ -51,7 +51,7 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v2.1</td>
+<td>v2.3</td>
 </tr>
 <tr>
 <td>更新日期</td>
@@ -60,10 +60,10 @@
 </tbody></table></div>
 <h2 id="q1-videoagent-的主编排应怎样设计">Q1. VideoAgent 的主编排应怎样设计？</h2>
 <p><strong>答案</strong></p>
-<p>VideoAgent（本产品的智能视频创作助手）采用确定性工作流：Brief（创作需求简报）、创作诊断、 Treatment（创作阐述）、Script/Beats（剧本与叙事节拍）、 Storyboard（故事板）、连续性校验、预演、生成、镜头 QC（质量检查）、粗剪和交付。故事方向、预算和 成片方向设置人工确认点，模型负责创意，代码负责状态、权限和成本边界。</p>
-<p><strong>追问：</strong> 为什么不直接使用多个自由 Agent（智能代理）？</p>
+<p>VideoAgent 采用确定性工作流：Brief（创作需求简报）、创作诊断、 Treatment（创作阐述）、Script/Beats（剧本与叙事节拍）、 Storyboard（故事板）、连续性校验、预演、生成、镜头 QC（质量检查）、粗剪和交付。故事方向、预算和 成片方向设置人工确认点，模型负责创意，代码负责状态、权限和成本边界。</p>
+<p><strong>追问：</strong> 为什么不直接使用多个自由 Agent？</p>
 <p><strong>答案</strong></p>
-<p>职责共享同一上下文时，单 Agent（智能代理）配明确工具和状态更稳定。只有剧本、视觉、 制片和审片具有真正独立的工具、上下文和验收标准时，才拆成受限子 Agent， 由父流程协调。</p>
+<p>职责共享同一上下文时，单 Agent 配明确工具和状态更稳定。只有剧本、视觉、 制片和审片具有真正独立的工具、上下文和验收标准时，才拆成受限子 Agent， 由父流程协调。</p>
 <p><strong>扩展：</strong> LangGraph（图式工作流编排框架）</p>
 <p><strong>答案</strong></p>
 <p>使用 StateGraph（状态图）表达阶段和条件边，checkpoint（可恢复的流程快照） 保存状态，human-in-the-loop（人工介入确认）负责关键确认， tool allowlist（工具白名单）限制能力边界，结构化输出 保证节点间契约稳定。</p>
@@ -78,14 +78,14 @@
 <p>使用乐观锁（更新时检查版本是否仍一致）或版本条件更新；同一请求携带 幂等键（同一请求重复提交也只执行一次）；镜头修改与后续生成任务通过 依赖关系关联，避免旧版本结果覆盖新镜头。</p>
 <h2 id="q3-一个可生成的专业镜头-至少需要哪些字段">Q3. 一个可生成的专业镜头，至少需要哪些字段？</h2>
 <p><strong>答案</strong></p>
-<p>除 Prompt（生成提示词）、时长和画幅外，还需要 scene/beat（场景与叙事节拍）、叙事功能、景别、机位、镜头、 运镜、主体动作、视线、走位、光线、色彩、声音、转场、连续性引用和前后景状态。</p>
+<p>除 Prompt、时长和画幅外，还需要 scene/beat（场景与叙事节拍）、叙事功能、景别、机位、镜头、 运镜、主体动作、视线、走位、光线、色彩、声音、转场、连续性引用和前后景状态。</p>
 <p><strong>追问：</strong> 为什么 Prompt 写得足够长仍然不够？</p>
 <p><strong>答案</strong></p>
 <p>Prompt 是单次生成描述，不承担结构化约束。人物、空间、视线和服装的一致性需要 独立字段、引用资产和跨镜头校验。</p>
 <p><strong>扩展：</strong> 需要哪些电影语法？</p>
 <p><strong>答案</strong></p>
 <p>使用 master/medium/close/insert/reaction（全景/中景/近景/插入/反应镜头） 组织覆盖，检查 180 度规则、30 度规则、eyeline match（视线匹配）、 screen direction（屏幕方向）、match cut（匹配剪辑）和有动机的运镜。</p>
-<h2 id="q4-如何让-llm-大语言模型-输出真正可执行">Q4. 如何让 LLM（大语言模型）输出真正可执行？</h2>
+<h2 id="q4-如何让-llm-输出真正可执行">Q4. 如何让 LLM 输出真正可执行？</h2>
 <p><strong>答案</strong></p>
 <p>用 Pydantic（Python 数据校验库）定义严格输出结构，校验字段、时长、比例、 镜头数量和引用关系。执行前再做 Provider（模型服务商）能力匹配，确认模型支持目标时长、音频和输入类型。</p>
 <p><strong>追问：</strong> 模型返回 JSON（结构化数据格式）后还需要做什么？</p>
@@ -118,15 +118,15 @@
 <p><strong>追问：</strong> 现有的一致性、覆盖度、清晰度和节奏分够吗？</p>
 <p><strong>答案</strong></p>
 <p>足够作为低成本基线，但必须避免“三个镜头等于完整覆盖”之类的捷径。规则指标 应与视觉语言模型和人工偏好数据结合。</p>
-<p><strong>扩展：</strong> 怎样降低 Judge（评审模型）偏差？</p>
+<p><strong>扩展：</strong> 怎样降低 Judge 偏差？</p>
 <p><strong>答案</strong></p>
-<p>固定 rubric（评分量表）、盲化模型来源、pairwise（成对比较）、多人标注校准， 并持续监控 inter-rater agreement（评审者一致率）和 gaming resistance（抗投机能力）。</p>
+<p>固定 rubric、盲化模型来源、pairwise 比较、多人标注校准，并持续监控 inter-rater agreement 和 gaming resistance。</p>
 <h2 id="q8-如何保证多镜头的人物与场景一致性">Q8. 如何保证多镜头的人物与场景一致性？</h2>
 <p><strong>答案</strong></p>
 <p>建立 Style Bible（视觉风格手册），分别管理角色、服装、场景、道具和视觉基调；每个镜头引用 对应资产，生成前检查视线、屏幕方向和空间关系。</p>
 <p><strong>追问：</strong> 只把同一段描述放进每个 Prompt 够吗？</p>
 <p><strong>答案</strong></p>
-<p>不够。文本描述无法稳定锁定身份和空间，必须使用结构化引用、首尾帧或 subject reference（主体参考图），并在生成后做一致性检查。</p>
+<p>不够。文本描述无法稳定锁定身份和空间，必须使用结构化引用、首尾帧或 subject reference，并在生成后做一致性检查。</p>
 <p><strong>扩展：</strong> 发现不一致时重做全部镜头吗？</p>
 <p><strong>答案</strong></p>
 <p>只重做受影响的镜头。通过 continuity graph（连续性依赖图）找到依赖节点， 保留已通过的镜头。</p>
@@ -203,6 +203,6 @@
 <p><strong>答案</strong></p>
 <p>依次考虑数据安全、费用一致性、结果可用性、质量和延迟。降级必须可观测、可 解释、可撤销，并受用户预算和内容策略约束。</p></article>
     </main>
-    <script src="../docs.js?v=25"></script>
+    <script src="../docs.js?v=26"></script>
   </body>
 </html>

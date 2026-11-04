@@ -2,10 +2,10 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v1.6 |
+| 文档版本 | v1.7 |
 | 更新日期 | 2026-11-04 |
-| 后端技术 | Python + FastAPI |
-| 前端技术 | Next.js + TypeScript |
+| 后端框架 | Python + FastAPI |
+| 前端框架 | Next.js + TypeScript |
 | 模型 | Pippit/Seedance 2.5 Draft、Pippit/Seedance 2.5、Pippit/Seedance 2.0 Fast VIP、Pippit/Seedance 2.0 VIP、Pippit/Seedance 2.0 Mini 体验版、Pippit/Seedance 2.0 Mini、Pippit/Wan 3.0、Pippit/HappyHorse 1.1、Kling/Kling Video 2.5、Kling/Kling Video 2.6、Kling/Kling Video O1、Kling/Kling Video 3.0、Kling/Kling Video 3.0 Omni、Kling/Kling Video 3.0 Turbo、Kling/Kling Video 4.0、Kling/Kling 2.6 Motion Control、Kling/Kling 3.0 Motion Control、Kling/Kling Image 3.0 Omni、Kling/Kling Image O1、Kling/Kling Image 3.0、Kling/Kling Image 2.1 |
 
 VideoAgent 通过统一 Provider 边界集成 Pippit CLI 与 Kling MCP。Pippit 提供视频提交、任务查询和积分能力，Kling MCP 提供文本生成视频、图生视频、动作控制和多模态参考能力。

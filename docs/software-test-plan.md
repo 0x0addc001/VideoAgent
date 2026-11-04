@@ -2,10 +2,9 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v2.0 |
+| 文档版本 | v2.1 |
 | 更新日期 | 2026-11-04 |
 | 测试框架 | pytest、Vitest、Testing Library |
-| 关联设计 | `docs/software-design.md` |
 
 ## 1. 目的
 

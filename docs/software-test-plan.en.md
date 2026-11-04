@@ -2,10 +2,9 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v2.0 |
+| Document version | v2.1 |
 | Updated | 2026-11-04 |
 | Frameworks | pytest, Vitest, Testing Library |
-| Related design | `software-design.en.md` |
 
 ## 1. Purpose
 
