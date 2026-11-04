@@ -16,6 +16,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.12"
+      - run: sudo apt-get update && sudo apt-get install --yes ffmpeg
       - run: uv sync --dev
       - run: uv run ruff check src tests
       - run: uv run ruff format --check src tests
