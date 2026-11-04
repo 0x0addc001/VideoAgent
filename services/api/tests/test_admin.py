@@ -144,11 +144,13 @@ async def test_provider_status_failure_does_not_break_admin_data(app):
 
     provider.account_status = unsupported  # type: ignore[method-assign]
     app.state.video_provider = provider
+    app.state.settings.kling_cli_command = "missing-kling-cli-for-test"
 
     response = await admin.get("/api/v1/admin/provider")
 
     assert response.status_code == 200
     assert response.json()["pippit"]["connected"] is False
     assert response.json()["pippit"]["error"] == "Pippit status is unavailable."
-    assert "kling" in response.json()
+    assert response.json()["kling"]["connected"] is False
+    assert response.json()["kling"]["error"] == "Kling CLI status is unavailable."
     await admin.aclose()

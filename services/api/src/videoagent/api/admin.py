@@ -60,18 +60,18 @@ async def _pippit_provider_status(
     provider: VideoProvider,
     settings: Settings,
 ) -> dict[str, object]:
-    candidate = (
-        provider
-        if isinstance(provider, PippitVideoProvider)
-        else PippitVideoProvider(
-            command=settings.pippit_cli_command,
-            model=settings.pippit_video_model,
-            resolution=settings.pippit_video_resolution,
-            access_key=settings.pippit_access_key,
-            timeout_seconds=settings.pippit_timeout_seconds,
-        )
-    )
     try:
+        candidate = (
+            provider
+            if isinstance(provider, PippitVideoProvider)
+            else PippitVideoProvider(
+                command=settings.pippit_cli_command,
+                model=settings.pippit_video_model,
+                resolution=settings.pippit_video_resolution,
+                access_key=settings.pippit_access_key,
+                timeout_seconds=settings.pippit_timeout_seconds,
+            )
+        )
         status = await candidate.account_status()
         connected = status.get("logged_in") is True
         credits = await candidate.get_credit_balance() if connected else None
@@ -97,11 +97,11 @@ async def _kling_provider_status(settings: Settings) -> dict[str, object]:
             "credits": None,
             "error": "Kling CLI is not the configured backend.",
         }
-    candidate = KlingCLIVideoProvider(
-        command=settings.kling_cli_command,
-        timeout_seconds=settings.kling_cli_timeout_seconds,
-    )
     try:
+        candidate = KlingCLIVideoProvider(
+            command=settings.kling_cli_command,
+            timeout_seconds=settings.kling_cli_timeout_seconds,
+        )
         status = await candidate.account_status()
         actual_user_id = str(status.get("userId") or "")
         expected_user_id = settings.kling_expected_user_id
