@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent FAQ" />
     <title>FAQ · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=24" />
+    <link rel="stylesheet" href="../docs.css?v=25" />
   </head>
   <body data-document="faq.zh.html">
     <main class="document-shell" id="document-shell">
@@ -26,21 +26,21 @@
         <nav class="toc-panel" id="toc-panel" aria-label="目录">
           <p class="toc-kicker">目录</p>
           <a class="toc-link toc-level-1" href="#videoagent-客服-faq">VideoAgent 客服 FAQ</a>
-<a class="toc-link toc-level-2" href="#q1-视频-agent-的主编排应怎样设计">Q1. 视频 Agent 的主编排应怎样设计？</a>
+<a class="toc-link toc-level-2" href="#q1-videoagent-的主编排应怎样设计">Q1. VideoAgent 的主编排应怎样设计？</a>
 <a class="toc-link toc-level-2" href="#q2-用户说-只改第三镜-其他不要动-系统应如何实现">Q2. 用户说“只改第三镜，其他不要动”，系统应如何实现？</a>
 <a class="toc-link toc-level-2" href="#q3-一个可生成的专业镜头-至少需要哪些字段">Q3. 一个可生成的专业镜头，至少需要哪些字段？</a>
-<a class="toc-link toc-level-2" href="#q4-如何让-llm-输出真正可执行">Q4. 如何让 LLM 输出真正可执行？</a>
-<a class="toc-link toc-level-2" href="#q5-mcp-和-cli-应该怎么选">Q5. MCP 和 CLI 应该怎么选？</a>
+<a class="toc-link toc-level-2" href="#q4-如何让-llm-大语言模型-输出真正可执行">Q4. 如何让 LLM（大语言模型）输出真正可执行？</a>
+<a class="toc-link toc-level-2" href="#q5-mcp-模型上下文协议-和-cli-命令行接口-应该怎么选">Q5. MCP（模型上下文协议）和 CLI（命令行接口）应该怎么选？</a>
 <a class="toc-link toc-level-2" href="#q6-生成任务超时后怎么办">Q6. 生成任务超时后怎么办？</a>
-<a class="toc-link toc-level-2" href="#q7-视频-agent-的评测应该怎么做">Q7. 视频 Agent 的评测应该怎么做？</a>
+<a class="toc-link toc-level-2" href="#q7-videoagent-的评测应该怎么做">Q7. VideoAgent 的评测应该怎么做？</a>
 <a class="toc-link toc-level-2" href="#q8-如何保证多镜头的人物与场景一致性">Q8. 如何保证多镜头的人物与场景一致性？</a>
 <a class="toc-link toc-level-2" href="#q9-如何控制积分成本和用户预期">Q9. 如何控制积分成本和用户预期？</a>
 <a class="toc-link toc-level-2" href="#q10-如果线上生成成功率突然下降-如何定位问题">Q10. 如果线上生成成功率突然下降，如何定位问题？</a>
 <a class="toc-link toc-level-2" href="#q11-为什么不用一个无限自主的-agent-完成所有事情">Q11. 为什么不用一个无限自主的 Agent 完成所有事情？</a>
-<a class="toc-link toc-level-2" href="#q12-视频-agent-最关键的工程原则是什么">Q12. 视频 Agent 最关键的工程原则是什么？</a>
-<a class="toc-link toc-level-2" href="#q13-视频-agent-的主要技术权衡是什么">Q13. 视频 Agent 的主要技术权衡是什么？</a>
+<a class="toc-link toc-level-2" href="#q12-videoagent-最关键的工程原则是什么">Q12. VideoAgent 最关键的工程原则是什么？</a>
+<a class="toc-link toc-level-2" href="#q13-videoagent-的主要技术权衡是什么">Q13. VideoAgent 的主要技术权衡是什么？</a>
 <a class="toc-link toc-level-2" href="#q14-视频生成系统如何支撑高并发">Q14. 视频生成系统如何支撑高并发？</a>
-<a class="toc-link toc-level-2" href="#q15-视频-agent-如何设计高可用">Q15. 视频 Agent 如何设计高可用？</a>
+<a class="toc-link toc-level-2" href="#q15-videoagent-如何设计高可用">Q15. VideoAgent 如何设计高可用？</a>
 <a class="toc-link toc-level-2" href="#q16-视频生成链路应怎样设计兜底策略">Q16. 视频生成链路应怎样设计兜底策略？</a>
         </nav>
       </aside>
@@ -58,96 +58,96 @@
 <td>2026-11-04</td>
 </tr>
 </tbody></table></div>
-<h2 id="q1-视频-agent-的主编排应怎样设计">Q1. 视频 Agent 的主编排应怎样设计？</h2>
+<h2 id="q1-videoagent-的主编排应怎样设计">Q1. VideoAgent 的主编排应怎样设计？</h2>
 <p><strong>答案</strong></p>
-<p>视频 Agent 采用确定性工作流：Brief、创作诊断、Treatment、Script/Beats、 Storyboard、连续性校验、预演、生成、镜头 QC、粗剪和交付。故事方向、预算和 成片方向设置人工确认点，模型负责创意，代码负责状态、权限和成本边界。</p>
-<p><strong>追问：</strong> 为什么不直接使用多个自由 Agent？</p>
+<p>VideoAgent（本产品的智能视频创作助手）采用确定性工作流：Brief（创作需求简报）、创作诊断、 Treatment（创作阐述）、Script/Beats（剧本与叙事节拍）、 Storyboard（故事板）、连续性校验、预演、生成、镜头 QC（质量检查）、粗剪和交付。故事方向、预算和 成片方向设置人工确认点，模型负责创意，代码负责状态、权限和成本边界。</p>
+<p><strong>追问：</strong> 为什么不直接使用多个自由 Agent（智能代理）？</p>
 <p><strong>答案</strong></p>
-<p>职责共享同一上下文时，单 Agent 配明确工具和状态更稳定。只有剧本、视觉、 制片和审片具有真正独立的工具、上下文和验收标准时，才拆成受限子 Agent， 由父流程协调。</p>
-<p><strong>扩展：</strong> LangGraph</p>
+<p>职责共享同一上下文时，单 Agent（智能代理）配明确工具和状态更稳定。只有剧本、视觉、 制片和审片具有真正独立的工具、上下文和验收标准时，才拆成受限子 Agent， 由父流程协调。</p>
+<p><strong>扩展：</strong> LangGraph（图式工作流编排框架）</p>
 <p><strong>答案</strong></p>
-<p>使用 StateGraph 表达阶段和条件边，checkpoint 保存可恢复状态， human-in-the-loop 负责关键确认，tool allowlist 限制能力边界，结构化输出 保证节点间契约稳定。</p>
+<p>使用 StateGraph（状态图）表达阶段和条件边，checkpoint（可恢复的流程快照） 保存状态，human-in-the-loop（人工介入确认）负责关键确认， tool allowlist（工具白名单）限制能力边界，结构化输出 保证节点间契约稳定。</p>
 <h2 id="q2-用户说-只改第三镜-其他不要动-系统应如何实现">Q2. 用户说“只改第三镜，其他不要动”，系统应如何实现？</h2>
 <p><strong>答案</strong></p>
-<p>先识别意图，再把修改落到稳定的 shot id 上。Agent 输出局部 shot patch， 记录版本和操作日志，其他镜头及其审批状态保持不变。</p>
+<p>先识别意图，再把修改落到稳定的 shot id（镜头唯一标识）上。 Agent 输出局部 shot patch（单镜头局部修改补丁）， 记录版本和操作日志，其他镜头及其审批状态保持不变。</p>
 <p><strong>追问：</strong> 如果用户只是问“这个分镜怎么样”，也应该重写故事板吗？</p>
 <p><strong>答案</strong></p>
-<p>不应该。只评估请求进入 review 分支，返回问题和建议，不产生写操作。</p>
+<p>不应该。只评估请求进入 review（评估）分支，返回问题和建议，不产生写操作。</p>
 <p><strong>扩展：</strong> 局部修改如何保证并发安全？</p>
 <p><strong>答案</strong></p>
-<p>使用乐观锁或版本条件更新；同一请求携带幂等键；镜头修改与后续生成任务通过 依赖关系关联，避免旧版本结果覆盖新镜头。</p>
+<p>使用乐观锁（更新时检查版本是否仍一致）或版本条件更新；同一请求携带 幂等键（同一请求重复提交也只执行一次）；镜头修改与后续生成任务通过 依赖关系关联，避免旧版本结果覆盖新镜头。</p>
 <h2 id="q3-一个可生成的专业镜头-至少需要哪些字段">Q3. 一个可生成的专业镜头，至少需要哪些字段？</h2>
 <p><strong>答案</strong></p>
-<p>除 Prompt、时长和画幅外，还需要 scene/beat、叙事功能、景别、机位、镜头、 运镜、主体动作、视线、走位、光线、色彩、声音、转场、连续性引用和前后景状态。</p>
+<p>除 Prompt（生成提示词）、时长和画幅外，还需要 scene/beat（场景与叙事节拍）、叙事功能、景别、机位、镜头、 运镜、主体动作、视线、走位、光线、色彩、声音、转场、连续性引用和前后景状态。</p>
 <p><strong>追问：</strong> 为什么 Prompt 写得足够长仍然不够？</p>
 <p><strong>答案</strong></p>
 <p>Prompt 是单次生成描述，不承担结构化约束。人物、空间、视线和服装的一致性需要 独立字段、引用资产和跨镜头校验。</p>
 <p><strong>扩展：</strong> 需要哪些电影语法？</p>
 <p><strong>答案</strong></p>
-<p>使用 master/medium/close/insert/reaction 组织覆盖，检查 180 度规则、 30 度规则、eyeline match、screen direction、match cut 和有动机的运镜。</p>
-<h2 id="q4-如何让-llm-输出真正可执行">Q4. 如何让 LLM 输出真正可执行？</h2>
+<p>使用 master/medium/close/insert/reaction（全景/中景/近景/插入/反应镜头） 组织覆盖，检查 180 度规则、30 度规则、eyeline match（视线匹配）、 screen direction（屏幕方向）、match cut（匹配剪辑）和有动机的运镜。</p>
+<h2 id="q4-如何让-llm-大语言模型-输出真正可执行">Q4. 如何让 LLM（大语言模型）输出真正可执行？</h2>
 <p><strong>答案</strong></p>
-<p>用 Pydantic 定义严格输出结构，校验字段、时长、比例、镜头数量和引用关系。 执行前再做 Provider 能力匹配，确认模型支持目标时长、音频和输入类型。</p>
-<p><strong>追问：</strong> 模型返回 JSON 后还需要做什么？</p>
+<p>用 Pydantic（Python 数据校验库）定义严格输出结构，校验字段、时长、比例、 镜头数量和引用关系。执行前再做 Provider（模型服务商）能力匹配，确认模型支持目标时长、音频和输入类型。</p>
+<p><strong>追问：</strong> 模型返回 JSON（结构化数据格式）后还需要做什么？</p>
 <p><strong>答案</strong></p>
-<p>JSON 只是候选结果。系统要继续做 Schema 校验、业务校验、权限检查和费用检查， 全部通过后才进入写库或生成阶段。</p>
+<p>JSON 只是候选结果。系统要继续做 Schema（字段结构定义）校验、业务校验、权限检查和费用检查， 全部通过后才进入写库或生成阶段。</p>
 <p><strong>扩展：</strong> 校验失败怎么处理？</p>
 <p><strong>答案</strong></p>
 <p>允许有限次结构化修复；修复预算耗尽后返回稳定错误码，不进入计费链路，也不把 异常文本直接交给下一个工具。</p>
-<h2 id="q5-mcp-和-cli-应该怎么选">Q5. MCP 和 CLI 应该怎么选？</h2>
+<h2 id="q5-mcp-模型上下文协议-和-cli-命令行接口-应该怎么选">Q5. MCP（模型上下文协议）和 CLI（命令行接口）应该怎么选？</h2>
 <p><strong>答案</strong></p>
-<p>按运行边界选择。服务端批处理和稳定部署使用 CLI；跨 Agent、个人 Agent 和 工具发现场景使用 MCP。两种协议都收敛到统一 Provider 契约。</p>
+<p>按运行边界选择。服务端批处理和稳定部署使用 CLI；跨 Agent、个人 Agent 和 工具发现场景使用 MCP。两种协议都收敛到统一 Provider（模型服务商）契约。</p>
 <p><strong>追问：</strong> 两者同时存在会不会重复建设？</p>
 <p><strong>答案</strong></p>
-<p>不会。重复的是底层能力，不重复的应是接口。传输层分别适配 CLI 和 MCP， 业务层只依赖 estimate、submit、status、cancel 和统一错误模型。</p>
+<p>不会。重复的是底层能力，不重复的应是接口。传输层分别适配 CLI 和 MCP， 业务层只依赖 estimate（估算）、submit（提交）、status（查询）、 cancel（取消）和统一错误模型。</p>
 <p><strong>扩展：</strong> Provider 适配器要标准化什么？</p>
 <p><strong>答案</strong></p>
 <p>标准化模型能力、任务引用、状态、错误码、结果 URL、积分和取消语义；凭据只在 适配器内部使用，不进入浏览器或领域对象。</p>
 <h2 id="q6-生成任务超时后怎么办">Q6. 生成任务超时后怎么办？</h2>
 <p><strong>答案</strong></p>
-<p>计费提交超时先进入 <code>submission_uncertain</code>，保留幂等键和请求记录，再查询 Provider 对账。无法确认是否受理时停止自动重试并告警。</p>
+<p>计费提交超时先进入 <code>submission_uncertain</code>（提交结果不确定）状态，保留 幂等键（同一请求重复提交也只执行一次）和请求记录，再查询 Provider（模型服务商）对账。无法确认是否受理时停止自动重试并告警。</p>
 <p><strong>追问：</strong> 可以自动重试三次吗？</p>
 <p><strong>答案</strong></p>
 <p>普通只读查询可以退避重试；计费提交不能盲目重试。只有确认未受理或通过幂等键 找到同一任务后，才能继续。</p>
 <p><strong>扩展：</strong> 怎样防止重复扣费？</p>
 <p><strong>答案</strong></p>
-<p>数据库唯一幂等键、提交状态机、Provider Task Reference 和人工可解释的对账流程 共同保证 at-least-once 投递不会变成重复计费。</p>
-<h2 id="q7-视频-agent-的评测应该怎么做">Q7. 视频 Agent 的评测应该怎么做？</h2>
+<p>数据库唯一幂等键、提交状态机（状态及合法迁移规则）、 Provider Task Reference（服务商任务编号）和人工可解释的对账流程 共同保证 at-least-once（至少一次投递）不会变成重复计费。</p>
+<h2 id="q7-videoagent-的评测应该怎么做">Q7. VideoAgent 的评测应该怎么做？</h2>
 <p><strong>答案</strong></p>
 <p>按阶段评测。剧本看欲望、冲突、转折和结尾；故事板看覆盖、连续性和可生成性； 镜头看人物、Prompt 匹配和技术瑕疵；成片看节奏、声音和观看留存。</p>
 <p><strong>追问：</strong> 现有的一致性、覆盖度、清晰度和节奏分够吗？</p>
 <p><strong>答案</strong></p>
 <p>足够作为低成本基线，但必须避免“三个镜头等于完整覆盖”之类的捷径。规则指标 应与视觉语言模型和人工偏好数据结合。</p>
-<p><strong>扩展：</strong> 怎样降低 Judge 偏差？</p>
+<p><strong>扩展：</strong> 怎样降低 Judge（评审模型）偏差？</p>
 <p><strong>答案</strong></p>
-<p>固定 rubric、盲化模型来源、pairwise 比较、多人标注校准，并持续监控 inter-rater agreement 和 gaming resistance。</p>
+<p>固定 rubric（评分量表）、盲化模型来源、pairwise（成对比较）、多人标注校准， 并持续监控 inter-rater agreement（评审者一致率）和 gaming resistance（抗投机能力）。</p>
 <h2 id="q8-如何保证多镜头的人物与场景一致性">Q8. 如何保证多镜头的人物与场景一致性？</h2>
 <p><strong>答案</strong></p>
-<p>建立 Style Bible，分别管理角色、服装、场景、道具和视觉基调；每个镜头引用 对应资产，生成前检查视线、屏幕方向和空间关系。</p>
+<p>建立 Style Bible（视觉风格手册），分别管理角色、服装、场景、道具和视觉基调；每个镜头引用 对应资产，生成前检查视线、屏幕方向和空间关系。</p>
 <p><strong>追问：</strong> 只把同一段描述放进每个 Prompt 够吗？</p>
 <p><strong>答案</strong></p>
-<p>不够。文本描述无法稳定锁定身份和空间，必须使用结构化引用、首尾帧或 subject reference，并在生成后做一致性检查。</p>
+<p>不够。文本描述无法稳定锁定身份和空间，必须使用结构化引用、首尾帧或 subject reference（主体参考图），并在生成后做一致性检查。</p>
 <p><strong>扩展：</strong> 发现不一致时重做全部镜头吗？</p>
 <p><strong>答案</strong></p>
-<p>只重做受影响的镜头。通过 continuity graph 找到依赖节点，保留已通过的镜头。</p>
+<p>只重做受影响的镜头。通过 continuity graph（连续性依赖图）找到依赖节点， 保留已通过的镜头。</p>
 <h2 id="q9-如何控制积分成本和用户预期">Q9. 如何控制积分成本和用户预期？</h2>
 <p><strong>答案</strong></p>
-<p>按序列或制作包展示预算，区分预览、正式镜头和备选 take。高成本生成前先完成 低成本 Animatic，重做时说明原因和预计费用。</p>
+<p>按序列或制作包展示预算，区分预览、正式镜头和备选 take（镜头候选版本）。 高成本生成前先完成低成本 Animatic（动态分镜预演），重做时说明原因和预计费用。</p>
 <p><strong>追问：</strong> 每个镜头都弹确认框是不是就够了？</p>
 <p><strong>答案</strong></p>
 <p>不够。逐镜确认只能防单次误操作，不能控制整段视频预算。需要序列预算、 额度预留和超预算停止机制。</p>
 <p><strong>扩展：</strong> 成本系统要记录什么？</p>
 <p><strong>答案</strong></p>
-<p>记录估算、批准人、幂等键、Provider 成本、实际积分、重试原因和最终 take， 形成可核对的 credit ledger。</p>
+<p>记录估算、批准人、幂等键（同一请求重复提交也只执行一次）、 Provider（模型服务商）成本、实际积分、重试原因和最终 take（镜头候选版本）， 形成可核对的 credit ledger（积分流水）。</p>
 <h2 id="q10-如果线上生成成功率突然下降-如何定位问题">Q10. 如果线上生成成功率突然下降，如何定位问题？</h2>
 <p><strong>答案</strong></p>
-<p>先按状态机定位失败发生在提交前、提交不确定、排队、运行、下载还是完成阶段， 再按 Provider、模型、地区和发布时间切分。</p>
+<p>先按状态机定位失败发生在提交前、提交不确定、排队、运行、下载还是完成阶段， 再按 Provider（模型服务商）、模型、地区和发布时间切分。</p>
 <p><strong>追问：</strong> 应最先看模型质量还是基础设施？</p>
 <p><strong>答案</strong></p>
 <p>先看可观测信号判断故障边界，不先归因模型。错误码、超时、队列和下载指标能 快速区分基础设施、Provider 与内容策略问题。</p>
 <p><strong>扩展：</strong> 怎样设计观测体系？</p>
 <p><strong>答案</strong></p>
-<p>用 trace 串起 project、shot、job 和 provider task，记录结构化日志、 SLI/SLO、延迟、成功率、幂等拦截和积分消耗，并配置 canary、feature flag 和 kill switch。</p>
+<p>用 trace（调用链追踪）串起 project（项目）、shot（镜头）、job（任务）和 provider task（服务商任务），记录结构化日志、SLI/SLO（服务质量指标与目标）、 延迟、成功率、幂等拦截和积分消耗，并配置 canary（灰度发布）、 feature flag（功能开关）和 kill switch（紧急停用开关）。</p>
 <h2 id="q11-为什么不用一个无限自主的-agent-完成所有事情">Q11. 为什么不用一个无限自主的 Agent 完成所有事情？</h2>
 <p><strong>答案</strong></p>
 <p>视频创作同时包含创意不确定性和不可逆成本。无限自主会让权限、预算、状态恢复 和审计难以证明，应采用“高自主创意、强约束生产”。</p>
@@ -157,7 +157,7 @@
 <p><strong>扩展：</strong> 哪些动作必须人工确认？</p>
 <p><strong>答案</strong></p>
 <p>计费生成、批量重做、删除资产、公开发布、修改权限和改变预算必须走白名单工具 与人工确认。</p>
-<h2 id="q12-视频-agent-最关键的工程原则是什么">Q12. 视频 Agent 最关键的工程原则是什么？</h2>
+<h2 id="q12-videoagent-最关键的工程原则是什么">Q12. VideoAgent 最关键的工程原则是什么？</h2>
 <p><strong>答案</strong></p>
 <p>把创意决策表示为可校验、可追踪、可局部修改的结构化数据，让 Agent 的推理结果 能够进入可靠的生产状态机。</p>
 <p><strong>追问：</strong> 为什么这个原则比增加更多 Agent 更重要？</p>
@@ -166,7 +166,7 @@
 <p><strong>扩展：</strong> 最重要的基础字段是什么？</p>
 <p><strong>答案</strong></p>
 <p>scene、beat、story function、镜头语言、主体动作、连续性引用和生成能力要求。 这些字段共同连接预演、生成、评估与剪辑。</p>
-<h2 id="q13-视频-agent-的主要技术权衡是什么">Q13. 视频 Agent 的主要技术权衡是什么？</h2>
+<h2 id="q13-videoagent-的主要技术权衡是什么">Q13. VideoAgent 的主要技术权衡是什么？</h2>
 <p><strong>答案</strong></p>
 <p>核心权衡包括延迟、质量和成本，自主性与可控性，一致性与创作灵活性， 单 Agent 与多 Agent，轮询与实时推送。架构选择应服务于当前瓶颈，而不是追求 概念上的“更智能”或“更分布式”。</p>
 <p><strong>追问：</strong> 什么时候应从单 Agent 拆成多 Agent？</p>
@@ -174,28 +174,28 @@
 <p>当子任务具有独立工具、上下文、评估标准和扩缩容需求时再拆分。仅靠增加 Agent 无法解决上下文漂移，反而会增加协调、追踪和一致性成本。</p>
 <p><strong>扩展：</strong> 如何避免架构过度设计？</p>
 <p><strong>答案</strong></p>
-<p>先量化瓶颈来自创意质量、Provider 延迟、队列积压还是数据库竞争，再选择最小 改动。每次扩展都要求可观测指标证明收益大于运维复杂度。</p>
+<p>先量化瓶颈来自创意质量、Provider（模型服务商）延迟、队列积压还是数据库竞争，再选择最小 改动。每次扩展都要求可观测指标证明收益大于运维复杂度。</p>
 <h2 id="q14-视频生成系统如何支撑高并发">Q14. 视频生成系统如何支撑高并发？</h2>
 <p><strong>答案</strong></p>
-<p>API 只负责鉴权、校验和入队，不在请求线程中等待生成；Worker 按 Provider 配额 消费任务。通过用户、IP、租户和 Provider 分层限流，配合有界队列、并发信号量、 幂等键、连接池和背压控制吞吐。</p>
+<p>API（应用程序接口）只负责鉴权、校验和入队，不在请求线程中等待生成； Worker（后台任务进程）按 Provider（模型服务商）配额消费任务。通过用户、 IP（网络地址）、租户和 Provider 分层限流，配合有界队列（容量限定的任务队列）、并发信号量（限制同时运行任务数）、 幂等键（同一请求重复提交也只执行一次）、连接池和背压（下游过载时向上游减速）控制吞吐。</p>
 <p><strong>追问：</strong> Provider 并发额度耗尽时怎么办？</p>
 <p><strong>答案</strong></p>
 <p>任务进入公平队列，按租户、优先级和截止时间调度；向客户端返回可解释的排队 状态。计费提交禁止因限流盲目重试，扩缩容也不能突破 Provider 的硬配额。</p>
 <p><strong>扩展：</strong> 如何实现优雅过载？</p>
 <p><strong>答案</strong></p>
-<p>使用有界队列、load shedding、circuit breaker 和降级预览；优先保护已受理任务， 明确拒绝超出容量的新请求，并暴露队列深度、等待时间和拒绝率。</p>
-<h2 id="q15-视频-agent-如何设计高可用">Q15. 视频 Agent 如何设计高可用？</h2>
+<p>使用有界队列、load shedding（主动丢弃超载请求）、circuit breaker（熔断） 和降级预览；优先保护已受理任务， 明确拒绝超出容量的新请求，并暴露队列深度、等待时间和拒绝率。</p>
+<h2 id="q15-videoagent-如何设计高可用">Q15. VideoAgent 如何设计高可用？</h2>
 <p><strong>答案</strong></p>
-<p>API 保持无状态并多实例部署，数据库保存业务事实，Redis 只承担缓存、队列和 协调。服务提供健康检查、滚动发布、超时和熔断；Provider 通过统一适配器支持 受控切换。</p>
+<p>API（应用程序接口）保持无状态并多实例部署，数据库保存业务事实， Redis（内存数据结构存储）只承担缓存、队列和 协调。服务提供健康检查、滚动发布、超时和熔断；Provider 通过统一适配器支持 受控切换。</p>
 <p><strong>追问：</strong> 数据库或 Redis 故障时如何降级？</p>
 <p><strong>答案</strong></p>
 <p>数据库故障时停止新增写操作，优先维持只读；Redis 故障时保护数据库，暂停队列 消费并从持久化任务恢复。幂等键和对账记录必须保留，避免恢复后重复提交。</p>
 <p><strong>扩展：</strong> 高可用验收应包含什么？</p>
 <p><strong>答案</strong></p>
-<p>先定义 RTO/RPO，再演练实例故障、数据库切换、队列恢复、Provider 故障和区域 故障；没有恢复演练的高可用架构不能视为完成。</p>
+<p>先定义 RTO/RPO（恢复时间目标/恢复点目标），再演练实例故障、数据库切换、队列恢复、Provider（模型服务商）故障和区域 故障；没有恢复演练的高可用架构不能视为完成。</p>
 <h2 id="q16-视频生成链路应怎样设计兜底策略">Q16. 视频生成链路应怎样设计兜底策略？</h2>
 <p><strong>答案</strong></p>
-<p>兜底分四层：显式模型降级、Provider 切换、低成本预览或 Animatic、只读缓存与 错误说明。任何降级都要说明质量、价格和能力差异，不能静默替换模型或产生额外 费用。</p>
+<p>兜底分四层：显式模型降级、Provider（模型服务商）切换、 低成本预览或 Animatic（动态分镜预演）、只读缓存与 错误说明。任何降级都要说明质量、价格和能力差异，不能静默替换模型或产生额外 费用。</p>
 <p><strong>追问：</strong> Provider 超时后能否直接切换另一家重做？</p>
 <p><strong>答案</strong></p>
 <p>先通过幂等键和任务引用确认是否已受理。无法确认时停止计费重试；确认未受理且 用户策略允许后，才可切换到备用 Provider。</p>
@@ -203,6 +203,6 @@
 <p><strong>答案</strong></p>
 <p>依次考虑数据安全、费用一致性、结果可用性、质量和延迟。降级必须可观测、可 解释、可撤销，并受用户预算和内容策略约束。</p></article>
     </main>
-    <script src="../docs.js?v=24"></script>
+    <script src="../docs.js?v=25"></script>
   </body>
 </html>
