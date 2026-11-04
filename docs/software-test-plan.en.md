@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.1 |
+| Document version | v1.2 |
 | Updated | 2026-11-04 |
 | Current frameworks | pytest, Vitest, Testing Library |
 | Target E2E framework | Playwright |
@@ -117,6 +117,9 @@ Current component tests should continue to cover:
 - Publish entry uses the blue play icon.
 - Skills is one searchable catalogue with `user_id/skill_id` labels and a
   normal Review card.
+- Production playbooks fill the prompt and recommended Skill, Hook, style,
+  frame, duration, and review settings.
+- Hots scenario cards open Agents with the corresponding Skill and prompt.
 - Docs labels are `PRD`, `Design`, `Interface`, `Impl`, `Test`, and `Ops`.
 - Globe control changes only Docs source and language.
 - Skills, Hots, Assets, and Docs search controls stay pinned while content
@@ -194,4 +197,5 @@ Only with explicit user approval and budget:
 
 | Version | Date | Description |
 | --- | --- | --- |
+| v1.2 | 2026-11-04 | Add playbook and Skill-backed Hots scenarios; align current 35/22 frontend baseline |
 | v1.1 | 2026-11-04 | Align current 35/19 baseline, Skills, Hots, Assets, bilingual Docs, and target tests |

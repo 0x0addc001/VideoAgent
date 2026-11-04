@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.2 |
+| Document version | v1.3 |
 | Updated | 2026-11-04 |
 | Design reference | `software-design.en.md` |
 | Test reference | `software-test-plan.en.md` |
@@ -19,11 +19,14 @@ features.
 - `/zh-CN` redirects to `/en`.
 - Shared Landing UI used by the product and GitHub Pages homepage.
 - Left navigation: Agents, Skills, Hots, Assets, Docs.
-- Home composer with a Skill selector and transparent custom dropdowns.
+- Home composer with Skill and Hook selectors, six production playbooks, and
+  transparent custom dropdowns.
 - Flat searchable Skills catalogue using `user_id/skill_id`, plus user publishing.
-- Searchable Hots feed with looping video playback and session-local publishing.
+- Searchable Hots feed with looping video playback, Skill-backed scenario
+  reuse, and session-local publishing.
 - Searchable Assets waterfall with internal Video/Skill tabs, permission, and
-  `yyyy-mm-dd` edit date; cards do not repeat type labels or play media.
+  `yyyy-mm-dd` edit date; videos preview on hover, Skill cards have no cover,
+  and cards do not repeat type labels.
 - Searchable bilingual Docs with six documents, a collapsible table of contents,
   and full-text lookup across languages.
 - Registration, login, logout, server-side sessions, and user isolation.
@@ -201,11 +204,24 @@ video_agent/product_film
 video_agent/creator_vlog
 video_agent/short_drama
 video_agent/review
+video_agent/video_localization
+video_agent/batch_variants
+video_agent/script_assistant
+video_agent/smart_preview
+video_agent/camera_movement
+video_agent/music_video
+video_agent/reference_remake
+video_agent/agent_handoff
 ```
 
 Workflow skills do not display a flow label. Review uses the same card form and
 has no separate project action. Signed-in users can publish a skill under their
 own namespace; current storage is frontend-session-local.
+
+Production playbooks are defined in `packages/landing/src/content.ts` with a
+prompt, Skill, Hook, style, frame, duration, and review mode. Applying one
+updates the full composer draft. Hots cards carry a Skill ID so scenario reuse
+enters Agents with the matching Skill selected.
 
 ## 9. Documentation Localization
 
@@ -327,4 +343,5 @@ provider tests are not part of normal CI.
 
 | Version | Date | Description |
 | --- | --- | --- |
+| v1.3 | 2026-11-04 | Add production playbooks, Hook selector, scenario Skills, and Skill-backed Hots reuse |
 | v1.2 | 2026-11-03 | Align Skills catalogue, Hots playback/publish, bilingual Docs, icon behavior, APIs, and tests |

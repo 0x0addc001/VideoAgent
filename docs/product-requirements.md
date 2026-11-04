@@ -2,7 +2,7 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v1.0 |
+| 文档版本 | v1.1 |
 | 更新日期 | 2026-11-04 |
 
 ## 1. 产品目标
@@ -51,9 +51,11 @@ Docs
 ## 4. Agents
 
 - 首页提供醒目的创作输入框。
-- 创作框支持风格、画幅、时长、模型、清晰度、音频和审核设定。
+- 创作框支持 Skill、Hook、风格、画幅、时长、模型、清晰度、音频和审核设定。
 - 用户可以在开始创作前选择一个 Skill。
 - 创作设定的菜单根据视口剩余空间自动向上或向下展开，并始终限制在可视区域内。
+- 创作场景提供产品广告、创作者 Vlog、微短剧、音乐 MV、视频本地化和批量测款的一键起点。
+- 选择创作场景后，自动填入提示词，并设置推荐的 Skill、Hook、风格、画幅、时长与审核方式。
 - 提交后创建项目并进入项目工作区。
 - VideoAgent 主标题和播放键图标同时参与流式输出。
 
@@ -86,6 +88,14 @@ video_agent/product_film
 video_agent/creator_vlog
 video_agent/short_drama
 video_agent/review
+video_agent/video_localization
+video_agent/batch_variants
+video_agent/script_assistant
+video_agent/smart_preview
+video_agent/camera_movement
+video_agent/music_video
+video_agent/reference_remake
+video_agent/agent_handoff
 ```
 
 Workflow Skill 不展示内部执行流程。
@@ -108,6 +118,7 @@ Review 作为一个普通 Skill 卡片呈现，不再提供单独的 Open projec
 - 搜索框在页面滚动时固定在顶部。
 - 卡片使用循环播放的视频。
 - 标题在上，作者和喜欢数在下。
+- 场景卡片可带着对应 Skill 和提示词进入 Agents。
 - 用户可以从社区流发布作品。
 - 搜索范围包含标题、作者和 Prompt。
 
@@ -187,7 +198,9 @@ Ops
 8. Hots 和 Assets 均提供顶部搜索。
 9. Hots 卡片自动播放，标题位于作者与喜欢数上方。
 10. Assets 通过 Video/Skill 内部分页区分类型，并展示权限和 `yyyy-mm-dd` 编辑时间。
-11. Assets 使用瀑布流且不播放。
+11. Assets 使用瀑布流；Video 悬浮预览，Skill 卡片不显示封面。
 12. Docs 依次包含 PRD、Design、Interface、Impl、Test、Ops。
 13. Docs 搜索和双语切换可用。
 14. 头像根据登录状态提供登录、注册或退出。
+15. 创作 Playbook 可填充提示词和推荐制作参数。
+16. Hots 场景卡片进入 Agents 时选中对应 Skill。

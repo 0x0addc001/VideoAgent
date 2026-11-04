@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Ops" />
     <title>Ops · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=16" />
+    <link rel="stylesheet" href="../docs.css?v=17" />
   </head>
   <body data-document="operations.zh.html">
     <main class="document-shell" id="document-shell">
@@ -47,7 +47,7 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v1.0</td>
+<td>v1.1</td>
 </tr>
 <tr>
 <td>更新日期</td>
@@ -83,6 +83,8 @@
 <li>每个 Skill 必须说明输入、输出、Provider 依赖和是否消耗积分。</li>
 <li>Skill 变更需要同步更新 PRD、Design 和 Test。</li>
 <li>废弃 Skill 至少保留一个版本并给出迁移说明。</li>
+<li>场景 Playbook 是可复用的入口，不是独立计费商品；必须引用当前有效 Skill，并与创作框字段保持一致。</li>
+<li>外部 Agent 接力必须基于明确的 MCP 或 CLI 集成契约，不得在能力未接通时暗示凭据或远程执行已经可用。</li>
 </ul>
 <h2 id="4-社区运营">4. 社区运营</h2>
 <p>持久化社区上线后：</p>
@@ -93,6 +95,7 @@
 <li>支持按 user_id、skill_id、标题、描述和作者搜索。</li>
 <li>提供举报、隐藏、恢复和申诉流程。</li>
 <li>搜索需区分 Video 和 Skill。</li>
+<li>场景卡片必须保留 Skill 绑定，复用后进入 Agents 时应选中对应工作流。</li>
 <li>API 不可用时保留本地预览，但不能声称已持久化。</li>
 </ul>
 <h2 id="5-assets-运营">5. Assets 运营</h2>
@@ -100,8 +103,8 @@
 <li>Assets 只展示当前用户自己的作品。</li>
 <li>每项必须明确 private 或 public。</li>
 <li>编辑日期统一使用 <code>yyyy-mm-dd</code>。</li>
-<li>卡片不自动播放。</li>
-<li>Video 与 Skill 类型必须清晰区分。</li>
+<li>Video 卡片仅在悬浮时预览，Skill 卡片不显示封面。</li>
+<li>Video 与 Skill 通过内部分页区分，不在卡片上重复类型标签。</li>
 <li>后续需要确定软删除、恢复周期和存储生命周期。</li>
 </ul>
 <h2 id="6-provider-与成本运营">6. Provider 与成本运营</h2>
@@ -173,12 +176,17 @@
 <th>说明</th>
 </tr></thead><tbody>
 <tr>
+<td>v1.1</td>
+<td>2026-11-04</td>
+<td>增加场景 Playbook 运营、社区 Skill 复用和外部 Agent 接力边界</td>
+</tr>
+<tr>
 <td>v1.0</td>
 <td>2026-11-04</td>
 <td>建立 Skill、Hots、Assets、Docs、Provider 和发布运营基线</td>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=16"></script>
+    <script src="../docs.js?v=17"></script>
   </body>
 </html>

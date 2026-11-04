@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.0 |
+| Document version | v1.1 |
 | Updated | 2026-11-04 |
 
 ## 1. Product Goal
@@ -53,11 +53,15 @@ shows the account email and a sign-out action.
 ## 4. Agents
 
 - The home view contains a prominent prompt composer.
-- The composer supports style, frame, duration, model, quality, audio, and
-  review settings.
+- The composer supports skill, hook, style, frame, duration, model, quality,
+  audio, and review settings.
 - A user can select a Skill before starting.
 - Composer setting menus open above or below the trigger based on viewport
   space and remain inside the visible area.
+- Production playbooks provide one-click starting points for product ads,
+  creator vlogs, micro drama, music videos, localization, and batch variants.
+- Applying a playbook fills the prompt and sets its recommended Skill, Hook,
+  style, frame, duration, and review mode.
 - Submitting creates a project and enters the project workspace.
 - The VideoAgent headline and icon stream together.
 
@@ -91,6 +95,14 @@ video_agent/product_film
 video_agent/creator_vlog
 video_agent/short_drama
 video_agent/review
+video_agent/video_localization
+video_agent/batch_variants
+video_agent/script_assistant
+video_agent/smart_preview
+video_agent/camera_movement
+video_agent/music_video
+video_agent/reference_remake
+video_agent/agent_handoff
 ```
 
 Workflow skills do not display an internal flow diagram.
@@ -114,6 +126,7 @@ Review is a normal skill card. It has no separate action button.
 - The search field stays pinned to the top while content scrolls.
 - Cards play muted looping video.
 - Each card shows the title first and author and likes below.
+- Each scenario card opens Agents with its prompt and corresponding Skill.
 - Users can publish a post from the feed.
 - Search matches title, author, and prompt.
 
@@ -196,7 +209,9 @@ Docs requirements:
 9. Hots cards play video and show title above author and likes.
 10. Assets uses internal Video and Skill tabs and shows permission and
     `yyyy-mm-dd` edit time.
-11. Assets uses a waterfall layout without playback.
+11. Assets uses a waterfall layout; videos preview on hover and Skill cards have no cover.
 12. Docs includes PRD, Design, Interface, Impl, Test, and Ops in order.
 13. Docs search and bilingual switching work.
 14. Avatar provides login, registration, or sign-out based on session state.
+15. Production playbooks fill the prompt and recommended production settings.
+16. Hots scenario cards open Agents with the corresponding Skill selected.

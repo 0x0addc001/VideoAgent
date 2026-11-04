@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Design" />
     <title>Design · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=16" />
+    <link rel="stylesheet" href="../docs.css?v=17" />
   </head>
   <body data-document="software-design.html">
     <main class="document-shell" id="document-shell">
@@ -56,7 +56,7 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v1.2</td>
+<td>v1.3</td>
 </tr>
 <tr>
 <td>Updated</td>
@@ -301,9 +301,42 @@ query-result</code></pre>
 <td><code>video_agent/review</code></td>
 <td>Score consistency, coverage, clarity, and pacing</td>
 </tr>
+<tr>
+<td><code>video_agent/video_localization</code></td>
+<td>Adapt edit, copy, voice, and presenter details for a target market</td>
+</tr>
+<tr>
+<td><code>video_agent/batch_variants</code></td>
+<td>Generate a controlled matrix of hooks, scenes, and messaging variants</td>
+</tr>
+<tr>
+<td><code>video_agent/script_assistant</code></td>
+<td>Develop premises into editable scripts with characters, beats, and hooks</td>
+</tr>
+<tr>
+<td><code>video_agent/smart_preview</code></td>
+<td>Prepare keyframes and an animatic before final shot generation</td>
+</tr>
+<tr>
+<td><code>video_agent/camera_movement</code></td>
+<td>Select and combine purposeful camera moves</td>
+</tr>
+<tr>
+<td><code>video_agent/music_video</code></td>
+<td>Plan performance, visual motifs, and beat-synced editing</td>
+</tr>
+<tr>
+<td><code>video_agent/reference_remake</code></td>
+<td>Deconstruct a reference and rebuild its structure with new footage</td>
+</tr>
+<tr>
+<td><code>video_agent/agent_handoff</code></td>
+<td>Package project context and assets for an external Agent via MCP or CLI</td>
+</tr>
 </tbody></table></div>
 <p>Workflow skills do not display an internal flow label. Review uses the same card form as every other skill and has no separate action button.</p>
 <p>Selecting a skill preloads a concrete prompt in the Agents composer. The Agents composer also includes a Skill selector. Signed-in users can publish a skill under their own <code>&lt;user_id&gt;/&lt;skill_id&gt;</code> namespace; current publication is session-local.</p>
+<p>The Agents composer includes production playbooks for product ads, creator vlogs, micro drama, music videos, localization, and batch variants. Selecting a playbook sets the prompt, Skill, Hook, style, frame, duration, and review mode as one coherent starting point. Hook controls the first-three-second strategy: visual impact, narrative twist, spoken hook, sound cue, or proof first.</p>
 <p>Frame-level visual-language-model review is a target extension.</p>
 <h2 id="10-data-model">10. Data Model</h2>
 <div class="table-wrap"><table><thead><tr>
@@ -452,6 +485,8 @@ optional Celery + Redis</code></pre>
 <p>workflows and Review presented as normal skill cards.</p>
 <li>Documentation can switch between English and Chinese without changing the</li>
 <p>product UI and follows the complete six-document order.</p>
+<li>Production playbooks and Skill-backed Hots scenarios provide editable,</li>
+<p>reusable starting points.</p>
 </ol>
 <h2 id="17-change-log">17. Change Log</h2>
 <div class="table-wrap"><table><thead><tr>
@@ -460,12 +495,17 @@ optional Celery + Redis</code></pre>
 <th>Description</th>
 </tr></thead><tbody>
 <tr>
+<td>v1.3</td>
+<td>2026-11-04</td>
+<td>Add production playbooks, Hook control, scenario Skills, and reusable Hots scenarios</td>
+</tr>
+<tr>
 <td>v1.2</td>
 <td>2026-11-03</td>
 <td>Align architecture, Skills catalogue, provider limits, UI behavior, bilingual Docs, APIs, and current test baseline</td>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=16"></script>
+    <script src="../docs.js?v=17"></script>
   </body>
 </html>

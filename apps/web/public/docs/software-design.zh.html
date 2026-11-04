@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Design" />
     <title>Design · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=16" />
+    <link rel="stylesheet" href="../docs.css?v=17" />
   </head>
   <body data-document="software-design.zh.html">
     <main class="document-shell" id="document-shell">
@@ -98,7 +98,7 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v1.2</td>
+<td>v1.3</td>
 </tr>
 <tr>
 <td>更新日期</td>
@@ -138,7 +138,7 @@
 <ul>
 <li>当前公开产品界面固定为英文；<code>/zh-CN</code> 路由统一重定向到 <code>/en</code>。</li>
 <li>项目主页与正式产品首页复用 <code>packages/landing</code> 同一套 UI，项目主页仅将不可用动作替换为预览提示。</li>
-<li>首页采用左侧导航、连续视频背景、居中创作框和自定义透明下拉控件。</li>
+<li>首页采用左侧导航、连续视频背景、居中创作框、场景 Playbook、Hook 控制和自定义透明下拉控件。</li>
 <li>搜索、语言、通知、积分和头像使用半透明表面，相关菜单向下展开；创作框选项菜单根据视口空间自动向上或向下展开并限制高度；头像支持登录、注册和退出。</li>
 <li>Hots 展示作者与喜欢数，并支持当前浏览器会话内的本地发布。</li>
 <li>支持项目创建、编辑、恢复和删除。</li>
@@ -865,6 +865,8 @@ POST /projects/{id}/share</code></pre>
 <li>公共入口：左侧导航、连续视频背景、居中创作框、灵感快捷项和八项生成设置。</li>
 <li><code>Agents</code>：首页创作入口和 VideoAgent 对话。</li>
 <li><code>Skills</code>：统一可搜索 Skill 目录，卡片显示 <code>user_id/skill_id</code>，用户可发布 Skill。</li>
+<li><code>Agents</code>：首页提供产品广告、创作者 Vlog、微短剧、音乐 MV、视频本地化和批量测款六类 Playbook；选择后统一设置提示词、Skill、Hook、风格、画幅、时长和审核模式。</li>
+<li>Skills 目录还覆盖视频本地化、批量变体、剧本助手、智能预演、运镜设计、音乐 MV、参考复刻和外部 Agent 接力。</li>
 <li><code>Hots</code>：可搜索社区瀑布流，视频自动播放，展示标题、作者、喜欢数，并支持发布。</li>
 <li><code>Assets</code>：通过 Video 与 Skill 两个内部分页切换，支持搜索；Video 卡片悬浮静音播放，Skill 卡片不显示封面；卡片只展示权限和 <code>yyyy-mm-dd</code> 编辑时间。</li>
 <li><code>Docs</code>：按 PRD、Design、Interface、Impl、Test、Ops 展示中英文文档，支持全文搜索。</li>
@@ -1168,8 +1170,14 @@ Celery + Redis（可选）</code></pre>
 <td>当前基线</td>
 <td>对齐共享 Landing UI、单节点 Agent、Pippit CLI、Hots 本地发布、文档目录与当前 API</td>
 </tr>
+<tr>
+<td>v1.3</td>
+<td>2026-11-04</td>
+<td>当前基线</td>
+<td>增加创作 Playbook、Hook 控制、场景 Skill 和可复用 Hots 场景</td>
+</tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=16"></script>
+    <script src="../docs.js?v=17"></script>
   </body>
 </html>

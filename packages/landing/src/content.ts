@@ -1,5 +1,25 @@
 export type LandingLocale = "en" | "zh-CN";
 
+export type LandingHook =
+  | "auto"
+  | "visual"
+  | "narrative"
+  | "spoken"
+  | "sound"
+  | "proof";
+
+export type LandingPlaybook = {
+  aspectRatio: "auto" | "16:9" | "9:16" | "1:1";
+  durationSeconds: "auto" | "5" | "10";
+  hook: LandingHook;
+  id: string;
+  label: string;
+  prompt: string;
+  reviewMode: "auto" | "ask";
+  skill: string;
+  style: string;
+};
+
 export const landingContent = {
   en: {
     localeLabel: "English",
@@ -37,6 +57,7 @@ export const landingContent = {
       creating: "Starting...",
       settingsLabel: "Project settings",
       skillLabel: "Skill",
+      hookLabel: "Hook",
       styleLabel: "Style",
       frameLabel: "Frame",
       lengthLabel: "Length",
@@ -51,6 +72,89 @@ export const landingContent = {
         "A quiet Copenhagen morning told in one shot",
         "A one-take fragrance campaign",
         "A founder story in three cinematic beats",
+      ],
+      playbooksLabel: "Production playbooks",
+      playbooks: [
+        {
+          id: "product_hook_test",
+          label: "Product ad",
+          prompt:
+            "Create a ten-second product ad for a new daily-carry object. Open with a visual proof of the product benefit, then show the product in use and end on the hero packshot.",
+          skill: "product_film",
+          style: "product",
+          aspectRatio: "9:16",
+          durationSeconds: "10",
+          hook: "proof",
+          reviewMode: "ask",
+        },
+        {
+          id: "creator_vlog",
+          label: "Creator vlog",
+          prompt:
+            "Create a natural creator vlog about finding a slower morning in a busy city. Use one continuous handheld perspective, quiet gestures, ambient sound, and a restrained final look.",
+          skill: "creator_vlog",
+          style: "ugc",
+          aspectRatio: "9:16",
+          durationSeconds: "10",
+          hook: "visual",
+          reviewMode: "auto",
+        },
+        {
+          id: "micro_drama",
+          label: "Micro drama",
+          prompt:
+            "Create a three-shot micro-drama about a missed message that changes a relationship. Establish the characters and location, reveal the conflict, and end on a cliffhanger.",
+          skill: "short_drama",
+          style: "cinematic",
+          aspectRatio: "9:16",
+          durationSeconds: "10",
+          hook: "narrative",
+          reviewMode: "ask",
+        },
+        {
+          id: "music_video",
+          label: "Music video",
+          prompt:
+            "Build a beat-synced music video around an original track. Plan a visual motif, rhythmic shot changes, and one continuous performance moment before returning to the motif.",
+          skill: "music_video",
+          style: "cinematic",
+          aspectRatio: "16:9",
+          durationSeconds: "10",
+          hook: "sound",
+          reviewMode: "ask",
+        },
+        {
+          id: "localize_video",
+          label: "Localize",
+          prompt:
+            "Localize the attached video for a new market. Preserve the edit, pacing, and product truth while adapting the on-screen copy, spoken language, voice, and presenter where needed.",
+          skill: "video_localization",
+          style: "auto",
+          aspectRatio: "16:9",
+          durationSeconds: "auto",
+          hook: "auto",
+          reviewMode: "ask",
+        },
+        {
+          id: "batch_variants",
+          label: "Batch test",
+          prompt:
+            "Create a batch testing matrix from one product brief. Generate distinct hooks across three scenes, keep product facts and visual identity fixed, and label each variant for comparison.",
+          skill: "batch_variants",
+          style: "product",
+          aspectRatio: "9:16",
+          durationSeconds: "5",
+          hook: "auto",
+          reviewMode: "auto",
+        },
+      ] as const satisfies readonly LandingPlaybook[],
+      hookOptions: [
+        { id: "auto", label: "Auto" },
+        { id: "visual", label: "Visual impact" },
+        { id: "narrative", label: "Narrative twist" },
+        { id: "spoken", label: "Spoken hook" },
+        { id: "sound", label: "Sound cue" },
+        { id: "proof", label: "Proof first" },
       ],
       styles: [
         { id: "cinematic", label: "Cinematic" },
@@ -179,6 +283,62 @@ export const landingContent = {
           body: "Score consistency, coverage, clarity, and pacing, then suggest fixes.",
           prompt: "Review this storyboard for consistency, coverage, clarity, and pacing:",
         },
+        {
+          userId: "video_agent",
+          skillId: "video_localization",
+          title: "Video localization",
+          body: "Adapt dialogue, voice, copy, and presenter details for a target market.",
+          prompt: "Localize this video for the target market while preserving its edit and intent:",
+        },
+        {
+          userId: "video_agent",
+          skillId: "batch_variants",
+          title: "Batch variants",
+          body: "Generate a controlled matrix of hooks, scenes, and messaging variants.",
+          prompt: "Build a labeled batch of video variants from this brief:",
+        },
+        {
+          userId: "video_agent",
+          skillId: "script_assistant",
+          title: "Script assistant",
+          body: "Turn a premise into an editable script with characters, beats, and hooks.",
+          prompt: "Develop an editable script with characters, story beats, and opening hooks:",
+        },
+        {
+          userId: "video_agent",
+          skillId: "smart_preview",
+          title: "Smart preview",
+          body: "Plan keyframes and an animatic before committing credits to shots.",
+          prompt: "Create a smart storyboard preview with keyframes before final generation:",
+        },
+        {
+          userId: "video_agent",
+          skillId: "camera_movement",
+          title: "Camera movement",
+          body: "Choose and combine push-ins, pans, orbits, and tracking moves.",
+          prompt: "Design purposeful camera movement for this sequence:",
+        },
+        {
+          userId: "video_agent",
+          skillId: "music_video",
+          title: "Music video",
+          body: "Plan performance, visual motifs, and shot rhythm around a track.",
+          prompt: "Create a beat-synced music video treatment around this track and artist:",
+        },
+        {
+          userId: "video_agent",
+          skillId: "reference_remake",
+          title: "Reference remake",
+          body: "Break down a reference and rebuild its structure with new footage.",
+          prompt: "Analyze this reference video and remake its structure with a new subject:",
+        },
+        {
+          userId: "video_agent",
+          skillId: "agent_handoff",
+          title: "External agent handoff",
+          body: "Package a project for continuation in a personal Agent through MCP or CLI.",
+          prompt: "Prepare this project for handoff to my personal Agent with context and assets:",
+        },
       ],
     },
     assets: {
@@ -246,36 +406,74 @@ export const landingContent = {
           author: "Maya Chen",
           likes: 128,
           prompt: "Create a quiet editorial vlog in a dark creative studio.",
+          skill: "creator_vlog",
         },
         {
           title: "European morning",
           author: "Lucas Moreau",
           likes: 94,
           prompt: "Create a natural European morning vlog with handheld movement.",
+          skill: "creator_vlog",
         },
         {
           title: "Studio portrait",
           author: "Amara Brooks",
           likes: 76,
           prompt: "Create a fashion studio vlog with warm rim light and calm movement.",
+          skill: "creator_vlog",
         },
         {
           title: "Product reveal",
           author: "Studio North",
           likes: 53,
           prompt: "Create a slow product reveal with precise studio lighting.",
+          skill: "product_film",
         },
         {
           title: "Night city",
           author: "Jonas Reed",
           likes: 41,
           prompt: "Create a restrained night-city vlog with soft practical lights.",
+          skill: "creator_vlog",
         },
         {
           title: "Founder portrait",
           author: "Nora Vale",
           likes: 37,
           prompt: "Create a three-shot founder portrait with natural interview movement.",
+          skill: "creator_vlog",
+        },
+        {
+          title: "Three hooks, one product",
+          author: "Studio Current",
+          likes: 31,
+          prompt:
+            "Generate three product-video hooks: visual proof, narrative twist, and spoken problem. Keep the product and core claim consistent.",
+          skill: "batch_variants",
+        },
+        {
+          title: "The missed message",
+          author: "Scene Lab",
+          likes: 24,
+          prompt:
+            "Create a vertical micro-drama about a missed message. Open with a visual clue, escalate the conflict, and end on a reveal.",
+          skill: "short_drama",
+        },
+        {
+          title: "Beat-cut portrait",
+          author: "Rin Park",
+          likes: 19,
+          prompt:
+            "Create a beat-synced music-video sequence with one performance portrait and rhythmic studio cuts.",
+          skill: "music_video",
+        },
+        {
+          title: "One film, three markets",
+          author: "Northstar",
+          likes: 12,
+          prompt:
+            "Localize one product film for three markets while preserving the edit and adapting language, voice, and on-screen copy.",
+          skill: "video_localization",
         },
       ],
     },
@@ -370,6 +568,7 @@ export const landingContent = {
       creating: "准备中……",
       settingsLabel: "创作设定",
       skillLabel: "Skill",
+      hookLabel: "Hook",
       styleLabel: "风格",
       frameLabel: "画幅",
       lengthLabel: "时长",
@@ -384,6 +583,89 @@ export const landingContent = {
         "清晨的哥本哈根，一镜到底",
         "一支一镜到底的香水广告",
         "用三个电影感片段讲述创始人故事",
+      ],
+      playbooksLabel: "创作场景",
+      playbooks: [
+        {
+          id: "product_hook_test",
+          label: "产品广告",
+          prompt:
+            "为一款新的日常随身产品创作十秒广告：先用视觉实证展示核心卖点，再呈现真实使用场景，最后落在产品主视觉。",
+          skill: "product_film",
+          style: "product",
+          aspectRatio: "9:16",
+          durationSeconds: "10",
+          hook: "proof",
+          reviewMode: "ask",
+        },
+        {
+          id: "creator_vlog",
+          label: "创作者 Vlog",
+          prompt:
+            "创作一条关于在忙碌城市里寻找慢节奏清晨的自然 Vlog：使用连续手持视角、克制动作和环境声，最后落在平静的情绪上。",
+          skill: "creator_vlog",
+          style: "ugc",
+          aspectRatio: "9:16",
+          durationSeconds: "10",
+          hook: "visual",
+          reviewMode: "auto",
+        },
+        {
+          id: "micro_drama",
+          label: "微短剧",
+          prompt:
+            "创作一个三镜头微短剧：一条错过的消息改变了一段关系。先建立人物与场景，再揭示冲突，最后以悬念收尾。",
+          skill: "short_drama",
+          style: "cinematic",
+          aspectRatio: "9:16",
+          durationSeconds: "10",
+          hook: "narrative",
+          reviewMode: "ask",
+        },
+        {
+          id: "music_video",
+          label: "音乐 MV",
+          prompt:
+            "围绕一首原创音乐规划 MV：设定视觉母题和节奏剪辑，在副歌保留一次连续表演，最后回到视觉母题。",
+          skill: "music_video",
+          style: "cinematic",
+          aspectRatio: "16:9",
+          durationSeconds: "10",
+          hook: "sound",
+          reviewMode: "ask",
+        },
+        {
+          id: "localize_video",
+          label: "视频本地化",
+          prompt:
+            "将附加视频本地化到新市场，在保留剪辑、节奏和产品真实信息的前提下，适配字幕、口播语言、声音和人物形象。",
+          skill: "video_localization",
+          style: "auto",
+          aspectRatio: "16:9",
+          durationSeconds: "auto",
+          hook: "auto",
+          reviewMode: "ask",
+        },
+        {
+          id: "batch_variants",
+          label: "批量测款",
+          prompt:
+            "基于一份产品 Brief 创建批量测试矩阵：覆盖三种场景和不同 Hook，固定产品事实与视觉识别，并为每个版本添加测试标签。",
+          skill: "batch_variants",
+          style: "product",
+          aspectRatio: "9:16",
+          durationSeconds: "5",
+          hook: "auto",
+          reviewMode: "auto",
+        },
+      ] as const satisfies readonly LandingPlaybook[],
+      hookOptions: [
+        { id: "auto", label: "自动" },
+        { id: "visual", label: "视觉冲击" },
+        { id: "narrative", label: "叙事反转" },
+        { id: "spoken", label: "口播开场" },
+        { id: "sound", label: "声音开场" },
+        { id: "proof", label: "效果实证" },
       ],
       styles: [
         { id: "cinematic", label: "电影感" },
@@ -512,6 +794,62 @@ export const landingContent = {
           body: "量化一致性、镜头覆盖、提示清晰度和节奏，并给出修改建议。",
           prompt: "评估当前故事板的一致性、覆盖度、提示清晰度和节奏：",
         },
+        {
+          userId: "video_agent",
+          skillId: "video_localization",
+          title: "视频本地化",
+          body: "适配目标市场的口播、声音、字幕和人物形象。",
+          prompt: "将这段视频本地化到目标市场，同时保留原有剪辑与表达意图：",
+        },
+        {
+          userId: "video_agent",
+          skillId: "batch_variants",
+          title: "批量变体",
+          body: "围绕 Hook、场景和卖点生成可对比的批量版本。",
+          prompt: "根据这份创意 Brief 创建一组可标记的视频变体：",
+        },
+        {
+          userId: "video_agent",
+          skillId: "script_assistant",
+          title: "剧本助手",
+          body: "把设定发展成包含人物、节拍和开场钩子的可编辑剧本。",
+          prompt: "把这个设定发展成包含人物、节拍和开场钩子的可编辑剧本：",
+        },
+        {
+          userId: "video_agent",
+          skillId: "smart_preview",
+          title: "智能预演",
+          body: "在消耗生成积分前先规划关键帧和动态分镜。",
+          prompt: "先创建包含关键帧的智能故事板预演，再进行最终生成：",
+        },
+        {
+          userId: "video_agent",
+          skillId: "camera_movement",
+          title: "运镜设计",
+          body: "选择并组合推、拉、摇、移、环绕和跟拍。",
+          prompt: "为这个镜头序列设计有叙事目的的运镜：",
+        },
+        {
+          userId: "video_agent",
+          skillId: "music_video",
+          title: "音乐 MV",
+          body: "围绕音乐规划表演、视觉母题与剪辑节奏。",
+          prompt: "围绕这首歌和艺人创建一支卡点音乐 MV 方案：",
+        },
+        {
+          userId: "video_agent",
+          skillId: "reference_remake",
+          title: "参考复刻",
+          body: "拆解参考视频结构，并替换为新内容重新制作。",
+          prompt: "分析这个参考视频，并用新的主体复刻它的结构：",
+        },
+        {
+          userId: "video_agent",
+          skillId: "agent_handoff",
+          title: "外部 Agent 接力",
+          body: "通过 MCP 或 CLI 把项目上下文与素材交给个人 Agent 继续制作。",
+          prompt: "整理项目上下文、故事板和素材，准备交接给我的个人 Agent：",
+        },
       ],
     },
     assets: {
@@ -579,36 +917,70 @@ export const landingContent = {
           author: "Maya Chen",
           likes: 128,
           prompt: "在暗色创意工作室拍摄一条安静的编辑感 Vlog。",
+          skill: "creator_vlog",
         },
         {
           title: "欧洲清晨",
           author: "Lucas Moreau",
           likes: 94,
           prompt: "拍摄一条自然、手持感的欧洲清晨 Vlog。",
+          skill: "creator_vlog",
         },
         {
           title: "影棚人像",
           author: "Amara Brooks",
           likes: 76,
           prompt: "拍摄一条暖色轮廓光、动作克制的时尚影棚 Vlog。",
+          skill: "creator_vlog",
         },
         {
           title: "产品亮相",
           author: "Studio North",
           likes: 53,
           prompt: "拍摄一条动作缓慢、灯光精准的产品亮相视频。",
+          skill: "product_film",
         },
         {
           title: "夜间城市",
           author: "Jonas Reed",
           likes: 41,
           prompt: "拍摄一条克制的夜间城市 Vlog，使用柔和的环境实景光。",
+          skill: "creator_vlog",
         },
         {
           title: "创始人肖像",
           author: "Nora Vale",
           likes: 37,
           prompt: "用三个镜头拍摄一条自然的创始人肖像视频。",
+          skill: "creator_vlog",
+        },
+        {
+          title: "一个产品的三种开场",
+          author: "Studio Current",
+          likes: 31,
+          prompt: "为同一产品生成三种开场：视觉实证、叙事反转和口播痛点，并保持产品与核心卖点一致。",
+          skill: "batch_variants",
+        },
+        {
+          title: "错过的消息",
+          author: "Scene Lab",
+          likes: 24,
+          prompt: "创作一条竖屏微短剧：一条错过的消息引发冲突，结尾出现新的反转。",
+          skill: "short_drama",
+        },
+        {
+          title: "卡点肖像",
+          author: "Rin Park",
+          likes: 19,
+          prompt: "创作一条卡点音乐视频，以人物表演为核心，穿插有节奏的影棚镜头。",
+          skill: "music_video",
+        },
+        {
+          title: "一片三市场",
+          author: "Northstar",
+          likes: 12,
+          prompt: "把同一支产品片本地化到三个市场，保留剪辑，并适配语言、声音和字幕。",
+          skill: "video_localization",
         },
       ],
     },

@@ -2823,7 +2823,7 @@ html[lang="zh-CN"] .hero-copy h1 {
   align-items: flex-end;
   overflow: visible;
   flex-wrap: nowrap;
-  gap: 5px;
+  gap: 4px;
   border-top: 0;
   padding-top: 0;
 }
@@ -2854,7 +2854,7 @@ html[lang="zh-CN"] .hero-copy h1 {
   min-height: 40px;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 4px;
   border: 1px solid rgba(22, 119, 255, 0.24);
   border-radius: 14px;
   background: transparent;
@@ -2863,7 +2863,7 @@ html[lang="zh-CN"] .hero-copy h1 {
   font-size: 1rem;
   font-weight: 600;
   outline: none;
-  padding: 0 10px;
+  padding: 0 7px;
   text-align: center;
   transition:
     border-color 160ms ease,
@@ -2946,12 +2946,12 @@ html[lang="zh-CN"] .hero-copy h1 {
 }
 
 .composer-controls .composer-submit {
-  min-width: 120px;
+  min-width: 112px;
   height: 40px;
   min-height: 40px;
   justify-content: center;
-  gap: 8px;
-  padding: 0 10px;
+  gap: 6px;
+  padding: 0 8px;
   border: 1px solid rgba(22, 119, 255, 0.42);
   border-radius: 14px;
   background: rgba(22, 119, 255, 0.42);
@@ -3482,6 +3482,51 @@ html[lang="zh-CN"] .hero-copy h1 {
   color: var(--text);
 }
 
+.playbook-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 2px 4px 14px;
+}
+
+.playbook-row button {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(22, 119, 255, 0.28);
+  border-radius: 12px;
+  background: rgba(7, 22, 42, 0.5);
+  color: #c9d9e8;
+  cursor: pointer;
+  font-family: var(--display);
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0 13px;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+  backdrop-filter: blur(14px);
+}
+
+.playbook-row button::before {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4facff;
+  content: "";
+}
+
+.playbook-row button:hover,
+.playbook-row button:focus-visible,
+.playbook-row button[aria-pressed="true"] {
+  border-color: rgba(79, 172, 255, 0.7);
+  background: rgba(22, 119, 255, 0.2);
+  color: #eef8ff;
+  outline: none;
+}
+
 @media (max-width: 1080px) {
   .header-end {
     gap: 12px;
@@ -3614,6 +3659,22 @@ html[lang="zh-CN"] .hero-copy h1 {
 
   .idea-row > div {
     justify-content: flex-start;
+  }
+
+  .playbook-row {
+    flex-wrap: nowrap;
+    margin-inline: 0;
+    overflow-x: auto;
+    padding-bottom: 3px;
+    scrollbar-width: none;
+  }
+
+  .playbook-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .playbook-row button {
+    flex: 0 0 auto;
   }
 }
 

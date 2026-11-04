@@ -2,7 +2,7 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v1.1 |
+| 文档版本 | v1.2 |
 | 更新日期 | 2026-11-04 |
 | 适用范围 | 共享 Landing UI、Next.js Web、FastAPI、LangGraph、Celery、Pippit CLI |
 | 关联设计 | `docs/software-design.md` |
@@ -461,7 +461,7 @@ CSRF、SSE、FFmpeg、导出和分享等用例在对应功能落地前属于待�
 | UI-004 | SSE 断线后重连 | 状态重新同步，不重复消息 | E2E（目标） | P1 |
 | UI-005 | 所有核心控件键盘可操作 | 焦点顺序正确，有可见焦点 | Accessibility | P1 |
 | UI-006 | 首页桌面导航 | Agents、Skills、Assets、Hots、Docs 位于左侧 | Frontend | P1 |
-| UI-007 | 首页多设定创作框 | 提示词、风格、画幅、时长、模型、清晰度、音频和审核可组合提交 | Frontend | P0 |
+| UI-007 | 首页多设定创作框 | 提示词、Skill、Hook、风格、画幅、时长、模型、清晰度、音频和审核可组合提交 | Frontend | P0 |
 | UI-008 | 首页提交创作 | 自动创建默认项目并进入该项目 | E2E | P0 |
 | UI-009 | 新项目首次进入 | 自动发送 Brief，生成首轮对话和故事板 | E2E | P0 |
 | UI-010 | 移动端首页 | 创作设定纵向排列，主操作不被遮挡 | Frontend | P1 |
@@ -475,6 +475,8 @@ CSRF、SSE、FFmpeg、导出和分享等用例在对应功能落地前属于待�
 | UI-018 | 顶部搜索粘滞 | Skills、Hots、Assets、Docs 搜索框滚动时固定在顶部 | Frontend | P1 |
 | UI-019 | Assets 内部分页 | Video 与 Skill 分页切换，卡片不重复类型标签 | Frontend | P1 |
 | UI-022 | Assets 媒体行为 | Video 悬浮播放并暂停，Skill 卡片无封面 | Frontend | P1 |
+| UI-023 | 创作 Playbook | 选择场景后自动填充提示词、Skill、Hook、风格、画幅、时长和审核模式 | Frontend | P0 |
+| UI-024 | Hots 场景复用 | 点击场景卡片进入 Agents，并选中对应 Skill 与提示词 | Frontend | P0 |
 | UI-020 | 顶部控件与下拉方向 | 搜索、语言、通知、积分和头像保持半透明，相关菜单向下展开 | Frontend | P1 |
 | UI-021 | 头像账户菜单 | 未登录可进入登录/注册，已登录可退出 | Frontend | P0 |
 
@@ -803,3 +805,4 @@ FFmpeg 和分享仍未实现。
 | --- | --- | --- | --- |
 | v1.0 | 2026-11-01 | TDD 基线草案 | 建立测试分层、用例和质量门禁 |
 | v1.1 | 2026-11-03 | 当前基线 | 对齐公开英文 UI、Hots、文档、单节点 Agent、当前 API 和 35/14 测试基线 |
+| v1.2 | 2026-11-04 | 当前基线 | 增加 Playbook 与 Hots 场景 Skill 复用，当前前端基线为 22 个测试 |

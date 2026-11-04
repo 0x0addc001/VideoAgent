@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.2 |
+| Document version | v1.3 |
 | Updated | 2026-11-04 |
 | Backend | Python + FastAPI |
 | Frontend | Next.js + TypeScript |
@@ -213,6 +213,14 @@ Skills use one flat, searchable catalogue. Every card shows its
 | `video_agent/creator_vlog` | A composed creator-vlog workflow |
 | `video_agent/short_drama` | A composed short-drama workflow |
 | `video_agent/review` | Score consistency, coverage, clarity, and pacing |
+| `video_agent/video_localization` | Adapt edit, copy, voice, and presenter details for a target market |
+| `video_agent/batch_variants` | Generate a controlled matrix of hooks, scenes, and messaging variants |
+| `video_agent/script_assistant` | Develop premises into editable scripts with characters, beats, and hooks |
+| `video_agent/smart_preview` | Prepare keyframes and an animatic before final shot generation |
+| `video_agent/camera_movement` | Select and combine purposeful camera moves |
+| `video_agent/music_video` | Plan performance, visual motifs, and beat-synced editing |
+| `video_agent/reference_remake` | Deconstruct a reference and rebuild its structure with new footage |
+| `video_agent/agent_handoff` | Package project context and assets for an external Agent via MCP or CLI |
 
 Workflow skills do not display an internal flow label. Review uses the same
 card form as every other skill and has no separate action button.
@@ -221,6 +229,12 @@ Selecting a skill preloads a concrete prompt in the Agents composer. The
 Agents composer also includes a Skill selector. Signed-in users can publish a
 skill under their own `<user_id>/<skill_id>` namespace; current publication is
 session-local.
+
+The Agents composer includes production playbooks for product ads, creator
+vlogs, micro drama, music videos, localization, and batch variants. Selecting a
+playbook sets the prompt, Skill, Hook, style, frame, duration, and review mode
+as one coherent starting point. Hook controls the first-three-second strategy:
+visual impact, narrative twist, spoken hook, sound cue, or proof first.
 
 Frame-level visual-language-model review is a target extension.
 
@@ -333,9 +347,12 @@ FFmpeg workers, Alembic migrations, and a reverse proxy.
    workflows and Review presented as normal skill cards.
 10. Documentation can switch between English and Chinese without changing the
     product UI and follows the complete six-document order.
+11. Production playbooks and Skill-backed Hots scenarios provide editable,
+    reusable starting points.
 
 ## 17. Change Log
 
 | Version | Date | Description |
 | --- | --- | --- |
+| v1.3 | 2026-11-04 | Add production playbooks, Hook control, scenario Skills, and reusable Hots scenarios |
 | v1.2 | 2026-11-03 | Align architecture, Skills catalogue, provider limits, UI behavior, bilingual Docs, APIs, and current test baseline |

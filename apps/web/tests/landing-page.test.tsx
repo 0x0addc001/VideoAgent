@@ -49,13 +49,23 @@ describe("LandingPage", () => {
     expect(container.querySelector(".notification-button svg")).toBeInTheDocument();
     expect(container.querySelector(".brand-mark .brand-play")).toBeInTheDocument();
     expect(composer).toBeInTheDocument();
-    expect(composer?.querySelectorAll(".composer-select")).toHaveLength(8);
+    expect(composer?.querySelectorAll(".composer-select")).toHaveLength(9);
     expect(composer?.querySelector(".composer-select-skill")).toBeInTheDocument();
     expect(
       [...(composer?.querySelectorAll(".composer-select-trigger") ?? [])].map(
         (trigger) => trigger.textContent,
       ),
-    ).toEqual(["Skill", "Style", "Frame", "Length", "Model", "Quality", "Audio", "Review"]);
+    ).toEqual([
+      "Skill",
+      "Hook",
+      "Style",
+      "Frame",
+      "Length",
+      "Model",
+      "Quality",
+      "Audio",
+      "Review",
+    ]);
     expect(composer?.querySelectorAll("select")).toHaveLength(0);
     expect(container.querySelector(".credit-count")).toHaveTextContent("0");
     expect(container.querySelector(".account-avatar svg")).toBeInTheDocument();
@@ -111,7 +121,7 @@ describe("LandingPage", () => {
     expect(container.querySelectorAll("#skills .skill-group")).toHaveLength(0);
     expect(
       container.querySelectorAll("#skills .skill-card:not(.skill-publish-card)"),
-    ).toHaveLength(14);
+    ).toHaveLength(22);
     expect(container.querySelector("#skills")).toHaveTextContent("Search all resources");
     expect(container.querySelector("#skills")).toHaveTextContent("Style transfer");
     expect(container.querySelector("#skills")).toHaveTextContent("Product film");
@@ -175,7 +185,7 @@ describe("LandingPage", () => {
     ).toHaveClass("community-card-title");
     expect(container.querySelector(".community-author")).toHaveTextContent("Maya Chen");
     expect(container.querySelector(".community-likes")).toHaveTextContent("128");
-    expect(container.querySelectorAll("#hots .community-card video")).toHaveLength(6);
+    expect(container.querySelectorAll("#hots .community-card video")).toHaveLength(10);
     expect(container.querySelector("#hots video")).toHaveAttribute("autoplay");
     expect(
       container.querySelector(".community-publish-card .community-publish-icon"),
@@ -194,7 +204,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/product-requirements.html?v=16",
+      "/docs/product-requirements.html?v=17",
     );
     expect(container.querySelectorAll(".docs-tab-icon")).toHaveLength(6);
     expect(
@@ -211,7 +221,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/product-requirements.zh.html?v=16",
+      "/docs/product-requirements.zh.html?v=17",
     );
     expect(
       [...container.querySelectorAll(".docs-tabs button")].map((button) =>
@@ -422,6 +432,58 @@ describe("LandingPage", () => {
     );
   });
 
+  it("applies a production playbook to the composer", () => {
+    const { container } = render(<LandingPage {...props} />);
+    const playbook = [...container.querySelectorAll(".playbook-row button")].find(
+      (button) => button.textContent === "Product ad",
+    );
+
+    fireEvent.click(playbook!);
+
+    expect(
+      (container.querySelector(".creation-composer textarea") as HTMLTextAreaElement)
+        .value,
+    ).toContain("ten-second product ad");
+    expect(
+      container.querySelector('.composer-select-trigger[aria-label="Skill"]'),
+    ).toHaveTextContent("video_agent/product_film");
+    expect(
+      container.querySelector('.composer-select-trigger[aria-label="Hook"]'),
+    ).toHaveTextContent("Proof first");
+    expect(
+      container.querySelector('.composer-select-trigger[aria-label="Style"]'),
+    ).toHaveTextContent("Product");
+    expect(
+      container.querySelector('.composer-select-trigger[aria-label="Frame"]'),
+    ).toHaveTextContent("9:16");
+    expect(
+      container.querySelector('.composer-select-trigger[aria-label="Review"]'),
+    ).toHaveTextContent("Ask first");
+    expect(playbook).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("opens a scenario from Hots with its skill already selected", () => {
+    const { container } = render(<LandingPage {...props} />);
+    fireEvent.click(
+      [...container.querySelectorAll(".site-header button")].find(
+        (button) => button.textContent === "Hots",
+      )!,
+    );
+    const scenario = [...container.querySelectorAll("#hots .community-card")].find(
+      (card) => card.textContent?.includes("Three hooks, one product"),
+    );
+
+    fireEvent.click(scenario!);
+
+    expect(
+      container.querySelector('.composer-select-trigger[aria-label="Skill"]'),
+    ).toHaveTextContent("video_agent/batch_variants");
+    expect(
+      (container.querySelector(".creation-composer textarea") as HTMLTextAreaElement)
+        .value,
+    ).toContain("three product-video hooks");
+  });
+
   it("searches bilingual documentation", async () => {
     vi.stubGlobal(
       "fetch",
@@ -457,7 +519,7 @@ describe("LandingPage", () => {
     fireEvent.click(container.querySelector(".docs-search-results button")!);
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/operations.html?v=16",
+      "/docs/operations.html?v=17",
     );
   });
 
@@ -479,6 +541,7 @@ describe("LandingPage", () => {
       expect(onCreateProject).toHaveBeenCalledWith({
         prompt: "A quiet Copenhagen morning told in one shot",
         skill: "auto",
+        hook: "auto",
         style: "auto",
         aspectRatio: "auto",
         durationSeconds: "auto",

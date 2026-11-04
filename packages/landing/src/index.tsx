@@ -16,9 +16,14 @@ import {
   Video,
 } from "lucide-react";
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { landingContent, type LandingLocale } from "./content";
+import {
+  landingContent,
+  type LandingHook,
+  type LandingLocale,
+  type LandingPlaybook,
+} from "./content";
 
-export type { LandingLocale } from "./content";
+export type { LandingHook, LandingLocale, LandingPlaybook } from "./content";
 export { landingContent } from "./content";
 
 export type LandingMode = "app" | "project";
@@ -32,6 +37,7 @@ export type LandingHeroVideo = {
 export type LandingProjectDraft = {
   prompt: string;
   skill: string;
+  hook: LandingHook;
   style: string;
   aspectRatio: "auto" | "16:9" | "9:16" | "1:1";
   durationSeconds: "auto" | 5 | 10;
@@ -45,6 +51,7 @@ type PublishedHot = {
   author: string;
   likes: number;
   prompt: string;
+  skill: string;
   title: string;
 };
 
@@ -96,7 +103,7 @@ const HERO_LINE_TWO: HeroPart[] = [
   { text: "Director", accent: true },
 ];
 
-const DOCS_ASSET_VERSION = "16";
+const DOCS_ASSET_VERSION = "17";
 
 function heroPartsLength(parts: readonly HeroPart[]) {
   return parts.reduce((total, part) => total + Array.from(part.text).length, 0);
@@ -481,6 +488,8 @@ export function LandingPage({
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [skill, setSkill] = useState("auto");
+  const [hook, setHook] = useState<LandingHook>("auto");
+  const [selectedPlaybook, setSelectedPlaybook] = useState<string | null>(null);
   const [style, setStyle] = useState<string>("auto");
   const [aspectRatio, setAspectRatio] =
     useState<LandingProjectDraft["aspectRatio"]>("auto");
@@ -656,6 +665,7 @@ export function LandingPage({
       await onCreateProject({
         prompt: normalizedPrompt,
         skill,
+        hook,
         style,
         aspectRatio,
         durationSeconds,
@@ -673,6 +683,7 @@ export function LandingPage({
 
   function usePrompt(value: string) {
     setPrompt(value);
+    setSelectedPlaybook(null);
     setActiveView("agents");
     window.history.replaceState(null, "", "#agents");
     window.setTimeout(() => promptRef.current?.focus(), 250);
@@ -681,6 +692,22 @@ export function LandingPage({
   function useSkill(skillId: string, value: string) {
     setSkill(skillId);
     usePrompt(value);
+  }
+
+  function applyPlaybook(playbook: LandingPlaybook) {
+    setPrompt(playbook.prompt);
+    setSkill(playbook.skill);
+    setStyle(playbook.style);
+    setAspectRatio(playbook.aspectRatio);
+    setDurationSeconds(
+      playbook.durationSeconds === "auto"
+        ? "auto"
+        : (Number(playbook.durationSeconds) as LandingProjectDraft["durationSeconds"]),
+    );
+    setHook(playbook.hook);
+    setReviewMode(playbook.reviewMode);
+    setSelectedPlaybook(playbook.id);
+    promptRef.current?.focus();
   }
 
   function openPublisher() {
@@ -700,6 +727,7 @@ export function LandingPage({
         author: content.hots.you,
         likes: 0,
         prompt: value,
+        skill,
         title: value.length > 42 ? `${value.slice(0, 42)}…` : value,
       },
       ...current,
@@ -1022,7 +1050,10 @@ export function LandingPage({
             <textarea
               aria-label={content.composer.label}
               maxLength={20_000}
-              onChange={(event) => setPrompt(event.target.value)}
+              onChange={(event) => {
+                setPrompt(event.target.value);
+                setSelectedPlaybook(null);
+              }}
               placeholder={content.composer.placeholder}
               ref={promptRef}
               rows={3}
@@ -1035,6 +1066,7 @@ export function LandingPage({
                     key={example}
                     onClick={() => {
                       setPrompt(example);
+                      setSelectedPlaybook(null);
                       promptRef.current?.focus();
                     }}
                     type="button"
@@ -1043,6 +1075,21 @@ export function LandingPage({
                   </button>
                 ))}
               </div>
+            </div>
+            <div
+              aria-label={content.composer.playbooksLabel}
+              className="playbook-row"
+            >
+              {content.composer.playbooks.map((playbook) => (
+                <button
+                  aria-pressed={selectedPlaybook === playbook.id}
+                  key={playbook.id}
+                  onClick={() => applyPlaybook(playbook)}
+                  type="button"
+                >
+                  {playbook.label}
+                </button>
+              ))}
             </div>
             <div className="composer-controls" aria-label={content.composer.settingsLabel}>
               <ComposerSelect
@@ -1057,6 +1104,15 @@ export function LandingPage({
                   })),
                 ]}
                 value={skill}
+              />
+              <ComposerSelect
+                label={content.composer.hookLabel}
+                onChange={(value) => setHook(value as LandingHook)}
+                options={content.composer.hookOptions.map((option) => ({
+                  label: option.label,
+                  value: option.id,
+                }))}
+                value={hook}
               />
               <ComposerSelect
                 label={content.composer.styleLabel}
@@ -1323,7 +1379,7 @@ export function LandingPage({
             <button
               className={`community-card community-card-${(index % 5) + 1}`}
               key={`${item.author}-${item.title}-${index}`}
-              onClick={() => usePrompt(item.prompt)}
+              onClick={() => useSkill(item.skill, item.prompt)}
               type="button"
             >
               <video

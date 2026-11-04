@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent PRD" />
     <title>PRD · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=16" />
+    <link rel="stylesheet" href="../docs.css?v=17" />
   </head>
   <body data-document="product-requirements.html">
     <main class="document-shell" id="document-shell">
@@ -48,7 +48,7 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v1.0</td>
+<td>v1.1</td>
 </tr>
 <tr>
 <td>Updated</td>
@@ -83,11 +83,15 @@ Avatar</code></pre>
 <h2 id="4-agents">4. Agents</h2>
 <ul>
 <li>The home view contains a prominent prompt composer.</li>
-<li>The composer supports style, frame, duration, model, quality, audio, and</li>
-<p>review settings.</p>
+<li>The composer supports skill, hook, style, frame, duration, model, quality,</li>
+<p>audio, and review settings.</p>
 <li>A user can select a Skill before starting.</li>
 <li>Composer setting menus open above or below the trigger based on viewport</li>
 <p>space and remain inside the visible area.</p>
+<li>Production playbooks provide one-click starting points for product ads,</li>
+<p>creator vlogs, micro drama, music videos, localization, and batch variants.</p>
+<li>Applying a playbook fills the prompt and sets its recommended Skill, Hook,</li>
+<p>style, frame, duration, and review mode.</p>
 <li>Submitting creates a project and enters the project workspace.</li>
 <li>The VideoAgent headline and icon stream together.</li>
 </ul>
@@ -110,7 +114,15 @@ video_agent/video_upscale
 video_agent/product_film
 video_agent/creator_vlog
 video_agent/short_drama
-video_agent/review</code></pre>
+video_agent/review
+video_agent/video_localization
+video_agent/batch_variants
+video_agent/script_assistant
+video_agent/smart_preview
+video_agent/camera_movement
+video_agent/music_video
+video_agent/reference_remake
+video_agent/agent_handoff</code></pre>
 <p>Workflow skills do not display an internal flow diagram.</p>
 <p>Review is a normal skill card. It has no separate action button.</p>
 <h3 id="5-2-search-and-publishing">5.2 Search and Publishing</h3>
@@ -130,6 +142,7 @@ video_agent/review</code></pre>
 <li>The search field stays pinned to the top while content scrolls.</li>
 <li>Cards play muted looping video.</li>
 <li>Each card shows the title first and author and likes below.</li>
+<li>Each scenario card opens Agents with its prompt and corresponding Skill.</li>
 <li>Users can publish a post from the feed.</li>
 <li>Search matches title, author, and prompt.</li>
 </ul>
@@ -225,12 +238,14 @@ Ops</code></pre>
 <li>Hots cards play video and show title above author and likes.</li>
 <li>Assets uses internal Video and Skill tabs and shows permission and</li>
 <p><code>yyyy-mm-dd</code> edit time.</p>
-<li>Assets uses a waterfall layout without playback.</li>
+<li>Assets uses a waterfall layout; videos preview on hover and Skill cards have no cover.</li>
 <li>Docs includes PRD, Design, Interface, Impl, Test, and Ops in order.</li>
 <li>Docs search and bilingual switching work.</li>
 <li>Avatar provides login, registration, or sign-out based on session state.</li>
+<li>Production playbooks fill the prompt and recommended production settings.</li>
+<li>Hots scenario cards open Agents with the corresponding Skill selected.</li>
 </ol></article>
     </main>
-    <script src="../docs.js?v=16"></script>
+    <script src="../docs.js?v=17"></script>
   </body>
 </html>

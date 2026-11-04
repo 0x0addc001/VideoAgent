@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.0 |
+| Document version | v1.1 |
 | Updated | 2026-11-04 |
 | Scope | Product launch, community, providers, support, metrics |
 
@@ -40,6 +40,11 @@ Before public launch:
 - Review changes require updating the PRD, Design, and Test documents.
 - Deprecated Skills remain listed for one release with a migration note before
   removal.
+- Scenario playbooks are curated entry points, not separate billing products.
+  They must reference current Skills and stay aligned with the composer fields.
+- External Agent handoff requires an explicit MCP or CLI integration contract;
+  the Skill entry must not imply that credentials or remote execution are
+  already active.
 
 ## 4. Community Operations
 
@@ -52,6 +57,8 @@ When persistent community support is enabled:
 - Support search by user ID, skill ID, title, description, and author.
 - Provide report, hide, restore, and appeal workflows.
 - Separate completed videos from reusable Skills in search facets.
+- Scenario cards must retain their Skill binding so reuse opens Agents with the
+  expected workflow selected.
 - Preserve local preview behavior while the API is unavailable.
 
 ## 5. Assets Operations
@@ -59,8 +66,8 @@ When persistent community support is enabled:
 - Assets contains only the current user's work.
 - Public and private permissions must be explicit.
 - Edit dates use `yyyy-mm-dd`.
-- Asset cards do not autoplay.
-- Video and Skill assets use distinct type labels.
+- Video assets preview only on hover; Skill assets have no cover.
+- Video and Skill assets use distinct internal tabs instead of repeated type labels.
 - A future retention policy must define soft-delete, recovery, and storage
   lifecycle rules.
 
@@ -136,4 +143,5 @@ Never ask users to provide access keys, cookies, or CLI session files.
 
 | Version | Date | Description |
 | --- | --- | --- |
+| v1.1 | 2026-11-04 | Add scenario playbook curation, Skill-backed community reuse, and external Agent handoff boundaries |
 | v1.0 | 2026-11-04 | Initial operations strategy for Skills, Hots, Assets, Docs, providers, and releases |

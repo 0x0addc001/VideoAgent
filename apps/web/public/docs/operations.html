@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Ops" />
     <title>Ops · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=16" />
+    <link rel="stylesheet" href="../docs.css?v=17" />
   </head>
   <body data-document="operations.html">
     <main class="document-shell" id="document-shell">
@@ -47,7 +47,7 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v1.0</td>
+<td>v1.1</td>
 </tr>
 <tr>
 <td>Updated</td>
@@ -87,6 +87,10 @@
 <li>Review changes require updating the PRD, Design, and Test documents.</li>
 <li>Deprecated Skills remain listed for one release with a migration note before</li>
 <p>removal.</p>
+<li>Scenario playbooks are curated entry points, not separate billing products.</li>
+<p>They must reference current Skills and stay aligned with the composer fields.</p>
+<li>External Agent handoff requires an explicit MCP or CLI integration contract;</li>
+<p>the Skill entry must not imply that credentials or remote execution are already active.</p>
 </ul>
 <h2 id="4-community-operations">4. Community Operations</h2>
 <p>When persistent community support is enabled:</p>
@@ -98,6 +102,8 @@
 <li>Support search by user ID, skill ID, title, description, and author.</li>
 <li>Provide report, hide, restore, and appeal workflows.</li>
 <li>Separate completed videos from reusable Skills in search facets.</li>
+<li>Scenario cards must retain their Skill binding so reuse opens Agents with the</li>
+<p>expected workflow selected.</p>
 <li>Preserve local preview behavior while the API is unavailable.</li>
 </ul>
 <h2 id="5-assets-operations">5. Assets Operations</h2>
@@ -105,8 +111,8 @@
 <li>Assets contains only the current user's work.</li>
 <li>Public and private permissions must be explicit.</li>
 <li>Edit dates use <code>yyyy-mm-dd</code>.</li>
-<li>Asset cards do not autoplay.</li>
-<li>Video and Skill assets use distinct type labels.</li>
+<li>Video assets preview only on hover; Skill assets have no cover.</li>
+<li>Video and Skill assets use distinct internal tabs instead of repeated type labels.</li>
 <li>A future retention policy must define soft-delete, recovery, and storage</li>
 <p>lifecycle rules.</p>
 </ul>
@@ -181,12 +187,17 @@
 <th>Description</th>
 </tr></thead><tbody>
 <tr>
+<td>v1.1</td>
+<td>2026-11-04</td>
+<td>Add scenario playbook curation, Skill-backed community reuse, and external Agent handoff boundaries</td>
+</tr>
+<tr>
 <td>v1.0</td>
 <td>2026-11-04</td>
 <td>Initial operations strategy for Skills, Hots, Assets, Docs, providers, and releases</td>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=16"></script>
+    <script src="../docs.js?v=17"></script>
   </body>
 </html>
