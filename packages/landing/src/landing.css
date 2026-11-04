@@ -3549,6 +3549,18 @@ html[lang="zh-CN"] .hero-copy h1 {
   }
 }
 
+@media (min-width: 981px) {
+  .hero-media-wall {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    height: 100dvh;
+    transform: none;
+  }
+}
+
 @media (max-width: 980px) {
   .site-header {
     grid-template-columns: 1fr auto;
