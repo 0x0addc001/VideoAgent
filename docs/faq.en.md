@@ -2,10 +2,10 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v2.0 |
+| Document version | v2.1 |
 | Updated | 2026-11-04 |
 
-## Q1. How would you orchestrate a video Agent?
+## Q1. How should a video Agent be orchestrated?
 
 **Answer**
 
@@ -32,7 +32,7 @@ Use a StateGraph for stages and conditional edges, checkpoints for recovery,
 human-in-the-loop for critical approvals, tool allowlists for capability
 boundaries, and structured output for stable contracts between nodes.
 
-## Q2. The user says, “Change shot 3 only.” How do you implement that?
+## Q2. The user says, “Change shot 3 only.” How should the system implement it?
 
 **Answer**
 
@@ -47,7 +47,7 @@ and their approval state remain unchanged.
 No. Review requests enter a read-only branch and return findings and
 suggestions without producing a write operation.
 
-**Extension:** How do you make local edits concurrency-safe?
+**Extension:** How can local edits be made concurrency-safe?
 
 **Answer**
 
@@ -78,7 +78,7 @@ Use master/medium/close/insert/reaction coverage and check the 180-degree rule,
 30-degree rule, eyeline match, screen direction, match cuts, and motivated
 camera movement.
 
-## Q4. How do you make LLM output truly executable?
+## Q4. How should LLM output be made truly executable?
 
 **Answer**
 
@@ -124,7 +124,7 @@ Model capabilities, task references, status, error codes, result URLs, credits,
 and cancellation semantics. Credentials remain inside the adapter and never
 enter browser or domain objects.
 
-## Q6. What do you do when a generation request times out?
+## Q6. What should happen when a generation request times out?
 
 **Answer**
 
@@ -132,7 +132,7 @@ Enter `submission_uncertain`, preserve the idempotency key and request record,
 then query the provider for reconciliation. If acceptance cannot be proven,
 stop automatic submission and alert.
 
-**Follow-up:** Can you simply retry three times?
+**Follow-up:** Can the submission simply be retried three times?
 
 **Answer**
 
@@ -140,7 +140,7 @@ Read-only status queries can use bounded backoff. Billable submissions cannot
 be blindly retried; continue only after proving the request was not accepted or
 after locating the same task through the idempotency key.
 
-**Extension:** How do you prevent duplicate charges?
+**Extension:** How should duplicate charges be prevented?
 
 **Answer**
 
@@ -164,7 +164,7 @@ They are useful low-cost baselines, but rules such as “three shots equals full
 coverage” are easy to game. Combine deterministic metrics with VLM review and
 human preference data.
 
-**Extension:** How do you reduce judge bias?
+**Extension:** How can judge bias be reduced?
 
 **Answer**
 
@@ -172,7 +172,7 @@ Use fixed rubrics, blinded model identity, pairwise comparisons, multi-rater
 calibration, and continuous monitoring of inter-rater agreement and gaming
 resistance.
 
-## Q8. How do you preserve character and scene consistency?
+## Q8. How should character and scene consistency be preserved?
 
 **Answer**
 
@@ -188,14 +188,14 @@ No. Text alone cannot lock identity and space. Use structured references,
 first/last frames, or subject references, then run post-generation consistency
 checks.
 
-**Extension:** Should you regenerate every shot when one drifts?
+**Extension:** Should every shot be regenerated when one drifts?
 
 **Answer**
 
 No. Use a continuity graph to identify dependent nodes and regenerate only the
 affected shots while retaining approved results.
 
-## Q9. How do you control credits and user expectations?
+## Q9. How should credits and user expectations be controlled?
 
 **Answer**
 
@@ -217,7 +217,7 @@ whole sequence. Use sequence budgets, quota reservations, and hard stop limits.
 Estimates, approver, idempotency key, provider cost, actual credits, retry
 reason, and selected take, forming a reconcilable credit ledger.
 
-## Q10. How do you debug a sudden drop in generation success?
+## Q10. How should a sudden drop in generation success be diagnosed?
 
 **Answer**
 
@@ -225,7 +225,7 @@ Locate the failed state first: pre-submit, uncertain submit, queued, running,
 download, or completion. Then segment by provider, model, region, and release
 time.
 
-**Follow-up:** Do you inspect model quality first or infrastructure first?
+**Follow-up:** Should model quality or infrastructure be inspected first?
 
 **Answer**
 
@@ -288,4 +288,105 @@ local regeneration verifiable.
 Scene, beat, story function, cinematic grammar, subject action, continuity
 references, and generation capability requirements connect previz, generation,
 evaluation, and editing.
+
+## Q13. What are the main technical trade-offs for a video Agent?
+
+**Answer**
+
+The main trade-offs are latency versus quality and cost, autonomy versus control,
+consistency versus creative flexibility, single versus multiple Agents, and
+polling versus realtime delivery. Architecture should address the current
+bottleneck rather than pursue “more intelligent” or “more distributed” labels.
+
+**Follow-up:** When should a single Agent be split into multiple Agents?
+
+**Answer**
+
+Split only when subtasks have independent tools, context, evaluation criteria,
+and scaling needs. Adding Agents does not fix context drift and increases
+coordination, tracing, and consistency costs.
+
+**Extension:** How should architecture overdesign be avoided?
+
+**Answer**
+
+Measure whether the bottleneck is creative quality, provider latency, queue
+pressure, or database contention, then choose the smallest change. Every added
+component must justify its operational cost with observable benefit.
+
+## Q14. How should a video generation system support high concurrency?
+
+**Answer**
+
+The API authenticates, validates, and enqueues work without waiting for
+generation. Workers consume tasks according to provider quotas. Layered limits
+for users, IPs, tenants, and providers combine with bounded queues, semaphores,
+idempotency keys, connection pools, and backpressure.
+
+**Follow-up:** What happens when provider concurrency is exhausted?
+
+**Answer**
+
+Tasks enter a fair queue prioritized by tenant, priority, and deadline, and the
+client receives an explainable queued state. Billable submissions must not be
+retried blindly, and autoscaling cannot exceed provider hard limits.
+
+**Extension:** How should graceful overload work?
+
+**Answer**
+
+Use bounded queues, load shedding, circuit breakers, and preview degradation.
+Protect accepted jobs, reject excess new work explicitly, and expose queue
+depth, wait time, and rejection rate.
+
+## Q15. How should a video Agent achieve high availability?
+
+**Answer**
+
+Keep the API stateless and multi-instance, make the database the source of
+truth, and limit Redis to cache, queue, and coordination. Add health checks,
+rolling releases, timeouts, and circuit breakers; support controlled provider
+failover behind one adapter.
+
+**Follow-up:** How should the system degrade when the database or Redis fails?
+
+**Answer**
+
+On database failure, stop new writes and preserve read-only behavior where
+possible. On Redis failure, protect the database, pause queue consumption, and
+recover from persisted jobs. Idempotency keys and reconciliation records must
+survive to prevent duplicate submissions.
+
+**Extension:** What belongs in high-availability acceptance?
+
+**Answer**
+
+Define RTO and RPO, then rehearse instance failure, database failover, queue
+recovery, provider outage, and regional failure. An architecture is not
+complete until recovery has been exercised.
+
+## Q16. How should fallback be designed for the video generation pipeline?
+
+**Answer**
+
+Use four fallback layers: explicit model degradation, provider failover,
+low-cost preview or animatic, and cached read-only output with an error
+explanation. Every fallback states quality, cost, and capability differences;
+models are never silently replaced.
+
+**Follow-up:** Can a provider timeout trigger immediate recreation elsewhere?
+
+**Answer**
+
+First check the idempotency key and task reference to determine whether the
+request was accepted. Stop billable retries when the outcome is uncertain and
+switch providers only after proving non-acceptance and respecting user policy.
+
+**Extension:** How should fallback priority be determined?
+
+**Answer**
+
+Prioritize data safety, billing consistency, result availability, quality, and
+latency in that order. Fallbacks must be observable, explainable, reversible,
+and constrained by user budget and content policy.
 

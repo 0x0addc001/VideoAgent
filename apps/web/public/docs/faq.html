@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent FAQ" />
     <title>FAQ · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=23" />
+    <link rel="stylesheet" href="../docs.css?v=24" />
   </head>
   <body data-document="faq.html">
     <main class="document-shell" id="document-shell">
@@ -26,18 +26,22 @@
         <nav class="toc-panel" id="toc-panel" aria-label="Contents">
           <p class="toc-kicker">CONTENTS</p>
           <a class="toc-link toc-level-1" href="#videoagent-faq">VideoAgent FAQ</a>
-<a class="toc-link toc-level-2" href="#q1-how-would-you-orchestrate-a-video-agent">Q1. How would you orchestrate a video Agent?</a>
-<a class="toc-link toc-level-2" href="#q2-the-user-says-change-shot-3-only-how-do-you-implement-that">Q2. The user says, “Change shot 3 only.” How do you implement that?</a>
+<a class="toc-link toc-level-2" href="#q1-how-should-a-video-agent-be-orchestrated">Q1. How should a video Agent be orchestrated?</a>
+<a class="toc-link toc-level-2" href="#q2-the-user-says-change-shot-3-only-how-should-the-system-implement-it">Q2. The user says, “Change shot 3 only.” How should the system implement it?</a>
 <a class="toc-link toc-level-2" href="#q3-what-fields-define-a-production-ready-shot">Q3. What fields define a production-ready shot?</a>
-<a class="toc-link toc-level-2" href="#q4-how-do-you-make-llm-output-truly-executable">Q4. How do you make LLM output truly executable?</a>
+<a class="toc-link toc-level-2" href="#q4-how-should-llm-output-be-made-truly-executable">Q4. How should LLM output be made truly executable?</a>
 <a class="toc-link toc-level-2" href="#q5-when-should-a-video-agent-use-mcp-versus-a-cli">Q5. When should a video Agent use MCP versus a CLI?</a>
-<a class="toc-link toc-level-2" href="#q6-what-do-you-do-when-a-generation-request-times-out">Q6. What do you do when a generation request times out?</a>
+<a class="toc-link toc-level-2" href="#q6-what-should-happen-when-a-generation-request-times-out">Q6. What should happen when a generation request times out?</a>
 <a class="toc-link toc-level-2" href="#q7-how-should-a-video-agent-be-evaluated">Q7. How should a video Agent be evaluated?</a>
-<a class="toc-link toc-level-2" href="#q8-how-do-you-preserve-character-and-scene-consistency">Q8. How do you preserve character and scene consistency?</a>
-<a class="toc-link toc-level-2" href="#q9-how-do-you-control-credits-and-user-expectations">Q9. How do you control credits and user expectations?</a>
-<a class="toc-link toc-level-2" href="#q10-how-do-you-debug-a-sudden-drop-in-generation-success">Q10. How do you debug a sudden drop in generation success?</a>
+<a class="toc-link toc-level-2" href="#q8-how-should-character-and-scene-consistency-be-preserved">Q8. How should character and scene consistency be preserved?</a>
+<a class="toc-link toc-level-2" href="#q9-how-should-credits-and-user-expectations-be-controlled">Q9. How should credits and user expectations be controlled?</a>
+<a class="toc-link toc-level-2" href="#q10-how-should-a-sudden-drop-in-generation-success-be-diagnosed">Q10. How should a sudden drop in generation success be diagnosed?</a>
 <a class="toc-link toc-level-2" href="#q11-why-not-let-one-autonomous-agent-do-everything">Q11. Why not let one autonomous Agent do everything?</a>
 <a class="toc-link toc-level-2" href="#q12-what-is-the-most-important-engineering-principle-for-a-video-agent">Q12. What is the most important engineering principle for a video Agent?</a>
+<a class="toc-link toc-level-2" href="#q13-what-are-the-main-technical-trade-offs-for-a-video-agent">Q13. What are the main technical trade-offs for a video Agent?</a>
+<a class="toc-link toc-level-2" href="#q14-how-should-a-video-generation-system-support-high-concurrency">Q14. How should a video generation system support high concurrency?</a>
+<a class="toc-link toc-level-2" href="#q15-how-should-a-video-agent-achieve-high-availability">Q15. How should a video Agent achieve high availability?</a>
+<a class="toc-link toc-level-2" href="#q16-how-should-fallback-be-designed-for-the-video-generation-pipeline">Q16. How should fallback be designed for the video generation pipeline?</a>
         </nav>
       </aside>
       <article class="document"><h1 id="videoagent-faq">VideoAgent FAQ</h1>
@@ -47,14 +51,14 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v2.0</td>
+<td>v2.1</td>
 </tr>
 <tr>
 <td>Updated</td>
 <td>2026-11-04</td>
 </tr>
 </tbody></table></div>
-<h2 id="q1-how-would-you-orchestrate-a-video-agent">Q1. How would you orchestrate a video Agent?</h2>
+<h2 id="q1-how-should-a-video-agent-be-orchestrated">Q1. How should a video Agent be orchestrated?</h2>
 <p><strong>Answer</strong></p>
 <p>Use a deterministic workflow: brief, creative diagnosis, treatment, script/beats, storyboard, continuity validation, previz, generation, shot QC, rough cut, and delivery. Human gates protect story direction, budget, and final direction. Models make creative decisions; code owns state, permissions, and cost boundaries.</p>
 <p><strong>Follow-up:</strong> Why not start with multiple autonomous Agents?</p>
@@ -63,13 +67,13 @@
 <p><strong>Extension:</strong> LangGraph</p>
 <p><strong>Answer</strong></p>
 <p>Use a StateGraph for stages and conditional edges, checkpoints for recovery, human-in-the-loop for critical approvals, tool allowlists for capability boundaries, and structured output for stable contracts between nodes.</p>
-<h2 id="q2-the-user-says-change-shot-3-only-how-do-you-implement-that">Q2. The user says, “Change shot 3 only.” How do you implement that?</h2>
+<h2 id="q2-the-user-says-change-shot-3-only-how-should-the-system-implement-it">Q2. The user says, “Change shot 3 only.” How should the system implement it?</h2>
 <p><strong>Answer</strong></p>
 <p>Route the request by intent, then apply the change to a stable shot ID. The Agent returns a local shot patch with a version and operation log; other shots and their approval state remain unchanged.</p>
 <p><strong>Follow-up:</strong> Should a review-only request replace the storyboard?</p>
 <p><strong>Answer</strong></p>
 <p>No. Review requests enter a read-only branch and return findings and suggestions without producing a write operation.</p>
-<p><strong>Extension:</strong> How do you make local edits concurrency-safe?</p>
+<p><strong>Extension:</strong> How can local edits be made concurrency-safe?</p>
 <p><strong>Answer</strong></p>
 <p>Use optimistic locking or version-conditioned updates, idempotency keys, and dependency links between a shot revision and any generation job based on it.</p>
 <h2 id="q3-what-fields-define-a-production-ready-shot">Q3. What fields define a production-ready shot?</h2>
@@ -81,7 +85,7 @@
 <p><strong>Extension:</strong> Which cinematic rules matter?</p>
 <p><strong>Answer</strong></p>
 <p>Use master/medium/close/insert/reaction coverage and check the 180-degree rule, 30-degree rule, eyeline match, screen direction, match cuts, and motivated camera movement.</p>
-<h2 id="q4-how-do-you-make-llm-output-truly-executable">Q4. How do you make LLM output truly executable?</h2>
+<h2 id="q4-how-should-llm-output-be-made-truly-executable">Q4. How should LLM output be made truly executable?</h2>
 <p><strong>Answer</strong></p>
 <p>Define a strict Pydantic schema, validate fields, duration, aspect ratio, shot count, and references, then match the request against provider capabilities such as duration, audio, and input types.</p>
 <p><strong>Follow-up:</strong> What happens after the model returns JSON?</p>
@@ -99,13 +103,13 @@
 <p><strong>Extension:</strong> What should a Provider adapter normalize?</p>
 <p><strong>Answer</strong></p>
 <p>Model capabilities, task references, status, error codes, result URLs, credits, and cancellation semantics. Credentials remain inside the adapter and never enter browser or domain objects.</p>
-<h2 id="q6-what-do-you-do-when-a-generation-request-times-out">Q6. What do you do when a generation request times out?</h2>
+<h2 id="q6-what-should-happen-when-a-generation-request-times-out">Q6. What should happen when a generation request times out?</h2>
 <p><strong>Answer</strong></p>
 <p>Enter <code>submission_uncertain</code>, preserve the idempotency key and request record, then query the provider for reconciliation. If acceptance cannot be proven, stop automatic submission and alert.</p>
-<p><strong>Follow-up:</strong> Can you simply retry three times?</p>
+<p><strong>Follow-up:</strong> Can the submission simply be retried three times?</p>
 <p><strong>Answer</strong></p>
 <p>Read-only status queries can use bounded backoff. Billable submissions cannot be blindly retried; continue only after proving the request was not accepted or after locating the same task through the idempotency key.</p>
-<p><strong>Extension:</strong> How do you prevent duplicate charges?</p>
+<p><strong>Extension:</strong> How should duplicate charges be prevented?</p>
 <p><strong>Answer</strong></p>
 <p>Use a database-level idempotency key, submission state machine, provider task reference, and an explainable reconciliation path so at-least-once delivery does not become duplicate billing.</p>
 <h2 id="q7-how-should-a-video-agent-be-evaluated">Q7. How should a video Agent be evaluated?</h2>
@@ -114,19 +118,19 @@
 <p><strong>Follow-up:</strong> Are consistency, coverage, clarity, and pacing scores enough?</p>
 <p><strong>Answer</strong></p>
 <p>They are useful low-cost baselines, but rules such as “three shots equals full coverage” are easy to game. Combine deterministic metrics with VLM review and human preference data.</p>
-<p><strong>Extension:</strong> How do you reduce judge bias?</p>
+<p><strong>Extension:</strong> How can judge bias be reduced?</p>
 <p><strong>Answer</strong></p>
 <p>Use fixed rubrics, blinded model identity, pairwise comparisons, multi-rater calibration, and continuous monitoring of inter-rater agreement and gaming resistance.</p>
-<h2 id="q8-how-do-you-preserve-character-and-scene-consistency">Q8. How do you preserve character and scene consistency?</h2>
+<h2 id="q8-how-should-character-and-scene-consistency-be-preserved">Q8. How should character and scene consistency be preserved?</h2>
 <p><strong>Answer</strong></p>
 <p>Maintain a style bible for characters, costume, locations, props, and visual tone. Each shot references the relevant assets and is checked for eyeline, screen direction, and spatial relationships.</p>
 <p><strong>Follow-up:</strong> Is repeating one description in every prompt sufficient?</p>
 <p><strong>Answer</strong></p>
 <p>No. Text alone cannot lock identity and space. Use structured references, first/last frames, or subject references, then run post-generation consistency checks.</p>
-<p><strong>Extension:</strong> Should you regenerate every shot when one drifts?</p>
+<p><strong>Extension:</strong> Should every shot be regenerated when one drifts?</p>
 <p><strong>Answer</strong></p>
 <p>No. Use a continuity graph to identify dependent nodes and regenerate only the affected shots while retaining approved results.</p>
-<h2 id="q9-how-do-you-control-credits-and-user-expectations">Q9. How do you control credits and user expectations?</h2>
+<h2 id="q9-how-should-credits-and-user-expectations-be-controlled">Q9. How should credits and user expectations be controlled?</h2>
 <p><strong>Answer</strong></p>
 <p>Show budgets at the sequence or production-package level, distinguish previews, final shots, and alternate takes, and require a low-cost animatic before expensive generation.</p>
 <p><strong>Follow-up:</strong> Is a confirmation dialog per shot enough?</p>
@@ -135,10 +139,10 @@
 <p><strong>Extension:</strong> What should the cost system record?</p>
 <p><strong>Answer</strong></p>
 <p>Estimates, approver, idempotency key, provider cost, actual credits, retry reason, and selected take, forming a reconcilable credit ledger.</p>
-<h2 id="q10-how-do-you-debug-a-sudden-drop-in-generation-success">Q10. How do you debug a sudden drop in generation success?</h2>
+<h2 id="q10-how-should-a-sudden-drop-in-generation-success-be-diagnosed">Q10. How should a sudden drop in generation success be diagnosed?</h2>
 <p><strong>Answer</strong></p>
 <p>Locate the failed state first: pre-submit, uncertain submit, queued, running, download, or completion. Then segment by provider, model, region, and release time.</p>
-<p><strong>Follow-up:</strong> Do you inspect model quality first or infrastructure first?</p>
+<p><strong>Follow-up:</strong> Should model quality or infrastructure be inspected first?</p>
 <p><strong>Answer</strong></p>
 <p>Use observability signals to locate the boundary before assigning blame. Error codes, timeouts, queue depth, and download metrics quickly separate infrastructure, provider, and content-policy failures.</p>
 <p><strong>Extension:</strong> What should observability include?</p>
@@ -161,8 +165,44 @@
 <p>Without stable data contracts, more Agents only amplify context drift and state inconsistency. Structured data makes delegation, recovery, evaluation, and local regeneration verifiable.</p>
 <p><strong>Extension:</strong> Which base fields matter most?</p>
 <p><strong>Answer</strong></p>
-<p>Scene, beat, story function, cinematic grammar, subject action, continuity references, and generation capability requirements connect previz, generation, evaluation, and editing.</p></article>
+<p>Scene, beat, story function, cinematic grammar, subject action, continuity references, and generation capability requirements connect previz, generation, evaluation, and editing.</p>
+<h2 id="q13-what-are-the-main-technical-trade-offs-for-a-video-agent">Q13. What are the main technical trade-offs for a video Agent?</h2>
+<p><strong>Answer</strong></p>
+<p>The main trade-offs are latency versus quality and cost, autonomy versus control, consistency versus creative flexibility, single versus multiple Agents, and polling versus realtime delivery. Architecture should address the current bottleneck rather than pursue “more intelligent” or “more distributed” labels.</p>
+<p><strong>Follow-up:</strong> When should a single Agent be split into multiple Agents?</p>
+<p><strong>Answer</strong></p>
+<p>Split only when subtasks have independent tools, context, evaluation criteria, and scaling needs. Adding Agents does not fix context drift and increases coordination, tracing, and consistency costs.</p>
+<p><strong>Extension:</strong> How should architecture overdesign be avoided?</p>
+<p><strong>Answer</strong></p>
+<p>Measure whether the bottleneck is creative quality, provider latency, queue pressure, or database contention, then choose the smallest change. Every added component must justify its operational cost with observable benefit.</p>
+<h2 id="q14-how-should-a-video-generation-system-support-high-concurrency">Q14. How should a video generation system support high concurrency?</h2>
+<p><strong>Answer</strong></p>
+<p>The API authenticates, validates, and enqueues work without waiting for generation. Workers consume tasks according to provider quotas. Layered limits for users, IPs, tenants, and providers combine with bounded queues, semaphores, idempotency keys, connection pools, and backpressure.</p>
+<p><strong>Follow-up:</strong> What happens when provider concurrency is exhausted?</p>
+<p><strong>Answer</strong></p>
+<p>Tasks enter a fair queue prioritized by tenant, priority, and deadline, and the client receives an explainable queued state. Billable submissions must not be retried blindly, and autoscaling cannot exceed provider hard limits.</p>
+<p><strong>Extension:</strong> How should graceful overload work?</p>
+<p><strong>Answer</strong></p>
+<p>Use bounded queues, load shedding, circuit breakers, and preview degradation. Protect accepted jobs, reject excess new work explicitly, and expose queue depth, wait time, and rejection rate.</p>
+<h2 id="q15-how-should-a-video-agent-achieve-high-availability">Q15. How should a video Agent achieve high availability?</h2>
+<p><strong>Answer</strong></p>
+<p>Keep the API stateless and multi-instance, make the database the source of truth, and limit Redis to cache, queue, and coordination. Add health checks, rolling releases, timeouts, and circuit breakers; support controlled provider failover behind one adapter.</p>
+<p><strong>Follow-up:</strong> How should the system degrade when the database or Redis fails?</p>
+<p><strong>Answer</strong></p>
+<p>On database failure, stop new writes and preserve read-only behavior where possible. On Redis failure, protect the database, pause queue consumption, and recover from persisted jobs. Idempotency keys and reconciliation records must survive to prevent duplicate submissions.</p>
+<p><strong>Extension:</strong> What belongs in high-availability acceptance?</p>
+<p><strong>Answer</strong></p>
+<p>Define RTO and RPO, then rehearse instance failure, database failover, queue recovery, provider outage, and regional failure. An architecture is not complete until recovery has been exercised.</p>
+<h2 id="q16-how-should-fallback-be-designed-for-the-video-generation-pipeline">Q16. How should fallback be designed for the video generation pipeline?</h2>
+<p><strong>Answer</strong></p>
+<p>Use four fallback layers: explicit model degradation, provider failover, low-cost preview or animatic, and cached read-only output with an error explanation. Every fallback states quality, cost, and capability differences; models are never silently replaced.</p>
+<p><strong>Follow-up:</strong> Can a provider timeout trigger immediate recreation elsewhere?</p>
+<p><strong>Answer</strong></p>
+<p>First check the idempotency key and task reference to determine whether the request was accepted. Stop billable retries when the outcome is uncertain and switch providers only after proving non-acceptance and respecting user policy.</p>
+<p><strong>Extension:</strong> How should fallback priority be determined?</p>
+<p><strong>Answer</strong></p>
+<p>Prioritize data safety, billing consistency, result availability, quality, and latency in that order. Fallbacks must be observable, explainable, reversible, and constrained by user budget and content policy.</p></article>
     </main>
-    <script src="../docs.js?v=23"></script>
+    <script src="../docs.js?v=24"></script>
   </body>
 </html>
