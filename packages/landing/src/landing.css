@@ -3106,7 +3106,6 @@ html[lang="zh-CN"] .hero-copy h1 {
   display: block;
   min-height: calc(100svh - 92px);
   overflow: visible;
-  background: var(--background);
   padding: 76px 0 80px;
 }
 
@@ -3116,11 +3115,11 @@ html[lang="zh-CN"] .hero-copy h1 {
 
 .hero-media-wall {
   position: absolute;
-  z-index: -1;
+  z-index: 0;
   top: 0;
   left: 50%;
   width: 100vw;
-  height: 100%;
+  height: max(760px, calc(100svh - 92px));
   overflow: hidden;
   pointer-events: none;
   transform: translateX(-50%);
