@@ -23,6 +23,7 @@ afterEach(() => {
   window.history.replaceState({}, "", "/");
   window.localStorage.clear();
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
 
 describe("LandingPage", () => {
@@ -133,15 +134,27 @@ describe("LandingPage", () => {
       "2026-11-03",
     );
     expect(container.querySelector("#assets .asset-card")).toHaveTextContent("public");
-    expect(container.querySelector("#assets .asset-card img")).toBeInTheDocument();
-    expect(container.querySelector("#assets video")).not.toBeInTheDocument();
+    const assetVideo = container.querySelector("#assets .asset-card video");
+    expect(assetVideo).toBeInTheDocument();
+    expect(assetVideo).not.toHaveAttribute("autoplay");
+    expect(container.querySelector("#assets .asset-card img")).not.toBeInTheDocument();
     expect(container.querySelector("#assets .view-search input")).toBeInTheDocument();
+    const play = vi
+      .spyOn(HTMLMediaElement.prototype, "play")
+      .mockResolvedValue(undefined);
+    const pause = vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => {});
+    fireEvent.mouseEnter(assetVideo!);
+    fireEvent.mouseLeave(assetVideo!);
+    expect(play).toHaveBeenCalled();
+    expect(pause).toHaveBeenCalled();
     fireEvent.click(
       [...container.querySelectorAll("#assets .asset-tabs button")].find(
         (button) => button.textContent?.trim() === "Skill",
       )!,
     );
     expect(container.querySelectorAll("#assets .asset-card")).toHaveLength(2);
+    expect(container.querySelector("#assets img")).not.toBeInTheDocument();
+    expect(container.querySelector("#assets video")).not.toBeInTheDocument();
     expect(container.querySelector("#assets")).not.toHaveTextContent(
       "Quiet Copenhagen",
     );
@@ -181,7 +194,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/product-requirements.html?v=14",
+      "/docs/product-requirements.html?v=15",
     );
     expect(container.querySelectorAll(".docs-tab-icon")).toHaveLength(6);
     expect(
@@ -198,7 +211,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/product-requirements.zh.html?v=14",
+      "/docs/product-requirements.zh.html?v=15",
     );
     expect(
       [...container.querySelectorAll(".docs-tabs button")].map((button) =>
@@ -418,7 +431,7 @@ describe("LandingPage", () => {
     fireEvent.click(container.querySelector(".docs-search-results button")!);
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/operations.html?v=14",
+      "/docs/operations.html?v=15",
     );
   });
 

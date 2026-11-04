@@ -26,7 +26,7 @@ contains five isolated views:
 - **Agents:** home creation composer and VideoAgent conversations.
 - **Skills:** one searchable catalogue of generation, workflow, and review skills.
 - **Assets:** a waterfall library of the user's videos and skills with
-  permission and edit time.
+  permission and edit time; videos preview on hover and skills have no cover.
 - **Hots:** community feed with author, likes, playback, and local publishing.
 - **Docs:** embedded bilingual documentation with a collapsible table of contents.
 
@@ -270,7 +270,8 @@ The shared Landing UI owns:
 - Custom transparent composer dropdowns.
 - Flat searchable Skills catalogue with user publishing.
 - Hots masonry feed with looping muted video playback.
-- Searchable Assets waterfall with internal Video/Skill tabs.
+- Searchable Assets waterfall with internal Video/Skill tabs; videos preview on
+  hover and Skill cards omit cover images.
 - Searchable embedded Docs with a collapsible table of contents.
 - Semi-transparent search, language, notification, credit, and avatar controls.
 - Downward-opening language, notification, account, search, and composer menus.

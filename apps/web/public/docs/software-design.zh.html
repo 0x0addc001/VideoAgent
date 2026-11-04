@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Design" />
     <title>Design · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=14" />
+    <link rel="stylesheet" href="../docs.css?v=15" />
   </head>
   <body data-document="software-design.zh.html">
     <main class="document-shell" id="document-shell">
@@ -128,7 +128,7 @@
 <li><strong>Agents：</strong> 首页创作入口和项目内 VideoAgent 对话。</li>
 <li><strong>Skills：</strong> 单一可搜索 Skill 目录，使用 <code>user_id/skill_id</code> 标识，并支持用户发布。</li>
 <li><strong>Hots：</strong> 可搜索社区作品流，展示作者、喜欢数并支持当前会话内发布。</li>
-<li><strong>Assets：</strong> 用户成品与半成品作品库，按 Video/Skill 分页并支持搜索。</li>
+<li><strong>Assets：</strong> 用户成品与半成品作品库，按 Video/Skill 分页；视频悬浮预览，Skill 不显示封面。</li>
 <li><strong>Docs：</strong> 六份中英文文档、全文搜索、固定深色主题和左侧可折叠目录。</li>
 <li><strong>项目管理：</strong> 保存项目状态、对话、故事板和生成任务。</li>
 </ul>
@@ -866,7 +866,7 @@ POST /projects/{id}/share</code></pre>
 <li><code>Agents</code>：首页创作入口和 VideoAgent 对话。</li>
 <li><code>Skills</code>：统一可搜索 Skill 目录，卡片显示 <code>user_id/skill_id</code>，用户可发布 Skill。</li>
 <li><code>Hots</code>：可搜索社区瀑布流，视频自动播放，展示标题、作者、喜欢数，并支持发布。</li>
-<li><code>Assets</code>：通过 Video 与 Skill 两个内部分页切换，支持搜索；卡片只展示权限和 <code>yyyy-mm-dd</code> 编辑时间，不播放。</li>
+<li><code>Assets</code>：通过 Video 与 Skill 两个内部分页切换，支持搜索；Video 卡片悬浮静音播放，Skill 卡片不显示封面；卡片只展示权限和 <code>yyyy-mm-dd</code> 编辑时间。</li>
 <li><code>Docs</code>：按 PRD、Design、Interface、Impl、Test、Ops 展示中英文文档，支持全文搜索。</li>
 <li>项目工作区：对话、Canvas、镜头检查器、生成和审核弹窗。</li>
 <li>正式站与 GitHub Pages 项目主页复用同一套 Landing UI。</li>
@@ -1170,6 +1170,6 @@ Celery + Redis（可选）</code></pre>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=14"></script>
+    <script src="../docs.js?v=15"></script>
   </body>
 </html>

@@ -127,7 +127,8 @@ Assets contains the current user's finished and in-progress work.
 - Each card shows permission: `private` or `public`.
 - Edit time uses `yyyy-mm-dd`.
 - Duration, progress, and summary are not shown.
-- Assets are preview images only and do not autoplay.
+- Video cards play a muted loop on hover and pause when hover ends. Skill cards
+  have no cover image.
 
 ## 8. Docs
 

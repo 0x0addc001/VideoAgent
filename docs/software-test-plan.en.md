@@ -122,6 +122,7 @@ Current component tests should continue to cover:
 - Skills, Hots, Assets, and Docs search controls stay pinned while content
   scrolls.
 - Assets switches between Video and Skill tabs without repeating type labels.
+- Video assets preview on hover and pause on leave; Skill assets have no cover.
 - Search, language, notifications, credits, and avatar controls use translucent
   surfaces and open their menus downward.
 - Avatar opens login and registration when signed out and sign-out when signed in.

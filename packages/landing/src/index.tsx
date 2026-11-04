@@ -96,7 +96,7 @@ const HERO_LINE_TWO: HeroPart[] = [
   { text: "Director", accent: true },
 ];
 
-const DOCS_ASSET_VERSION = "14";
+const DOCS_ASSET_VERSION = "15";
 
 function heroPartsLength(parts: readonly HeroPart[]) {
   return parts.reduce((total, part) => total + Array.from(part.text).length, 0);
@@ -1180,10 +1180,33 @@ export function LandingPage({
         </div>
         <div className="asset-stream">
           {visibleAssets.map((asset) => (
-            <article className="asset-card" key={asset.title}>
-              <div className="asset-media">
-                <img alt="" src={videos[asset.imageIndex].poster} />
-              </div>
+            <article
+              className={`asset-card asset-card-${asset.type}`}
+              key={asset.title}
+            >
+              {asset.type === "video" ? (
+                <div className="asset-media">
+                  <video
+                    aria-label={`${asset.title} preview`}
+                    loop
+                    muted
+                    onMouseEnter={(event) => {
+                      void event.currentTarget.play().catch(() => {
+                        // Preview playback can be blocked by browser policy.
+                      });
+                    }}
+                    onMouseLeave={(event) => {
+                      event.currentTarget.pause();
+                      event.currentTarget.currentTime = 0;
+                    }}
+                    playsInline
+                    poster={videos[asset.imageIndex].poster}
+                    preload="metadata"
+                  >
+                    <source src={videos[asset.imageIndex].src} type="video/mp4" />
+                  </video>
+                </div>
+              ) : null}
               <div className="asset-info">
                 <div className="asset-title-row">
                   <h2>{asset.title}</h2>

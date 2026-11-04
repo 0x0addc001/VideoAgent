@@ -25,7 +25,7 @@ VideoAgent 是一个面向内容创作者、营销人员和普通用户的 AI �
 - **Agents：** 首页创作入口和项目内 VideoAgent 对话。
 - **Skills：** 单一可搜索 Skill 目录，使用 `user_id/skill_id` 标识，并支持用户发布。
 - **Hots：** 可搜索社区作品流，展示作者、喜欢数并支持当前会话内发布。
-- **Assets：** 用户成品与半成品作品库，按 Video/Skill 分页并支持搜索。
+- **Assets：** 用户成品与半成品作品库，按 Video/Skill 分页；视频悬浮预览，Skill 不显示封面。
 - **Docs：** 六份中英文文档、全文搜索、固定深色主题和左侧可折叠目录。
 - **项目管理：** 保存项目状态、对话、故事板和生成任务。
 
@@ -621,7 +621,7 @@ FFmpeg 合成或导出 API。
 - `Agents`：首页创作入口和 VideoAgent 对话。
 - `Skills`：统一可搜索 Skill 目录，卡片显示 `user_id/skill_id`，用户可发布 Skill。
 - `Hots`：可搜索社区瀑布流，视频自动播放，展示标题、作者、喜欢数，并支持发布。
-- `Assets`：通过 Video 与 Skill 两个内部分页切换，支持搜索；卡片只展示权限和 `yyyy-mm-dd` 编辑时间，不播放。
+- `Assets`：通过 Video 与 Skill 两个内部分页切换，支持搜索；Video 卡片悬浮静音播放，Skill 卡片不显示封面；卡片只展示权限和 `yyyy-mm-dd` 编辑时间。
 - `Docs`：按 PRD、Design、Interface、Impl、Test、Ops 展示中英文文档，支持全文搜索。
 - 项目工作区：对话、Canvas、镜头检查器、生成和审核弹窗。
 - 正式站与 GitHub Pages 项目主页复用同一套 Landing UI。

@@ -474,6 +474,7 @@ CSRF、SSE、FFmpeg、导出和分享等用例在对应功能落地前属于待�
 | UI-017 | Assets 作品库 | 展示状态、更新时间、时长、摘要，并可播放预览 | Frontend | P1 |
 | UI-018 | 顶部搜索粘滞 | Skills、Hots、Assets、Docs 搜索框滚动时固定在顶部 | Frontend | P1 |
 | UI-019 | Assets 内部分页 | Video 与 Skill 分页切换，卡片不重复类型标签 | Frontend | P1 |
+| UI-022 | Assets 媒体行为 | Video 悬浮播放并暂停，Skill 卡片无封面 | Frontend | P1 |
 | UI-020 | 顶部控件与下拉方向 | 搜索、语言、通知、积分和头像保持半透明，相关菜单向下展开 | Frontend | P1 |
 | UI-021 | 头像账户菜单 | 未登录可进入登录/注册，已登录可退出 | Frontend | P0 |
 
