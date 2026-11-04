@@ -10,8 +10,7 @@
 VideoAgent 帮助用户以导演身份完成视频创作：描述想法、选择 Skill 或制作设定、
 生成可控镜头、评估结果，并在同一工作台中管理成品与半成品。
 
-所有主页面都必须提供明确的选择、创建、搜索、发布、评估或资产管理能力，
-不展示没有实际功能的宣传内容。
+每个主页面围绕明确的选择、创建、搜索、发布、评估或资产管理任务组织。
 
 ## 2. 目标用户
 
@@ -67,7 +66,7 @@ Docs
 
 ### 5.1 Skill 目录
 
-Skills 使用一个统一目录，不再区分 Atomic 和 Workflow。
+Skills 使用统一目录，并以任务型卡片组织。
 
 官方 Skill ID 格式：
 
@@ -102,9 +101,7 @@ video_agent/reference_remake
 video_agent/agent_handoff
 ```
 
-Workflow Skill 不展示内部执行流程。
-
-Review 作为一个普通 Skill 卡片呈现，不再提供单独的 Open projects 操作。
+Review 使用与其他任务型 Skill 一致的卡片结构。
 
 ### 5.2 搜索与发布
 
@@ -113,11 +110,8 @@ Review 作为一个普通 Skill 卡片呈现，不再提供单独的 Open projec
 - 搜索范围包含 user_id、skill_id、标题和描述。
 - 用户可以通过与 Hots 发布一致的方式发布 Skill。
 - 用户发布 ID 使用 `<user_id>/<skill_id>` 格式。
-- 当前发布内容仅保存在前端会话，尚未提供持久化社区 API。
-
 ## 6. Hots
 
-- Hots 位于 Assets 上方。
 - 顶部提供搜索框。
 - 搜索框在页面滚动时固定在顶部。
 - 卡片使用循环播放的视频。
@@ -151,6 +145,7 @@ Impl
 Test
 Ops
 FAQ
+TODO
 ```
 
 中文缩写：
@@ -163,17 +158,18 @@ FAQ
 | Impl | 实现 |
 | Test | 测试 |
 | Ops | 运营 |
-| FAQ | 问答 |
+| FAQ | 客服 |
+| TODO | 待办 |
 
 文档要求：
 
 - 顶部提供搜索框。
 - 搜索框在页面滚动时固定在顶部。
 - 搜索覆盖中英文文档正文。
-- 语言按钮只影响文档，不影响其他英文产品界面。
+- 语言按钮切换文档语言。
 - 左侧目录支持跳转、高亮和折叠。
 - 中英文版本保持相同文档顺序。
-- 文档使用固定深色主题，不提供亮暗切换。
+- 文档使用统一的深色阅读主题。
 
 ## 9. 认证与积分
 
@@ -188,28 +184,25 @@ FAQ
 - 桌面端和移动端不得出现控件遮挡。
 - 所有核心控件应支持键盘操作。
 - 动效支持 `prefers-reduced-motion`。
-- 当前静态页面的搜索和筛选在前端完成。
-- 用户发布的 Skill 和 Hots 内容暂不跨设备持久化。
-- 公开产品界面使用英文，当前中文仅用于 Docs。
+- 搜索和筛选在客户端完成。
 
 ## 11. 验收标准
 
 1. 导航顺序为 Agents、Skills、Hots、Assets、Docs。
-2. Hots 位于 Assets 上方。
-3. Agents 可以选择 Skill。
-4. Skills 使用统一的可搜索目录，并显示 `user_id/skill_id`。
-5. 官方 Skill 使用 `video_agent` 命名空间。
-6. 用户可以发布 Skill。
-7. Review 以普通 Skill 卡片呈现。
-8. Hots 和 Assets 均提供顶部搜索。
-9. Hots 卡片自动播放，标题位于作者与喜欢数上方。
-10. Assets 通过 Video/Skill 内部分页区分类型，并展示权限和 `yyyy-mm-dd` 编辑时间。
-11. Assets 使用瀑布流；Video 悬浮预览，Skill 卡片不显示封面。
-12. Docs 依次包含 PRD、Design、Interface、Impl、Test、Ops、FAQ。
-13. Docs 搜索和双语切换可用。
-14. 头像根据登录状态提供登录、注册或退出。
-15. 创作 Playbook 可填充提示词和推荐制作参数。
-16. Hots 场景卡片进入 Agents 时选中对应 Skill。
-17. 输入框随内容向下扩展，输入内容后空态建议隐藏。
-18. 重复点击已激活的 Playbook 会取消选择，并恢复应用前的草稿。
-19. 模型下拉框展示全部当前可用的视频模型。
+2. Agents 可以选择 Skill。
+3. Skills 使用统一的可搜索目录，并显示 `user_id/skill_id`。
+4. 官方 Skill 使用 `video_agent` 命名空间。
+5. 用户可以发布 Skill。
+6. Review 使用统一 Skill 卡片。
+7. Hots 和 Assets 均提供顶部搜索。
+8. Hots 卡片自动播放，标题位于作者与喜欢数上方。
+9. Assets 通过 Video/Skill 内部分页区分类型，并展示权限和 `yyyy-mm-dd` 编辑时间。
+10. Assets 使用瀑布流；Video 悬浮预览，Skill 卡片不显示封面。
+11. Docs 依次包含 PRD、Design、Interface、Impl、Test、Ops、FAQ、TODO。
+12. Docs 搜索和双语切换可用。
+13. 头像根据登录状态提供登录、注册或退出。
+14. 创作 Playbook 可填充提示词和推荐制作参数。
+15. Hots 场景卡片进入 Agents 时选中对应 Skill。
+16. 输入框随内容向下扩展，输入内容后空态建议隐藏。
+17. 重复点击已激活的 Playbook 会取消选择，并恢复应用前的草稿。
+18. 模型下拉框展示全部可用视频模型。

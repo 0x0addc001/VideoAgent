@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent FAQ" />
     <title>FAQ · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=20" />
+    <link rel="stylesheet" href="../docs.css?v=21" />
   </head>
   <body data-document="faq.zh.html">
     <main class="document-shell" id="document-shell">
@@ -37,7 +37,7 @@
 <a class="toc-link toc-level-2" href="#q9-如何控制积分成本和用户预期">Q9. 如何控制积分成本和用户预期？</a>
 <a class="toc-link toc-level-2" href="#q10-如果线上生成成功率突然下降-你怎么排查">Q10. 如果线上生成成功率突然下降，你怎么排查？</a>
 <a class="toc-link toc-level-2" href="#q11-为什么不用一个无限自主的-agent-完成所有事情">Q11. 为什么不用一个无限自主的 Agent 完成所有事情？</a>
-<a class="toc-link toc-level-2" href="#q12-用一句话总结当前项目最该补的-agent-能力">Q12. 用一句话总结当前项目最该补的 Agent 能力？</a>
+<a class="toc-link toc-level-2" href="#q12-用一句话总结视频-agent-最关键的工程原则">Q12. 用一句话总结视频 Agent 最关键的工程原则？</a>
         </nav>
       </aside>
       <article class="document"><h1 id="videoagent-agent-工程面试-faq">VideoAgent Agent 工程面试 FAQ</h1>
@@ -62,33 +62,33 @@
 <td>先讲事实，再讲取舍，最后讲演进</td>
 </tr>
 </tbody></table></div>
-<p>本文按面试官提问、连续追问和扩展八股组织。答案以当前仓库为边界： LangGraph 目前只有 <code>plan_storyboard</code> 单节点，Pippit CLI 是默认生成链路， Kling MCP 已接入能力目录但尚未成为正式后端默认路由。不要把目标能力说成 已经上线。</p>
+<p>本文按面试官提问、连续追问和扩展八股组织。答案强调系统边界、工程取舍和 可验证性，不把假设方案描述成已交付事实。</p>
 <h2 id="q1-你会怎样设计视频-agent-的主编排">Q1. 你会怎样设计视频 Agent 的主编排？</h2>
-<p><strong>追问：</strong> 为什么现在不直接做多 Agent？ <strong>甜点答案：</strong> 先用确定性工作流而不是无限 ReAct。主链路应由 Brief、创作诊断、Treatment、 Script/Beats、Storyboard、连续性校验、预演、生成、镜头 QC、粗剪和交付组成， 在故事、预算和成片方向处设置人工确认点。当前项目先用单节点 Agent 产出可校验 的故事板，是因为职责还没有复杂到需要多 Agent；等剧本、视觉、制片和审片出现 真正独立的工具与上下文，再拆成受限子 Agent，由父流程协调。</p>
+<p><strong>追问：</strong> 为什么现在不直接做多 Agent？ <strong>甜点答案：</strong> 先用确定性工作流而不是无限 ReAct。主链路应由 Brief、创作诊断、Treatment、 Script/Beats、Storyboard、连续性校验、预演、生成、镜头 QC、粗剪和交付组成， 在故事、预算和成片方向处设置人工确认点。当前项目先用单节点 Agent 产出可校验 的故事板，是因为职责边界尚不需要多个自由 Agent；当剧本、视觉、制片和审片具有 真正独立的工具与上下文，再拆成受限子 Agent，由父流程协调。</p>
 <p><strong>扩展八股：</strong> LangGraph StateGraph、条件边、checkpoint、human-in-the-loop、 tool allowlist、结构化输出、可恢复状态。</p>
 <h2 id="q2-用户说-只改第三镜-其他不要动-你怎么实现">Q2. 用户说“只改第三镜，其他不要动”，你怎么实现？</h2>
-<p><strong>追问：</strong> 如果用户只是问“这个分镜怎么样”，也应该重写故事板吗？ <strong>甜点答案：</strong> 先做 intent routing，区分新建、局部修改、只评估、重生成 take 和本地化。 局部修改应输出 shot patch，不返回整份故事板。当前实现每次 Agent 消息会替换 故事板，这是需要补齐的缺口；目标是用稳定 shot id、版本号和操作日志只修改 受影响节点，并保留用户未提及的镜头。</p>
+<p><strong>追问：</strong> 如果用户只是问“这个分镜怎么样”，也应该重写故事板吗？ <strong>甜点答案：</strong> 先做 intent routing，区分新建、局部修改、只评估、重生成 take 和本地化。 局部修改应输出 shot patch，不返回整份故事板。正确边界是使用稳定 shot id、 版本号和操作日志只修改受影响节点，并保留用户未提及的镜头。</p>
 <p><strong>扩展八股：</strong> function calling、JSON Patch、幂等更新、并发版本、事件溯源、 optimistic locking。</p>
 <h2 id="q3-一个可生成的专业镜头-至少需要哪些字段">Q3. 一个可生成的专业镜头，至少需要哪些字段？</h2>
-<p><strong>追问：</strong> 为什么只有 prompt、duration 和 aspect ratio 不够？ <strong>甜点答案：</strong> Prompt 只是生成参数，不是导演计划。镜头还要有 scene/beat、叙事功能、景别、 机位、镜头、运镜、主体动作、视线、走位、光线、色彩、声音、转场、连续性 引用和前后景状态。当前 <code>Shot</code> 模型较薄，适合首版但不足以保证人物、空间、 视线和叙事连续性。</p>
+<p><strong>追问：</strong> 为什么只有 prompt、duration 和 aspect ratio 不够？ <strong>甜点答案：</strong> Prompt 只是生成参数，不是导演计划。镜头还要有 scene/beat、叙事功能、景别、 机位、镜头、运镜、主体动作、视线、走位、光线、色彩、声音、转场、连续性 引用和前后景状态。只有 Prompt 和时长不足以稳定保证人物、空间、视线和 叙事连续性。</p>
 <p><strong>扩展八股：</strong> master/medium/close/insert/reaction、180 度规则、30 度规则、 eyeline match、screen direction、match cut、motivated camera movement。</p>
 <h2 id="q4-如何让-llm-输出真正可执行-而不是一段漂亮的话">Q4. 如何让 LLM 输出真正可执行，而不是一段漂亮的话？</h2>
 <p><strong>追问：</strong> 模型返回 JSON 后还需要做什么？ <strong>甜点答案：</strong> 用 Pydantic 定义严格结构，校验必填字段、时长、比例、镜头数量和引用关系； 失败时有限修复，仍失败就返回结构化错误。执行前还要做能力匹配，例如模型是否 支持该时长、音频、首尾帧或参考输入。LLM 负责创意决策，代码负责权限、预算和 不可违反的生产约束。</p>
 <p><strong>扩展八股：</strong> schema validation、retry budget、repair loop、capability negotiation、deterministic fallback、tool permission boundary。</p>
 <h2 id="q5-mcp-和-cli-应该怎么选">Q5. MCP 和 CLI 应该怎么选？</h2>
-<p><strong>追问：</strong> 两者同时存在会不会重复建设？ <strong>甜点答案：</strong> 不按协议站队，按运行边界选。服务端批处理和稳定部署可以用 CLI；需要把视频 能力暴露给个人 Agent 或跨 Agent 复用时用 MCP。关键是上层统一 Provider 接口，把提交、查询、取消、错误和结果 URL 标准化。当前 Pippit CLI 是默认 生成链路，Kling MCP 已可用并进入模型目录，但还没有成为正式后端默认路由。</p>
+<p><strong>追问：</strong> 两者同时存在会不会重复建设？ <strong>甜点答案：</strong> 不按协议站队，按运行边界选。服务端批处理和稳定部署可以用 CLI；需要把视频 能力暴露给个人 Agent 或跨 Agent 复用时用 MCP。关键是上层统一 Provider 接口，把提交、查询、取消、错误和结果 URL 标准化。Pippit 通过服务端 CLI 接入，Kling 通过 MCP 工具接入，两者共享统一任务契约。</p>
 <p><strong>扩展八股：</strong> adapter、capability discovery、OAuth、credential isolation、 timeout、uncertain submission、provider fallback。</p>
 <h2 id="q6-生成任务超时后怎么办">Q6. 生成任务超时后怎么办？</h2>
 <p><strong>追问：</strong> 可以自动重试三次吗？ <strong>甜点答案：</strong> 不能盲目重试计费提交。提交前写幂等键和任务记录；遇到超时进入 <code>submission_uncertain</code>，先查询 Provider，无法对账时停止自动提交并告警。 普通查询失败可以退避重试，计费提交必须依赖幂等和人工可解释的恢复策略。</p>
 <p><strong>扩展八股：</strong> at-least-once、idempotency、outbox、Celery、死信队列、 对账任务、状态机、SSE 重连。</p>
 <h2 id="q7-视频-agent-的评测应该怎么做">Q7. 视频 Agent 的评测应该怎么做？</h2>
-<p><strong>追问：</strong> 现在的一致性、覆盖度、清晰度和节奏分够吗？ <strong>甜点答案：</strong> 可以保留为低成本基线，但不能把“镜头数大于等于三”当成故事覆盖。目标应是 分阶段评测：剧本看欲望、冲突、转折和结尾；故事板看覆盖、连续性、视线和 可生成性；镜头看人物、Prompt 匹配和技术瑕疵；成片看节奏、声音和留存。 规则指标加视觉语言模型复核，再结合人工偏好数据校准权重。</p>
+<p><strong>追问：</strong> 现在的一致性、覆盖度、清晰度和节奏分够吗？ <strong>甜点答案：</strong> 可以保留为低成本基线，但不能把“镜头数大于等于三”当成故事覆盖。应采用 分阶段评测：剧本看欲望、冲突、转折和结尾；故事板看覆盖、连续性、视线和 可生成性；镜头看人物、Prompt 匹配和技术瑕疵；成片看节奏、声音和留存。 规则指标加视觉语言模型复核，再结合人工偏好数据校准权重。</p>
 <p><strong>扩展八股：</strong> rubric、LLM-as-a-judge、VLM、pairwise preference、inter-rater agreement、gaming resistance、offline/online eval、guardrail metrics。</p>
 <h2 id="q8-如何保证多镜头的人物与场景一致性">Q8. 如何保证多镜头的人物与场景一致性？</h2>
 <p><strong>追问：</strong> 只把同一段描述放进每个 Prompt 够吗？ <strong>甜点答案：</strong> 不够。需要 Style Bible、角色/场景/道具引用资产、镜头级 continuity refs， 以及在生成前检查屏幕方向、视线、服装、时间和空间关系。生成后做 VLM 一致性检查，失败只重做受影响镜头。Kling 的 Element/Omni-Ref 这类能力可以 承担主体引用，但必须经过统一能力适配。</p>
 <p><strong>扩展八股：</strong> subject reference、identity drift、motion continuity、 reference image hierarchy、negative constraints、shot dependency graph。</p>
 <h2 id="q9-如何控制积分成本和用户预期">Q9. 如何控制积分成本和用户预期？</h2>
-<p><strong>追问：</strong> 每个镜头都弹确认框是不是就够了？ <strong>甜点答案：</strong> 不够。应按制作包或序列展示预算，区分预览、正式镜头和备选 take；先做低成本 Animatic，再批准高成本生成。重做要显示原因和预计费用，超预算时停止而不是 静默继续。当前系统已经有生成前审批和幂等保护，但序列级预算仍是演进方向。</p>
+<p><strong>追问：</strong> 每个镜头都弹确认框是不是就够了？ <strong>甜点答案：</strong> 不够。应按制作包或序列展示预算，区分预览、正式镜头和备选 take；先做低成本 Animatic，再批准高成本生成。重做要显示原因和预计费用，超预算时停止而不是 静默继续。生成前审批、幂等提交和序列级预算共同构成成本控制边界。</p>
 <p><strong>扩展八股：</strong> budget envelope、cost estimation、quota、reservation、 credit ledger、fallback model、cancellation compensation。</p>
 <h2 id="q10-如果线上生成成功率突然下降-你怎么排查">Q10. 如果线上生成成功率突然下降，你怎么排查？</h2>
 <p><strong>追问：</strong> 你最先看模型质量还是看基础设施？ <strong>甜点答案：</strong> 先按状态机定位是提交前、提交不确定、排队、运行、下载还是发布失败，再按 Provider、模型、地区、版本和时间窗口切分。检查幂等拦截、超时、错误码、 队列积压和媒体下载。先关闭高风险计费重试，保留任务引用和审计记录，再切 备用 Provider 或降级到 Mock/预览，不覆盖原始任务。</p>
@@ -96,9 +96,9 @@
 <h2 id="q11-为什么不用一个无限自主的-agent-完成所有事情">Q11. 为什么不用一个无限自主的 Agent 完成所有事情？</h2>
 <p><strong>追问：</strong> 自主性越高不是越智能吗？ <strong>甜点答案：</strong> 视频创作包含创意不确定性和不可逆成本。无限自主循环会让权限、预算、状态和 失败恢复难以证明。更合理的是“高自主创意 + 强约束生产”：Agent 可以提出 多个方案和组织镜头，但提交生成、删除资产、公开发布等动作必须走白名单工具 和人工确认。</p>
 <p><strong>扩展八股：</strong> bounded autonomy、least privilege、confirmation gate、 replayability、auditability、deterministic boundary。</p>
-<h2 id="q12-用一句话总结当前项目最该补的-agent-能力">Q12. 用一句话总结当前项目最该补的 Agent 能力？</h2>
-<p><strong>追问：</strong> 你会先做哪一个 PR？ <strong>甜点答案：</strong> 先把“每次对话重写整份故事板”改成意图路由加局部 patch，并把 scene、 beat、镜头语言和连续性字段补进结构化模型；这是后续预演、评估、局部重做和 成本控制共同依赖的地基。</p></article>
+<h2 id="q12-用一句话总结视频-agent-最关键的工程原则">Q12. 用一句话总结视频 Agent 最关键的工程原则？</h2>
+<p><strong>追问：</strong> 为什么这个原则比增加更多 Agent 更重要？ <strong>甜点答案：</strong> 把创意决策表示为可校验、可追踪、可局部修改的结构化数据。scene、beat、 镜头语言和连续性字段是预演、评估、局部重做与成本控制共同依赖的地基。</p></article>
     </main>
-    <script src="../docs.js?v=20"></script>
+    <script src="../docs.js?v=21"></script>
   </body>
 </html>

@@ -7,10 +7,8 @@
 | 适用岗位 | 字节云雀 / 快手可灵等视频 Agent 工程岗位 |
 | 回答原则 | 先讲事实，再讲取舍，最后讲演进 |
 
-本文按面试官提问、连续追问和扩展八股组织。答案以当前仓库为边界：
-LangGraph 目前只有 `plan_storyboard` 单节点，Pippit CLI 是默认生成链路，
-Kling MCP 已接入能力目录但尚未成为正式后端默认路由。不要把目标能力说成
-已经上线。
+本文按面试官提问、连续追问和扩展八股组织。答案强调系统边界、工程取舍和
+可验证性，不把假设方案描述成已交付事实。
 
 ## Q1. 你会怎样设计视频 Agent 的主编排？
 
@@ -19,7 +17,7 @@ Kling MCP 已接入能力目录但尚未成为正式后端默认路由。不要�
 先用确定性工作流而不是无限 ReAct。主链路应由 Brief、创作诊断、Treatment、
 Script/Beats、Storyboard、连续性校验、预演、生成、镜头 QC、粗剪和交付组成，
 在故事、预算和成片方向处设置人工确认点。当前项目先用单节点 Agent 产出可校验
-的故事板，是因为职责还没有复杂到需要多 Agent；等剧本、视觉、制片和审片出现
+的故事板，是因为职责边界尚不需要多个自由 Agent；当剧本、视觉、制片和审片具有
 真正独立的工具与上下文，再拆成受限子 Agent，由父流程协调。
 
 **扩展八股：** LangGraph StateGraph、条件边、checkpoint、human-in-the-loop、
@@ -30,9 +28,8 @@ tool allowlist、结构化输出、可恢复状态。
 **追问：** 如果用户只是问“这个分镜怎么样”，也应该重写故事板吗？  
 **甜点答案：**
 先做 intent routing，区分新建、局部修改、只评估、重生成 take 和本地化。
-局部修改应输出 shot patch，不返回整份故事板。当前实现每次 Agent 消息会替换
-故事板，这是需要补齐的缺口；目标是用稳定 shot id、版本号和操作日志只修改
-受影响节点，并保留用户未提及的镜头。
+局部修改应输出 shot patch，不返回整份故事板。正确边界是使用稳定 shot id、
+版本号和操作日志只修改受影响节点，并保留用户未提及的镜头。
 
 **扩展八股：** function calling、JSON Patch、幂等更新、并发版本、事件溯源、
 optimistic locking。
@@ -43,8 +40,8 @@ optimistic locking。
 **甜点答案：**
 Prompt 只是生成参数，不是导演计划。镜头还要有 scene/beat、叙事功能、景别、
 机位、镜头、运镜、主体动作、视线、走位、光线、色彩、声音、转场、连续性
-引用和前后景状态。当前 `Shot` 模型较薄，适合首版但不足以保证人物、空间、
-视线和叙事连续性。
+引用和前后景状态。只有 Prompt 和时长不足以稳定保证人物、空间、视线和
+叙事连续性。
 
 **扩展八股：** master/medium/close/insert/reaction、180 度规则、30 度规则、
 eyeline match、screen direction、match cut、motivated camera movement。
@@ -67,8 +64,8 @@ negotiation、deterministic fallback、tool permission boundary。
 **甜点答案：**
 不按协议站队，按运行边界选。服务端批处理和稳定部署可以用 CLI；需要把视频
 能力暴露给个人 Agent 或跨 Agent 复用时用 MCP。关键是上层统一 Provider
-接口，把提交、查询、取消、错误和结果 URL 标准化。当前 Pippit CLI 是默认
-生成链路，Kling MCP 已可用并进入模型目录，但还没有成为正式后端默认路由。
+接口，把提交、查询、取消、错误和结果 URL 标准化。Pippit 通过服务端 CLI
+接入，Kling 通过 MCP 工具接入，两者共享统一任务契约。
 
 **扩展八股：** adapter、capability discovery、OAuth、credential isolation、
 timeout、uncertain submission、provider fallback。
@@ -88,7 +85,7 @@ timeout、uncertain submission、provider fallback。
 
 **追问：** 现在的一致性、覆盖度、清晰度和节奏分够吗？  
 **甜点答案：**
-可以保留为低成本基线，但不能把“镜头数大于等于三”当成故事覆盖。目标应是
+可以保留为低成本基线，但不能把“镜头数大于等于三”当成故事覆盖。应采用
 分阶段评测：剧本看欲望、冲突、转折和结尾；故事板看覆盖、连续性、视线和
 可生成性；镜头看人物、Prompt 匹配和技术瑕疵；成片看节奏、声音和留存。
 规则指标加视觉语言模型复核，再结合人工偏好数据校准权重。
@@ -114,7 +111,7 @@ reference image hierarchy、negative constraints、shot dependency graph。
 **甜点答案：**
 不够。应按制作包或序列展示预算，区分预览、正式镜头和备选 take；先做低成本
 Animatic，再批准高成本生成。重做要显示原因和预计费用，超预算时停止而不是
-静默继续。当前系统已经有生成前审批和幂等保护，但序列级预算仍是演进方向。
+静默继续。生成前审批、幂等提交和序列级预算共同构成成本控制边界。
 
 **扩展八股：** budget envelope、cost estimation、quota、reservation、
 credit ledger、fallback model、cancellation compensation。
@@ -143,11 +140,10 @@ logging、canary、feature flag、kill switch、postmortem。
 **扩展八股：** bounded autonomy、least privilege、confirmation gate、
 replayability、auditability、deterministic boundary。
 
-## Q12. 用一句话总结当前项目最该补的 Agent 能力？
+## Q12. 用一句话总结视频 Agent 最关键的工程原则？
 
-**追问：** 你会先做哪一个 PR？  
+**追问：** 为什么这个原则比增加更多 Agent 更重要？
 **甜点答案：**
-先把“每次对话重写整份故事板”改成意图路由加局部 patch，并把 scene、
-beat、镜头语言和连续性字段补进结构化模型；这是后续预演、评估、局部重做和
-成本控制共同依赖的地基。
+把创意决策表示为可校验、可追踪、可局部修改的结构化数据。scene、beat、
+镜头语言和连续性字段是预演、评估、局部重做与成本控制共同依赖的地基。
 

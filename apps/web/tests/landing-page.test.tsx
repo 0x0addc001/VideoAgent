@@ -204,14 +204,14 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/product-requirements.html?v=20",
+      "/docs/product-requirements.html?v=21",
     );
-    expect(container.querySelectorAll(".docs-tab-icon")).toHaveLength(7);
+    expect(container.querySelectorAll(".docs-tab-icon")).toHaveLength(8);
     expect(
       [...container.querySelectorAll(".docs-tabs button")].map((button) =>
         button.textContent?.trim(),
       ),
-    ).toEqual(["PRD", "Design", "Interface", "Impl", "Test", "Ops", "FAQ"]);
+    ).toEqual(["PRD", "Design", "Interface", "Impl", "Test", "Ops", "FAQ", "TODO"]);
     fireEvent.click(
       [...container.querySelectorAll(".docs-tabs button")].find(
         (button) => button.textContent?.trim() === "FAQ",
@@ -219,7 +219,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/faq.html?v=20",
+      "/docs/faq.html?v=21",
     );
 
     fireEvent.click(container.querySelector(".language-button")!);
@@ -230,13 +230,13 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/faq.zh.html?v=20",
+      "/docs/faq.zh.html?v=21",
     );
     expect(
       [...container.querySelectorAll(".docs-tabs button")].map((button) =>
         button.textContent?.trim(),
       ),
-    ).toEqual(["产品", "设计", "接口", "实现", "测试", "运营", "问答"]);
+    ).toEqual(["产品", "设计", "接口", "实现", "测试", "运营", "客服", "待办"]);
     expect(container.querySelector(".site-header > nav")).toHaveTextContent(
       "Agents",
     );
@@ -598,7 +598,7 @@ describe("LandingPage", () => {
     fireEvent.click(container.querySelector(".docs-search-results button")!);
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/operations.html?v=20",
+      "/docs/operations.html?v=21",
     );
   });
 

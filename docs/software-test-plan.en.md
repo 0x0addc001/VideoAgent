@@ -2,16 +2,15 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.5 |
+| Document version | v2.0 |
 | Updated | 2026-11-04 |
-| Current frameworks | pytest, Vitest, Testing Library |
-| Target E2E framework | Playwright |
+| Frameworks | pytest, Vitest, Testing Library |
+| Related design | `software-design.en.md` |
 
 ## 1. Purpose
 
-This plan defines how VideoAgent tests current behavior and how planned
-capabilities will be validated. A target test is not evidence that the feature
-is already implemented.
+This document defines the automated test strategy, contracts, quality gates,
+and acceptance checks for the VideoAgent system.
 
 ## 2. TDD Rules
 
@@ -23,19 +22,18 @@ is already implemented.
 Tests assert public behavior, API contracts, ownership, state transitions, and
 user-visible outcomes rather than private implementation details.
 
-## 3. Test Pyramid
+## 3. Test Layers
 
 ```text
 Unit and component tests
   → Provider and API contract tests
   → SQLite integration tests
-  → target infrastructure tests
-  → target Playwright E2E
+  → browser component tests
 ```
 
 External paid generation is never part of normal CI.
 
-## 4. Current Coverage
+## 4. Coverage
 
 Backend:
 
@@ -43,7 +41,7 @@ Backend:
 - Project ownership, rename, and archive.
 - Storyboard replacement and versioning.
 - Agent planning with deterministic and fake LLM behavior.
-- Mock and Pippit Provider contracts.
+- Mock, Pippit, and Kling Provider contracts.
 - Estimate, approval, idempotency, and job status.
 - Provider status and credits.
 - Health endpoint.
@@ -53,30 +51,17 @@ Frontend:
 
 - Shared landing structure and navigation.
 - Sequenced and looping hero headline.
-- Search composer and custom settings dropdown.
+- Search composer and custom settings dropdowns.
 - Project creation flow.
 - Assets, Hots, and Docs view switching.
-- Assets status, updated time, duration, summary, and playable preview.
-- Hots author, likes, playback, and session-local publish.
+- Assets permission, date, hover preview, and cover behavior.
+- Hots author, likes, playback, and publishing.
 - English-to-Chinese Docs switching.
 - Project list, authentication form, and project workspace.
 
-Current baseline: 35 backend tests and 19 frontend tests.
+## 5. Provider Contract Tests
 
-## 5. Target Coverage
-
-- Asset upload validation and ownership.
-- Streaming Agent responses and SSE recovery.
-- Local, PostgreSQL, Redis, MinIO, and Celery integration.
-- FFmpeg composition and export.
-- Public share creation, expiry, and revocation.
-- Persistent Hots posts and likes.
-- Playwright flows for the English product.
-- Future full Chinese product UI, if it is re-enabled.
-
-## 6. Provider Contract Tests
-
-Every `VideoProvider` must verify:
+Every `VideoProvider` verifies:
 
 - Provider name is stable.
 - Estimate returns normalized credits and duration.
@@ -86,10 +71,12 @@ Every `VideoProvider` must verify:
 - Errors do not expose credentials or full sensitive command arguments.
 - The same idempotency key does not submit twice.
 
-Pippit-specific tests use a local fake CLI and cover status, credits, submit,
-query, timeout, missing binary, invalid JSON, and missing task IDs.
+Pippit tests use a local fake CLI and cover status, credits, submit, query,
+timeout, missing binary, invalid JSON, and missing task IDs. Kling tests use a
+fake MCP client and cover text-to-video, image-to-video, motion control,
+task-state mapping, and result extraction.
 
-## 7. API Tests
+## 6. API Tests
 
 Required assertions:
 
@@ -103,40 +90,39 @@ Required assertions:
 - Evaluation result shape.
 - No provider credentials in responses.
 
-## 8. Frontend Tests
+## 7. Frontend Tests
 
-Current component tests should continue to cover:
+Component tests cover:
 
-- One shared Landing component for product and project homepage.
 - Left navigation with isolated views.
-- No duplicate navigation icons.
 - Custom dropdown rendering and selection.
 - Action button enabled and disabled states.
 - Hots metadata order: title above author and likes.
 - Every Hots card contains an autoplaying muted looping video.
 - Publish entry uses the blue play icon.
-- Skills is one searchable catalogue with `user_id/skill_id` labels and a
-  normal Review card.
+- Skills is one searchable catalogue with `user_id/skill_id` labels.
 - Production playbooks fill the prompt and recommended Skill, Hook, style,
   frame, duration, and review settings.
-- Re-clicking the active playbook cancels it and restores the prior composer state.
+- Re-clicking the active playbook restores the prior composer state.
 - Hots scenario cards open Agents with the corresponding Skill and prompt.
-- The textarea grows with multiline content, and idea suggestions disappear while
-  the prompt contains non-whitespace text.
-- The Model selector includes all 15 live video models and labels each provider.
-- Docs labels are `PRD`, `Design`, `Interface`, `Impl`, `Test`, `Ops`, and `FAQ`.
-- Globe control changes only Docs source and language.
+- The textarea grows with multiline content, and idea suggestions disappear
+  while the prompt contains non-whitespace text.
+- The Model selector includes every available Kling and Pippit video model.
+- Docs labels are `PRD`, `Design`, `Interface`, `Impl`, `Test`, `Ops`, `FAQ`,
+  and `TODO`.
+- Globe control changes Docs source and language.
 - Skills, Hots, Assets, and Docs search controls stay pinned while content
   scrolls.
 - Assets switches between Video and Skill tabs without repeating type labels.
-- Video assets preview on hover and pause on leave; Skill assets have no cover.
-- Composer menus stay inside the viewport and flip above the trigger when
-  there is insufficient space below.
-- Search, language, notifications, credits, and avatar controls use translucent
-  surfaces and open their menus downward.
+- Video assets preview on hover; Skill assets have no cover.
+- Composer menus stay inside the viewport.
+- Search, language, notifications, credits, and avatar controls use
+  translucent surfaces.
 - Avatar opens login and registration when signed out and sign-out when signed in.
+- Interface starts with its metadata table.
+- FAQ and TODO have paired English and Chinese documents.
 
-## 9. Responsive and Accessibility Checks
+## 8. Responsive and Accessibility Checks
 
 - Keyboard access for navigation, dropdowns, Docs, and dialogs.
 - Visible focus states.
@@ -145,7 +131,7 @@ Current component tests should continue to cover:
 - Desktop sidebar and mobile navigation remain usable.
 - Long English and Chinese text do not overlap.
 
-## 10. CI Gates
+## 9. CI Gates
 
 Pull requests must pass:
 
@@ -156,18 +142,11 @@ pytest
 Vitest
 TypeScript check
 Next.js production build
-GitHub Pages and Docs build
+Docs and static artifact build
 secret and dependency scans
 ```
 
-Target gates:
-
-- Playwright E2E.
-- PostgreSQL/Redis/MinIO integration.
-- Alembic migration tests.
-- OpenAPI client consistency.
-
-## 11. Real Pippit Testing
+## 10. Provider Verification
 
 ### Read-only
 
@@ -175,6 +154,7 @@ Target gates:
 2. Run `status` and `get-credit-balance`.
 3. Query `/providers/pippit` and `/providers/pippit/credits`.
 4. Verify logs omit access keys.
+5. Verify Kling MCP `who_am_i` confirms authorization and model discovery.
 
 ### Authorized paid generation
 
@@ -187,22 +167,12 @@ Only with explicit user approval and budget:
 5. Record result, credits, and UI/API consistency.
 6. Do not automatically retry an uncertain submission.
 
-## 12. Definition of Done
+## 11. Definition of Done
 
 - Tests were written before implementation or alongside a documented
   regression case.
 - Relevant local tests pass.
-- Ruff, mypy, TypeScript, Next build, and Pages build pass.
+- Ruff, mypy, TypeScript, Next build, and Docs build pass.
 - No secrets, local databases, or generated media are committed.
 - API and UI documentation are updated when behavior changes.
 - Paid Provider tests remain opt-in.
-
-## 13. Change Log
-
-| Version | Date | Description |
-| --- | --- | --- |
-| v1.5 | 2026-11-04 | Add FAQ navigation and interface metadata verification |
-| v1.4 | 2026-11-04 | Add complete live model-catalogue verification; current frontend baseline is 24 tests |
-| v1.3 | 2026-11-04 | Add auto-growing prompt and empty-state suggestion coverage; current frontend baseline is 23 tests |
-| v1.2 | 2026-11-04 | Add playbook and Skill-backed Hots scenarios; align current 35/22 frontend baseline |
-| v1.1 | 2026-11-04 | Align current 35/19 baseline, Skills, Hots, Assets, bilingual Docs, and target tests |

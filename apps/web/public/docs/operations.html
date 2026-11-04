@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Ops" />
     <title>Ops · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=20" />
+    <link rel="stylesheet" href="../docs.css?v=21" />
   </head>
   <body data-document="operations.html">
     <main class="document-shell" id="document-shell">
@@ -27,17 +27,15 @@
           <p class="toc-kicker">CONTENTS</p>
           <a class="toc-link toc-level-1" href="#videoagent-operations-strategy">VideoAgent Operations Strategy</a>
 <a class="toc-link toc-level-2" href="#1-operating-model">1. Operating Model</a>
-<a class="toc-link toc-level-2" href="#2-launch-readiness">2. Launch Readiness</a>
+<a class="toc-link toc-level-2" href="#2-release-readiness">2. Release Readiness</a>
 <a class="toc-link toc-level-2" href="#3-official-skill-operations">3. Official Skill Operations</a>
-<a class="toc-link toc-level-2" href="#4-community-operations">4. Community Operations</a>
-<a class="toc-link toc-level-2" href="#5-assets-operations">5. Assets Operations</a>
-<a class="toc-link toc-level-2" href="#6-provider-and-cost-operations">6. Provider and Cost Operations</a>
-<a class="toc-link toc-level-2" href="#7-release-operations">7. Release Operations</a>
-<a class="toc-link toc-level-2" href="#8-monitoring">8. Monitoring</a>
-<a class="toc-link toc-level-2" href="#9-support">9. Support</a>
-<a class="toc-link toc-level-2" href="#10-incident-response">10. Incident Response</a>
-<a class="toc-link toc-level-2" href="#11-success-metrics">11. Success Metrics</a>
-<a class="toc-link toc-level-2" href="#12-change-log">12. Change Log</a>
+<a class="toc-link toc-level-2" href="#4-asset-operations">4. Asset Operations</a>
+<a class="toc-link toc-level-2" href="#5-provider-and-cost-operations">5. Provider and Cost Operations</a>
+<a class="toc-link toc-level-2" href="#6-release-procedure">6. Release Procedure</a>
+<a class="toc-link toc-level-2" href="#7-monitoring">7. Monitoring</a>
+<a class="toc-link toc-level-2" href="#8-support">8. Support</a>
+<a class="toc-link toc-level-2" href="#9-incident-response">9. Incident Response</a>
+<a class="toc-link toc-level-2" href="#10-success-metrics">10. Success Metrics</a>
         </nav>
       </aside>
       <article class="document"><h1 id="videoagent-operations-strategy">VideoAgent Operations Strategy</h1>
@@ -47,7 +45,7 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v1.2</td>
+<td>v2.0</td>
 </tr>
 <tr>
 <td>Updated</td>
@@ -55,90 +53,65 @@
 </tr>
 <tr>
 <td>Scope</td>
-<td>Product launch, community, providers, support, metrics</td>
+<td>Skills, Hots, Assets, providers, support, metrics</td>
 </tr>
 </tbody></table></div>
 <h2 id="1-operating-model">1. Operating Model</h2>
-<p>VideoAgent is operated as a creator workspace with three content layers:</p>
+<p>VideoAgent operates three content layers:</p>
 <ol>
-<li>Official Skills maintained under the <code>video_agent</code> namespace.</li>
-<li>User-published Skills and Hots posts.</li>
-<li>Project-level outputs stored in Assets.</li>
+<li>Official Skills under the <code>video_agent</code> namespace.</li>
+<li>User-published Skills and Hots entries.</li>
+<li>Project outputs stored in Assets.</li>
 </ol>
-<p>The current public build is a product and documentation preview. Community publication is session-local until backend persistence and moderation are implemented.</p>
-<h2 id="2-launch-readiness">2. Launch Readiness</h2>
-<p>Before public launch:</p>
+<h2 id="2-release-readiness">2. Release Readiness</h2>
 <ul>
 <li>Complete authentication and credit-usage acceptance.</li>
-<li>Verify Pippit CLI authorization on the deployment host.</li>
-<li>Publish the seven Docs: PRD, Design, Interface, Impl, Test, Ops, FAQ.</li>
+<li>Verify Pippit CLI authorization and Kling MCP OAuth.</li>
+<li>Publish PRD, Design, Interface, Impl, Test, Ops, FAQ, and TODO.</li>
 <li>Verify English and Chinese Docs switching.</li>
-<li>Verify that project creation, storyboard planning, generation approval, and</li>
-<p>job polling work with the configured provider.</p>
-<li>Confirm no provider credential appears in browser bundles, logs, or API</li>
+<li>Verify project creation, storyboard planning, generation approval, and job</li>
+<p>polling with the configured provider.</p>
+<li>Confirm provider credentials never appear in browser bundles, logs, or API</li>
 <p>responses.</p>
 </ul>
 <h2 id="3-official-skill-operations">3. Official Skill Operations</h2>
 <ul>
 <li>Official user namespace: <code>video_agent</code>.</li>
-<li>Skill IDs must be stable, lowercase, and underscore-separated.</li>
-<li>Each Skill must state the input, output, provider dependency, and whether it</li>
-<p>consumes credits.</p>
-<li>Review changes require updating the PRD, Design, and Test documents.</li>
-<li>Deprecated Skills remain listed for one release with a migration note before</li>
-<p>removal.</p>
-<li>Scenario playbooks are curated entry points, not separate billing products.</li>
-<p>They must reference current Skills and stay aligned with the composer fields.</p>
-<li>External Agent handoff requires an explicit MCP or CLI integration contract;</li>
-<p>the Skill entry must not imply that credentials or remote execution are already active.</p>
+<li>Skill IDs are stable, lowercase, and underscore-separated.</li>
+<li>Every Skill states its input, output, provider dependency, and credit impact.</li>
+<li>Skill changes update PRD, Design, and Test.</li>
+<li>Deprecated Skills remain listed for one release with a migration note.</li>
+<li>Scenario playbooks reference current Skills and stay aligned with composer</li>
+<p>fields.</p>
+<li>External Agent handoff uses an explicit MCP or CLI contract.</li>
 </ul>
-<h2 id="4-community-operations">4. Community Operations</h2>
-<p>When persistent community support is enabled:</p>
-<ul>
-<li>Require authenticated publication.</li>
-<li>Store <code>user_id</code>, <code>skill_id</code>, permission, title, description, media reference,</li>
-<p>created time, and edited time.</p>
-<li>Default user content to private until explicitly published.</li>
-<li>Support search by user ID, skill ID, title, description, and author.</li>
-<li>Provide report, hide, restore, and appeal workflows.</li>
-<li>Separate completed videos from reusable Skills in search facets.</li>
-<li>Scenario cards must retain their Skill binding so reuse opens Agents with the</li>
-<p>expected workflow selected.</p>
-<li>Preserve local preview behavior while the API is unavailable.</li>
-</ul>
-<h2 id="5-assets-operations">5. Assets Operations</h2>
+<h2 id="4-asset-operations">4. Asset Operations</h2>
 <ul>
 <li>Assets contains only the current user's work.</li>
-<li>Public and private permissions must be explicit.</li>
+<li>Public and private permissions are explicit.</li>
 <li>Edit dates use <code>yyyy-mm-dd</code>.</li>
-<li>Video assets preview only on hover; Skill assets have no cover.</li>
-<li>Video and Skill assets use distinct internal tabs instead of repeated type labels.</li>
-<li>A future retention policy must define soft-delete, recovery, and storage</li>
-<p>lifecycle rules.</p>
+<li>Video assets preview on hover; Skill assets have no cover.</li>
+<li>Video and Skill use internal tabs rather than repeated type labels.</li>
 </ul>
-<h2 id="6-provider-and-cost-operations">6. Provider and Cost Operations</h2>
+<h2 id="5-provider-and-cost-operations">5. Provider and Cost Operations</h2>
 <ul>
-<li>Pippit is the current default provider.</li>
-<li>Every billable generation requires explicit user approval.</li>
-<li>Provider task submission uses idempotency keys.</li>
+<li>Pippit CLI and Kling MCP are available through the provider boundary.</li>
+<li>Billable generation requires explicit user approval.</li>
+<li>Provider submission uses database idempotency keys.</li>
 <li>Credits and provider status are read server-side.</li>
 <li>Monitor provider errors, timeout rate, uncertain submissions, and duplicate</li>
 <p>protection.</p>
-<li>Kling MCP capabilities are catalogued in Skills but must not be promoted to</li>
-<p>live execution until credentials, billing, and provider routing are enabled.</p>
+<li>Preserve provider task references for reconciliation.</li>
 </ul>
-<h2 id="7-release-operations">7. Release Operations</h2>
-<p>For every release:</p>
+<h2 id="6-release-procedure">6. Release Procedure</h2>
 <ol>
 <li>Run backend tests, frontend tests, type checks, builds, and Docs generation.</li>
-<li>Verify GitHub Pages and the formal product build.</li>
 <li>Check secret scanning and dependency security results.</li>
 <li>Confirm provider status and credit balance without spending credits.</li>
 <li>Validate English and Chinese Docs, search, navigation, and responsive layout.</li>
-<li>Record the release commit and known issues.</li>
+<li>Record the release commit.</li>
 </ol>
-<h2 id="8-monitoring">8. Monitoring</h2>
-<p>Minimum operating metrics:</p>
+<h2 id="7-monitoring">7. Monitoring</h2>
 <ul>
 <li>Registration and login success rate.</li>
 <li>Project creation success rate.</li>
@@ -148,9 +121,8 @@
 <li>Duplicate generation prevented by idempotency.</li>
 <li>Credit consumption per project.</li>
 <li>Docs search usage and broken document links.</li>
-<li>Community report rate after persistent publishing is enabled.</li>
 </ul>
-<h2 id="9-support">9. Support</h2>
+<h2 id="8-support">8. Support</h2>
 <p>Support triage order:</p>
 <ol>
 <li>Authentication and session failures.</li>
@@ -160,17 +132,16 @@
 <li>Search, Docs, and navigation defects.</li>
 <li>Visual and copy issues.</li>
 </ol>
-<p>Never ask users to provide access keys, cookies, or CLI session files.</p>
-<h2 id="10-incident-response">10. Incident Response</h2>
+<p>Support never asks users for access keys, cookies, or CLI session files.</p>
+<h2 id="9-incident-response">9. Incident Response</h2>
 <ul>
 <li>Disable billable generation before retrying an uncertain provider incident.</li>
 <li>Preserve job records and provider task references.</li>
 <li>Roll back the web release independently from provider credentials.</li>
-<li>Publish a status note with affected product areas and mitigation.</li>
-<li>Perform a post-incident review focused on incorrect billing, duplicate jobs,</li>
-<p>cross-user access, and missing audit evidence.</p>
+<li>Publish a status note with affected areas and mitigation.</li>
+<li>Review billing, duplicate jobs, cross-user access, and audit evidence.</li>
 </ul>
-<h2 id="11-success-metrics">11. Success Metrics</h2>
+<h2 id="10-success-metrics">10. Success Metrics</h2>
 <ul>
 <li>Activation: first project created within the first session.</li>
 <li>Creation: successful storyboard within five minutes.</li>
@@ -179,30 +150,8 @@
 <li>Cost: credit usage per completed project.</li>
 <li>Content: official Skill reuse and community publication rate.</li>
 <li>Documentation: search success and zero broken bilingual links.</li>
-</ul>
-<h2 id="12-change-log">12. Change Log</h2>
-<div class="table-wrap"><table><thead><tr>
-<th>Version</th>
-<th>Date</th>
-<th>Description</th>
-</tr></thead><tbody>
-<tr>
-<td>v1.2</td>
-<td>2026-11-04</td>
-<td>Add launch checks for the FAQ document</td>
-</tr>
-<tr>
-<td>v1.1</td>
-<td>2026-11-04</td>
-<td>Add scenario playbook curation, Skill-backed community reuse, and external Agent handoff boundaries</td>
-</tr>
-<tr>
-<td>v1.0</td>
-<td>2026-11-04</td>
-<td>Initial operations strategy for Skills, Hots, Assets, Docs, providers, and releases</td>
-</tr>
-</tbody></table></div></article>
+</ul></article>
     </main>
-    <script src="../docs.js?v=20"></script>
+    <script src="../docs.js?v=21"></script>
   </body>
 </html>

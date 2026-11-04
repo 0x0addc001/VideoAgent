@@ -9,25 +9,20 @@
 
 ## 1. 文档目的
 
-本文档面向参与 VideoAgent 开发的前端、后端、Agent、测试和运维人员，说明当前代码实际如何组织、核心流程如何运行、模块之间如何协作，以及开发新能力时应遵守的边界。
+本文档面向参与 VideoAgent 开发的前端、后端、Agent、测试和运维人员，说明代码组织、核心流程、模块协作和工程边界。
 
-本文档描述的是**当前实现状态**，不是未来目标的替代说明。尚未实现的能力统一记录在“已知差距”章节，避免把设计文档中的规划误认为已经交付。
+## 2. 系统范围
 
-## 2. 当前实现范围
-
-已经实现：
-
-- Next.js App Router Web 界面；公开产品入口当前固定英文，`/zh-CN` 重定向到 `/en`。
-- 正式站与 GitHub Pages 项目主页共享 `packages/landing` UI。
+- Next.js App Router Web 界面。
 - 左侧 Agents、Skills、Hots、Assets、Docs 导航和独立视图切换。
 - 蓝色播放键品牌、无框标签页图标和激活图标填充/线框反转。
 - 首页连续视频轮播、流式主标语、Skill/Hook 选择器、场景 Playbook、自定义透明下拉和 Action 生成入口。
 - 创作输入框根据 `scrollHeight` 自动增高，并在输入非空时隐藏示例灵感；Playbook 保持可用，重复点击当前项会恢复应用前草稿。
 - 模型下拉框使用统一模型元数据，展示 Pippit 8 个、Kling 7 个当前可用的视频模型及 Provider。
-- Skills 使用单一可搜索目录，显示 `user_id/skill_id`，支持当前会话内发布 Skill。
-- Hots 支持搜索、循环视频、作者、喜欢数、当前会话内发布，以及带 Skill 的场景复用。
+- Skills 使用单一可搜索目录，显示 `user_id/skill_id`，支持发布 Skill。
+- Hots 支持搜索、循环视频、作者、喜欢数、发布，以及带 Skill 的场景复用。
 - Assets 使用瀑布流，并通过 Video/Skill 内部分页区分类型；Video 卡片悬浮静音播放，Skill 卡片无封面并展示 private/public 和 `yyyy-mm-dd` 编辑时间。
-- 七份中英文文档、全文搜索、固定深色主题、左侧可折叠目录和章节高亮。
+- 八份中英文文档、全文搜索、统一深色阅读主题、左侧可折叠目录和章节高亮。
 - 注册、登录、登出和服务端会话。
 - 用户级项目创建、列表、读取、重命名和归档。
 - 用户数据所有权隔离。
@@ -39,24 +34,13 @@
 - 生成任务持久化及 `Idempotency-Key` 防重复提交。
 - Mock Provider。
 - Pippit CLI 视频提交、任务查询和余额读取。
-- Pippit 服务端授权；不再为每个 Web 用户单独绑定 Kling。
+- Kling MCP 文本生成视频、图生视频、动作控制和多模态参考。
 - 任务状态 API 刷新。
-- 可选 Celery 后台轮询。
+- Celery 后台轮询。
 - 故事板即时评估与前端审核弹窗。
 - Docker Compose 基础设施配置。
 - GitHub Actions CI 配置。
-- GitHub Pages 项目主页和 Markdown 文档构建。
-
-尚未实现：
-
-- 素材上传、Asset 表和 S3/MinIO API。
-- SSE 实时事件流；当前主要依赖前端轮询。
-- FFmpeg 合成和导出。
-- 公开分享页面。
-- Alembic 正式迁移。
-- OpenAPI 客户端自动生成。
-- 持久化社区发布、点赞和社区后端 API。
-- CSRF 双重保护、分布式限流和生产级监控。
+- Markdown 文档构建。
 
 ## 3. 仓库结构
 
@@ -69,8 +53,6 @@ VideoAgent/
 │   ├── src/i18n/                   # 路由、导航和请求配置
 │   ├── src/lib/                    # 前端工具函数
 │   └── tests/                      # Vitest 测试
-├── apps/landing/
-│   └── src/main.tsx                # GitHub Pages 项目主页入口
 ├── packages/landing/
 │   ├── src/index.tsx               # 共享首页、导航、Hots、Docs
 │   ├── src/content.ts              # 英文内容与中文占位资源
@@ -79,7 +61,7 @@ VideoAgent/
 │   ├── src/videoagent/
 │   │   ├── agent/                  # LangGraph 和 Planner
 │   │   ├── api/                    # FastAPI 路由与依赖
-│   │   ├── providers/              # Mock、Pippit CLI 和旧版 Provider
+│   │   ├── providers/              # Mock、Pippit CLI、Kling MCP
 │   │   ├── services/               # 业务服务
 │   │   ├── workers/                # Celery 配置和任务
 │   │   ├── config.py
@@ -89,8 +71,7 @@ VideoAgent/
 │   │   └── main.py
 │   └── tests/
 ├── deploy/docker-compose.yml
-├── site/                           # 项目主页图标与文档主题资源
-├── scripts/                        # 启动、检查、Pages/文档构建
+├── scripts/                        # 启动、检查、文档构建
 ├── docs/
 ├── .github/workflows/              # CI、Pages、安全扫描
 ├── package.json
@@ -106,19 +87,17 @@ Browser
   │     ├── Route Handler /api/account/* → FastAPI :8000/api/v1
   │     └── public/docs/*             → 内嵌文档
   │
-  ├── GitHub Pages 项目主页
-  │     └── 共享 Landing UI（预览模式）
-  │
   └── FastAPI
-        ├── SQLite（当前开发默认）
-        ├── PostgreSQL（Docker/生产目标）
+        ├── SQLite
+        ├── PostgreSQL
         ├── LangGraph
-        └── Pippit CLI（服务端登录）
+        ├── Pippit CLI
+        └── Kling MCP
 
-Celery Worker（可选）
+Celery Worker
   ├── Redis Broker
   ├── PostgreSQL/SQLite
-  └── Pippit CLI query-result
+  └── Provider task query
 ```
 
 当前本地开发中，浏览器直接访问 FastAPI 的 `8000` 端口。FastAPI 已配置本地 CORS。
@@ -179,20 +158,18 @@ POST /projects/{project_id}/messages
   → 返回两条 Message 和最新 Storyboard
 ```
 
-当前 Agent 图只有一个节点：
+Agent 图只有一个节点：
 
 ```text
 START → plan_storyboard → END
 ```
-
-设计稿中的审批、生成、审核、合成节点尚未加入 LangGraph，目前由 API 和前端状态承担这些边界。
 
 ### 5.4 生成任务
 
 ```text
 用户点击估算
   → POST /shots/{shot_id}/estimate
-  → 当前 Provider 返回 CostEstimate
+  → Provider 返回 CostEstimate
 
 用户批准生成
   → POST /shots/{shot_id}/generate
@@ -200,12 +177,12 @@ START → plan_storyboard → END
   → 调用 Provider.submit
   → 保存 GenerationJob
   → 更新 Shot 状态
-  → 可选投递 Celery 轮询任务
+  → 投递 Celery 轮询任务
 ```
 
 如果相同镜头和 `Idempotency-Key` 已经存在，接口返回已有 Job，HTTP 状态为 200，不会再次提交 Provider。
 
-当前前端每 5 秒请求一次任务状态。`GET /jobs/{job_id}` 会在任务未结束时调用 Provider 查询最新状态。
+前端每 5 秒请求一次任务状态。`GET /jobs/{job_id}` 会在任务未结束时调用 Provider 查询最新状态。
 
 ### 5.5 Celery 轮询
 
@@ -225,7 +202,7 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 
 ## 6. 后端模块职责
 
-| 模块 | 当前职责 |
+| 模块 | 职责 |
 | --- | --- |
 | `main.py` | FastAPI 应用工厂、生命周期、路由和异常处理器 |
 | `config.py` | 环境变量配置 |
@@ -245,6 +222,7 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 | `services/generation_jobs.py` | Job 刷新和 Shot 状态联动 |
 | `services/evaluation.py` | 一致性、覆盖、清晰度和节奏指标计算 |
 | `providers/pippit.py` | Pippit CLI 子进程、JSON 契约和任务映射 |
+| `providers/kling.py` | Kling MCP 工具适配和任务映射 |
 | `agent/graph.py` | LangGraph 编译和执行 |
 | `agent/planner.py` | 本地和远程故事板规划器 |
 | `workers/celery_app.py` | Celery 配置 |
@@ -252,7 +230,7 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 
 ## 7. 前端模块职责
 
-| 模块 | 当前职责 |
+| 模块 | 职责 |
 | --- | --- |
 | `app/[locale]/page.tsx` | 加载共享首页与正式产品客户端适配层 |
 | `components/app-landing-page.tsx` | 首页创作框提交、项目创建和路由跳转 |
@@ -260,17 +238,16 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 | `app/[locale]/login/page.tsx` | 登录页 |
 | `app/[locale]/projects/page.tsx` | 项目工作台入口 |
 | `app/[locale]/projects/[projectId]/page.tsx` | 项目编辑工作区 |
-| `apps/landing/src/main.tsx` | GitHub Pages 项目主页入口 |
 | `packages/landing` | 左侧导航、共享品牌、视频主视觉、创作框、Hots 和 Docs |
 | `locale-switcher.tsx` | 中英文切换 |
 | `auth-form.tsx` | 注册/登录请求 |
 | `projects-dashboard.tsx` | 项目列表、新建、重命名和删除 |
 | `project-workspace.tsx` | 自动开始首轮 Agent 对话、故事板、镜头设置和生成 |
-| `scripts/build_pages.py` | 生成文档 HTML、目录和 GitHub Pages 产物 |
+| `scripts/build_pages.py` | 生成文档 HTML、目录与静态资源 |
 
 前端通过 `NEXT_PUBLIC_API_BASE_URL` 访问 FastAPI，所有鉴权请求设置 `credentials: "include"`。
 
-当前前端请求类型是手写的局部 TypeScript 类型。后续应从 FastAPI OpenAPI 自动生成客户端，避免字段漂移。
+前端请求类型以 FastAPI OpenAPI 契约为准。
 
 ## 8. 国际化实现
 
@@ -281,34 +258,27 @@ en
 zh-CN
 ```
 
-当前公开路由：
-
-```text
-/en        ✅ 正式入口
-/zh-CN     ↪ 重定向到 /en
-```
-
 核心文件：
 
 - `src/i18n/config.ts`：语言列表和显示名称。
 - `src/i18n/routing.ts`：next-intl 路由。
 - `src/i18n/navigation.ts`：本地化 Link 和 Router。
 - `src/i18n/request.ts`：加载消息文件。
-- `src/proxy.ts`：语言前缀路由，并将 `zh-CN` 重定向到 `en`。
+- `src/proxy.ts`：语言前缀路由。
 - `messages/en.json`、`messages/zh-CN.json`：翻译资源。
 
 开发规则：
 
-- 两种语言的 Key 仍需保持一致，以便后续恢复中文版。
+- 两种语言的 Key 保持一致。
 - 后端返回稳定错误码，不在数据库保存前端展示文案。
-- 新增内部翻译 Key 时同时维护中英文资源；公开 UI 当前仍只开放英文。
+- 新增内部翻译 Key 时同时维护中英文资源。
 - Docs 语言直接跟随当前应用语言状态，不使用独立的文档语言缓存。
 - Agent 输出语言来自 `User.locale`。
 - 视频模型 Prompt 使用 `prompt_en`，中文解释保存在 `prompt_zh`。
 
 ## 9. 数据模型
 
-当前 ORM 表：
+ORM 表：
 
 | 表 | 主要用途 |
 | --- | --- |
@@ -320,8 +290,8 @@ zh-CN
 | `conversations` | 每个项目唯一的对话 |
 | `messages` | User/Assistant 消息 |
 | `generation_jobs` | Provider 任务、幂等键和结果 |
-| `provider_connections` | 历史 OAuth 表，当前 Pippit 链路不使用 |
-| `oauth_flows` | 历史 OAuth 流程表，当前 Pippit 链路不使用 |
+| `provider_connections` | Provider 授权信息 |
+| `oauth_flows` | OAuth 事务状态 |
 
 关键约束：
 
@@ -332,7 +302,7 @@ zh-CN
 - `(Shot.storyboard_id, Shot.index)` 唯一。
 - `(GenerationJob.shot_id, GenerationJob.idempotency_key)` 唯一。
 - `(ProviderConnection.user_id, ProviderConnection.provider)` 唯一。
-- 历史 `OAuthFlow.state_hash` 约束保留，当前 Pippit 链路不创建新记录。
+- `OAuthFlow.state_hash` 具有唯一约束。
 
 ## 10. Pippit CLI Provider
 
@@ -442,12 +412,6 @@ Idempotency-Key: <unique-client-generated-key>
 - 日志和 API 响应不返回 Provider Token。
 - 敏感环境变量不得提交到 Git。
 
-当前缺口：
-
-- 尚未增加 CSRF Token。
-- 尚未增加分布式速率限制。
-- 如果 Provider 参数包含 URL，仍需在生产前实现严格 URL 和 SSRF 校验。
-
 ## 13. 本地开发
 
 ### 13.1 启动 API
@@ -478,7 +442,6 @@ cd D:\_Science\Agent\VideoAgent
 
 ```text
 http://localhost:3000/en
-http://localhost:3000/zh-CN  → 重定向到 /en
 http://localhost:8000/docs
 ```
 
@@ -505,7 +468,7 @@ VIDEOAGENT_TOKEN_ENCRYPTION_KEY
 docker compose -f deploy/docker-compose.yml up -d
 ```
 
-启动 PostgreSQL、Redis 和 MinIO。当前应用尚未完成 MinIO 上传接入。
+启动 PostgreSQL、Redis 和 MinIO。
 
 ## 14. 配置项
 
@@ -552,12 +515,13 @@ pnpm --dir apps/web typecheck
 pnpm --dir apps/web build
 ```
 
-当前基线：
+测试组成：
 
 - 后端 35 个测试。
-- 前端 19 个测试。
+- 前端 24 个测试。
 - 后端测试使用临时 SQLite 文件。
 - Pippit 测试使用本地 Fake CLI，不访问真实生成网络。
+- Kling Provider 测试使用 Fake MCP client，不触发付费生成。
 - 前端测试覆盖共享首页、导航、文档加载、自定义下拉、Hots 发布、创作提交和轮播行为。
 - 普通 CI 不执行付费生成。
 
@@ -631,22 +595,6 @@ pnpm --dir apps/web build
 4. 增加所有权和未授权测试。
 5. 更新本文档和 OpenAPI 调用方。
 
-## 18. 已知技术债
-
-| 项目 | 当前状态 | 建议 |
-| --- | --- | --- |
-| 数据库迁移 | 启动时 `create_all` | 引入 Alembic 后移除生产建表 |
-| 前端 API 类型 | 手写局部类型 | 从 OpenAPI 生成客户端 |
-| 实时状态 | 前端轮询 | 增加 Redis Pub/Sub + SSE |
-| Hots 发布 | 当前仅保存在前端会话 | 增加社区 Post、点赞和持久化 API |
-| 素材 | 未实现 | 增加 Asset、本地/S3 Storage Adapter |
-| 导出 | 未实现 | 增加 FFmpeg 合成 Worker |
-| CSRF | 尚未实现 | 为 Cookie 写接口增加 CSRF 防护 |
-| 限流 | 尚未实现 | 使用 Redis 对用户和 IP 限流 |
-| Pippit CLI | 每个命令启动一个子进程 | 压测后评估长驻 worker 或官方 SDK |
-| Celery | 默认关闭 | 生产环境开启并配置 Redis/RabbitMQ |
-| 真实生成 | 未执行付费验收 | 补充积分后按测试文档人工执行 |
-
 ## 19. 提交流程检查清单
 
 - 功能有对应失败测试和通过测试。
@@ -657,14 +605,3 @@ pnpm --dir apps/web build
 - 新增外部依赖已写入锁文件。
 - 新增配置已写入 `.env.example`。
 - 设计或实现边界变化已更新本文档。
-
-## 20. 变更记录
-
-| 版本 | 日期 | 说明 |
-| --- | --- | --- |
-| v1.6 | 2026-11-04 | 增加中英文面试 FAQ，并补齐接口文档属性表 |
-| v1.5 | 2026-11-04 | 模型下拉框同步全部 Pippit 与 Kling 当前可用视频模型 |
-| v1.4 | 2026-11-04 | 输入框随内容自动增高，示例灵感仅在空态显示 |
-| v1.3 | 2026-11-04 | 增加创作 Playbook、Hook 选择器、场景 Skill 和带 Skill 的 Hots 复用 |
-| v1.1 | 2026-11-02 | 将视频链路切换为服务端 Pippit CLI，移除 Web 用户级 Kling 绑定 |
-| v1.2 | 2026-11-03 | 对齐共享 Landing UI、Hots、自定义下拉、内嵌文档、当前 API 与测试数量 |

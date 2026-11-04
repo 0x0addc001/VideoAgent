@@ -575,7 +575,8 @@ export const landingContent = {
       { path: "software-implementation.html", label: "Impl", labelZh: "实现" },
       { path: "software-test-plan.html", label: "Test", labelZh: "测试" },
       { path: "operations.html", label: "Ops", labelZh: "运营" },
-      { path: "faq.html", label: "FAQ", labelZh: "问答" },
+      { path: "faq.html", label: "FAQ", labelZh: "客服" },
+      { path: "todo.html", label: "TODO", labelZh: "待办" },
     ],
     preview: {
       title: "Preview only",
@@ -1128,7 +1129,8 @@ export const landingContent = {
       { path: "software-implementation.html", label: "Impl", labelZh: "实现" },
       { path: "software-test-plan.html", label: "Test", labelZh: "测试" },
       { path: "operations.html", label: "Ops", labelZh: "运营" },
-      { path: "faq.html", label: "FAQ", labelZh: "问答" },
+      { path: "faq.html", label: "FAQ", labelZh: "客服" },
+      { path: "todo.html", label: "TODO", labelZh: "待办" },
     ],
     preview: {
       title: "仅供预览",

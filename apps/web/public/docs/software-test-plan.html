@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Test" />
     <title>Test · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=20" />
+    <link rel="stylesheet" href="../docs.css?v=21" />
   </head>
   <body data-document="software-test-plan.html">
     <main class="document-shell" id="document-shell">
@@ -28,19 +28,17 @@
           <a class="toc-link toc-level-1" href="#videoagent-testing-and-tdd">VideoAgent Testing and TDD</a>
 <a class="toc-link toc-level-2" href="#1-purpose">1. Purpose</a>
 <a class="toc-link toc-level-2" href="#2-tdd-rules">2. TDD Rules</a>
-<a class="toc-link toc-level-2" href="#3-test-pyramid">3. Test Pyramid</a>
-<a class="toc-link toc-level-2" href="#4-current-coverage">4. Current Coverage</a>
-<a class="toc-link toc-level-2" href="#5-target-coverage">5. Target Coverage</a>
-<a class="toc-link toc-level-2" href="#6-provider-contract-tests">6. Provider Contract Tests</a>
-<a class="toc-link toc-level-2" href="#7-api-tests">7. API Tests</a>
-<a class="toc-link toc-level-2" href="#8-frontend-tests">8. Frontend Tests</a>
-<a class="toc-link toc-level-2" href="#9-responsive-and-accessibility-checks">9. Responsive and Accessibility Checks</a>
-<a class="toc-link toc-level-2" href="#10-ci-gates">10. CI Gates</a>
-<a class="toc-link toc-level-2" href="#11-real-pippit-testing">11. Real Pippit Testing</a>
+<a class="toc-link toc-level-2" href="#3-test-layers">3. Test Layers</a>
+<a class="toc-link toc-level-2" href="#4-coverage">4. Coverage</a>
+<a class="toc-link toc-level-2" href="#5-provider-contract-tests">5. Provider Contract Tests</a>
+<a class="toc-link toc-level-2" href="#6-api-tests">6. API Tests</a>
+<a class="toc-link toc-level-2" href="#7-frontend-tests">7. Frontend Tests</a>
+<a class="toc-link toc-level-2" href="#8-responsive-and-accessibility-checks">8. Responsive and Accessibility Checks</a>
+<a class="toc-link toc-level-2" href="#9-ci-gates">9. CI Gates</a>
+<a class="toc-link toc-level-2" href="#10-provider-verification">10. Provider Verification</a>
 <a class="toc-link toc-level-3" href="#read-only">Read-only</a>
 <a class="toc-link toc-level-3" href="#authorized-paid-generation">Authorized paid generation</a>
-<a class="toc-link toc-level-2" href="#12-definition-of-done">12. Definition of Done</a>
-<a class="toc-link toc-level-2" href="#13-change-log">13. Change Log</a>
+<a class="toc-link toc-level-2" href="#11-definition-of-done">11. Definition of Done</a>
         </nav>
       </aside>
       <article class="document"><h1 id="videoagent-testing-and-tdd">VideoAgent Testing and TDD</h1>
@@ -50,23 +48,23 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v1.5</td>
+<td>v2.0</td>
 </tr>
 <tr>
 <td>Updated</td>
 <td>2026-11-04</td>
 </tr>
 <tr>
-<td>Current frameworks</td>
+<td>Frameworks</td>
 <td>pytest, Vitest, Testing Library</td>
 </tr>
 <tr>
-<td>Target E2E framework</td>
-<td>Playwright</td>
+<td>Related design</td>
+<td><code>software-design.en.md</code></td>
 </tr>
 </tbody></table></div>
 <h2 id="1-purpose">1. Purpose</h2>
-<p>This plan defines how VideoAgent tests current behavior and how planned capabilities will be validated. A target test is not evidence that the feature is already implemented.</p>
+<p>This document defines the automated test strategy, contracts, quality gates, and acceptance checks for the VideoAgent system.</p>
 <h2 id="2-tdd-rules">2. TDD Rules</h2>
 <ol>
 <li>Add one failing behavior test.</li>
@@ -75,21 +73,20 @@
 <li>Run all relevant quality gates before commit.</li>
 </ol>
 <p>Tests assert public behavior, API contracts, ownership, state transitions, and user-visible outcomes rather than private implementation details.</p>
-<h2 id="3-test-pyramid">3. Test Pyramid</h2>
+<h2 id="3-test-layers">3. Test Layers</h2>
 <pre><code class="language-text">Unit and component tests
   → Provider and API contract tests
   → SQLite integration tests
-  → target infrastructure tests
-  → target Playwright E2E</code></pre>
+  → browser component tests</code></pre>
 <p>External paid generation is never part of normal CI.</p>
-<h2 id="4-current-coverage">4. Current Coverage</h2>
+<h2 id="4-coverage">4. Coverage</h2>
 <p>Backend:</p>
 <ul>
 <li>Password hashing and session behavior.</li>
 <li>Project ownership, rename, and archive.</li>
 <li>Storyboard replacement and versioning.</li>
 <li>Agent planning with deterministic and fake LLM behavior.</li>
-<li>Mock and Pippit Provider contracts.</li>
+<li>Mock, Pippit, and Kling Provider contracts.</li>
 <li>Estimate, approval, idempotency, and job status.</li>
 <li>Provider status and credits.</li>
 <li>Health endpoint.</li>
@@ -99,28 +96,16 @@
 <ul>
 <li>Shared landing structure and navigation.</li>
 <li>Sequenced and looping hero headline.</li>
-<li>Search composer and custom settings dropdown.</li>
+<li>Search composer and custom settings dropdowns.</li>
 <li>Project creation flow.</li>
 <li>Assets, Hots, and Docs view switching.</li>
-<li>Assets status, updated time, duration, summary, and playable preview.</li>
-<li>Hots author, likes, playback, and session-local publish.</li>
+<li>Assets permission, date, hover preview, and cover behavior.</li>
+<li>Hots author, likes, playback, and publishing.</li>
 <li>English-to-Chinese Docs switching.</li>
 <li>Project list, authentication form, and project workspace.</li>
 </ul>
-<p>Current baseline: 35 backend tests and 19 frontend tests.</p>
-<h2 id="5-target-coverage">5. Target Coverage</h2>
-<ul>
-<li>Asset upload validation and ownership.</li>
-<li>Streaming Agent responses and SSE recovery.</li>
-<li>Local, PostgreSQL, Redis, MinIO, and Celery integration.</li>
-<li>FFmpeg composition and export.</li>
-<li>Public share creation, expiry, and revocation.</li>
-<li>Persistent Hots posts and likes.</li>
-<li>Playwright flows for the English product.</li>
-<li>Future full Chinese product UI, if it is re-enabled.</li>
-</ul>
-<h2 id="6-provider-contract-tests">6. Provider Contract Tests</h2>
-<p>Every <code>VideoProvider</code> must verify:</p>
+<h2 id="5-provider-contract-tests">5. Provider Contract Tests</h2>
+<p>Every <code>VideoProvider</code> verifies:</p>
 <ul>
 <li>Provider name is stable.</li>
 <li>Estimate returns normalized credits and duration.</li>
@@ -130,8 +115,8 @@
 <li>Errors do not expose credentials or full sensitive command arguments.</li>
 <li>The same idempotency key does not submit twice.</li>
 </ul>
-<p>Pippit-specific tests use a local fake CLI and cover status, credits, submit, query, timeout, missing binary, invalid JSON, and missing task IDs.</p>
-<h2 id="7-api-tests">7. API Tests</h2>
+<p>Pippit tests use a local fake CLI and cover status, credits, submit, query, timeout, missing binary, invalid JSON, and missing task IDs. Kling tests use a fake MCP client and cover text-to-video, image-to-video, motion control, task-state mapping, and result extraction.</p>
+<h2 id="6-api-tests">6. API Tests</h2>
 <p>Required assertions:</p>
 <ul>
 <li>Authentication and ownership.</li>
@@ -144,39 +129,38 @@
 <li>Evaluation result shape.</li>
 <li>No provider credentials in responses.</li>
 </ul>
-<h2 id="8-frontend-tests">8. Frontend Tests</h2>
-<p>Current component tests should continue to cover:</p>
+<h2 id="7-frontend-tests">7. Frontend Tests</h2>
+<p>Component tests cover:</p>
 <ul>
-<li>One shared Landing component for product and project homepage.</li>
 <li>Left navigation with isolated views.</li>
-<li>No duplicate navigation icons.</li>
 <li>Custom dropdown rendering and selection.</li>
 <li>Action button enabled and disabled states.</li>
 <li>Hots metadata order: title above author and likes.</li>
 <li>Every Hots card contains an autoplaying muted looping video.</li>
 <li>Publish entry uses the blue play icon.</li>
-<li>Skills is one searchable catalogue with <code>user_id/skill_id</code> labels and a</li>
-<p>normal Review card.</p>
+<li>Skills is one searchable catalogue with <code>user_id/skill_id</code> labels.</li>
 <li>Production playbooks fill the prompt and recommended Skill, Hook, style,</li>
 <p>frame, duration, and review settings.</p>
-<li>Re-clicking the active playbook cancels it and restores the prior composer state.</li>
+<li>Re-clicking the active playbook restores the prior composer state.</li>
 <li>Hots scenario cards open Agents with the corresponding Skill and prompt.</li>
-<li>The textarea grows with multiline content, and idea suggestions disappear while</li>
-<p>the prompt contains non-whitespace text.</p>
-<li>The Model selector includes all 15 live video models and labels each provider.</li>
-<li>Docs labels are <code>PRD</code>, <code>Design</code>, <code>Interface</code>, <code>Impl</code>, <code>Test</code>, <code>Ops</code>, and <code>FAQ</code>.</li>
-<li>Globe control changes only Docs source and language.</li>
+<li>The textarea grows with multiline content, and idea suggestions disappear</li>
+<p>while the prompt contains non-whitespace text.</p>
+<li>The Model selector includes every available Kling and Pippit video model.</li>
+<li>Docs labels are <code>PRD</code>, <code>Design</code>, <code>Interface</code>, <code>Impl</code>, <code>Test</code>, <code>Ops</code>, <code>FAQ</code>,</li>
+<p>and <code>TODO</code>.</p>
+<li>Globe control changes Docs source and language.</li>
 <li>Skills, Hots, Assets, and Docs search controls stay pinned while content</li>
 <p>scrolls.</p>
 <li>Assets switches between Video and Skill tabs without repeating type labels.</li>
-<li>Video assets preview on hover and pause on leave; Skill assets have no cover.</li>
-<li>Composer menus stay inside the viewport and flip above the trigger when</li>
-<p>there is insufficient space below.</p>
-<li>Search, language, notifications, credits, and avatar controls use translucent</li>
-<p>surfaces and open their menus downward.</p>
+<li>Video assets preview on hover; Skill assets have no cover.</li>
+<li>Composer menus stay inside the viewport.</li>
+<li>Search, language, notifications, credits, and avatar controls use</li>
+<p>translucent surfaces.</p>
 <li>Avatar opens login and registration when signed out and sign-out when signed in.</li>
+<li>Interface starts with its metadata table.</li>
+<li>FAQ and TODO have paired English and Chinese documents.</li>
 </ul>
-<h2 id="9-responsive-and-accessibility-checks">9. Responsive and Accessibility Checks</h2>
+<h2 id="8-responsive-and-accessibility-checks">8. Responsive and Accessibility Checks</h2>
 <ul>
 <li>Keyboard access for navigation, dropdowns, Docs, and dialogs.</li>
 <li>Visible focus states.</li>
@@ -185,7 +169,7 @@
 <li>Desktop sidebar and mobile navigation remain usable.</li>
 <li>Long English and Chinese text do not overlap.</li>
 </ul>
-<h2 id="10-ci-gates">10. CI Gates</h2>
+<h2 id="9-ci-gates">9. CI Gates</h2>
 <p>Pull requests must pass:</p>
 <pre><code class="language-text">Ruff check and formatting
 mypy strict checks
@@ -193,22 +177,16 @@ pytest
 Vitest
 TypeScript check
 Next.js production build
-GitHub Pages and Docs build
+Docs and static artifact build
 secret and dependency scans</code></pre>
-<p>Target gates:</p>
-<ul>
-<li>Playwright E2E.</li>
-<li>PostgreSQL/Redis/MinIO integration.</li>
-<li>Alembic migration tests.</li>
-<li>OpenAPI client consistency.</li>
-</ul>
-<h2 id="11-real-pippit-testing">11. Real Pippit Testing</h2>
+<h2 id="10-provider-verification">10. Provider Verification</h2>
 <h3 id="read-only">Read-only</h3>
 <ol>
 <li>Install and authenticate <code>pippit-tool-cli</code>.</li>
 <li>Run <code>status</code> and <code>get-credit-balance</code>.</li>
 <li>Query <code>/providers/pippit</code> and <code>/providers/pippit/credits</code>.</li>
 <li>Verify logs omit access keys.</li>
+<li>Verify Kling MCP <code>who_am_i</code> confirms authorization and model discovery.</li>
 </ol>
 <h3 id="authorized-paid-generation">Authorized paid generation</h3>
 <p>Only with explicit user approval and budget:</p>
@@ -220,49 +198,17 @@ secret and dependency scans</code></pre>
 <li>Record result, credits, and UI/API consistency.</li>
 <li>Do not automatically retry an uncertain submission.</li>
 </ol>
-<h2 id="12-definition-of-done">12. Definition of Done</h2>
+<h2 id="11-definition-of-done">11. Definition of Done</h2>
 <ul>
 <li>Tests were written before implementation or alongside a documented</li>
 <p>regression case.</p>
 <li>Relevant local tests pass.</li>
-<li>Ruff, mypy, TypeScript, Next build, and Pages build pass.</li>
+<li>Ruff, mypy, TypeScript, Next build, and Docs build pass.</li>
 <li>No secrets, local databases, or generated media are committed.</li>
 <li>API and UI documentation are updated when behavior changes.</li>
 <li>Paid Provider tests remain opt-in.</li>
-</ul>
-<h2 id="13-change-log">13. Change Log</h2>
-<div class="table-wrap"><table><thead><tr>
-<th>Version</th>
-<th>Date</th>
-<th>Description</th>
-</tr></thead><tbody>
-<tr>
-<td>v1.5</td>
-<td>2026-11-04</td>
-<td>Add FAQ navigation and interface metadata verification</td>
-</tr>
-<tr>
-<td>v1.4</td>
-<td>2026-11-04</td>
-<td>Add complete live model-catalogue verification; current frontend baseline is 24 tests</td>
-</tr>
-<tr>
-<td>v1.3</td>
-<td>2026-11-04</td>
-<td>Add auto-growing prompt and empty-state suggestion coverage; current frontend baseline is 23 tests</td>
-</tr>
-<tr>
-<td>v1.2</td>
-<td>2026-11-04</td>
-<td>Add playbook and Skill-backed Hots scenarios; align current 35/22 frontend baseline</td>
-</tr>
-<tr>
-<td>v1.1</td>
-<td>2026-11-04</td>
-<td>Align current 35/19 baseline, Skills, Hots, Assets, bilingual Docs, and target tests</td>
-</tr>
-</tbody></table></div></article>
+</ul></article>
     </main>
-    <script src="../docs.js?v=20"></script>
+    <script src="../docs.js?v=21"></script>
   </body>
 </html>

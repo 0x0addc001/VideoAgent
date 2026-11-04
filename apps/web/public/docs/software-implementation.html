@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Impl" />
     <title>Impl · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=20" />
+    <link rel="stylesheet" href="../docs.css?v=21" />
   </head>
   <body data-document="software-implementation.html">
     <main class="document-shell" id="document-shell">
@@ -27,7 +27,7 @@
           <p class="toc-kicker">CONTENTS</p>
           <a class="toc-link toc-level-1" href="#videoagent-implementation-guide">VideoAgent Implementation Guide</a>
 <a class="toc-link toc-level-2" href="#1-purpose">1. Purpose</a>
-<a class="toc-link toc-level-2" href="#2-implemented-scope">2. Implemented Scope</a>
+<a class="toc-link toc-level-2" href="#2-system-scope">2. System Scope</a>
 <a class="toc-link toc-level-2" href="#3-repository-layout">3. Repository Layout</a>
 <a class="toc-link toc-level-2" href="#4-runtime">4. Runtime</a>
 <a class="toc-link toc-level-2" href="#5-request-flows">5. Request Flows</a>
@@ -44,8 +44,6 @@
 <a class="toc-link toc-level-2" href="#12-security">12. Security</a>
 <a class="toc-link toc-level-2" href="#13-local-development">13. Local Development</a>
 <a class="toc-link toc-level-2" href="#14-testing">14. Testing</a>
-<a class="toc-link toc-level-2" href="#15-known-gaps">15. Known Gaps</a>
-<a class="toc-link toc-level-2" href="#16-change-log">16. Change Log</a>
         </nav>
       </aside>
       <article class="document"><h1 id="videoagent-implementation-guide">VideoAgent Implementation Guide</h1>
@@ -71,12 +69,10 @@
 </tr>
 </tbody></table></div>
 <h2 id="1-purpose">1. Purpose</h2>
-<p>This guide describes how the repository is implemented today. Planned capabilities are identified as target work and are not presented as delivered features.</p>
-<h2 id="2-implemented-scope">2. Implemented Scope</h2>
+<p>This guide describes the VideoAgent implementation architecture, module boundaries, runtime flow, provider adapters, and engineering conventions.</p>
+<h2 id="2-system-scope">2. System Scope</h2>
 <ul>
-<li>Next.js App Router product UI with English public routes.</li>
-<li><code>/zh-CN</code> redirects to <code>/en</code>.</li>
-<li>Shared Landing UI used by the product and GitHub Pages homepage.</li>
+<li>Next.js App Router product UI.</li>
 <li>Left navigation: Agents, Skills, Hots, Assets, Docs.</li>
 <li>Home composer with Skill and Hook selectors, six production playbooks, and</li>
 <p>transparent custom dropdowns.</p>
@@ -84,10 +80,10 @@
 <li>Complete live video-model catalogue with provider-labelled Pippit and Kling options.</li>
 <li>Flat searchable Skills catalogue using <code>user_id/skill_id</code>, plus user publishing.</li>
 <li>Searchable Hots feed with looping video playback, Skill-backed scenario</li>
-<p>reuse, and session-local publishing.</p>
+<p>reuse, and publishing.</p>
 <li>Searchable Assets waterfall with internal Video/Skill tabs, permission, and</li>
 <p><code>yyyy-mm-dd</code> edit date; videos preview on hover, Skill cards have no cover, and cards do not repeat type labels.</p>
-<li>Searchable bilingual Docs with seven documents, a collapsible table of contents,</li>
+<li>Searchable bilingual Docs with eight documents, a collapsible table of contents,</li>
 <p>and full-text lookup across languages.</p>
 <li>Registration, login, logout, server-side sessions, and user isolation.</li>
 <li>Project create, list, read, rename, and archive.</li>
@@ -95,21 +91,10 @@
 <li>LangGraph single-node storyboard planning.</li>
 <li>OpenAI-compatible and deterministic local planners.</li>
 <li>Cost estimate and explicit generation approval.</li>
-<li>Pippit CLI and Mock Provider adapters.</li>
-<li>Optional Celery polling with Redis.</li>
+<li>Pippit CLI, Kling MCP, and Mock Provider adapters.</li>
+<li>Celery polling with Redis.</li>
 <li>Instant storyboard review.</li>
-<li>CI, security scanning, documentation generation, and Pages deployment.</li>
-</ul>
-<p>Not implemented:</p>
-<ul>
-<li>Asset upload and object storage.</li>
-<li>SSE events.</li>
-<li>FFmpeg assembly and export.</li>
-<li>Public sharing.</li>
-<li>Persistent community posts and likes.</li>
-<li>Alembic migrations.</li>
-<li>Generated OpenAPI clients.</li>
-<li>Full production observability and rate limiting.</li>
+<li>CI, security scanning, documentation generation, and release builds.</li>
 </ul>
 <h2 id="3-repository-layout">3. Repository Layout</h2>
 <pre><code class="language-text">VideoAgent/
@@ -121,34 +106,31 @@
 │   │   ├── src/components/         # product UI and project workspace
 │   │   ├── src/i18n/               # next-intl routing
 │   │   └── tests/
-│   └── landing/
-│       └── src/main.tsx            # GitHub Pages entry
 ├── packages/landing/
-│   ├── src/index.tsx               # shared product/homepage UI
+│   ├── src/index.tsx               # shared product UI
 │   ├── src/content.ts              # English and Chinese content
 │   └── src/landing.css             # shared visual system
 ├── services/api/src/videoagent/
 │   ├── agent/                      # graph and planner
 │   ├── api/                        # FastAPI routes
-│   ├── providers/                  # Pippit, Mock, legacy Kling
+│   ├── providers/                  # Pippit, Kling MCP, Mock
 │   ├── services/                   # storyboard, jobs, evaluation
 │   └── workers/
 ├── docs/                           # paired Markdown sources
-├── scripts/build_pages.py          # Docs and GitHub Pages builder
+├── scripts/build_pages.py          # Markdown and static Docs builder
 └── .github/workflows/</code></pre>
 <h2 id="4-runtime">4. Runtime</h2>
 <pre><code class="language-text">Browser
   ├── Next.js :3000
   │     ├── /api/account/* → FastAPI :8000/api/v1
   │     └── /docs/*        → generated HTML
-  └── GitHub Pages project homepage
-
 FastAPI
   ├── SQLite by default
   ├── LangGraph
-  └── Pippit CLI
+  ├── Pippit CLI
+  └── Kling MCP
 
-Optional Celery Worker
+Celery Worker
   ├── Redis broker
   └── Pippit query-result</code></pre>
 <p>The browser account and home creation requests use the Next.js Route Handler. The project workspace uses <code>NEXT_PUBLIC_API_BASE_URL</code>.</p>
@@ -180,7 +162,7 @@ generate
   → provider.submit
   → persist GenerationJob
   → update Shot
-  → optionally enqueue Celery polling
+  → enqueue Celery polling
 
 status
   → GET /jobs/{id}
@@ -239,6 +221,10 @@ status
 <td>CLI process and JSON adaptation</td>
 </tr>
 <tr>
+<td><code>providers.kling</code></td>
+<td>Kling MCP tool adapter and task mapping</td>
+</tr>
+<tr>
 <td><code>providers.mock</code></td>
 <td>Deterministic local generation</td>
 </tr>
@@ -269,10 +255,6 @@ status
 <td>Product home project creation</td>
 </tr>
 <tr>
-<td><code>apps/landing/src/main.tsx</code></td>
-<td>Preview-mode project homepage</td>
-</tr>
-<tr>
 <td><code>project-workspace.tsx</code></td>
 <td>Conversation, canvas, inspector, generation, review</td>
 </tr>
@@ -282,7 +264,7 @@ status
 </tr>
 <tr>
 <td><code>scripts/build_pages.py</code></td>
-<td>bilingual Docs and Pages build</td>
+<td>bilingual Docs build</td>
 </tr>
 </tbody></table></div>
 <h2 id="8-skills-implementation">8. Skills Implementation</h2>
@@ -309,13 +291,13 @@ video_agent/camera_movement
 video_agent/music_video
 video_agent/reference_remake
 video_agent/agent_handoff</code></pre>
-<p>Workflow skills do not display a flow label. Review uses the same card form and has no separate project action. Signed-in users can publish a skill under their own namespace; current storage is frontend-session-local.</p>
+<p>Review uses the same card form as other task-oriented Skills. Signed-in users can publish a skill under their own namespace.</p>
 <p>Production playbooks are defined in <code>packages/landing/src/content.ts</code> with a prompt, Skill, Hook, style, frame, duration, and review mode. Applying one updates the full composer draft; clicking the active playbook again restores the saved pre-playbook composer state. Hots cards carry a Skill ID so scenario reuse enters Agents with the matching Skill selected.</p>
 <h2 id="9-documentation-localization">9. Documentation Localization</h2>
-<p>The product UI remains English. The globe control changes only Docs language.</p>
+<p>The globe control switches documentation language.</p>
 <pre><code class="language-text">English: product-requirements.html
 Chinese: product-requirements.zh.html</code></pre>
-<p>The same pattern applies to all seven documents in this order: PRD, Design, Interface, Impl, Test, Ops, and FAQ. Docs search uses <code>docs-search.json</code> across both languages. Docs language is derived from the current application language state and does not use an independent Docs-only cache.</p>
+<p>The same pattern applies to all eight documents in this order: PRD, Design, Interface, Impl, Test, Ops, FAQ, and TODO. Docs search uses <code>docs-search.json</code> across both languages. Docs language follows application locale state.</p>
 <h2 id="10-data-model">10. Data Model</h2>
 <div class="table-wrap"><table><thead><tr>
 <th>Table</th>
@@ -435,19 +417,18 @@ Chinese: product-requirements.zh.html</code></pre>
 <li>HttpOnly and SameSite=Lax cookies.</li>
 <li>Ownership checks on projects, shots, and jobs.</li>
 <li>Pippit credentials remain server-side.</li>
+<li>Kling OAuth state remains inside the MCP connector boundary.</li>
 <li>CLI calls use argument arrays and timeouts.</li>
 <li>Secret and dependency scanning run in CI.</li>
 </ul>
-<p>Current gaps include CSRF, distributed rate limits, and production upload validation.</p>
 <h2 id="13-local-development">13. Local Development</h2>
 <pre><code class="language-powershell">cd D:\_Science\Agent\VideoAgent
 .\scripts\dev-api.ps1
 .\scripts\dev-web.ps1</code></pre>
-<p>Optional worker:</p>
+<p>Worker:</p>
 <pre><code class="language-powershell">.\scripts\dev-worker.ps1</code></pre>
 <p>Local URLs:</p>
 <pre><code class="language-text">http://localhost:3000/en
-http://localhost:3000/zh-CN  → /en
 http://localhost:8000/docs</code></pre>
 <h2 id="14-testing">14. Testing</h2>
 <pre><code class="language-powershell">cd services\api
@@ -460,88 +441,8 @@ cd ..\..
 pnpm --dir apps/web test
 pnpm --dir apps/web typecheck
 pnpm --dir apps/web build
-python scripts\build_pages.py</code></pre>
-<p>Current baseline: 35 backend tests and 19 frontend tests. Playwright and paid provider tests are not part of normal CI.</p>
-<h2 id="15-known-gaps">15. Known Gaps</h2>
-<div class="table-wrap"><table><thead><tr>
-<th>Area</th>
-<th>Current state</th>
-<th>Next step</th>
-</tr></thead><tbody>
-<tr>
-<td>Uploads</td>
-<td>Not implemented</td>
-<td>Asset + object storage adapter</td>
-</tr>
-<tr>
-<td>Realtime</td>
-<td>Polling</td>
-<td>SSE + Redis Pub/Sub</td>
-</tr>
-<tr>
-<td>Composition</td>
-<td>Not implemented</td>
-<td>FFmpeg worker</td>
-</tr>
-<tr>
-<td>Export/share</td>
-<td>Not implemented</td>
-<td>Export assets and public share API</td>
-</tr>
-<tr>
-<td>Community</td>
-<td>Session-local</td>
-<td>Persist posts, likes, and ownership</td>
-</tr>
-<tr>
-<td>Docs language</td>
-<td>Only Docs are bilingual</td>
-<td>Decide whether to extend localization to product UI</td>
-</tr>
-<tr>
-<td>Migrations</td>
-<td><code>create_all</code></td>
-<td>Add Alembic</td>
-</tr>
-<tr>
-<td>API types</td>
-<td>Handwritten</td>
-<td>Generate client from OpenAPI</td>
-</tr>
-</tbody></table></div>
-<h2 id="16-change-log">16. Change Log</h2>
-<div class="table-wrap"><table><thead><tr>
-<th>Version</th>
-<th>Date</th>
-<th>Description</th>
-</tr></thead><tbody>
-<tr>
-<td>v1.6</td>
-<td>2026-11-04</td>
-<td>Add the bilingual FAQ document and interface metadata table</td>
-</tr>
-<tr>
-<td>v1.5</td>
-<td>2026-11-04</td>
-<td>Synchronize the Model selector with all live Pippit and Kling video models</td>
-</tr>
-<tr>
-<td>v1.4</td>
-<td>2026-11-04</td>
-<td>Add auto-growing prompt sizing and empty-state-only idea suggestions</td>
-</tr>
-<tr>
-<td>v1.3</td>
-<td>2026-11-04</td>
-<td>Add production playbooks, Hook selector, scenario Skills, and Skill-backed Hots reuse</td>
-</tr>
-<tr>
-<td>v1.2</td>
-<td>2026-11-03</td>
-<td>Align Skills catalogue, Hots playback/publish, bilingual Docs, icon behavior, APIs, and tests</td>
-</tr>
-</tbody></table></div></article>
+python scripts\build_pages.py</code></pre></article>
     </main>
-    <script src="../docs.js?v=20"></script>
+    <script src="../docs.js?v=21"></script>
   </body>
 </html>

@@ -7,11 +7,9 @@
 | Target roles | Video Agent engineering roles such as ByteDance Xiaoyunque and Kuaishou Kling |
 | Answer rule | State the fact, explain the trade-off, then describe the evolution |
 
-This FAQ is written from an interviewer's perspective and stays within the
-current repository boundary. LangGraph currently has one `plan_storyboard`
-node. Pippit CLI is the default server-side generation route. Kling MCP is
-connected and catalogued but is not yet the default backend route. Do not
-present target capabilities as shipped behavior.
+This FAQ is written from an interviewer's perspective. Answers emphasize system
+boundaries, engineering trade-offs, and verifiability without presenting
+hypothetical designs as shipped facts.
 
 ## Q1. How would you orchestrate a video Agent?
 
@@ -20,8 +18,8 @@ present target capabilities as shipped behavior.
 Start with a deterministic workflow, not an unbounded ReAct loop. The main
 path should cover brief, creative diagnosis, treatment, script/beats,
 storyboard, continuity validation, previz, generation, shot QC, rough cut, and
-delivery, with human gates for story, budget, and final direction. The current
-single-node planner is appropriate for the present scope. Split into
+delivery, with human gates for story, budget, and final direction. A single
+planner is appropriate while responsibilities share one context. Split into
 specialized Agents only when writing, visual planning, production, and review
 need genuinely different tools and context.
 
@@ -33,10 +31,9 @@ human-in-the-loop, tool allowlists, structured output, recoverable state.
 **Follow-up:** Should a review-only request replace the storyboard?  
 **Strong answer:**
 Route intent first: create, revise, review only, regenerate a take, or localize.
-A local revision should return a shot patch, not a full storyboard. The current
-message endpoint replaces the storyboard; the target is stable shot IDs,
-versions, and operation logs so only affected nodes change while untouched
-shots remain intact.
+A local revision should return a shot patch, not a full storyboard. Stable shot
+IDs, versions, and operation logs let only affected nodes change while
+untouched shots remain intact.
 
 **Extended topics:** function calling, JSON Patch, idempotent updates,
 concurrent versions, event sourcing, optimistic locking.
@@ -48,8 +45,8 @@ concurrent versions, event sourcing, optimistic locking.
 A prompt is a generation parameter, not a directing plan. A shot also needs
 scene/beat, story function, shot size, angle, lens, movement, subject action,
 gaze, blocking, lighting, palette, sound, transition, continuity references,
-and entry/exit state. The current Shot model is intentionally thin for the
-first baseline but cannot guarantee full narrative and spatial continuity.
+and entry/exit state. A prompt and duration alone cannot guarantee narrative,
+spatial, gaze, and continuity constraints.
 
 **Extended topics:** master/medium/close/insert/reaction, 180-degree rule,
 30-degree rule, eyeline match, screen direction, match cut, motivated camera
@@ -77,8 +74,8 @@ Choose by runtime boundary, not protocol preference. A CLI fits stable
 server-side jobs and batch operations. MCP fits exposing capabilities to
 personal or cross-Agent workflows. Both should sit behind one Provider
 contract that normalizes submit, query, cancel, errors, and result URLs.
-Pippit CLI is the current default route; Kling MCP is connected and catalogued
-but is not the default backend route yet.
+Pippit is integrated through a server-side CLI and Kling through MCP tools;
+both share one task contract.
 
 **Extended topics:** adapters, capability discovery, OAuth, credential
 isolation, timeout, uncertain submission, provider fallback.
@@ -129,9 +126,8 @@ reference hierarchy, negative constraints, dependency graphs.
 **Strong answer:**
 No. Show a sequence-level budget and distinguish previews, final shots, and
 alternate takes. Build a low-cost animatic before approving expensive
-generation. Show why a regeneration is needed and its expected cost. The
-current implementation has explicit approval and idempotency; sequence-level
-budget envelopes remain a target.
+generation. Show why a regeneration is needed and its expected cost. Approval,
+idempotency, and sequence budgets form one cost-control boundary.
 
 **Extended topics:** budget envelopes, cost estimation, quota, reservation,
 credit ledger, fallback models, cancellation, compensation.
@@ -163,12 +159,11 @@ approval.
 **Extended topics:** bounded autonomy, least privilege, confirmation gates,
 replayability, auditability, deterministic boundaries.
 
-## Q12. What is the single most important Agent improvement to make next?
+## Q12. What is the most important engineering invariant for a video Agent?
 
-**Follow-up:** What would your first PR change?  
+**Follow-up:** Why is this more important than adding more Agents?
 **Strong answer:**
-Replace full-storyboard replacement on every message with intent routing and
-partial shot patches. Then enrich the structured model with scene, beat,
-cinematic grammar, and continuity fields. These changes unlock previz,
-targeted evaluation, selective regeneration, and sequence-level cost control.
+Represent creative decisions as structured data that can be validated, traced,
+and edited locally. Scene, beat, cinematic grammar, and continuity fields
+underpin previz, evaluation, selective regeneration, and cost control.
 

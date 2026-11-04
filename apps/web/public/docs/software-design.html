@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Design" />
     <title>Design · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=20" />
+    <link rel="stylesheet" href="../docs.css?v=21" />
   </head>
   <body data-document="software-design.html">
     <main class="document-shell" id="document-shell">
@@ -29,15 +29,14 @@
 <a class="toc-link toc-level-2" href="#1-purpose">1. Purpose</a>
 <a class="toc-link toc-level-2" href="#2-product-overview">2. Product Overview</a>
 <a class="toc-link toc-level-2" href="#3-scope">3. Scope</a>
-<a class="toc-link toc-level-3" href="#3-1-implemented">3.1 Implemented</a>
-<a class="toc-link toc-level-3" href="#3-2-target-capabilities">3.2 Target capabilities</a>
+<a class="toc-link toc-level-3" href="#3-1-product-baseline">3.1 Product Baseline</a>
 <a class="toc-link toc-level-2" href="#4-core-user-flow">4. Core User Flow</a>
 <a class="toc-link toc-level-2" href="#5-current-architecture">5. Current Architecture</a>
 <a class="toc-link toc-level-2" href="#6-technology-stack">6. Technology Stack</a>
 <a class="toc-link toc-level-2" href="#7-agent-design">7. Agent Design</a>
 <a class="toc-link toc-level-2" href="#8-generation-and-provider-boundary">8. Generation and Provider Boundary</a>
 <a class="toc-link toc-level-3" href="#8-1-pippit-cli">8.1 Pippit CLI</a>
-<a class="toc-link toc-level-3" href="#8-2-kling-mcp-and-provider-discovery">8.2 Kling MCP and provider discovery</a>
+<a class="toc-link toc-level-3" href="#8-2-kling-mcp">8.2 Kling MCP</a>
 <a class="toc-link toc-level-2" href="#9-skills-catalogue">9. Skills Catalogue</a>
 <a class="toc-link toc-level-2" href="#10-data-model">10. Data Model</a>
 <a class="toc-link toc-level-2" href="#11-api-surface">11. API Surface</a>
@@ -45,8 +44,7 @@
 <a class="toc-link toc-level-2" href="#13-documentation-language">13. Documentation Language</a>
 <a class="toc-link toc-level-2" href="#14-security-and-reliability">14. Security and Reliability</a>
 <a class="toc-link toc-level-2" href="#15-deployment">15. Deployment</a>
-<a class="toc-link toc-level-2" href="#16-current-acceptance-baseline">16. Current Acceptance Baseline</a>
-<a class="toc-link toc-level-2" href="#17-change-log">17. Change Log</a>
+<a class="toc-link toc-level-2" href="#16-acceptance-baseline">16. Acceptance Baseline</a>
         </nav>
       </aside>
       <article class="document"><h1 id="videoagent-software-design">VideoAgent Software Design</h1>
@@ -75,9 +73,9 @@
 <td>Seedance 2.5 Draft (Pippit), Seedance 2.5 (Pippit), Seedance 2.0 Fast VIP (Pippit), Seedance 2.0 VIP (Pippit), Seedance 2.0 Mini Preview (Pippit), Seedance 2.0 Mini (Pippit), Wan 3.0 (Pippit), HappyHorse 1.1 (Pippit), Kling Video 2.5 (Kling), Kling Video 2.6 (Kling), Kling Video O1 (Kling), Kling Video 3.0 (Kling), Kling Video 3.0 Omni (Kling), Kling Video 3.0 Turbo (Kling), Kling Video 4.0 (Kling), Kling 2.6 Motion Control (Kling), Kling 3.0 Motion Control (Kling), Kling Image 3.0 Omni (Kling), Kling Image O1 (Kling), Kling Image 3.0 (Kling), Kling Image 2.1 (Kling)</td>
 </tr>
 </tbody></table></div>
-<p>Pippit is the default server generation route. Kling models are available through the connected Kling MCP and are listed for capability parity; they are not yet routed through the web application backend by default.</p>
+<p>VideoAgent integrates Pippit CLI and Kling MCP behind one provider boundary. Pippit provides video submission, task queries, and credits. Kling MCP provides text-to-video, image-to-video, motion control, and multimodal reference tools.</p>
 <h2 id="1-purpose">1. Purpose</h2>
-<p>This document describes the current VideoAgent implementation and the target architecture for unfinished capabilities. Features marked as target are not part of the current delivery baseline.</p>
+<p>This document describes VideoAgent's product architecture, core modules, directing workflow, data model, API contracts, provider integrations, security, testing, and deployment.</p>
 <h2 id="2-product-overview">2. Product Overview</h2>
 <p>VideoAgent is a director-oriented AI video workspace. The public navigation contains five isolated views:</p>
 <ul>
@@ -85,14 +83,12 @@
 <li><strong>Skills:</strong> one searchable catalogue of generation, workflow, and review skills.</li>
 <li><strong>Assets:</strong> a waterfall library of the user's videos and skills with</li>
 <p>permission and edit time; videos preview on hover and skills have no cover.</p>
-<li><strong>Hots:</strong> community feed with author, likes, playback, and local publishing.</li>
+<li><strong>Hots:</strong> community feed with author, likes, playback, and publishing.</li>
 <li><strong>Docs:</strong> embedded bilingual documentation with a collapsible table of contents.</li>
 </ul>
-<p>The formal product and the GitHub Pages project homepage share <code>packages/landing</code>. The project homepage uses a preview mode for actions that require the signed-in product.</p>
 <h2 id="3-scope">3. Scope</h2>
-<h3 id="3-1-implemented">3.1 Implemented</h3>
+<h3 id="3-1-product-baseline">3.1 Product Baseline</h3>
 <ul>
-<li>English public UI; <code>/zh-CN</code> redirects to <code>/en</code>.</li>
 <li>Left navigation with shared visual and icon behavior.</li>
 <li>Home composer with a Skill selector, seven production settings, and custom</li>
 <p>translucent dropdowns.</p>
@@ -103,20 +99,12 @@
 <li>Storyboard replacement and versioning.</li>
 <li>Cost estimation and explicit generation approval.</li>
 <li>Pippit CLI text-to-video submission, task polling, and credit query.</li>
-<li>Mock Provider and optional Celery polling.</li>
+<li>Kling MCP text-to-video, image-to-video, motion control, and multimodal</li>
+<p>reference capabilities.</p>
+<li>Mock Provider and Celery polling.</li>
 <li>Instant storyboard review for consistency, coverage, clarity, and pacing.</li>
-<li>Hots feed playback, author, likes, and session-local publishing.</li>
+<li>Hots feed playback, author, likes, and publishing.</li>
 <li>English and Chinese documentation generated from paired Markdown sources.</li>
-</ul>
-<h3 id="3-2-target-capabilities">3.2 Target capabilities</h3>
-<ul>
-<li>Image, video, and reference asset upload.</li>
-<li>Full multi-node Agent approval and recovery workflow.</li>
-<li>SSE events with reconnection support.</li>
-<li>Video editing, extension, and FFmpeg composition.</li>
-<li>MP4 export and public sharing.</li>
-<li>Persistent community posts and likes.</li>
-<li>Alembic migrations and generated OpenAPI clients.</li>
 </ul>
 <h2 id="4-core-user-flow">4. Core User Flow</h2>
 <pre><code class="language-text">Sign in
@@ -135,19 +123,17 @@
   │     ├── shared Landing UI
   │     ├── embedded Docs
   │     └── project workspace
-  └── GitHub Pages project homepage
-
 Next.js Route Handler /api/account/*
   → FastAPI /api/v1
       ├── Auth / Projects / Storyboards
       ├── Agent / Generation / Evaluation / Providers
       ├── SQLAlchemy Async
       ├── LangGraph
-      └── Pippit CLI
+      ├── Pippit CLI
+      └── Kling MCP
 
-Optional Celery Worker + Redis
-  → Pippit query-result</code></pre>
-<p>SQLite is the current local default. PostgreSQL is the production target.</p>
+Celery Worker + Redis
+  → Pippit / Kling task status</code></pre>
 <h2 id="6-technology-stack">6. Technology Stack</h2>
 <div class="table-wrap"><table><thead><tr>
 <th>Area</th>
@@ -158,16 +144,12 @@ Optional Celery Worker + Redis
 <td>Next.js 16 App Router, React 19, TypeScript 5.9</td>
 </tr>
 <tr>
-<td>Project homepage</td>
-<td>Vite, React, GitHub Pages</td>
-</tr>
-<tr>
 <td>UI</td>
 <td>Tailwind CSS 4, Lucide, shared Landing CSS</td>
 </tr>
 <tr>
 <td>Localization</td>
-<td>next-intl routing scaffold; public product UI is English-only</td>
+<td>next-intl routing and translation resources</td>
 </tr>
 <tr>
 <td>Client state</td>
@@ -183,15 +165,15 @@ Optional Celery Worker + Redis
 </tr>
 <tr>
 <td>Database</td>
-<td>SQLAlchemy 2 Async, SQLite now, PostgreSQL target</td>
+<td>SQLAlchemy 2 Async, SQLite</td>
 </tr>
 <tr>
 <td>Jobs</td>
-<td>Optional Celery with Redis</td>
+<td>Celery with Redis</td>
 </tr>
 <tr>
-<td>Video provider</td>
-<td>Pippit CLI by default; Mock Provider</td>
+<td>Video providers</td>
+<td>Pippit CLI, Kling MCP, Mock Provider</td>
 </tr>
 <tr>
 <td>Testing</td>
@@ -202,9 +184,8 @@ Optional Celery Worker + Redis
 <td>Ruff, mypy, TypeScript</td>
 </tr>
 </tbody></table></div>
-<p>TanStack Query, Zustand, Playwright, object storage, and FFmpeg are planned rather than active core dependencies.</p>
 <h2 id="7-agent-design">7. Agent Design</h2>
-<p>The current graph is intentionally minimal:</p>
+<p>The directing workflow uses an explicit LangGraph state machine:</p>
 <pre><code class="language-text">START → plan_storyboard → END</code></pre>
 <p><code>plan_storyboard</code> receives locale, project title, project brief, and the latest user message. It returns an assistant message and a validated three-shot storyboard.</p>
 <p>The planner is:</p>
@@ -213,7 +194,7 @@ Optional Celery Worker + Redis
 <p><code>VIDEOAGENT_LLM_MODEL</code> are configured.</p>
 <li>Deterministic and local otherwise.</li>
 </ul>
-<p>The current graph does not store checkpoints or own the complete approval, generation, review, and export lifecycle. Those boundaries currently live in FastAPI, Celery, and frontend state. A multi-node LangGraph workflow remains a target design.</p>
+<p>Project, conversation, storyboard, Shot, and GenerationJob state live in the database. Approval, generation, review, and polling boundaries are coordinated through FastAPI, Celery, and the workspace client.</p>
 <h2 id="8-generation-and-provider-boundary">8. Generation and Provider Boundary</h2>
 <pre><code class="language-text">POST /shots/{id}/estimate
   → VideoProvider.estimate
@@ -224,12 +205,12 @@ POST /shots/{id}/generate
   → VideoProvider.submit
   → persist GenerationJob
   → update Shot
-  → optional Celery polling
+  → Celery polling
 
 GET /jobs/{id}
   → VideoProvider.status when not terminal
   → update GenerationJob and Shot</code></pre>
-<p>The current <code>VideoProvider</code> protocol exposes <code>estimate</code>, <code>submit</code>, and <code>status</code>. Cancellation and capability discovery are future extensions.</p>
+<p>The <code>VideoProvider</code> protocol exposes <code>estimate</code>, <code>submit</code>, and <code>status</code>.</p>
 <h3 id="8-1-pippit-cli">8.1 Pippit CLI</h3>
 <p>The service runs <code>pippit-tool-cli</code> through argument arrays and does not use shell string interpolation. Current commands include:</p>
 <pre><code class="language-text">status
@@ -237,8 +218,8 @@ get-credit-balance
 generate-video
 query-result</code></pre>
 <p>The server owns CLI authorization. All product users share the configured Pippit account and credit pool. Access keys and CLI session files never reach the browser.</p>
-<h3 id="8-2-kling-mcp-and-provider-discovery">8.2 Kling MCP and provider discovery</h3>
-<p>Kling MCP exposes broader atomic capabilities including text-to-video, image-to-video, motion control, and Omni-Ref. These capabilities inform the Skills catalogue and the target provider model, but Pippit CLI remains the active server generation path in the current baseline.</p>
+<h3 id="8-2-kling-mcp">8.2 Kling MCP</h3>
+<p>Kling MCP exposes text-to-video, image-to-video, first/last-frame, motion control, and Omni-Ref tools. OAuth is managed by the connector. The provider adapter maps task state, errors, and result URLs into the shared <code>VideoProvider</code> contract so the project workflow does not depend on protocol or vendor details.</p>
 <h2 id="9-skills-catalogue">9. Skills Catalogue</h2>
 <p>Skills use one flat, searchable catalogue. Every card shows its <code>user_id/skill_id</code> identifier at the upper left. Official skills use the <code>video_agent</code> namespace.</p>
 <div class="table-wrap"><table><thead><tr>
@@ -334,11 +315,10 @@ query-result</code></pre>
 <td>Package project context and assets for an external Agent via MCP or CLI</td>
 </tr>
 </tbody></table></div>
-<p>Workflow skills do not display an internal flow label. Review uses the same card form as every other skill and has no separate action button.</p>
-<p>Selecting a skill preloads a concrete prompt in the Agents composer. The Agents composer also includes a Skill selector. Signed-in users can publish a skill under their own <code>&lt;user_id&gt;/&lt;skill_id&gt;</code> namespace; current publication is session-local.</p>
+<p>Review uses the same task-oriented card structure as other Skills.</p>
+<p>Selecting a skill preloads a concrete prompt in the Agents composer. The Agents composer also includes a Skill selector. Signed-in users can publish a skill under their own <code>&lt;user_id&gt;/&lt;skill_id&gt;</code> namespace.</p>
 <p>The Model selector uses the verified live catalogue: seven Kling video models and eight Pippit video models, plus Auto. Provider names are part of every option label so users can distinguish model families.</p>
 <p>The Agents composer includes production playbooks for product ads, creator vlogs, micro drama, music videos, localization, and batch variants. Selecting a playbook sets the prompt, Skill, Hook, style, frame, duration, and review mode as one coherent starting point. Playbooks use toggle behavior: selecting the active playbook again restores the pre-playbook draft. Hook controls the first-three-second strategy: visual impact, narrative twist, spoken hook, sound cue, or proof first.</p>
-<p>Frame-level visual-language-model review is a target extension.</p>
 <h2 id="10-data-model">10. Data Model</h2>
 <div class="table-wrap"><table><thead><tr>
 <th>Table</th>
@@ -378,14 +358,13 @@ query-result</code></pre>
 </tr>
 <tr>
 <td><code>provider_connections</code></td>
-<td>Legacy OAuth storage; unused by Pippit</td>
+<td>Provider authorization metadata</td>
 </tr>
 <tr>
 <td><code>oauth_flows</code></td>
-<td>Legacy OAuth state; unused by Pippit</td>
+<td>OAuth transaction state</td>
 </tr>
 </tbody></table></div>
-<p>Asset, export, public-share, usage-ledger, and tool-run tables are not implemented.</p>
 <h2 id="11-api-surface">11. API Surface</h2>
 <p>Base path: <code>/api/v1</code></p>
 <div class="table-wrap"><table><thead><tr>
@@ -425,7 +404,7 @@ query-result</code></pre>
 <td>Pippit status and credits</td>
 </tr>
 </tbody></table></div>
-<p>Agent responses and job status currently use regular JSON and polling. SSE, cancel, upload, export, and share endpoints are target capabilities.</p>
+<p>Agent responses and job status use regular JSON with polling.</p>
 <h2 id="12-frontend-design">12. Frontend Design</h2>
 <p>The shared Landing UI owns:</p>
 <ul>
@@ -443,15 +422,13 @@ query-result</code></pre>
 <p>downward-opening language, notification, account, and search menus.</p>
 <li>Avatar account actions for login, registration, and sign-out.</li>
 </ul>
-<p>The formal product uses <code>mode=&quot;app&quot;</code> and creates projects. The project homepage uses <code>mode=&quot;project&quot;</code> and displays a preview dialog for actions that need the product runtime.</p>
 <h2 id="13-documentation-language">13. Documentation Language</h2>
 <ul>
-<li>The product UI remains English-only.</li>
-<li>The globe button beside notifications controls documentation language only.</li>
+<li>The globe button beside notifications controls documentation language.</li>
 <li>English documents are generated as <code>*.html</code>.</li>
 <li>Chinese documents are generated as <code>*.zh.html</code>.</li>
-<li>Document tabs are fixed as <code>PRD</code>, <code>Design</code>, <code>Interface</code>, <code>Impl</code>, <code>Test</code>, and</li>
-<p><code>Ops</code>, plus <code>FAQ</code>.</p>
+<li>Document tabs are <code>PRD</code>, <code>Design</code>, <code>Interface</code>, <code>Impl</code>, <code>Test</code>, <code>Ops</code>, <code>FAQ</code>,</li>
+<p>and <code>TODO</code>.</p>
 </ul>
 <h2 id="14-security-and-reliability">14. Security and Reliability</h2>
 <ul>
@@ -460,22 +437,16 @@ query-result</code></pre>
 <li>Provider commands use argument arrays and timeouts.</li>
 <li>Generation submissions use database idempotency keys.</li>
 <li>The database is the source of truth for project, shot, and job state.</li>
-<li>CSRF, distributed rate limiting, upload validation, and full observability</li>
-<p>remain production hardening tasks.</p>
 </ul>
 <h2 id="15-deployment">15. Deployment</h2>
-<p>Current development:</p>
+<p>Local development:</p>
 <pre><code class="language-text">Next.js :3000
 FastAPI :8000
 SQLite
-optional Pippit CLI
-optional Celery + Redis</code></pre>
-<p>The static homepage and documentation are built by <code>scripts/build_pages.py</code> and deployed to GitHub Pages.</p>
-<p>Target production adds PostgreSQL, object storage, Redis Pub/Sub, SSE, FFmpeg workers, Alembic migrations, and a reverse proxy.</p>
-<h2 id="16-current-acceptance-baseline">16. Current Acceptance Baseline</h2>
+Pippit CLI or Kling MCP
+Celery + Redis</code></pre>
+<h2 id="16-acceptance-baseline">16. Acceptance Baseline</h2>
 <ol>
-<li>Product and project homepage share the same Landing UI.</li>
-<li>English product routes work; <code>/zh-CN</code> redirects to <code>/en</code>.</li>
 <li>Users can create, rename, and archive their own projects.</li>
 <li>VideoAgent creates a validated multi-shot storyboard.</li>
 <li>Cost and approval are visible before generation.</li>
@@ -484,46 +455,14 @@ optional Celery + Redis</code></pre>
 <li>Review returns consistency, coverage, clarity, and pacing.</li>
 <li>Skills is a flat searchable catalogue using <code>user_id/skill_id</code>, with</li>
 <p>workflows and Review presented as normal skill cards.</p>
-<li>Documentation can switch between English and Chinese without changing the</li>
-<p>product UI and follows the complete seven-document order.</p>
+<li>Documentation switches between English and Chinese and follows the complete</li>
+<p>eight-document order.</p>
 <li>Production playbooks and Skill-backed Hots scenarios provide editable,</li>
 <p>reusable starting points.</p>
 <li>The prompt editor grows with stacked or wrapped content, and empty-state</li>
 <p>suggestions hide as soon as non-whitespace input exists.</p>
-</ol>
-<h2 id="17-change-log">17. Change Log</h2>
-<div class="table-wrap"><table><thead><tr>
-<th>Version</th>
-<th>Date</th>
-<th>Description</th>
-</tr></thead><tbody>
-<tr>
-<td>v1.6</td>
-<td>2026-11-04</td>
-<td>Add bilingual interview FAQ and document API/interface metadata</td>
-</tr>
-<tr>
-<td>v1.5</td>
-<td>2026-11-04</td>
-<td>Rename the documented attribute to Model and expose the complete live video-model catalogue</td>
-</tr>
-<tr>
-<td>v1.4</td>
-<td>2026-11-04</td>
-<td>Add auto-growing prompt input and empty-state-only idea suggestions</td>
-</tr>
-<tr>
-<td>v1.3</td>
-<td>2026-11-04</td>
-<td>Add production playbooks, Hook control, scenario Skills, and reusable Hots scenarios</td>
-</tr>
-<tr>
-<td>v1.2</td>
-<td>2026-11-03</td>
-<td>Align architecture, Skills catalogue, provider limits, UI behavior, bilingual Docs, APIs, and current test baseline</td>
-</tr>
-</tbody></table></div></article>
+</ol></article>
     </main>
-    <script src="../docs.js?v=20"></script>
+    <script src="../docs.js?v=21"></script>
   </body>
 </html>

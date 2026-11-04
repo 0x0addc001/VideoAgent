@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Interface" />
     <title>Interface · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=20" />
+    <link rel="stylesheet" href="../docs.css?v=21" />
   </head>
   <body data-document="interface-reference.html">
     <main class="document-shell" id="document-shell">
@@ -46,7 +46,6 @@
 <a class="toc-link toc-level-3" href="#job-status">Job Status</a>
 <a class="toc-link toc-level-3" href="#evaluate-storyboard">Evaluate Storyboard</a>
 <a class="toc-link toc-level-2" href="#pippit-provider">Pippit Provider</a>
-<a class="toc-link toc-level-2" href="#hots-publication">Hots Publication</a>
 <a class="toc-link toc-level-2" href="#errors">Errors</a>
         </nav>
       </aside>
@@ -77,7 +76,7 @@
 </tr>
 <tr>
 <td>API style</td>
-<td>REST with job polling; SSE is a target capability</td>
+<td>REST with job polling</td>
 </tr>
 <tr>
 <td>Billable generation</td>
@@ -190,7 +189,7 @@ http://localhost:8000/openapi.json</code></pre>
 <pre><code class="language-json">{
   &quot;content&quot;: &quot;Turn the brief into a three-shot launch film&quot;
 }</code></pre>
-<p>The response includes the user message, VideoAgent reply, and updated storyboard. This endpoint currently returns one JSON response and does not provide SSE or token streaming.</p>
+<p>The response includes the user message, VideoAgent reply, and updated storyboard as JSON.</p>
 <h2 id="generation">Generation</h2>
 <h3 id="estimate-cost">Estimate Cost</h3>
 <p><code>POST /shots/{shot_id}/estimate</code></p>
@@ -251,8 +250,6 @@ http://localhost:8000/openapi.json</code></pre>
   &quot;credits&quot;: 42
 }</code></pre>
 <p>If the server CLI is not logged in, the credits endpoint returns <code>connected: false</code> and <code>credits: null</code>. A missing binary returns <code>503</code>; an upstream CLI failure returns <code>502</code>.</p>
-<h2 id="hots-publication">Hots Publication</h2>
-<p>Community publication in Hots is currently a frontend-only interaction and does not call this API. Posts are retained only for the active browser session; there is no community persistence or likes endpoint yet.</p>
 <h2 id="errors">Errors</h2>
 <p>Errors use the following shape:</p>
 <pre><code class="language-json">{
@@ -298,6 +295,6 @@ http://localhost:8000/openapi.json</code></pre>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=20"></script>
+    <script src="../docs.js?v=21"></script>
   </body>
 </html>

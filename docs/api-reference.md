@@ -7,7 +7,7 @@
 | Base path | `/api/v1` |
 | Authentication | HttpOnly Session Cookie |
 | Request format | JSON with `credentials: "include"` |
-| API style | REST with job polling; SSE is a target capability |
+| API style | REST with job polling |
 | Billable generation | Explicit approval plus `Idempotency-Key` |
 | OpenAPI | `/docs` and `/openapi.json` |
 
@@ -156,8 +156,7 @@ Rename request:
 ```
 
 The response includes the user message, VideoAgent reply, and updated
-storyboard. This endpoint currently returns one JSON response and does not
-provide SSE or token streaming.
+storyboard as JSON.
 
 ## Generation
 
@@ -247,12 +246,6 @@ before enabling live generation.
 If the server CLI is not logged in, the credits endpoint returns `connected:
 false` and `credits: null`. A missing binary returns `503`; an upstream CLI
 failure returns `502`.
-
-## Hots Publication
-
-Community publication in Hots is currently a frontend-only interaction and
-does not call this API. Posts are retained only for the active browser
-session; there is no community persistence or likes endpoint yet.
 
 ## Errors
 

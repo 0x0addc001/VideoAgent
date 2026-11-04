@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Ops" />
     <title>Ops · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=20" />
+    <link rel="stylesheet" href="../docs.css?v=21" />
   </head>
   <body data-document="operations.zh.html">
     <main class="document-shell" id="document-shell">
@@ -29,15 +29,13 @@
 <a class="toc-link toc-level-2" href="#1-运营模型">1. 运营模型</a>
 <a class="toc-link toc-level-2" href="#2-发布准备">2. 发布准备</a>
 <a class="toc-link toc-level-2" href="#3-官方-skill-运营">3. 官方 Skill 运营</a>
-<a class="toc-link toc-level-2" href="#4-社区运营">4. 社区运营</a>
-<a class="toc-link toc-level-2" href="#5-assets-运营">5. Assets 运营</a>
-<a class="toc-link toc-level-2" href="#6-provider-与成本运营">6. Provider 与成本运营</a>
-<a class="toc-link toc-level-2" href="#7-发布流程">7. 发布流程</a>
-<a class="toc-link toc-level-2" href="#8-监控指标">8. 监控指标</a>
-<a class="toc-link toc-level-2" href="#9-用户支持">9. 用户支持</a>
-<a class="toc-link toc-level-2" href="#10-故障处理">10. 故障处理</a>
-<a class="toc-link toc-level-2" href="#11-成功指标">11. 成功指标</a>
-<a class="toc-link toc-level-2" href="#12-变更记录">12. 变更记录</a>
+<a class="toc-link toc-level-2" href="#4-assets-运营">4. Assets 运营</a>
+<a class="toc-link toc-level-2" href="#5-provider-与成本运营">5. Provider 与成本运营</a>
+<a class="toc-link toc-level-2" href="#6-发布流程">6. 发布流程</a>
+<a class="toc-link toc-level-2" href="#7-监控指标">7. 监控指标</a>
+<a class="toc-link toc-level-2" href="#8-用户支持">8. 用户支持</a>
+<a class="toc-link toc-level-2" href="#9-故障处理">9. 故障处理</a>
+<a class="toc-link toc-level-2" href="#10-成功指标">10. 成功指标</a>
         </nav>
       </aside>
       <article class="document"><h1 id="videoagent-运营策略">VideoAgent 运营策略</h1>
@@ -47,7 +45,7 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v1.2</td>
+<td>v2.0</td>
 </tr>
 <tr>
 <td>更新日期</td>
@@ -55,7 +53,7 @@
 </tr>
 <tr>
 <td>范围</td>
-<td>产品发布、社区、Provider、支持、指标</td>
+<td>Skills、Hots、Assets、Provider、支持、指标</td>
 </tr>
 </tbody></table></div>
 <h2 id="1-运营模型">1. 运营模型</h2>
@@ -65,13 +63,11 @@
 <li>用户发布的 Skill 与 Hots 作品。</li>
 <li>项目产出的 Assets 成品与半成品。</li>
 </ol>
-<p>当前公开版本是产品与文档预览。在社区后端、持久化和审核完成前，用户发布内容 只保存在当前前端会话。</p>
 <h2 id="2-发布准备">2. 发布准备</h2>
-<p>公开上线前必须：</p>
 <ul>
 <li>完成认证和积分消耗验收。</li>
-<li>确认部署主机上的 Pippit CLI 已授权。</li>
-<li>发布 PRD、Design、Interface、Impl、Test、Ops、FAQ 七份文档。</li>
+<li>确认 Pippit CLI 授权与 Kling MCP OAuth。</li>
+<li>发布 PRD、Design、Interface、Impl、Test、Ops、FAQ、TODO 八份文档。</li>
 <li>验证中英文文档切换。</li>
 <li>验证项目创建、故事板规划、生成审批和任务轮询。</li>
 <li>确认浏览器包、日志和 API 响应中不存在 Provider 凭据。</li>
@@ -79,56 +75,39 @@
 <h2 id="3-官方-skill-运营">3. 官方 Skill 运营</h2>
 <ul>
 <li>官方 user_id 固定为 <code>video_agent</code>。</li>
-<li>Skill ID 必须稳定、小写，并使用下划线分隔。</li>
-<li>每个 Skill 必须说明输入、输出、Provider 依赖和是否消耗积分。</li>
-<li>Skill 变更需要同步更新 PRD、Design 和 Test。</li>
+<li>Skill ID 稳定、小写，并使用下划线分隔。</li>
+<li>每个 Skill 说明输入、输出、Provider 依赖和积分影响。</li>
+<li>Skill 变更同步更新 PRD、Design 和 Test。</li>
 <li>废弃 Skill 至少保留一个版本并给出迁移说明。</li>
-<li>场景 Playbook 是可复用的入口，不是独立计费商品；必须引用当前有效 Skill，并与创作框字段保持一致。</li>
-<li>外部 Agent 接力必须基于明确的 MCP 或 CLI 集成契约，不得在能力未接通时暗示凭据或远程执行已经可用。</li>
+<li>场景 Playbook 引用有效 Skill，并与创作框字段保持一致。</li>
+<li>外部 Agent 接力使用明确的 MCP 或 CLI 契约。</li>
 </ul>
-<h2 id="4-社区运营">4. 社区运营</h2>
-<p>持久化社区上线后：</p>
-<ul>
-<li>发布必须登录。</li>
-<li>保存 user_id、skill_id、权限、标题、描述、媒体引用、创建时间和修改时间。</li>
-<li>用户内容默认 private，必须明确操作后才公开。</li>
-<li>支持按 user_id、skill_id、标题、描述和作者搜索。</li>
-<li>提供举报、隐藏、恢复和申诉流程。</li>
-<li>搜索需区分 Video 和 Skill。</li>
-<li>场景卡片必须保留 Skill 绑定，复用后进入 Agents 时应选中对应工作流。</li>
-<li>API 不可用时保留本地预览，但不能声称已持久化。</li>
-</ul>
-<h2 id="5-assets-运营">5. Assets 运营</h2>
+<h2 id="4-assets-运营">4. Assets 运营</h2>
 <ul>
 <li>Assets 只展示当前用户自己的作品。</li>
-<li>每项必须明确 private 或 public。</li>
+<li>每项明确 private 或 public。</li>
 <li>编辑日期统一使用 <code>yyyy-mm-dd</code>。</li>
-<li>Video 卡片仅在悬浮时预览，Skill 卡片不显示封面。</li>
+<li>Video 卡片悬浮预览，Skill 卡片不显示封面。</li>
 <li>Video 与 Skill 通过内部分页区分，不在卡片上重复类型标签。</li>
-<li>后续需要确定软删除、恢复周期和存储生命周期。</li>
 </ul>
-<h2 id="6-provider-与成本运营">6. Provider 与成本运营</h2>
+<h2 id="5-provider-与成本运营">5. Provider 与成本运营</h2>
 <ul>
-<li>当前默认视频 Provider 为 Pippit。</li>
-<li>所有计费生成必须先获得用户明确批准。</li>
-<li>提交使用数据库幂等键。</li>
+<li>Pippit CLI 与 Kling MCP 通过统一 Provider 边界提供能力。</li>
+<li>计费生成必须获得用户明确批准。</li>
+<li>Provider 提交使用数据库幂等键。</li>
 <li>积分和 Provider 状态由服务端读取。</li>
 <li>监控 Provider 错误率、超时率、不确定提交和重复提交拦截。</li>
-<li>Kling MCP 能力可用于 Skill 目录，但在凭据、计费和路由完成前不得宣传为</li>
-<p>已启用的执行链路。</p>
+<li>保留 Provider Task Reference 以支持对账。</li>
 </ul>
-<h2 id="7-发布流程">7. 发布流程</h2>
-<p>每次发布：</p>
+<h2 id="6-发布流程">6. 发布流程</h2>
 <ol>
 <li>运行后端测试、前端测试、类型检查、构建和文档生成。</li>
-<li>验证 GitHub Pages 与正式产品构建。</li>
 <li>检查敏感信息和依赖安全扫描。</li>
 <li>只读检查 Provider 状态和积分。</li>
 <li>验证中英文 Docs、搜索、导航和响应式布局。</li>
-<li>记录发布 Commit 与已知问题。</li>
+<li>记录发布 Commit。</li>
 </ol>
-<h2 id="8-监控指标">8. 监控指标</h2>
-<p>最低监控范围：</p>
+<h2 id="7-监控指标">7. 监控指标</h2>
 <ul>
 <li>注册和登录成功率。</li>
 <li>项目创建成功率。</li>
@@ -138,9 +117,8 @@
 <li>幂等键拦截的重复任务数。</li>
 <li>单项目积分消耗。</li>
 <li>文档搜索使用量和失效链接。</li>
-<li>持久化社区开启后的举报率。</li>
 </ul>
-<h2 id="9-用户支持">9. 用户支持</h2>
+<h2 id="8-用户支持">8. 用户支持</h2>
 <p>问题优先级：</p>
 <ol>
 <li>登录和 Session 异常。</li>
@@ -151,7 +129,7 @@
 <li>视觉与文案问题。</li>
 </ol>
 <p>不得要求用户提供 Access Key、Cookie 或 CLI 登录文件。</p>
-<h2 id="10-故障处理">10. 故障处理</h2>
+<h2 id="9-故障处理">9. 故障处理</h2>
 <ul>
 <li>Provider 状态不确定时先停止计费生成，再排查。</li>
 <li>保留任务记录和 Provider Task ID。</li>
@@ -159,7 +137,7 @@
 <li>发布状态说明，明确受影响能力与缓解措施。</li>
 <li>复盘重复扣费、跨用户访问和审计证据缺失。</li>
 </ul>
-<h2 id="11-成功指标">11. 成功指标</h2>
+<h2 id="10-成功指标">10. 成功指标</h2>
 <ul>
 <li>激活：首次会话内完成项目创建。</li>
 <li>创作：五分钟内生成故事板。</li>
@@ -168,30 +146,8 @@
 <li>成本：完成项目对应的积分消耗。</li>
 <li>内容：官方 Skill 复用率和社区发布量。</li>
 <li>文档：搜索成功率与双语链接完整率。</li>
-</ul>
-<h2 id="12-变更记录">12. 变更记录</h2>
-<div class="table-wrap"><table><thead><tr>
-<th>版本</th>
-<th>日期</th>
-<th>说明</th>
-</tr></thead><tbody>
-<tr>
-<td>v1.2</td>
-<td>2026-11-04</td>
-<td>增加 FAQ 文档发布检查</td>
-</tr>
-<tr>
-<td>v1.1</td>
-<td>2026-11-04</td>
-<td>增加场景 Playbook 运营、社区 Skill 复用和外部 Agent 接力边界</td>
-</tr>
-<tr>
-<td>v1.0</td>
-<td>2026-11-04</td>
-<td>建立 Skill、Hots、Assets、Docs、Provider 和发布运营基线</td>
-</tr>
-</tbody></table></div></article>
+</ul></article>
     </main>
-    <script src="../docs.js?v=20"></script>
+    <script src="../docs.js?v=21"></script>
   </body>
 </html>

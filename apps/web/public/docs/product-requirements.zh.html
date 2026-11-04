@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent PRD" />
     <title>PRD · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=20" />
+    <link rel="stylesheet" href="../docs.css?v=21" />
   </head>
   <body data-document="product-requirements.zh.html">
     <main class="document-shell" id="document-shell">
@@ -57,7 +57,7 @@
 </tbody></table></div>
 <h2 id="1-产品目标">1. 产品目标</h2>
 <p>VideoAgent 帮助用户以导演身份完成视频创作：描述想法、选择 Skill 或制作设定、 生成可控镜头、评估结果，并在同一工作台中管理成品与半成品。</p>
-<p>所有主页面都必须提供明确的选择、创建、搜索、发布、评估或资产管理能力， 不展示没有实际功能的宣传内容。</p>
+<p>每个主页面围绕明确的选择、创建、搜索、发布、评估或资产管理任务组织。</p>
 <h2 id="2-目标用户">2. 目标用户</h2>
 <ul>
 <li>独立视频创作者。</li>
@@ -97,7 +97,7 @@ Docs</code></pre>
 </ul>
 <h2 id="5-skills">5. Skills</h2>
 <h3 id="5-1-skill-目录">5.1 Skill 目录</h3>
-<p>Skills 使用一个统一目录，不再区分 Atomic 和 Workflow。</p>
+<p>Skills 使用统一目录，并以任务型卡片组织。</p>
 <p>官方 Skill ID 格式：</p>
 <pre><code class="language-text">video_agent/&lt;skill_id&gt;</code></pre>
 <p>示例：</p>
@@ -123,8 +123,7 @@ video_agent/camera_movement
 video_agent/music_video
 video_agent/reference_remake
 video_agent/agent_handoff</code></pre>
-<p>Workflow Skill 不展示内部执行流程。</p>
-<p>Review 作为一个普通 Skill 卡片呈现，不再提供单独的 Open projects 操作。</p>
+<p>Review 使用与其他任务型 Skill 一致的卡片结构。</p>
 <h3 id="5-2-搜索与发布">5.2 搜索与发布</h3>
 <ul>
 <li>Skills 顶部提供搜索框。</li>
@@ -132,11 +131,9 @@ video_agent/agent_handoff</code></pre>
 <li>搜索范围包含 user_id、skill_id、标题和描述。</li>
 <li>用户可以通过与 Hots 发布一致的方式发布 Skill。</li>
 <li>用户发布 ID 使用 <code>&lt;user_id&gt;/&lt;skill_id&gt;</code> 格式。</li>
-<li>当前发布内容仅保存在前端会话，尚未提供持久化社区 API。</li>
 </ul>
 <h2 id="6-hots">6. Hots</h2>
 <ul>
-<li>Hots 位于 Assets 上方。</li>
 <li>顶部提供搜索框。</li>
 <li>搜索框在页面滚动时固定在顶部。</li>
 <li>卡片使用循环播放的视频。</li>
@@ -165,7 +162,8 @@ Interface
 Impl
 Test
 Ops
-FAQ</code></pre>
+FAQ
+TODO</code></pre>
 <p>中文缩写：</p>
 <div class="table-wrap"><table><thead><tr>
 <th>英文</th>
@@ -197,7 +195,11 @@ FAQ</code></pre>
 </tr>
 <tr>
 <td>FAQ</td>
-<td>问答</td>
+<td>客服</td>
+</tr>
+<tr>
+<td>TODO</td>
+<td>待办</td>
 </tr>
 </tbody></table></div>
 <p>文档要求：</p>
@@ -205,10 +207,10 @@ FAQ</code></pre>
 <li>顶部提供搜索框。</li>
 <li>搜索框在页面滚动时固定在顶部。</li>
 <li>搜索覆盖中英文文档正文。</li>
-<li>语言按钮只影响文档，不影响其他英文产品界面。</li>
+<li>语言按钮切换文档语言。</li>
 <li>左侧目录支持跳转、高亮和折叠。</li>
 <li>中英文版本保持相同文档顺序。</li>
-<li>文档使用固定深色主题，不提供亮暗切换。</li>
+<li>文档使用统一的深色阅读主题。</li>
 </ul>
 <h2 id="9-认证与积分">9. 认证与积分</h2>
 <ul>
@@ -223,33 +225,30 @@ FAQ</code></pre>
 <li>桌面端和移动端不得出现控件遮挡。</li>
 <li>所有核心控件应支持键盘操作。</li>
 <li>动效支持 <code>prefers-reduced-motion</code>。</li>
-<li>当前静态页面的搜索和筛选在前端完成。</li>
-<li>用户发布的 Skill 和 Hots 内容暂不跨设备持久化。</li>
-<li>公开产品界面使用英文，当前中文仅用于 Docs。</li>
+<li>搜索和筛选在客户端完成。</li>
 </ul>
 <h2 id="11-验收标准">11. 验收标准</h2>
 <ol>
 <li>导航顺序为 Agents、Skills、Hots、Assets、Docs。</li>
-<li>Hots 位于 Assets 上方。</li>
 <li>Agents 可以选择 Skill。</li>
 <li>Skills 使用统一的可搜索目录，并显示 <code>user_id/skill_id</code>。</li>
 <li>官方 Skill 使用 <code>video_agent</code> 命名空间。</li>
 <li>用户可以发布 Skill。</li>
-<li>Review 以普通 Skill 卡片呈现。</li>
+<li>Review 使用统一 Skill 卡片。</li>
 <li>Hots 和 Assets 均提供顶部搜索。</li>
 <li>Hots 卡片自动播放，标题位于作者与喜欢数上方。</li>
 <li>Assets 通过 Video/Skill 内部分页区分类型，并展示权限和 <code>yyyy-mm-dd</code> 编辑时间。</li>
 <li>Assets 使用瀑布流；Video 悬浮预览，Skill 卡片不显示封面。</li>
-<li>Docs 依次包含 PRD、Design、Interface、Impl、Test、Ops、FAQ。</li>
+<li>Docs 依次包含 PRD、Design、Interface、Impl、Test、Ops、FAQ、TODO。</li>
 <li>Docs 搜索和双语切换可用。</li>
 <li>头像根据登录状态提供登录、注册或退出。</li>
 <li>创作 Playbook 可填充提示词和推荐制作参数。</li>
 <li>Hots 场景卡片进入 Agents 时选中对应 Skill。</li>
 <li>输入框随内容向下扩展，输入内容后空态建议隐藏。</li>
 <li>重复点击已激活的 Playbook 会取消选择，并恢复应用前的草稿。</li>
-<li>模型下拉框展示全部当前可用的视频模型。</li>
+<li>模型下拉框展示全部可用视频模型。</li>
 </ol></article>
     </main>
-    <script src="../docs.js?v=20"></script>
+    <script src="../docs.js?v=21"></script>
   </body>
 </html>

@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent PRD" />
     <title>PRD · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=20" />
+    <link rel="stylesheet" href="../docs.css?v=21" />
   </head>
   <body data-document="product-requirements.html">
     <main class="document-shell" id="document-shell">
@@ -57,7 +57,7 @@
 </tbody></table></div>
 <h2 id="1-product-goal">1. Product Goal</h2>
 <p>VideoAgent helps a creator act as the director: describe an idea, select a skill or production setting, generate controllable shots, review the result, and keep finished or in-progress work organized in one workspace.</p>
-<p>The product avoids marketing-only screens. Every primary view must expose a concrete creation, review, publishing, search, or asset-management action.</p>
+<p>Every primary view is organized around a concrete creation, review, publishing, search, or asset-management task.</p>
 <h2 id="2-target-users">2. Target Users</h2>
 <ul>
 <li>Independent video creators.</li>
@@ -104,7 +104,7 @@ Avatar</code></pre>
 </ul>
 <h2 id="5-skills">5. Skills</h2>
 <h3 id="5-1-catalogue">5.1 Catalogue</h3>
-<p>Skills are one flat catalogue. They are not separated into atomic and workflow sections.</p>
+<p>Skills use one flat catalogue with task-oriented cards.</p>
 <p>Official skill IDs use:</p>
 <pre><code class="language-text">video_agent/&lt;skill_id&gt;</code></pre>
 <p>Examples:</p>
@@ -130,8 +130,7 @@ video_agent/camera_movement
 video_agent/music_video
 video_agent/reference_remake
 video_agent/agent_handoff</code></pre>
-<p>Workflow skills do not display an internal flow diagram.</p>
-<p>Review is a normal skill card. It has no separate action button.</p>
+<p>Review uses the same skill-card structure as other task-oriented Skills.</p>
 <h3 id="5-2-search-and-publishing">5.2 Search and Publishing</h3>
 <ul>
 <li>Skills has a top search field.</li>
@@ -140,11 +139,9 @@ video_agent/agent_handoff</code></pre>
 <li>A user can publish a skill using the same publish interaction pattern used by</li>
 <p>Hots.</p>
 <li>User-published IDs follow <code>&lt;user_id&gt;/&lt;skill_id&gt;</code>.</li>
-<li>Publishing is session-local until a persistent community API is implemented.</li>
 </ul>
 <h2 id="6-hots">6. Hots</h2>
 <ul>
-<li>Hots is listed above Assets in navigation.</li>
 <li>The top area contains a search field.</li>
 <li>The search field stays pinned to the top while content scrolls.</li>
 <li>Cards play muted looping video.</li>
@@ -175,7 +172,8 @@ Interface
 Impl
 Test
 Ops
-FAQ</code></pre>
+FAQ
+TODO</code></pre>
 <p>English labels and Chinese short labels:</p>
 <div class="table-wrap"><table><thead><tr>
 <th>English</th>
@@ -207,7 +205,11 @@ FAQ</code></pre>
 </tr>
 <tr>
 <td>FAQ</td>
-<td>问答</td>
+<td>客服</td>
+</tr>
+<tr>
+<td>TODO</td>
+<td>待办</td>
 </tr>
 </tbody></table></div>
 <p>Docs requirements:</p>
@@ -233,14 +235,11 @@ FAQ</code></pre>
 <li>Desktop and mobile layouts must avoid clipped controls.</li>
 <li>All primary controls must be keyboard accessible.</li>
 <li>Motion supports <code>prefers-reduced-motion</code>.</li>
-<li>Search and filtering are client-side for current static views.</li>
-<li>User-published Skills and Hots posts are not persisted across devices yet.</li>
-<li>Public product UI is English; Chinese is currently enabled only for Docs.</li>
+<li>Search and filtering run in the client.</li>
 </ul>
 <h2 id="11-acceptance-criteria">11. Acceptance Criteria</h2>
 <ol>
 <li>Navigation order is Agents, Skills, Hots, Assets, Docs.</li>
-<li>Hots is above Assets.</li>
 <li>Agents can choose a Skill.</li>
 <li>Skills is one searchable flat catalogue using <code>user_id/skill_id</code>.</li>
 <li>Official Skills use the <code>video_agent</code> namespace.</li>
@@ -251,7 +250,7 @@ FAQ</code></pre>
 <li>Assets uses internal Video and Skill tabs and shows permission and</li>
 <p><code>yyyy-mm-dd</code> edit time.</p>
 <li>Assets uses a waterfall layout; videos preview on hover and Skill cards have no cover.</li>
-<li>Docs includes PRD, Design, Interface, Impl, Test, Ops, and FAQ in order.</li>
+<li>Docs includes PRD, Design, Interface, Impl, Test, Ops, FAQ, and TODO in order.</li>
 <li>Docs search and bilingual switching work.</li>
 <li>Avatar provides login, registration, or sign-out based on session state.</li>
 <li>Production playbooks fill the prompt and recommended production settings.</li>
@@ -259,9 +258,9 @@ FAQ</code></pre>
 <li>The prompt grows with its content and empty-state suggestions disappear</li>
 <p>while typing.</p>
 <li>Re-clicking the active playbook cancels selection and restores the previous draft.</li>
-<li>The Model selector exposes all currently available video models.</li>
+<li>The Model selector exposes all available video models.</li>
 </ol></article>
     </main>
-    <script src="../docs.js?v=20"></script>
+    <script src="../docs.js?v=21"></script>
   </body>
 </html>

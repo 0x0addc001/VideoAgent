@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Interface" />
     <title>Interface · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=20" />
+    <link rel="stylesheet" href="../docs.css?v=21" />
   </head>
   <body data-document="interface-reference.zh.html">
     <main class="document-shell" id="document-shell">
@@ -46,9 +46,7 @@
 <a class="toc-link toc-level-3" href="#提交生成">提交生成</a>
 <a class="toc-link toc-level-3" href="#查询任务">查询任务</a>
 <a class="toc-link toc-level-2" href="#pippit-provider">Pippit Provider</a>
-<a class="toc-link toc-level-2" href="#hots-发布">Hots 发布</a>
 <a class="toc-link toc-level-2" href="#错误格式">错误格式</a>
-<a class="toc-link toc-level-2" href="#变更记录">变更记录</a>
         </nav>
       </aside>
       <article class="document"><h1 id="videoagent-interface-接口文档">VideoAgent Interface 接口文档</h1>
@@ -78,7 +76,7 @@
 </tr>
 <tr>
 <td>API 风格</td>
-<td>REST + 任务轮询；SSE 属于目标能力</td>
+<td>REST + 任务轮询</td>
 </tr>
 <tr>
 <td>计费生成</td>
@@ -104,7 +102,6 @@ http://localhost:8000/openapi.json</code></pre>
   &quot;password&quot;: &quot;at-least-eight-characters&quot;,
   &quot;locale&quot;: &quot;zh-CN&quot;
 }</code></pre>
-<p>后端仍接受 <code>en</code> 和 <code>zh-CN</code> 用户偏好；当前公开产品 UI 仅开放英文。</p>
 <h3 id="登录">登录</h3>
 <p><code>POST /auth/login</code></p>
 <pre><code class="language-json">{
@@ -190,7 +187,6 @@ http://localhost:8000/openapi.json</code></pre>
   &quot;content&quot;: &quot;把需求整理成三个镜头的发布视频&quot;
 }</code></pre>
 <p>响应包含用户消息、Assistant 回复和最新故事板。</p>
-<p>当前接口返回普通 JSON，不提供 SSE 或 Token 流式响应。</p>
 <h2 id="故事板即时评估">故事板即时评估</h2>
 <p><code>POST /projects/{project_id}/evaluate</code></p>
 <p>返回：</p>
@@ -237,7 +233,7 @@ running
 succeeded
 failed
 cancelled</code></pre>
-<p>当前前端每 5 秒轮询任务状态。Celery 启用时可由 Worker 轮询。</p>
+<p>前端每 5 秒轮询任务状态。Celery Worker 同时轮询任务状态。</p>
 <h2 id="pippit-provider">Pippit Provider</h2>
 <div class="table-wrap"><table><thead><tr>
 <th>方法</th>
@@ -255,7 +251,7 @@ cancelled</code></pre>
 <td>查询 Pippit 积分余额</td>
 </tr>
 </tbody></table></div>
-<p>Pippit 授权由服务端统一持有。浏览器不会收到 Access Key 或 CLI 登录文件。 当前所有 VideoAgent 用户共享同一个配置的 Pippit 账户和积分池。</p>
+<p>Pippit 授权由服务端统一持有。浏览器不会收到 Access Key 或 CLI 登录文件。 VideoAgent 用户共享服务端配置的 Pippit 账户和积分池。</p>
 <p>状态响应：</p>
 <pre><code class="language-json">{
   &quot;provider&quot;: &quot;pippit&quot;,
@@ -268,8 +264,6 @@ cancelled</code></pre>
   &quot;connected&quot;: true,
   &quot;credits&quot;: 42
 }</code></pre>
-<h2 id="hots-发布">Hots 发布</h2>
-<p>Hots 发布目前仅为前端当前会话交互，不调用后端 API。帖子、作者和 0 喜欢 不会持久化到数据库，也没有点赞接口。</p>
 <h2 id="错误格式">错误格式</h2>
 <pre><code class="language-json">{
   &quot;error&quot;: {
@@ -312,20 +306,8 @@ cancelled</code></pre>
 <td><code>503</code></td>
 <td>Provider CLI 不可用</td>
 </tr>
-</tbody></table></div>
-<h2 id="变更记录">变更记录</h2>
-<div class="table-wrap"><table><thead><tr>
-<th>版本</th>
-<th>日期</th>
-<th>说明</th>
-</tr></thead><tbody>
-<tr>
-<td>v1.1</td>
-<td>2026-11-03</td>
-<td>增加中文版本，补充健康检查、项目重命名、评估与 Hots 当前边界</td>
-</tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=20"></script>
+    <script src="../docs.js?v=21"></script>
   </body>
 </html>

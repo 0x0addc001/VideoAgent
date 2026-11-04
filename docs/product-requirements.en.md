@@ -11,8 +11,8 @@ VideoAgent helps a creator act as the director: describe an idea, select a skill
 or production setting, generate controllable shots, review the result, and keep
 finished or in-progress work organized in one workspace.
 
-The product avoids marketing-only screens. Every primary view must expose a
-concrete creation, review, publishing, search, or asset-management action.
+Every primary view is organized around a concrete creation, review, publishing,
+search, or asset-management task.
 
 ## 2. Target Users
 
@@ -76,8 +76,7 @@ shows the account email and a sign-out action.
 
 ### 5.1 Catalogue
 
-Skills are one flat catalogue. They are not separated into atomic and workflow
-sections.
+Skills use one flat catalogue with task-oriented cards.
 
 Official skill IDs use:
 
@@ -112,9 +111,7 @@ video_agent/reference_remake
 video_agent/agent_handoff
 ```
 
-Workflow skills do not display an internal flow diagram.
-
-Review is a normal skill card. It has no separate action button.
+Review uses the same skill-card structure as other task-oriented Skills.
 
 ### 5.2 Search and Publishing
 
@@ -124,11 +121,8 @@ Review is a normal skill card. It has no separate action button.
 - A user can publish a skill using the same publish interaction pattern used by
   Hots.
 - User-published IDs follow `<user_id>/<skill_id>`.
-- Publishing is session-local until a persistent community API is implemented.
-
 ## 6. Hots
 
-- Hots is listed above Assets in navigation.
 - The top area contains a search field.
 - The search field stays pinned to the top while content scrolls.
 - Cards play muted looping video.
@@ -164,6 +158,7 @@ Impl
 Test
 Ops
 FAQ
+TODO
 ```
 
 English labels and Chinese short labels:
@@ -176,7 +171,8 @@ English labels and Chinese short labels:
 | Impl | 实现 |
 | Test | 测试 |
 | Ops | 运营 |
-| FAQ | 问答 |
+| FAQ | 客服 |
+| TODO | 待办 |
 
 Docs requirements:
 
@@ -201,30 +197,27 @@ Docs requirements:
 - Desktop and mobile layouts must avoid clipped controls.
 - All primary controls must be keyboard accessible.
 - Motion supports `prefers-reduced-motion`.
-- Search and filtering are client-side for current static views.
-- User-published Skills and Hots posts are not persisted across devices yet.
-- Public product UI is English; Chinese is currently enabled only for Docs.
+- Search and filtering run in the client.
 
 ## 11. Acceptance Criteria
 
 1. Navigation order is Agents, Skills, Hots, Assets, Docs.
-2. Hots is above Assets.
-3. Agents can choose a Skill.
-4. Skills is one searchable flat catalogue using `user_id/skill_id`.
-5. Official Skills use the `video_agent` namespace.
-6. Users can publish a Skill.
-7. Review appears as a normal Skill card.
-8. Hots and Assets both provide top search.
-9. Hots cards play video and show title above author and likes.
-10. Assets uses internal Video and Skill tabs and shows permission and
+2. Agents can choose a Skill.
+3. Skills is one searchable flat catalogue using `user_id/skill_id`.
+4. Official Skills use the `video_agent` namespace.
+5. Users can publish a Skill.
+6. Review appears as a normal Skill card.
+7. Hots and Assets both provide top search.
+8. Hots cards play video and show title above author and likes.
+9. Assets uses internal Video and Skill tabs and shows permission and
     `yyyy-mm-dd` edit time.
-11. Assets uses a waterfall layout; videos preview on hover and Skill cards have no cover.
-12. Docs includes PRD, Design, Interface, Impl, Test, Ops, and FAQ in order.
-13. Docs search and bilingual switching work.
-14. Avatar provides login, registration, or sign-out based on session state.
-15. Production playbooks fill the prompt and recommended production settings.
-16. Hots scenario cards open Agents with the corresponding Skill selected.
-17. The prompt grows with its content and empty-state suggestions disappear
+10. Assets uses a waterfall layout; videos preview on hover and Skill cards have no cover.
+11. Docs includes PRD, Design, Interface, Impl, Test, Ops, FAQ, and TODO in order.
+12. Docs search and bilingual switching work.
+13. Avatar provides login, registration, or sign-out based on session state.
+14. Production playbooks fill the prompt and recommended production settings.
+15. Hots scenario cards open Agents with the corresponding Skill selected.
+16. The prompt grows with its content and empty-state suggestions disappear
     while typing.
-18. Re-clicking the active playbook cancels selection and restores the previous draft.
-19. The Model selector exposes all currently available video models.
+17. Re-clicking the active playbook cancels selection and restores the previous draft.
+18. The Model selector exposes all available video models.

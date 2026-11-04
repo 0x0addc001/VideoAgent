@@ -7,7 +7,7 @@
 | 基础路径 | `/api/v1` |
 | 认证方式 | HttpOnly Session Cookie |
 | 请求格式 | JSON，并设置 `credentials: "include"` |
-| API 风格 | REST + 任务轮询；SSE 属于目标能力 |
+| API 风格 | REST + 任务轮询 |
 | 计费生成 | 显式审批 + `Idempotency-Key` |
 | OpenAPI | `/docs` 与 `/openapi.json` |
 
@@ -41,8 +41,6 @@ http://localhost:8000/openapi.json
   "locale": "zh-CN"
 }
 ```
-
-后端仍接受 `en` 和 `zh-CN` 用户偏好；当前公开产品 UI 仅开放英文。
 
 ### 登录
 
@@ -149,8 +147,6 @@ http://localhost:8000/openapi.json
 
 响应包含用户消息、Assistant 回复和最新故事板。
 
-当前接口返回普通 JSON，不提供 SSE 或 Token 流式响应。
-
 ## 故事板即时评估
 
 `POST /projects/{project_id}/evaluate`
@@ -223,7 +219,7 @@ failed
 cancelled
 ```
 
-当前前端每 5 秒轮询任务状态。Celery 启用时可由 Worker 轮询。
+前端每 5 秒轮询任务状态。Celery Worker 同时轮询任务状态。
 
 ## Pippit Provider
 
@@ -233,7 +229,7 @@ cancelled
 | `GET` | `/providers/pippit/credits` | 查询 Pippit 积分余额 |
 
 Pippit 授权由服务端统一持有。浏览器不会收到 Access Key 或 CLI 登录文件。
-当前所有 VideoAgent 用户共享同一个配置的 Pippit 账户和积分池。
+VideoAgent 用户共享服务端配置的 Pippit 账户和积分池。
 
 状态响应：
 
@@ -254,11 +250,6 @@ Pippit 授权由服务端统一持有。浏览器不会收到 Access Key 或 CLI
   "credits": 42
 }
 ```
-
-## Hots 发布
-
-Hots 发布目前仅为前端当前会话交互，不调用后端 API。帖子、作者和 0 喜欢
-不会持久化到数据库，也没有点赞接口。
 
 ## 错误格式
 
@@ -284,9 +275,3 @@ Hots 发布目前仅为前端当前会话交互，不调用后端 API。帖子�
 | `422` | 请求校验失败 |
 | `502` | 上游 Provider 请求失败 |
 | `503` | Provider CLI 不可用 |
-
-## 变更记录
-
-| 版本 | 日期 | 说明 |
-| --- | --- | --- |
-| v1.1 | 2026-11-03 | 增加中文版本，补充健康检查、项目重命名、评估与 Hots 当前边界 |

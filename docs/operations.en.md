@@ -2,100 +2,67 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.2 |
+| Document version | v2.0 |
 | Updated | 2026-11-04 |
-| Scope | Product launch, community, providers, support, metrics |
+| Scope | Skills, Hots, Assets, providers, support, metrics |
 
 ## 1. Operating Model
 
-VideoAgent is operated as a creator workspace with three content layers:
+VideoAgent operates three content layers:
 
-1. Official Skills maintained under the `video_agent` namespace.
-2. User-published Skills and Hots posts.
-3. Project-level outputs stored in Assets.
+1. Official Skills under the `video_agent` namespace.
+2. User-published Skills and Hots entries.
+3. Project outputs stored in Assets.
 
-The current public build is a product and documentation preview. Community
-publication is session-local until backend persistence and moderation are
-implemented.
-
-## 2. Launch Readiness
-
-Before public launch:
+## 2. Release Readiness
 
 - Complete authentication and credit-usage acceptance.
-- Verify Pippit CLI authorization on the deployment host.
-- Publish the seven Docs: PRD, Design, Interface, Impl, Test, Ops, FAQ.
+- Verify Pippit CLI authorization and Kling MCP OAuth.
+- Publish PRD, Design, Interface, Impl, Test, Ops, FAQ, and TODO.
 - Verify English and Chinese Docs switching.
-- Verify that project creation, storyboard planning, generation approval, and
-  job polling work with the configured provider.
-- Confirm no provider credential appears in browser bundles, logs, or API
+- Verify project creation, storyboard planning, generation approval, and job
+  polling with the configured provider.
+- Confirm provider credentials never appear in browser bundles, logs, or API
   responses.
 
 ## 3. Official Skill Operations
 
 - Official user namespace: `video_agent`.
-- Skill IDs must be stable, lowercase, and underscore-separated.
-- Each Skill must state the input, output, provider dependency, and whether it
-  consumes credits.
-- Review changes require updating the PRD, Design, and Test documents.
-- Deprecated Skills remain listed for one release with a migration note before
-  removal.
-- Scenario playbooks are curated entry points, not separate billing products.
-  They must reference current Skills and stay aligned with the composer fields.
-- External Agent handoff requires an explicit MCP or CLI integration contract;
-  the Skill entry must not imply that credentials or remote execution are
-  already active.
+- Skill IDs are stable, lowercase, and underscore-separated.
+- Every Skill states its input, output, provider dependency, and credit impact.
+- Skill changes update PRD, Design, and Test.
+- Deprecated Skills remain listed for one release with a migration note.
+- Scenario playbooks reference current Skills and stay aligned with composer
+  fields.
+- External Agent handoff uses an explicit MCP or CLI contract.
 
-## 4. Community Operations
-
-When persistent community support is enabled:
-
-- Require authenticated publication.
-- Store `user_id`, `skill_id`, permission, title, description, media reference,
-  created time, and edited time.
-- Default user content to private until explicitly published.
-- Support search by user ID, skill ID, title, description, and author.
-- Provide report, hide, restore, and appeal workflows.
-- Separate completed videos from reusable Skills in search facets.
-- Scenario cards must retain their Skill binding so reuse opens Agents with the
-  expected workflow selected.
-- Preserve local preview behavior while the API is unavailable.
-
-## 5. Assets Operations
+## 4. Asset Operations
 
 - Assets contains only the current user's work.
-- Public and private permissions must be explicit.
+- Public and private permissions are explicit.
 - Edit dates use `yyyy-mm-dd`.
-- Video assets preview only on hover; Skill assets have no cover.
-- Video and Skill assets use distinct internal tabs instead of repeated type labels.
-- A future retention policy must define soft-delete, recovery, and storage
-  lifecycle rules.
+- Video assets preview on hover; Skill assets have no cover.
+- Video and Skill use internal tabs rather than repeated type labels.
 
-## 6. Provider and Cost Operations
+## 5. Provider and Cost Operations
 
-- Pippit is the current default provider.
-- Every billable generation requires explicit user approval.
-- Provider task submission uses idempotency keys.
+- Pippit CLI and Kling MCP are available through the provider boundary.
+- Billable generation requires explicit user approval.
+- Provider submission uses database idempotency keys.
 - Credits and provider status are read server-side.
 - Monitor provider errors, timeout rate, uncertain submissions, and duplicate
   protection.
-- Kling MCP capabilities are catalogued in Skills but must not be promoted to
-  live execution until credentials, billing, and provider routing are enabled.
+- Preserve provider task references for reconciliation.
 
-## 7. Release Operations
-
-For every release:
+## 6. Release Procedure
 
 1. Run backend tests, frontend tests, type checks, builds, and Docs generation.
-2. Verify GitHub Pages and the formal product build.
-3. Check secret scanning and dependency security results.
-4. Confirm provider status and credit balance without spending credits.
-5. Validate English and Chinese Docs, search, navigation, and responsive layout.
-6. Record the release commit and known issues.
+2. Check secret scanning and dependency security results.
+3. Confirm provider status and credit balance without spending credits.
+4. Validate English and Chinese Docs, search, navigation, and responsive layout.
+5. Record the release commit.
 
-## 8. Monitoring
-
-Minimum operating metrics:
+## 7. Monitoring
 
 - Registration and login success rate.
 - Project creation success rate.
@@ -105,9 +72,8 @@ Minimum operating metrics:
 - Duplicate generation prevented by idempotency.
 - Credit consumption per project.
 - Docs search usage and broken document links.
-- Community report rate after persistent publishing is enabled.
 
-## 9. Support
+## 8. Support
 
 Support triage order:
 
@@ -118,18 +84,17 @@ Support triage order:
 5. Search, Docs, and navigation defects.
 6. Visual and copy issues.
 
-Never ask users to provide access keys, cookies, or CLI session files.
+Support never asks users for access keys, cookies, or CLI session files.
 
-## 10. Incident Response
+## 9. Incident Response
 
 - Disable billable generation before retrying an uncertain provider incident.
 - Preserve job records and provider task references.
 - Roll back the web release independently from provider credentials.
-- Publish a status note with affected product areas and mitigation.
-- Perform a post-incident review focused on incorrect billing, duplicate jobs,
-  cross-user access, and missing audit evidence.
+- Publish a status note with affected areas and mitigation.
+- Review billing, duplicate jobs, cross-user access, and audit evidence.
 
-## 11. Success Metrics
+## 10. Success Metrics
 
 - Activation: first project created within the first session.
 - Creation: successful storyboard within five minutes.
@@ -138,11 +103,3 @@ Never ask users to provide access keys, cookies, or CLI session files.
 - Cost: credit usage per completed project.
 - Content: official Skill reuse and community publication rate.
 - Documentation: search success and zero broken bilingual links.
-
-## 12. Change Log
-
-| Version | Date | Description |
-| --- | --- | --- |
-| v1.2 | 2026-11-04 | Add launch checks for the FAQ document |
-| v1.1 | 2026-11-04 | Add scenario playbook curation, Skill-backed community reuse, and external Agent handoff boundaries |
-| v1.0 | 2026-11-04 | Initial operations strategy for Skills, Hots, Assets, Docs, providers, and releases |
