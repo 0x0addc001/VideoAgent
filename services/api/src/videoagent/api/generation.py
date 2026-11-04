@@ -22,6 +22,7 @@ from videoagent.schemas import GenerationApproval, GenerationJobRead
 from videoagent.services.credits import refund_credits, reserve_credits
 from videoagent.services.generation_jobs import refresh_generation_job
 from videoagent.services.media import materialize_generation_result
+from videoagent.services.platform_settings import generation_enabled
 from videoagent.services.provider_resolver import resolve_video_provider
 
 router = APIRouter(tags=["generation"])
@@ -126,6 +127,12 @@ async def estimate_generation(
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> CostEstimate:
     shot, project = await owned_shot_or_404(session, shot_id, user.id)
+    if not await generation_enabled(session, settings):
+        raise AppError(
+            status_code=503,
+            code="GENERATION_DISABLED",
+            message="Video generation is temporarily unavailable.",
+        )
     selected_provider, model = await provider_for_project(
         session,
         user=user,
@@ -154,6 +161,12 @@ async def generate_shot(
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> GenerationJobRead:
     shot, project = await owned_shot_or_404(session, shot_id, user.id)
+    if not await generation_enabled(session, settings):
+        raise AppError(
+            status_code=503,
+            code="GENERATION_DISABLED",
+            message="Video generation is temporarily unavailable.",
+        )
 
     existing_result = await session.execute(
         select(GenerationJob).where(

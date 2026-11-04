@@ -2,7 +2,7 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v1.8 |
+| 文档版本 | v1.9 |
 | 更新日期 | 2026-11-04 |
 | 后端框架 | Python + FastAPI |
 | 前端框架 | Next.js + TypeScript |
@@ -45,6 +45,7 @@ VideoAgent 是一个面向内容创作者、营销人员和普通用户的 AI �
 - 支持 FFmpeg 合成、16:9/9:16/1:1 交付版本、封面、字幕和音轨。
 - 支持限时分享链接、公开/私有权限、过期和撤销。
 - 支持用户独立积分账户与预扣、退款流水，隔离共享 Provider 账户的计费风险。
+- 支持管理员控制台、用户状态、积分调整、邀请码、生成开关和审计日志。
 - 支持服务端统一授权的 Pippit CLI。
 - 支持 Pippit 文本生成视频、任务查询和积分余额读取。
 - 支持 Kling MCP 的文本生成视频、图生视频、动作控制和多模态参考能力。
@@ -197,6 +198,7 @@ VideoAgent/
 | `api.providers` | Pippit 服务端状态和积分余额 |
 | `api.assets` | 上传、下载、导出与分享 |
 | `api.credits` | 用户独立积分余额 |
+| `api.admin` | 管理总览、用户、积分、任务、邀请码、设置与审计 |
 | `api.health` | API 与数据库健康检查 |
 | `middleware` | 同源写请求校验与认证/生成/上传限流 |
 | `agent.graph` | 单节点 LangGraph：`plan_storyboard` |
@@ -335,6 +337,9 @@ Kling 的任务状态、错误和结果映射到与 Pippit 相同的 `VideoProvi
 | `credit_entries` | `user_id`, `amount`, `reason`, `reference_id` | 可审计的预扣与退款流水 |
 | `assets` | `owner_id`, `project_id`, `shot_id`, `kind`, `storage_key`, `permission` | 上传、生成、交付与封面资产 |
 | `share_links` | `asset_id`, `token_hash`, `expires_at`, `revoked_at`, `access_count` | 限时分享与访问计数 |
+| `platform_settings` | `key`, `value`, `updated_by` | 生成开关与注册模式 |
+| `invite_codes` | `code_hash`, `max_uses`, `use_count`, `expires_at` | 邀请制注册 |
+| `admin_audit_logs` | `admin_id`, `action`, `target_type`, `target_id` | 管理操作审计 |
 
 统一使用 UUID 主键、UTC 时间戳和数据库外键。数据库使用通用 `JSON`
 字段保存 Provider 原始响应。
@@ -434,6 +439,15 @@ cancelled
 | POST | `/assets/{id}/share` | 创建限时分享 |
 | DELETE | `/shares/{id}` | 撤销分享 |
 | GET | `/shares/{token}/content` | 读取分享资产 |
+| GET/PATCH | `/admin/settings` | 读取和更新生成、注册策略 |
+| GET | `/admin/overview` | 管理总览 |
+| GET/PATCH | `/admin/users`、`/admin/users/{id}` | 用户列表与状态 |
+| POST | `/admin/users/{id}/credits` | 管理员调整积分 |
+| GET | `/admin/jobs` | 生成任务列表 |
+| POST | `/admin/jobs/{id}/refund` | 人工退款 |
+| GET/POST | `/admin/invites` | 邀请码列表与创建 |
+| DELETE | `/admin/invites/{id}` | 撤销邀请码 |
+| GET | `/admin/audit` | 管理审计日志 |
 
 ## 15. 前端设计
 
@@ -449,6 +463,7 @@ cancelled
 - `Docs`：按 PRD、Playbook、Arch、API、Dev、Test、Ops、FAQ、TODO 展示中英文文档，支持全文搜索。
 - 项目工作区：对话、Canvas、镜头检查器、生成和审核弹窗。
 - 品牌与浏览器标签页图标统一使用蓝色播放键；激活导航图标采用填充/线框反转。
+- 管理后台使用独立控制台布局，与用户创作界面隔离。
 
 ### 15.2 项目工作区
 
@@ -510,6 +525,9 @@ Agent 输出支持三种 Prompt 模式：
 - 认证、生成和上传分别执行分钟级限流；分布式部署需将计数迁移到 Redis。
 - 上传同时校验声明的 MIME、文件签名和大小。
 - 分享链接只保存 Token 哈希，并支持过期、撤销和访问计数。
+- 管理接口使用环境变量邮箱白名单授权，普通用户访问返回 `403`。
+- 停用账号会立即删除其全部 Session。
+- 生成开关在 Provider 估算和提交前检查，暂停时不产生外部费用。
 
 ## 18. 可靠性设计
 
@@ -607,6 +625,7 @@ Markdown 文档在构建时生成 HTML，并复制到 `public/docs`。
 10. Playwright 使用 Mock Provider 完成注册、创作、上传、生成、导出、下载和分享。
 11. 生成预扣积分，失败或取消时幂等退款。
 12. 分享链接可撤销，私有资产不能由其他用户通过内容路由读取。
+13. 管理员可管理账号、积分、邀请码和生成状态，所有变更写入审计日志。
 
 ## 24. 主要风险
 

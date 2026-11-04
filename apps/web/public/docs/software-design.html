@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Arch" />
     <title>Arch · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=27" />
+    <link rel="stylesheet" href="../docs.css?v=28" />
   </head>
   <body data-document="software-design.html">
     <main class="document-shell" id="document-shell">
@@ -54,7 +54,7 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v1.8</td>
+<td>v1.9</td>
 </tr>
 <tr>
 <td>Updated</td>
@@ -109,6 +109,8 @@
 <li>FFmpeg composition with 16:9, 9:16, and 1:1 deliveries, covers, captions, and soundtracks.</li>
 <li>Time-limited share links with private/public permissions, expiry, revocation, and access counts.</li>
 <li>Per-user VideoAgent credit accounts with reservation and idempotent refunds.</li>
+<li>An administration console for users, credits, jobs, invites, launch controls,</li>
+<p>Provider state, and audit logs.</p>
 </ul>
 <h2 id="4-core-user-flow">4. Core User Flow</h2>
 <pre><code class="language-text">Sign in
@@ -390,6 +392,18 @@ query-result</code></pre>
 <td><code>share_links</code></td>
 <td>Hashed tokens, expiry, revocation, and access count</td>
 </tr>
+<tr>
+<td><code>platform_settings</code></td>
+<td>Generation switch and registration policy</td>
+</tr>
+<tr>
+<td><code>invite_codes</code></td>
+<td>Hashed invite codes, expiry, and usage limits</td>
+</tr>
+<tr>
+<td><code>admin_audit_logs</code></td>
+<td>Administrative action trail</td>
+</tr>
 </tbody></table></div>
 <h2 id="11-api-surface">11. API Surface</h2>
 <p>Base path: <code>/api/v1</code></p>
@@ -445,6 +459,10 @@ query-result</code></pre>
 <td>Delivery</td>
 <td>Export, share, revoke, and public share content</td>
 </tr>
+<tr>
+<td>Administration</td>
+<td>Overview, users, credits, jobs, refunds, invites, settings, and audit</td>
+</tr>
 </tbody></table></div>
 <p>Agent responses and job status use regular JSON with polling.</p>
 <h2 id="12-frontend-design">12. Frontend Design</h2>
@@ -463,6 +481,7 @@ query-result</code></pre>
 <li>Viewport-aware composer menus that flip above the trigger when needed, plus</li>
 <p>downward-opening language, notification, account, and search menus.</p>
 <li>Avatar account actions for login, registration, and sign-out.</li>
+<li>An isolated <code>/admin</code> control room for internal operations.</li>
 <li>Reference uploads, delivery downloads, cover preview, and share-link creation</li>
 <p>in the project workspace.</p>
 </ul>
@@ -486,6 +505,9 @@ query-result</code></pre>
 <li>Uploaded media is validated by declared MIME, signature, and size.</li>
 <li>Share tokens are stored as hashes and support expiry, revocation, and access</li>
 <p>accounting.</p>
+<li>Administrative APIs require an email in <code>VIDEOAGENT_ADMIN_EMAILS</code>.</li>
+<li>Disabling an account revokes its existing sessions.</li>
+<li>Generation checks the runtime kill switch before estimation and submission.</li>
 </ul>
 <h2 id="15-deployment">15. Deployment</h2>
 <p>Local development:</p>
@@ -514,8 +536,10 @@ Celery + Redis</code></pre>
 <p>upload, generation, export, download, and sharing without paid credits.</p>
 <li>User credits are reserved before submission and refunded idempotently when</li>
 <p>submission, generation, or cancellation ends without a usable result.</p>
+<li>Administrators can manage accounts, credits, invites, and generation state,</li>
+<p>with every mutation recorded in the audit log.</p>
 </ol></article>
     </main>
-    <script src="../docs.js?v=27"></script>
+    <script src="../docs.js?v=28"></script>
   </body>
 </html>

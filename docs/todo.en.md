@@ -69,6 +69,7 @@
 | TODO-SEC-003 | Media decoding and malware checks | Add decode validation and malware scanning on top of file signature, size, and MIME checks | P0 |
 | TODO-SEC-004 | Production data services | PostgreSQL, Redis, MinIO, migrations, and integration tests are complete | P0 |
 | TODO-SEC-005 | Generated OpenAPI client | Frontend types are generated from OpenAPI and checked in CI | P1 |
+| TODO-SEC-006 | Database-backed administrator roles | Role grants, revocations, and least-privilege policy replace the static environment allowlist | P1 |
 
 ## 8. Testing and Release
 

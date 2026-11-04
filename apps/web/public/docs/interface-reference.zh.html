@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent API" />
     <title>API · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=27" />
+    <link rel="stylesheet" href="../docs.css?v=28" />
   </head>
   <body data-document="interface-reference.zh.html">
     <main class="document-shell" id="document-shell">
@@ -29,6 +29,7 @@
 <a class="toc-link toc-level-2" href="#健康检查">健康检查</a>
 <a class="toc-link toc-level-2" href="#认证">认证</a>
 <a class="toc-link toc-level-3" href="#注册">注册</a>
+<a class="toc-link toc-level-3" href="#注册策略">注册策略</a>
 <a class="toc-link toc-level-3" href="#登录">登录</a>
 <a class="toc-link toc-level-3" href="#当前用户">当前用户</a>
 <a class="toc-link toc-level-3" href="#更新语言偏好">更新语言偏好</a>
@@ -48,6 +49,7 @@
 <a class="toc-link toc-level-3" href="#查询任务">查询任务</a>
 <a class="toc-link toc-level-2" href="#用户积分">用户积分</a>
 <a class="toc-link toc-level-2" href="#资产与媒体">资产与媒体</a>
+<a class="toc-link toc-level-2" href="#管理后台">管理后台</a>
 <a class="toc-link toc-level-2" href="#pippit-provider">Pippit Provider</a>
 <a class="toc-link toc-level-2" href="#错误格式">错误格式</a>
         </nav>
@@ -59,7 +61,7 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v1.3</td>
+<td>v1.4</td>
 </tr>
 <tr>
 <td>更新日期</td>
@@ -94,6 +96,10 @@
 <td>用户独立配额与可审计流水</td>
 </tr>
 <tr>
+<td>管理权限</td>
+<td><code>VIDEOAGENT_ADMIN_EMAILS</code> 邮箱白名单</td>
+</tr>
+<tr>
 <td>OpenAPI</td>
 <td><code>/docs</code> 与 <code>/openapi.json</code></td>
 </tr>
@@ -101,7 +107,7 @@
 <p>本地 OpenAPI 文档：</p>
 <pre><code class="language-text">http://localhost:8000/docs
 http://localhost:8000/openapi.json</code></pre>
-<p>除 <code>/health</code>、注册和登录外，所有接口都要求登录，并设置 <code>credentials: &quot;include&quot;</code>。</p>
+<p>除 <code>/health</code>、注册、登录、注册策略和公开分享内容外，所有接口都要求登录， 由需要鉴权的浏览器请求设置 <code>credentials: &quot;include&quot;</code>。</p>
 <h2 id="健康检查">健康检查</h2>
 <p><code>GET /health</code></p>
 <p>返回 API 状态和数据库依赖状态。数据库异常时返回 <code>503</code>，并标记为 <code>degraded</code>。</p>
@@ -111,8 +117,12 @@ http://localhost:8000/openapi.json</code></pre>
 <pre><code class="language-json">{
   &quot;email&quot;: &quot;creator@example.com&quot;,
   &quot;password&quot;: &quot;at-least-eight-characters&quot;,
-  &quot;locale&quot;: &quot;zh-CN&quot;
+  &quot;locale&quot;: &quot;zh-CN&quot;,
+  &quot;invite_code&quot;: &quot;可选的邀请码&quot;
 }</code></pre>
+<h3 id="注册策略">注册策略</h3>
+<p><code>GET /auth/registration-policy</code></p>
+<p>返回 <code>open</code>、<code>invite</code> 或 <code>closed</code>。邀请制下注册请求必须携带 <code>invite_code</code>。</p>
 <h3 id="登录">登录</h3>
 <p><code>POST /auth/login</code></p>
 <pre><code class="language-json">{
@@ -328,6 +338,80 @@ file=&lt;图片、视频或音频&gt;</code></pre>
   &quot;expires_in_hours&quot;: 24
 }</code></pre>
 <p>分享 Token 随机生成且只保存哈希；链接支持过期与撤销，访问时累计审计计数。</p>
+<h2 id="管理后台">管理后台</h2>
+<p>管理接口要求当前登录邮箱位于 <code>VIDEOAGENT_ADMIN_EMAILS</code>。其他用户返回 <code>403 ADMIN_ACCESS_REQUIRED</code>。</p>
+<div class="table-wrap"><table><thead><tr>
+<th>方法</th>
+<th>路径</th>
+<th>说明</th>
+</tr></thead><tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/admin/me</code></td>
+<td>确认管理权限</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/admin/overview</code></td>
+<td>用户、项目、任务、资产与运行状态</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/admin/users</code></td>
+<td>搜索用户并查看积分</td>
+</tr>
+<tr>
+<td><code>PATCH</code></td>
+<td><code>/admin/users/{id}</code></td>
+<td>停用或恢复账号</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/admin/users/{id}/credits</code></td>
+<td>增减用户积分</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/admin/jobs</code></td>
+<td>查看生成任务</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/admin/jobs/{id}/refund</code></td>
+<td>异常任务退款</td>
+</tr>
+<tr>
+<td><code>GET/PATCH</code></td>
+<td><code>/admin/settings</code></td>
+<td>读取或更新生成与注册策略</td>
+</tr>
+<tr>
+<td><code>GET/POST</code></td>
+<td><code>/admin/invites</code></td>
+<td>查看或创建邀请码</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/admin/invites/{id}</code></td>
+<td>撤销邀请码</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/admin/audit</code></td>
+<td>查看管理审计日志</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/admin/provider</code></td>
+<td>查看当前 Provider 连接状态</td>
+</tr>
+</tbody></table></div>
+<p>设置请求：</p>
+<pre><code class="language-json">{
+  &quot;generation_enabled&quot;: false,
+  &quot;registration_mode&quot;: &quot;invite&quot;
+}</code></pre>
+<p>关闭生成后，估算与提交接口返回 <code>503 GENERATION_DISABLED</code>。停用用户会立即撤销 其全部 Session。</p>
 <h2 id="pippit-provider">Pippit Provider</h2>
 <div class="table-wrap"><table><thead><tr>
 <th>方法</th>
@@ -382,7 +466,7 @@ file=&lt;图片、视频或音频&gt;</code></pre>
 </tr>
 <tr>
 <td><code>403</code></td>
-<td>缺少显式生成审批</td>
+<td>生成审批、管理权限、注册或邀请策略拒绝</td>
 </tr>
 <tr>
 <td><code>404</code></td>
@@ -410,10 +494,10 @@ file=&lt;图片、视频或音频&gt;</code></pre>
 </tr>
 <tr>
 <td><code>503</code></td>
-<td>Provider CLI 不可用</td>
+<td>Provider CLI 不可用或生成已暂停</td>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=27"></script>
+    <script src="../docs.js?v=28"></script>
   </body>
 </html>

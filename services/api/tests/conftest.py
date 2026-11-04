@@ -17,6 +17,8 @@ async def app(tmp_path: Path):
         token_encryption_key="test-token-key-32-bytes-long!!!!!!",
         video_provider="mock",
         media_dir=str(tmp_path / "media"),
+        admin_emails=["admin@example.com"],
+        starting_user_credits=100,
     )
     application = create_app(settings)
     async with application.router.lifespan_context(application):

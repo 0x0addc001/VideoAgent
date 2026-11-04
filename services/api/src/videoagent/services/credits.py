@@ -1,4 +1,4 @@
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -114,3 +114,32 @@ async def credit_balance(
         settings=settings,
     )
     return account.balance
+
+
+async def admin_adjust_credits(
+    session: AsyncSession,
+    *,
+    user_id: UUID,
+    amount: int,
+    reason: str,
+    settings: Settings,
+) -> CreditAccount:
+    account = await get_or_create_account(session, user_id=user_id, settings=settings)
+    if account.balance + amount < 0:
+        raise AppError(
+            status_code=409,
+            code="CREDIT_BALANCE_WOULD_BE_NEGATIVE",
+            message="The adjustment would make the balance negative.",
+        )
+    account.balance += amount
+    session.add(
+        CreditEntry(
+            user_id=user_id,
+            amount=amount,
+            reason="admin_adjustment",
+            reference_id=f"{uuid4()}:{reason[:120]}",
+        )
+    )
+    await session.commit()
+    await session.refresh(account)
+    return account

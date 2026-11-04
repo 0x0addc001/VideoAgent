@@ -41,6 +41,9 @@ describe("ProjectsDashboard", () => {
             }),
           );
         }
+        if (url.endsWith("/admin/me")) {
+          return Promise.resolve(new Response(null, { status: 403 }));
+        }
         return Promise.resolve(
           Response.json({
             items: [

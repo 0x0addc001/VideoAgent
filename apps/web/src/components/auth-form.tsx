@@ -2,7 +2,7 @@
 
 import { ArrowRight, LoaderCircle } from "lucide-react";
 import { useLocale, useTranslations } from "next-intl";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { Link, useRouter } from "@/i18n/navigation";
 
 type AuthMode = "register" | "login";
@@ -20,6 +20,23 @@ export function AuthForm({ mode }: AuthFormProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [registrationMode, setRegistrationMode] = useState<
+    "open" | "invite" | "closed"
+  >("open");
+
+  useEffect(() => {
+    if (mode !== "register") return;
+    let active = true;
+    fetch(`${API_BASE_URL}/auth/registration-policy`, { credentials: "include" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload: { mode?: "open" | "invite" | "closed" } | null) => {
+        if (active && payload?.mode) setRegistrationMode(payload.mode);
+      })
+      .catch(() => null);
+    return () => {
+      active = false;
+    };
+  }, [mode]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -35,7 +52,12 @@ export function AuthForm({ mode }: AuthFormProps) {
         body: JSON.stringify({
           email: formData.get("email"),
           password: formData.get("password"),
-          ...(mode === "register" ? { locale } : {}),
+          ...(mode === "register"
+            ? {
+                locale,
+                invite_code: formData.get("inviteCode") || undefined,
+              }
+            : {}),
         }),
       });
 
@@ -47,7 +69,12 @@ export function AuthForm({ mode }: AuthFormProps) {
         return;
       }
 
-      router.push("/projects");
+      const next = new URLSearchParams(window.location.search).get("next");
+      if (next?.startsWith("/") && !next.startsWith("//")) {
+        window.location.href = next;
+      } else {
+        router.push("/projects");
+      }
       router.refresh();
     } catch {
       setError(t("genericError"));
@@ -96,6 +123,21 @@ export function AuthForm({ mode }: AuthFormProps) {
         />
       </div>
 
+      {isRegister && registrationMode === "invite" ? (
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-[#2b261f]" htmlFor="inviteCode">
+            Invite code
+          </label>
+          <input
+            autoComplete="off"
+            className="w-full rounded-2xl border border-[#d9d2c5] bg-white px-4 py-3 text-[#16130f] outline-none transition placeholder:text-[#9c9487] focus:border-[#1677ff] focus:ring-4 focus:ring-[#1677ff]/10"
+            id="inviteCode"
+            name="inviteCode"
+            required
+          />
+        </div>
+      ) : null}
+
       {error ? (
         <p aria-live="polite" className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
           {error}
@@ -104,13 +146,19 @@ export function AuthForm({ mode }: AuthFormProps) {
 
       <button
         className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#16130f] px-5 py-3.5 font-semibold text-white transition hover:bg-[#332b23] disabled:cursor-not-allowed disabled:opacity-60"
-        disabled={isSubmitting}
+        disabled={isSubmitting || (isRegister && registrationMode === "closed")}
         type="submit"
       >
         {isSubmitting ? <LoaderCircle className="h-4 w-4 animate-spin" /> : null}
         {isSubmitting ? t("loading") : isRegister ? t("createAccount") : t("signIn")}
         {!isSubmitting ? <ArrowRight className="h-4 w-4" /> : null}
       </button>
+
+      {isRegister && registrationMode === "closed" ? (
+        <p className="rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-800">
+          Registration is currently closed.
+        </p>
+      ) : null}
 
       <p className="text-center text-sm text-[#756d61]">
         {isRegister ? t("switchToLogin") : t("switchToRegister")}{" "}

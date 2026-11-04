@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Test" />
     <title>Test · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=27" />
+    <link rel="stylesheet" href="../docs.css?v=28" />
   </head>
   <body data-document="software-test-plan.zh.html">
     <main class="document-shell" id="document-shell">
@@ -48,7 +48,7 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v2.2</td>
+<td>v2.3</td>
 </tr>
 <tr>
 <td>更新日期</td>
@@ -91,6 +91,10 @@
 <li>FFmpeg 合成、导出、封面生成、分享、过期和撤销。</li>
 <li>用户积分预扣、失败退款与幂等流水。</li>
 <li>同源写请求校验及认证限流。</li>
+<li>管理员邮箱白名单与普通用户拒绝访问。</li>
+<li>用户停用、Session 撤销和积分调整。</li>
+<li>邀请码创建、消费、撤销和注册模式。</li>
+<li>生成 kill switch、任务退款和审计日志。</li>
 </ul>
 <p>前端：</p>
 <ul>
@@ -104,6 +108,7 @@
 <li>Docs 中英文切换。</li>
 <li>项目列表、认证表单与项目工作区。</li>
 <li>项目素材上传、成片导出、MP4 下载和分享链接。</li>
+<li>管理控制台加载、设置切换和权限拒绝页面。</li>
 </ul>
 <h2 id="5-provider-契约测试">5. Provider 契约测试</h2>
 <p>每个 <code>VideoProvider</code> 验证：</p>
@@ -161,6 +166,7 @@
 <pre><code class="language-text">注册 → 首页创意 → 创建项目 → Agent 故事板 → 上传素材
 → 积分估算 → 生成 → 轮询/落地 → 合成导出 → 下载 → 分享</code></pre>
 <p>该链路不调用真实付费 Provider，应作为每个 Pull Request 的必过门禁。</p>
+<p>管理后台 E2E 验证管理员登录、控制台加载和暂停生成；后端集成测试验证普通用户 返回 <code>403</code>、积分调整、账号停用、邀请码注册和审计日志。</p>
 <h2 id="8-响应式与可访问性">8. 响应式与可访问性</h2>
 <ul>
 <li>导航、下拉、Docs 和弹窗可用键盘操作。</li>
@@ -210,6 +216,6 @@ Playwright + Mock Provider E2E
 <li>付费 Provider 测试保持人工开启。</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=27"></script>
+    <script src="../docs.js?v=28"></script>
   </body>
 </html>

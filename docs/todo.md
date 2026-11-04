@@ -69,6 +69,7 @@
 | TODO-SEC-003 | 媒体解码与恶意内容检查 | 在文件头、大小和 MIME 校验基础上增加解码验证与病毒扫描 | P0 |
 | TODO-SEC-004 | PostgreSQL、Redis 与 MinIO 生产集成 | 数据库迁移、对象存储和队列完成集成测试 | P0 |
 | TODO-SEC-005 | OpenAPI Client 生成 | 前端类型由 OpenAPI 自动生成并进入 CI | P1 |
+| TODO-SEC-006 | 数据库管理员角色 | 管理员角色、授权/撤销流程和最小权限策略不再依赖静态环境变量 | P1 |
 
 ## 8. 测试与发布
 

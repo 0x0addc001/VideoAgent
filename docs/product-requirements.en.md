@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.5 |
+| Document version | v1.6 |
 | Updated | 2026-11-04 |
 
 ## 1. Product Goal
@@ -214,14 +214,35 @@ Docs requirements:
 - Credits are reserved before submission and refunded idempotently after submit,
   generation, or cancellation failures.
 
-## 10. Non-Functional Requirements
+## 10. Administration
+
+- The administration route is `/<locale>/admin` and is restricted to emails in
+  `VIDEOAGENT_ADMIN_EMAILS`.
+- Overview metrics include users, projects, generation jobs, running jobs,
+  failed jobs, and assets.
+- Administrators can inspect user email, project count, credits, status, and
+  registration time.
+- Administrators can disable or restore accounts; disabling revokes existing
+  sessions.
+- Administrators can add or remove credits with a recorded reason.
+- Administrators can inspect generation jobs and refund failed, cancelled, or
+  uncertain credit holds.
+- Administrators can create and revoke invite codes and switch registration
+  between open, invite-only, and closed.
+- Administrators can pause or resume all video generation; both estimation and
+  submission are blocked while paused.
+- Administrative actions are written to an audit log.
+- Administrator identity is configured through the environment allowlist, not
+  granted dynamically from the product UI.
+
+## 11. Non-Functional Requirements
 
 - Desktop and mobile layouts must avoid clipped controls.
 - All primary controls must be keyboard accessible.
 - Motion supports `prefers-reduced-motion`.
 - Search and filtering run in the client.
 
-## 11. Acceptance Criteria
+## 12. Acceptance Criteria
 
 1. Navigation order is Agents, Skills, Hots, Assets, Docs.
 2. Agents can choose a Skill.
@@ -248,3 +269,6 @@ Docs requirements:
     create a share link.
 20. User credit reservations, refunds, and Provider-account reconciliation agree.
 21. Reordering shots does not delete or recreate existing Shots.
+22. Non-administrators cannot access administration APIs or pages.
+23. Administrators can manage credits, accounts, invites, and generation state,
+    with every action recorded in the audit log.

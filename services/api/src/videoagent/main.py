@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from videoagent.agent.graph import StoryboardAgent
 from videoagent.agent.planner import build_storyboard_planner
+from videoagent.api.admin import router as admin_router
 from videoagent.api.agent import router as agent_router
 from videoagent.api.assets import router as assets_router
 from videoagent.api.auth import router as auth_router
@@ -72,6 +73,7 @@ def create_app(
     application.add_exception_handler(AppError, app_error_handler)  # type: ignore[arg-type]
     application.include_router(health_router, prefix=resolved_settings.api_prefix)
     application.include_router(auth_router, prefix=resolved_settings.api_prefix)
+    application.include_router(admin_router, prefix=resolved_settings.api_prefix)
     application.include_router(credits_router, prefix=resolved_settings.api_prefix)
     application.include_router(projects_router, prefix=resolved_settings.api_prefix)
     application.include_router(storyboards_router, prefix=resolved_settings.api_prefix)

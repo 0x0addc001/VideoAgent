@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.3 |
+| Document version | v1.4 |
 | Updated | 2026-11-04 |
 | Base path | `/api/v1` |
 | Authentication | HttpOnly Session Cookie |
@@ -11,6 +11,7 @@
 | Billable generation | Explicit approval plus `Idempotency-Key` |
 | Write protection | Same-origin `Origin` / `Sec-Fetch-Site` validation |
 | User credits | Internal per-user quota with an auditable ledger |
+| Administration | `VIDEOAGENT_ADMIN_EMAILS` allowlist |
 | OpenAPI | `/docs` and `/openapi.json` |
 
 Base URL:
@@ -26,8 +27,10 @@ http://localhost:8000/docs
 http://localhost:8000/openapi.json
 ```
 
-All endpoints require authentication except `/health`, `/auth/register`, and
-`/auth/login`. Browser clients must send the session cookie.
+All endpoints require authentication except `/health`, `/auth/register`,
+`/auth/login`, `/auth/registration-policy`, and
+`/shares/{token}/content`. Browser clients must send the session cookie for
+authenticated endpoints.
 
 ## Authentication
 
@@ -42,9 +45,16 @@ Browser clients must send requests with credentials enabled.
 {
   "email": "creator@example.com",
   "password": "at-least-eight-characters",
-  "locale": "zh-CN"
+  "locale": "zh-CN",
+  "invite_code": "optional-invite-code"
 }
 ```
+
+### Registration Policy
+
+`GET /auth/registration-policy`
+
+Returns `open`, `invite`, or `closed`. Invite mode requires `invite_code`.
 
 ### Login
 
@@ -299,6 +309,39 @@ Share request:
 Share tokens are random, stored as hashes, expire after the requested period,
 and can be revoked. Access increments an audit counter.
 
+## Administration
+
+Administration endpoints require an authenticated account whose email appears
+in `VIDEOAGENT_ADMIN_EMAILS`. Other users receive `403 ADMIN_ACCESS_REQUIRED`.
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/admin/me` | Confirm administration access |
+| `GET` | `/admin/overview` | Counts and launch-state summary |
+| `GET` | `/admin/users` | Search users and read credits |
+| `PATCH` | `/admin/users/{id}` | Enable or disable an account |
+| `POST` | `/admin/users/{id}/credits` | Add or remove credits |
+| `GET` | `/admin/jobs` | Inspect generation jobs |
+| `POST` | `/admin/jobs/{id}/refund` | Refund a failed or uncertain hold |
+| `GET/PATCH` | `/admin/settings` | Read or update generation and registration |
+| `GET/POST` | `/admin/invites` | List or create invite codes |
+| `DELETE` | `/admin/invites/{id}` | Revoke an invite code |
+| `GET` | `/admin/audit` | Read administrative audit entries |
+| `GET` | `/admin/provider` | Read the active Provider connection state |
+
+Settings update:
+
+```json
+{
+  "generation_enabled": false,
+  "registration_mode": "invite"
+}
+```
+
+When generation is disabled, estimate and submit endpoints return
+`503 GENERATION_DISABLED`. Disabling an account revokes its Sessions
+immediately.
+
 ## Pippit Provider
 
 | Method | Path | Purpose |
@@ -357,11 +400,11 @@ Important status codes:
 | --- | --- |
 | `401` | Authentication required or session expired |
 | `402` | The user's VideoAgent credit balance is insufficient |
-| `403` | Explicit approval required |
+| `403` | Approval, administrator, registration, or invite policy denied |
 | `404` | Resource not found or not owned by the current user |
 | `409` | Configured provider is not active |
 | `413` | Uploaded media exceeds the configured limit |
 | `422` | Request validation failed |
 | `429` | An auth, generation, or upload rate limit was exceeded |
 | `502` | Upstream provider request failed |
-| `503` | Required provider CLI is unavailable |
+| `503` | Provider CLI is unavailable or generation is paused |

@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent PRD" />
     <title>PRD · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=27" />
+    <link rel="stylesheet" href="../docs.css?v=28" />
   </head>
   <body data-document="product-requirements.zh.html">
     <main class="document-shell" id="document-shell">
@@ -38,8 +38,9 @@
 <a class="toc-link toc-level-3" href="#7-1-项目工作区与交付">7.1 项目工作区与交付</a>
 <a class="toc-link toc-level-2" href="#8-docs">8. Docs</a>
 <a class="toc-link toc-level-2" href="#9-认证与积分">9. 认证与积分</a>
-<a class="toc-link toc-level-2" href="#10-非功能要求">10. 非功能要求</a>
-<a class="toc-link toc-level-2" href="#11-验收标准">11. 验收标准</a>
+<a class="toc-link toc-level-2" href="#10-管理后台">10. 管理后台</a>
+<a class="toc-link toc-level-2" href="#11-非功能要求">11. 非功能要求</a>
+<a class="toc-link toc-level-2" href="#12-验收标准">12. 验收标准</a>
         </nav>
       </aside>
       <article class="document"><h1 id="videoagent-产品需求文档">VideoAgent 产品需求文档</h1>
@@ -49,7 +50,7 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v1.5</td>
+<td>v1.6</td>
 </tr>
 <tr>
 <td>更新日期</td>
@@ -239,14 +240,27 @@ TODO</code></pre>
 <li>任何可能计费的生成请求都必须先获得用户明确批准。</li>
 <li>生成提交前预扣积分；提交失败、生成失败或取消时执行幂等退款。</li>
 </ul>
-<h2 id="10-非功能要求">10. 非功能要求</h2>
+<h2 id="10-管理后台">10. 管理后台</h2>
+<ul>
+<li>管理入口为 <code>/&lt;locale&gt;/admin</code>，仅允许 <code>VIDEOAGENT_ADMIN_EMAILS</code> 中的邮箱访问。</li>
+<li>总览展示用户、项目、生成任务、运行任务、失败任务和资产数量。</li>
+<li>管理员可查看用户、项目数、积分、账号状态和注册时间。</li>
+<li>管理员可停用或恢复账号；停用后现有 Session 立即失效。</li>
+<li>管理员可发放或扣减用户积分，并记录操作原因。</li>
+<li>管理员可查看生成任务；失败、取消和提交不确定任务支持幂等退款。</li>
+<li>管理员可创建和撤销邀请码，并切换开放注册、邀请注册和关闭注册。</li>
+<li>管理员可暂停或恢复全部视频生成，暂停后估算与提交均被阻断。</li>
+<li>管理操作写入审计日志。</li>
+<li>当前管理员身份由环境变量邮箱白名单配置，不在产品内动态授予管理员角色。</li>
+</ul>
+<h2 id="11-非功能要求">11. 非功能要求</h2>
 <ul>
 <li>桌面端和移动端不得出现控件遮挡。</li>
 <li>所有核心控件应支持键盘操作。</li>
 <li>动效支持 <code>prefers-reduced-motion</code>。</li>
 <li>搜索和筛选在客户端完成。</li>
 </ul>
-<h2 id="11-验收标准">11. 验收标准</h2>
+<h2 id="12-验收标准">12. 验收标准</h2>
 <ol>
 <li>导航顺序为 Agents、Skills、Hots、Assets、Docs。</li>
 <li>Agents 可以选择 Skill。</li>
@@ -269,8 +283,10 @@ TODO</code></pre>
 <li>用户可上传引用素材，完成成片合成、交付下载和分享。</li>
 <li>用户积分预扣、退款与 Provider 账户对账一致。</li>
 <li>调整镜头顺序不会删除或重建已有 Shot。</li>
+<li>非管理员无法访问管理接口或管理页面。</li>
+<li>管理员可管理积分、账号、邀请码和生成开关，且操作进入审计日志。</li>
 </ol></article>
     </main>
-    <script src="../docs.js?v=27"></script>
+    <script src="../docs.js?v=28"></script>
   </body>
 </html>

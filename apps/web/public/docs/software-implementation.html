@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Dev" />
     <title>Dev · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=27" />
+    <link rel="stylesheet" href="../docs.css?v=28" />
   </head>
   <body data-document="software-implementation.html">
     <main class="document-shell" id="document-shell">
@@ -53,7 +53,7 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v1.8</td>
+<td>v1.9</td>
 </tr>
 <tr>
 <td>Updated</td>
@@ -103,6 +103,8 @@
 <p>soundtrack, and cover generation.</p>
 <li>Private asset downloads plus time-limited, revocable share links.</li>
 <li>Same-origin write validation and separate auth, generation, and upload limits.</li>
+<li>An environment-allowlisted administration console for accounts, credits,</li>
+<p>jobs, invites, runtime switches, and audit logs.</p>
 <li>Instant storyboard review.</li>
 <li>CI, security scanning, documentation generation, and release builds.</li>
 <li>Playwright and Mock Provider end-to-end acceptance without paid generation.</li>
@@ -234,6 +236,10 @@ status
 <tr>
 <td><code>api.credits</code></td>
 <td>Per-user VideoAgent balance</td>
+</tr>
+<tr>
+<td><code>api.admin</code></td>
+<td>Overview, users, credits, jobs, invites, settings, audit</td>
 </tr>
 <tr>
 <td><code>middleware</code></td>
@@ -390,6 +396,18 @@ Chinese: product-requirements.zh.html</code></pre>
 <td><code>share_links</code></td>
 <td>Hashed tokens, expiry, revocation, and access count</td>
 </tr>
+<tr>
+<td><code>platform_settings</code></td>
+<td>Generation switch and registration policy</td>
+</tr>
+<tr>
+<td><code>invite_codes</code></td>
+<td>Hashed codes, expiry, and use limits</td>
+</tr>
+<tr>
+<td><code>admin_audit_logs</code></td>
+<td>Administrative mutation trail</td>
+</tr>
 </tbody></table></div>
 <h2 id="11-api-list">11. API List</h2>
 <div class="table-wrap"><table><thead><tr>
@@ -492,6 +510,46 @@ Chinese: product-requirements.zh.html</code></pre>
 <td><code>GET</code></td>
 <td><code>/shares/{token}/content</code></td>
 </tr>
+<tr>
+<td><code>GET/PATCH</code></td>
+<td><code>/admin/settings</code></td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/admin/overview</code></td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/admin/users</code></td>
+</tr>
+<tr>
+<td><code>PATCH</code></td>
+<td><code>/admin/users/{id}</code></td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/admin/users/{id}/credits</code></td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/admin/jobs</code></td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/admin/jobs/{id}/refund</code></td>
+</tr>
+<tr>
+<td><code>GET/POST</code></td>
+<td><code>/admin/invites</code></td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/admin/invites/{id}</code></td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/admin/audit</code></td>
+</tr>
 </tbody></table></div>
 <h2 id="12-security">12. Security</h2>
 <ul>
@@ -507,6 +565,9 @@ Chinese: product-requirements.zh.html</code></pre>
 <li>Uploads enforce byte limits and validate declared MIME plus file signatures.</li>
 <li>Share tokens are stored as hashes and become unavailable after expiry or</li>
 <p>revocation.</p>
+<li>Administration access is restricted by <code>VIDEOAGENT_ADMIN_EMAILS</code>.</li>
+<li>Disabling a user immediately revokes existing sessions.</li>
+<li>The generation kill switch blocks both estimation and Provider submission.</li>
 </ul>
 <h2 id="13-local-development">13. Local Development</h2>
 <pre><code class="language-powershell">cd D:\_Science\Agent\VideoAgent
@@ -530,8 +591,8 @@ pnpm --dir apps/web typecheck
 pnpm --dir apps/web build
 pnpm test:e2e
 python scripts\build_pages.py</code></pre>
-<p>Backend coverage currently consists of 43 tests, frontend coverage consists of 24 Vitest tests, and Playwright contains two no-fee browser flows. Playwright uses the Mock Provider for generation and therefore never consumes real Provider credits.</p></article>
+<p>Backend coverage currently consists of 47 tests, frontend coverage consists of 25 Vitest tests, and Playwright contains three no-fee browser flows. Playwright uses the Mock Provider for generation and therefore never consumes real Provider credits.</p></article>
     </main>
-    <script src="../docs.js?v=27"></script>
+    <script src="../docs.js?v=28"></script>
   </body>
 </html>

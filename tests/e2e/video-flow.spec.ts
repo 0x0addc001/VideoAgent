@@ -93,3 +93,21 @@ test("switches the complete documentation set", async ({ page }) => {
   );
 });
 
+test("administrator can pause generation from the control room", async ({ page }) => {
+  await page.goto("/en/register");
+  await page.getByLabel("Email").fill("admin-playwright@example.com");
+  await page.getByLabel("Password").fill("Correct-Horse-Battery9");
+  await page.getByRole("button", { name: "Create account" }).click();
+  await expect(page).toHaveURL(/\/en\/projects$/);
+
+  await page.goto("/en/admin");
+  await expect(
+    page.getByRole("heading", { name: "VideoAgent Administration" }),
+  ).toBeVisible();
+  await expect(page.getByText("admin-playwright@example.com")).toBeVisible();
+
+  await page.getByRole("button", { name: "Platform settings" }).click();
+  await page.getByRole("button", { name: "Pause generation" }).click();
+  await expect(page.getByRole("button", { name: "Enable generation" })).toBeVisible();
+});
+

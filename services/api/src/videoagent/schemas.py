@@ -20,6 +20,7 @@ class RegisterRequest(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
     locale: SupportedLocale = "en"
+    invite_code: str | None = Field(default=None, max_length=256)
 
 
 class LoginRequest(BaseModel):
@@ -29,6 +30,126 @@ class LoginRequest(BaseModel):
 
 class UpdateUserRequest(BaseModel):
     locale: SupportedLocale
+
+
+RegistrationMode = Literal["open", "invite", "closed"]
+
+
+class RegistrationPolicyRead(BaseModel):
+    mode: RegistrationMode
+
+
+class AdminIdentityRead(BaseModel):
+    email: EmailStr
+
+
+class AdminOverviewRead(BaseModel):
+    users: int
+    active_users: int
+    disabled_users: int
+    projects: int
+    generation_jobs: int
+    running_jobs: int
+    failed_jobs: int
+    assets: int
+    generation_enabled: bool
+    registration_mode: RegistrationMode
+    provider: str
+    celery_enabled: bool
+
+
+class AdminUserRead(BaseModel):
+    id: UUID
+    email: EmailStr
+    status: Literal["active", "disabled"]
+    locale: SupportedLocale
+    credits: int
+    project_count: int
+    created_at: datetime
+
+
+class AdminUserList(BaseModel):
+    items: list[AdminUserRead]
+    total: int
+
+
+class AdminUserUpdate(BaseModel):
+    status: Literal["active", "disabled"]
+
+
+class AdminCreditAdjustment(BaseModel):
+    amount: int = Field(ge=-1_000_000, le=1_000_000)
+    reason: str = Field(min_length=1, max_length=200)
+
+    @field_validator("amount")
+    @classmethod
+    def amount_must_not_be_zero(cls, value: int) -> int:
+        if value == 0:
+            raise ValueError("Credit adjustment must not be zero")
+        return value
+
+
+class AdminJobRead(BaseModel):
+    id: UUID
+    user_id: UUID
+    user_email: EmailStr
+    project_id: UUID
+    project_title: str
+    provider: str
+    status: str
+    error_code: str | None
+    result_url: str | None
+    created_at: datetime
+
+
+class AdminJobList(BaseModel):
+    items: list[AdminJobRead]
+    total: int
+
+
+class AdminSettingsRead(BaseModel):
+    generation_enabled: bool
+    registration_mode: RegistrationMode
+
+
+class AdminSettingsUpdate(BaseModel):
+    generation_enabled: bool | None = None
+    registration_mode: RegistrationMode | None = None
+
+
+class AdminInviteCreate(BaseModel):
+    label: str = Field(default="", max_length=120)
+    max_uses: int = Field(default=1, ge=1, le=10_000)
+    expires_in_hours: int = Field(default=24 * 7, ge=1, le=24 * 365)
+
+
+class AdminInviteRead(BaseModel):
+    id: UUID
+    code: str | None = None
+    label: str
+    max_uses: int
+    use_count: int
+    expires_at: datetime | None
+    revoked_at: datetime | None
+    created_at: datetime
+
+
+class AdminInviteList(BaseModel):
+    items: list[AdminInviteRead]
+
+
+class AdminAuditRead(BaseModel):
+    id: UUID
+    admin_id: UUID
+    action: str
+    target_type: str
+    target_id: str
+    details: dict[str, object]
+    created_at: datetime
+
+
+class AdminAuditList(BaseModel):
+    items: list[AdminAuditRead]
 
 
 class ProjectCreate(BaseModel):

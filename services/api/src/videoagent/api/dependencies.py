@@ -55,6 +55,20 @@ async def get_current_user(
     return user
 
 
+async def get_admin_user(
+    user: Annotated[User, Depends(get_current_user)],
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> User:
+    normalized = user.email.strip().lower()
+    if normalized not in {email.strip().lower() for email in settings.admin_emails}:
+        raise AppError(
+            status_code=403,
+            code="ADMIN_ACCESS_REQUIRED",
+            message="Administrator access is required.",
+        )
+    return user
+
+
 async def get_video_provider(
     request: Request,
 ) -> VideoProvider:

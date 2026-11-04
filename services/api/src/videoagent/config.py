@@ -26,6 +26,9 @@ class Settings(BaseSettings):
         "http://localhost:3000",
         "http://127.0.0.1:3000",
     ]
+    admin_emails: list[str] = []
+    registration_mode: str = "open"
+    generation_enabled: bool = True
     llm_base_url: str | None = None
     llm_api_key: str | None = None
     llm_model: str | None = None
@@ -57,7 +60,7 @@ class Settings(BaseSettings):
     auth_rate_limit_per_minute: int = Field(default=20, ge=1)
     generation_rate_limit_per_minute: int = Field(default=30, ge=1)
     upload_rate_limit_per_minute: int = Field(default=20, ge=1)
-    starting_user_credits: int = Field(default=100, ge=0)
+    starting_user_credits: int = Field(default=0, ge=0)
 
     @property
     def is_sqlite(self) -> bool:

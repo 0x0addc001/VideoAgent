@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Test" />
     <title>Test · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=27" />
+    <link rel="stylesheet" href="../docs.css?v=28" />
   </head>
   <body data-document="software-test-plan.html">
     <main class="document-shell" id="document-shell">
@@ -48,7 +48,7 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v2.2</td>
+<td>v2.3</td>
 </tr>
 <tr>
 <td>Updated</td>
@@ -91,6 +91,10 @@
 <li>FFmpeg composition, delivery, cover generation, sharing, expiry, and revocation.</li>
 <li>User credit reservation, failure refunds, and idempotent ledger entries.</li>
 <li>Same-origin write validation and authentication rate limiting.</li>
+<li>Administrator email allowlists and non-admin denial.</li>
+<li>User disablement, session revocation, and credit adjustment.</li>
+<li>Invite creation, consumption, revocation, and registration modes.</li>
+<li>Generation kill switch, job refunds, and audit logs.</li>
 </ul>
 <p>Frontend:</p>
 <ul>
@@ -104,6 +108,7 @@
 <li>English-to-Chinese Docs switching.</li>
 <li>Project list, authentication form, and project workspace.</li>
 <li>Project uploads, film export, MP4 download, and share-link creation.</li>
+<li>Administration console loading, settings changes, and denied access.</li>
 </ul>
 <h2 id="5-provider-contract-tests">5. Provider Contract Tests</h2>
 <p>Every <code>VideoProvider</code> verifies:</p>
@@ -168,6 +173,7 @@
 <pre><code class="language-text">register → home prompt → create project → Agent storyboard → upload
 → estimate → generate → poll/materialize → export → download → share</code></pre>
 <p>This flow never calls a paid Provider and is a required Pull Request gate.</p>
+<p>The administration E2E covers administrator sign-in, console loading, and generation pause. Backend integration tests cover non-admin <code>403</code> responses, credit adjustments, account disablement, invite registration, and audit logs.</p>
 <h2 id="8-responsive-and-accessibility-checks">8. Responsive and Accessibility Checks</h2>
 <ul>
 <li>Keyboard access for navigation, dropdowns, Docs, and dialogs.</li>
@@ -218,6 +224,6 @@ secret and dependency scans</code></pre>
 <li>Paid Provider tests remain opt-in.</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=27"></script>
+    <script src="../docs.js?v=28"></script>
   </body>
 </html>

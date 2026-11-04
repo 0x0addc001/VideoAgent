@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.8 |
+| Document version | v1.9 |
 | Updated | 2026-11-04 |
 | Backend framework | Python + FastAPI |
 | Frontend framework | Next.js + TypeScript |
@@ -54,6 +54,8 @@ contains five isolated views:
 - FFmpeg composition with 16:9, 9:16, and 1:1 deliveries, covers, captions, and soundtracks.
 - Time-limited share links with private/public permissions, expiry, revocation, and access counts.
 - Per-user VideoAgent credit accounts with reservation and idempotent refunds.
+- An administration console for users, credits, jobs, invites, launch controls,
+  Provider state, and audit logs.
 
 ## 4. Core User Flow
 
@@ -246,6 +248,9 @@ sound cue, or proof first.
 | `credit_entries` | Idempotent reservation and refund ledger |
 | `assets` | Uploads, generated clips, deliveries, covers, and ownership |
 | `share_links` | Hashed tokens, expiry, revocation, and access count |
+| `platform_settings` | Generation switch and registration policy |
+| `invite_codes` | Hashed invite codes, expiry, and usage limits |
+| `admin_audit_logs` | Administrative action trail |
 
 ## 11. API Surface
 
@@ -265,6 +270,7 @@ Base path: `/api/v1`
 | Credits | `GET /credits` |
 | Assets | List, upload, and content download |
 | Delivery | Export, share, revoke, and public share content |
+| Administration | Overview, users, credits, jobs, refunds, invites, settings, and audit |
 
 Agent responses and job status use regular JSON with polling.
 
@@ -285,6 +291,7 @@ The shared Landing UI owns:
 - Viewport-aware composer menus that flip above the trigger when needed, plus
   downward-opening language, notification, account, and search menus.
 - Avatar account actions for login, registration, and sign-out.
+- An isolated `/admin` control room for internal operations.
 - Reference uploads, delivery downloads, cover preview, and share-link creation
   in the project workspace.
 
@@ -308,6 +315,9 @@ The shared Landing UI owns:
 - Uploaded media is validated by declared MIME, signature, and size.
 - Share tokens are stored as hashes and support expiry, revocation, and access
   accounting.
+- Administrative APIs require an email in `VIDEOAGENT_ADMIN_EMAILS`.
+- Disabling an account revokes its existing sessions.
+- Generation checks the runtime kill switch before estimation and submission.
 
 ## 15. Deployment
 
@@ -341,3 +351,5 @@ Celery + Redis
     upload, generation, export, download, and sharing without paid credits.
 12. User credits are reserved before submission and refunded idempotently when
     submission, generation, or cancellation ends without a usable result.
+13. Administrators can manage accounts, credits, invites, and generation state,
+    with every mutation recorded in the audit log.

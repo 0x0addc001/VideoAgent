@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v2.1 |
+| Document version | v2.2 |
 | Updated | 2026-11-04 |
 | Scope | Skills, Hots, Assets, providers, support, metrics |
 
@@ -30,6 +30,8 @@ VideoAgent operates three content layers:
 - Run Playwright with the Mock Provider as a no-fee end-to-end release gate.
 - Confirm provider credentials never appear in browser bundles, logs, or API
   responses.
+- Configure `VIDEOAGENT_ADMIN_EMAILS` and verify at least one administrator can
+  sign in.
 
 ## 3. Official Skill Operations
 
@@ -67,6 +69,19 @@ VideoAgent operates three content layers:
 - Monitor provider errors, timeout rate, uncertain submissions, and duplicate
   protection.
 - Preserve provider task references for reconciliation.
+
+### 5.1 Administration Console
+
+- Administration URL: `/en/admin`.
+- Keep new-user credits at zero for launch and grant them through user
+  administration.
+- Use invite mode before opening registration; switch to closed mode during an
+  incident.
+- Pause generation before investigating Provider, billing, or security issues.
+- Failed, cancelled, and uncertain jobs can be refunded idempotently by Job ID.
+- Account, credit, invite, and settings mutations are recorded in the audit log.
+- The administrator allowlist is environment-owned and requires an API restart
+  after changes.
 
 ## 6. Release Procedure
 
@@ -111,6 +126,8 @@ Support never asks users for access keys, cookies, or CLI session files.
 - Publish a status note with affected areas and mitigation.
 - Review billing, duplicate jobs, cross-user access, and audit evidence.
 - Revoke exposed share tokens immediately and inspect anomalous access counts.
+- For suspicious registration or credit use: pause generation, close
+  registration, disable accounts, and inspect jobs plus audit logs.
 
 ## 10. Success Metrics
 

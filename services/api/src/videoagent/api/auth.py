@@ -5,19 +5,24 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from videoagent.api.dependencies import get_current_user, get_session, get_settings
 from videoagent.config import Settings
+from videoagent.errors import AppError
 from videoagent.models import User
 from videoagent.schemas import (
     LoginRequest,
     RegisterRequest,
+    RegistrationPolicyRead,
     UpdateUserRequest,
     UserRead,
 )
 from videoagent.services.auth import (
     authenticate_user,
     create_session,
+    get_user_by_email,
     register_user,
     revoke_session,
 )
+from videoagent.services.invites import consume_invite
+from videoagent.services.platform_settings import registration_mode
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -45,10 +50,33 @@ async def register(
     session: Annotated[AsyncSession, Depends(get_session)],
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> UserRead:
+    if await get_user_by_email(session, str(payload.email)) is not None:
+        raise AppError(
+            status_code=409,
+            code="EMAIL_ALREADY_REGISTERED",
+            message="An account with this email already exists.",
+        )
+    mode = await registration_mode(session, settings)
+    if mode == "closed":
+        raise AppError(
+            status_code=403,
+            code="REGISTRATION_CLOSED",
+            message="Registration is currently closed.",
+        )
+    if mode == "invite":
+        await consume_invite(session, payload.invite_code)
     user = await register_user(session, payload)
     token, _ = await create_session(session, user, settings)
     set_session_cookie(response, settings, token)
     return UserRead.model_validate(user)
+
+
+@router.get("/registration-policy", response_model=RegistrationPolicyRead)
+async def get_registration_policy(
+    session: Annotated[AsyncSession, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> RegistrationPolicyRead:
+    return RegistrationPolicyRead(mode=await registration_mode(session, settings))
 
 
 @router.post("/login", response_model=UserRead)

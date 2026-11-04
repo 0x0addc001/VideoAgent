@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.8 |
+| Document version | v1.9 |
 | Updated | 2026-11-04 |
 | Backend framework | Python + FastAPI |
 | Frontend framework | Next.js + TypeScript |
@@ -43,6 +43,8 @@ boundaries, runtime flow, provider adapters, and engineering conventions.
   soundtrack, and cover generation.
 - Private asset downloads plus time-limited, revocable share links.
 - Same-origin write validation and separate auth, generation, and upload limits.
+- An environment-allowlisted administration console for accounts, credits,
+  jobs, invites, runtime switches, and audit logs.
 - Instant storyboard review.
 - CI, security scanning, documentation generation, and release builds.
 - Playwright and Mock Provider end-to-end acceptance without paid generation.
@@ -162,6 +164,7 @@ status
 | `api.providers` | Pippit status and credits |
 | `api.assets` | Uploads, downloads, exports, sharing, and revocation |
 | `api.credits` | Per-user VideoAgent balance |
+| `api.admin` | Overview, users, credits, jobs, invites, settings, audit |
 | `middleware` | Same-origin write checks and request limits |
 | `services.media` | Validation, result materialization, FFmpeg, covers, and sharing |
 | `services.credits` | Credit accounts, reservations, and refunds |
@@ -255,6 +258,9 @@ locale state.
 | `credit_entries` | Idempotent reservation and refund ledger |
 | `assets` | Uploads, generated clips, deliveries, covers, and permissions |
 | `share_links` | Hashed tokens, expiry, revocation, and access count |
+| `platform_settings` | Generation switch and registration policy |
+| `invite_codes` | Hashed codes, expiry, and use limits |
+| `admin_audit_logs` | Administrative mutation trail |
 
 ## 11. API List
 
@@ -284,6 +290,16 @@ locale state.
 | `POST` | `/assets/{id}/share` |
 | `DELETE` | `/shares/{id}` |
 | `GET` | `/shares/{token}/content` |
+| `GET/PATCH` | `/admin/settings` |
+| `GET` | `/admin/overview` |
+| `GET` | `/admin/users` |
+| `PATCH` | `/admin/users/{id}` |
+| `POST` | `/admin/users/{id}/credits` |
+| `GET` | `/admin/jobs` |
+| `POST` | `/admin/jobs/{id}/refund` |
+| `GET/POST` | `/admin/invites` |
+| `DELETE` | `/admin/invites/{id}` |
+| `GET` | `/admin/audit` |
 
 ## 12. Security
 
@@ -299,6 +315,9 @@ locale state.
 - Uploads enforce byte limits and validate declared MIME plus file signatures.
 - Share tokens are stored as hashes and become unavailable after expiry or
   revocation.
+- Administration access is restricted by `VIDEOAGENT_ADMIN_EMAILS`.
+- Disabling a user immediately revokes existing sessions.
+- The generation kill switch blocks both estimation and Provider submission.
 
 ## 13. Local Development
 
@@ -338,7 +357,7 @@ pnpm test:e2e
 python scripts\build_pages.py
 ```
 
-Backend coverage currently consists of 43 tests, frontend coverage consists of
-24 Vitest tests, and Playwright contains two no-fee browser flows. Playwright
+Backend coverage currently consists of 47 tests, frontend coverage consists of
+25 Vitest tests, and Playwright contains three no-fee browser flows. Playwright
 uses the Mock Provider for generation and therefore never consumes real
 Provider credits.

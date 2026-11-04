@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent API" />
     <title>API · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=27" />
+    <link rel="stylesheet" href="../docs.css?v=28" />
   </head>
   <body data-document="interface-reference.html">
     <main class="document-shell" id="document-shell">
@@ -28,6 +28,7 @@
           <a class="toc-link toc-level-1" href="#videoagent-api-reference">VideoAgent API Reference</a>
 <a class="toc-link toc-level-2" href="#authentication">Authentication</a>
 <a class="toc-link toc-level-3" href="#register">Register</a>
+<a class="toc-link toc-level-3" href="#registration-policy">Registration Policy</a>
 <a class="toc-link toc-level-3" href="#login">Login</a>
 <a class="toc-link toc-level-3" href="#current-user">Current User</a>
 <a class="toc-link toc-level-3" href="#update-locale">Update Locale</a>
@@ -48,6 +49,7 @@
 <a class="toc-link toc-level-2" href="#credits">Credits</a>
 <a class="toc-link toc-level-3" href="#evaluate-storyboard">Evaluate Storyboard</a>
 <a class="toc-link toc-level-2" href="#assets-and-media">Assets and Media</a>
+<a class="toc-link toc-level-2" href="#administration">Administration</a>
 <a class="toc-link toc-level-2" href="#pippit-provider">Pippit Provider</a>
 <a class="toc-link toc-level-2" href="#errors">Errors</a>
         </nav>
@@ -59,7 +61,7 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v1.3</td>
+<td>v1.4</td>
 </tr>
 <tr>
 <td>Updated</td>
@@ -94,6 +96,10 @@
 <td>Internal per-user quota with an auditable ledger</td>
 </tr>
 <tr>
+<td>Administration</td>
+<td><code>VIDEOAGENT_ADMIN_EMAILS</code> allowlist</td>
+</tr>
+<tr>
 <td>OpenAPI</td>
 <td><code>/docs</code> and <code>/openapi.json</code></td>
 </tr>
@@ -103,7 +109,7 @@
 <p>Interactive OpenAPI documentation is available at:</p>
 <pre><code class="language-text">http://localhost:8000/docs
 http://localhost:8000/openapi.json</code></pre>
-<p>All endpoints require authentication except <code>/health</code>, <code>/auth/register</code>, and <code>/auth/login</code>. Browser clients must send the session cookie.</p>
+<p>All endpoints require authentication except <code>/health</code>, <code>/auth/register</code>, <code>/auth/login</code>, <code>/auth/registration-policy</code>, and <code>/shares/{token}/content</code>. Browser clients must send the session cookie for authenticated endpoints.</p>
 <h2 id="authentication">Authentication</h2>
 <p>The API uses an HttpOnly session cookie named <code>videoagent_session</code>. Browser clients must send requests with credentials enabled.</p>
 <h3 id="register">Register</h3>
@@ -111,8 +117,12 @@ http://localhost:8000/openapi.json</code></pre>
 <pre><code class="language-json">{
   &quot;email&quot;: &quot;creator@example.com&quot;,
   &quot;password&quot;: &quot;at-least-eight-characters&quot;,
-  &quot;locale&quot;: &quot;zh-CN&quot;
+  &quot;locale&quot;: &quot;zh-CN&quot;,
+  &quot;invite_code&quot;: &quot;optional-invite-code&quot;
 }</code></pre>
+<h3 id="registration-policy">Registration Policy</h3>
+<p><code>GET /auth/registration-policy</code></p>
+<p>Returns <code>open</code>, <code>invite</code>, or <code>closed</code>. Invite mode requires <code>invite_code</code>.</p>
 <h3 id="login">Login</h3>
 <p><code>POST /auth/login</code></p>
 <pre><code class="language-json">{
@@ -313,6 +323,80 @@ file=&lt;image, video, or audio&gt;</code></pre>
   &quot;expires_in_hours&quot;: 24
 }</code></pre>
 <p>Share tokens are random, stored as hashes, expire after the requested period, and can be revoked. Access increments an audit counter.</p>
+<h2 id="administration">Administration</h2>
+<p>Administration endpoints require an authenticated account whose email appears in <code>VIDEOAGENT_ADMIN_EMAILS</code>. Other users receive <code>403 ADMIN_ACCESS_REQUIRED</code>.</p>
+<div class="table-wrap"><table><thead><tr>
+<th>Method</th>
+<th>Path</th>
+<th>Purpose</th>
+</tr></thead><tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/admin/me</code></td>
+<td>Confirm administration access</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/admin/overview</code></td>
+<td>Counts and launch-state summary</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/admin/users</code></td>
+<td>Search users and read credits</td>
+</tr>
+<tr>
+<td><code>PATCH</code></td>
+<td><code>/admin/users/{id}</code></td>
+<td>Enable or disable an account</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/admin/users/{id}/credits</code></td>
+<td>Add or remove credits</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/admin/jobs</code></td>
+<td>Inspect generation jobs</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/admin/jobs/{id}/refund</code></td>
+<td>Refund a failed or uncertain hold</td>
+</tr>
+<tr>
+<td><code>GET/PATCH</code></td>
+<td><code>/admin/settings</code></td>
+<td>Read or update generation and registration</td>
+</tr>
+<tr>
+<td><code>GET/POST</code></td>
+<td><code>/admin/invites</code></td>
+<td>List or create invite codes</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/admin/invites/{id}</code></td>
+<td>Revoke an invite code</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/admin/audit</code></td>
+<td>Read administrative audit entries</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/admin/provider</code></td>
+<td>Read the active Provider connection state</td>
+</tr>
+</tbody></table></div>
+<p>Settings update:</p>
+<pre><code class="language-json">{
+  &quot;generation_enabled&quot;: false,
+  &quot;registration_mode&quot;: &quot;invite&quot;
+}</code></pre>
+<p>When generation is disabled, estimate and submit endpoints return <code>503 GENERATION_DISABLED</code>. Disabling an account revokes its Sessions immediately.</p>
 <h2 id="pippit-provider">Pippit Provider</h2>
 <div class="table-wrap"><table><thead><tr>
 <th>Method</th>
@@ -369,7 +453,7 @@ file=&lt;image, video, or audio&gt;</code></pre>
 </tr>
 <tr>
 <td><code>403</code></td>
-<td>Explicit approval required</td>
+<td>Approval, administrator, registration, or invite policy denied</td>
 </tr>
 <tr>
 <td><code>404</code></td>
@@ -397,10 +481,10 @@ file=&lt;image, video, or audio&gt;</code></pre>
 </tr>
 <tr>
 <td><code>503</code></td>
-<td>Required provider CLI is unavailable</td>
+<td>Provider CLI is unavailable or generation is paused</td>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=27"></script>
+    <script src="../docs.js?v=28"></script>
   </body>
 </html>

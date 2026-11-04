@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Ops" />
     <title>Ops · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=27" />
+    <link rel="stylesheet" href="../docs.css?v=28" />
   </head>
   <body data-document="operations.html">
     <main class="document-shell" id="document-shell">
@@ -31,6 +31,7 @@
 <a class="toc-link toc-level-2" href="#3-official-skill-operations">3. Official Skill Operations</a>
 <a class="toc-link toc-level-2" href="#4-asset-operations">4. Asset Operations</a>
 <a class="toc-link toc-level-2" href="#5-provider-and-cost-operations">5. Provider and Cost Operations</a>
+<a class="toc-link toc-level-3" href="#5-1-administration-console">5.1 Administration Console</a>
 <a class="toc-link toc-level-2" href="#6-release-procedure">6. Release Procedure</a>
 <a class="toc-link toc-level-2" href="#7-monitoring">7. Monitoring</a>
 <a class="toc-link toc-level-2" href="#8-support">8. Support</a>
@@ -45,7 +46,7 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v2.1</td>
+<td>v2.2</td>
 </tr>
 <tr>
 <td>Updated</td>
@@ -79,6 +80,8 @@
 <li>Run Playwright with the Mock Provider as a no-fee end-to-end release gate.</li>
 <li>Confirm provider credentials never appear in browser bundles, logs, or API</li>
 <p>responses.</p>
+<li>Configure <code>VIDEOAGENT_ADMIN_EMAILS</code> and verify at least one administrator can</li>
+<p>sign in.</p>
 </ul>
 <h2 id="3-official-skill-operations">3. Official Skill Operations</h2>
 <ul>
@@ -116,6 +119,19 @@
 <li>Monitor provider errors, timeout rate, uncertain submissions, and duplicate</li>
 <p>protection.</p>
 <li>Preserve provider task references for reconciliation.</li>
+</ul>
+<h3 id="5-1-administration-console">5.1 Administration Console</h3>
+<ul>
+<li>Administration URL: <code>/en/admin</code>.</li>
+<li>Keep new-user credits at zero for launch and grant them through user</li>
+<p>administration.</p>
+<li>Use invite mode before opening registration; switch to closed mode during an</li>
+<p>incident.</p>
+<li>Pause generation before investigating Provider, billing, or security issues.</li>
+<li>Failed, cancelled, and uncertain jobs can be refunded idempotently by Job ID.</li>
+<li>Account, credit, invite, and settings mutations are recorded in the audit log.</li>
+<li>The administrator allowlist is environment-owned and requires an API restart</li>
+<p>after changes.</p>
 </ul>
 <h2 id="6-release-procedure">6. Release Procedure</h2>
 <ol>
@@ -158,6 +174,8 @@
 <li>Publish a status note with affected areas and mitigation.</li>
 <li>Review billing, duplicate jobs, cross-user access, and audit evidence.</li>
 <li>Revoke exposed share tokens immediately and inspect anomalous access counts.</li>
+<li>For suspicious registration or credit use: pause generation, close</li>
+<p>registration, disable accounts, and inspect jobs plus audit logs.</p>
 </ul>
 <h2 id="10-success-metrics">10. Success Metrics</h2>
 <ul>
@@ -170,6 +188,6 @@
 <li>Documentation: search success and zero broken bilingual links.</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=27"></script>
+    <script src="../docs.js?v=28"></script>
   </body>
 </html>

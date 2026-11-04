@@ -2,7 +2,7 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v1.3 |
+| 文档版本 | v1.4 |
 | 更新日期 | 2026-11-04 |
 | 基础路径 | `/api/v1` |
 | 认证方式 | HttpOnly Session Cookie |
@@ -11,6 +11,7 @@
 | 计费生成 | 显式审批 + `Idempotency-Key` |
 | 写接口保护 | 同源 `Origin` / `Sec-Fetch-Site` 校验 |
 | 用户积分 | 用户独立配额与可审计流水 |
+| 管理权限 | `VIDEOAGENT_ADMIN_EMAILS` 邮箱白名单 |
 | OpenAPI | `/docs` 与 `/openapi.json` |
 
 本地 OpenAPI 文档：
@@ -20,8 +21,8 @@ http://localhost:8000/docs
 http://localhost:8000/openapi.json
 ```
 
-除 `/health`、注册和登录外，所有接口都要求登录，并设置
-`credentials: "include"`。
+除 `/health`、注册、登录、注册策略和公开分享内容外，所有接口都要求登录，
+由需要鉴权的浏览器请求设置 `credentials: "include"`。
 
 ## 健康检查
 
@@ -40,9 +41,16 @@ http://localhost:8000/openapi.json
 {
   "email": "creator@example.com",
   "password": "at-least-eight-characters",
-  "locale": "zh-CN"
+  "locale": "zh-CN",
+  "invite_code": "可选的邀请码"
 }
 ```
+
+### 注册策略
+
+`GET /auth/registration-policy`
+
+返回 `open`、`invite` 或 `closed`。邀请制下注册请求必须携带 `invite_code`。
 
 ### 登录
 
@@ -304,6 +312,38 @@ file=<图片、视频或音频>
 
 分享 Token 随机生成且只保存哈希；链接支持过期与撤销，访问时累计审计计数。
 
+## 管理后台
+
+管理接口要求当前登录邮箱位于 `VIDEOAGENT_ADMIN_EMAILS`。其他用户返回
+`403 ADMIN_ACCESS_REQUIRED`。
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| `GET` | `/admin/me` | 确认管理权限 |
+| `GET` | `/admin/overview` | 用户、项目、任务、资产与运行状态 |
+| `GET` | `/admin/users` | 搜索用户并查看积分 |
+| `PATCH` | `/admin/users/{id}` | 停用或恢复账号 |
+| `POST` | `/admin/users/{id}/credits` | 增减用户积分 |
+| `GET` | `/admin/jobs` | 查看生成任务 |
+| `POST` | `/admin/jobs/{id}/refund` | 异常任务退款 |
+| `GET/PATCH` | `/admin/settings` | 读取或更新生成与注册策略 |
+| `GET/POST` | `/admin/invites` | 查看或创建邀请码 |
+| `DELETE` | `/admin/invites/{id}` | 撤销邀请码 |
+| `GET` | `/admin/audit` | 查看管理审计日志 |
+| `GET` | `/admin/provider` | 查看当前 Provider 连接状态 |
+
+设置请求：
+
+```json
+{
+  "generation_enabled": false,
+  "registration_mode": "invite"
+}
+```
+
+关闭生成后，估算与提交接口返回 `503 GENERATION_DISABLED`。停用用户会立即撤销
+其全部 Session。
+
 ## Pippit Provider
 
 | 方法 | 路径 | 说明 |
@@ -354,11 +394,11 @@ VideoAgent 配额。
 | --- | --- |
 | `401` | 未登录或 Session 过期 |
 | `402` | 当前用户 VideoAgent 积分不足 |
-| `403` | 缺少显式生成审批 |
+| `403` | 生成审批、管理权限、注册或邀请策略拒绝 |
 | `404` | 资源不存在或不属于当前用户 |
 | `409` | Provider 未就绪 |
 | `413` | 上传文件超过配置限制 |
 | `422` | 请求校验失败 |
 | `429` | 触发认证、生成或上传限流 |
 | `502` | 上游 Provider 请求失败 |
-| `503` | Provider CLI 不可用 |
+| `503` | Provider CLI 不可用或生成已暂停 |

@@ -2,7 +2,7 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v1.8 |
+| 文档版本 | v1.9 |
 | 更新日期 | 2026-11-04 |
 | 后端框架 | Python + FastAPI |
 | 前端框架 | Next.js + TypeScript |
@@ -38,6 +38,9 @@
 - FFmpeg 成片合成、字幕、音轨、横竖方版本和封面。
 - 私有资产下载、限时分享、撤销和访问计数。
 - 同源写请求校验与认证、生成、上传分层限流。
+- 管理员邮箱白名单、管理控制台、用户停用、积分调整和任务退款。
+- 邀请码注册、开放/邀请/关闭注册策略和全局生成开关。
+- 管理操作审计日志。
 - Mock Provider。
 - Pippit CLI 视频提交、任务查询和余额读取。
 - Kling MCP 文本生成视频、图生视频、动作控制和多模态参考。
@@ -227,12 +230,16 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 | `api/providers.py` | Pippit 服务端状态和积分余额 |
 | `api/assets.py` | 上传、下载、导出、分享与撤销 |
 | `api/credits.py` | 用户独立积分余额 |
+| `api/admin.py` | 管理总览、用户、积分、任务、邀请码、设置、审计 |
 | `middleware.py` | 同源写请求校验与请求限流 |
 | `services/storyboards.py` | 故事板领域操作 |
 | `services/generation_jobs.py` | Job 刷新和 Shot 状态联动 |
 | `services/evaluation.py` | 一致性、覆盖、清晰度和节奏指标计算 |
 | `services/media.py` | 文件校验、结果落地、FFmpeg 合成、封面与分享 |
 | `services/credits.py` | 积分账户、预扣与幂等退款 |
+| `services/admin.py` | 管理查询、账号停用、任务列表与审计 |
+| `services/invites.py` | 邀请码创建、消费与撤销 |
+| `services/platform_settings.py` | 生成开关与注册模式 |
 | `providers/pippit.py` | Pippit CLI 子进程、JSON 契约和任务映射 |
 | `providers/kling.py` | Kling MCP 工具适配和任务映射 |
 | `agent/graph.py` | LangGraph 编译和执行 |
@@ -308,6 +315,9 @@ ORM 表：
 | `credit_entries` | 可审计且幂等的预扣、退款流水 |
 | `assets` | 上传、生成、导出版本、封面和权限 |
 | `share_links` | Token 哈希、过期、撤销和访问计数 |
+| `platform_settings` | 生成开关与注册策略 |
+| `invite_codes` | 邀请码哈希、有效期和使用次数 |
+| `admin_audit_logs` | 管理员操作审计 |
 
 关键约束：
 
@@ -407,6 +417,16 @@ task reference    → query-result   → JobStatus + result URL
 | POST | `/assets/{id}/share` | 创建限时分享 |
 | DELETE | `/shares/{id}` | 撤销分享 |
 | GET | `/shares/{token}/content` | 读取有效分享内容 |
+| GET/PATCH | `/admin/settings` | 读取或更新生成与注册策略 |
+| GET | `/admin/overview` | 管理总览 |
+| GET | `/admin/users` | 用户列表 |
+| PATCH | `/admin/users/{id}` | 停用或恢复用户 |
+| POST | `/admin/users/{id}/credits` | 调整用户积分 |
+| GET | `/admin/jobs` | 生成任务列表 |
+| POST | `/admin/jobs/{id}/refund` | 任务异常退款 |
+| GET/POST | `/admin/invites` | 邀请码列表与创建 |
+| DELETE | `/admin/invites/{id}` | 撤销邀请码 |
+| GET | `/admin/audit` | 管理审计日志 |
 
 生成接口必须携带：
 
@@ -441,6 +461,10 @@ Idempotency-Key: <unique-client-generated-key>
 - 不安全方法校验 `Origin` 与 `Sec-Fetch-Site`。
 - 上传读取有字节上限，并校验声明的 MIME 与文件签名。
 - 分享 Token 只保存 SHA-256 哈希，过期或撤销后返回 404。
+- `VIDEOAGENT_ADMIN_EMAILS` 是管理权限的唯一引导来源。
+- 普通用户访问 `/admin/*` 返回 `403`，未登录返回 `401`。
+- 停用用户时删除其 Session；管理员不能停用自己。
+- 生成开关关闭后，估算和提交都返回 `503 GENERATION_DISABLED`。
 
 ## 13. 本地开发
 
@@ -524,10 +548,13 @@ docker compose -f deploy/docker-compose.yml up -d
 | `VIDEOAGENT_MAX_UPLOAD_BYTES` | `100 MiB` | 单文件大小上限 |
 | `VIDEOAGENT_FFMPEG_COMMAND` | `ffmpeg` | FFmpeg 命令或路径 |
 | `VIDEOAGENT_FFPROBE_COMMAND` | `ffprobe` | FFprobe 命令或路径 |
-| `VIDEOAGENT_STARTING_USER_CREDITS` | `100` | 新用户初始配额 |
+| `VIDEOAGENT_STARTING_USER_CREDITS` | `0` | 新用户初始配额，默认由管理员发放 |
 | `VIDEOAGENT_AUTH_RATE_LIMIT_PER_MINUTE` | `20` | 认证写请求限流 |
 | `VIDEOAGENT_GENERATION_RATE_LIMIT_PER_MINUTE` | `30` | 生成与导出限流 |
 | `VIDEOAGENT_UPLOAD_RATE_LIMIT_PER_MINUTE` | `20` | 上传限流 |
+| `VIDEOAGENT_ADMIN_EMAILS` | `[]` | 管理员邮箱 JSON 列表 |
+| `VIDEOAGENT_REGISTRATION_MODE` | `open` | `open/invite/closed` 默认策略 |
+| `VIDEOAGENT_GENERATION_ENABLED` | `true` | 生成功能初始状态 |
 | `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:8000/api/v1` | 浏览器 API 地址 |
 
 `VIDEOAGENT_PIPPIT_ACCESS_KEY` 只适用于服务端或 CI。本地和生产主机优先使用
@@ -555,14 +582,15 @@ pnpm --dir apps/web build
 
 测试组成：
 
-- 后端 43 个测试。
-- 前端 24 个测试。
-- Playwright 2 个端到端测试。
+- 后端 47 个测试。
+- 前端 25 个测试。
+- Playwright 3 个端到端测试。
 - 后端测试使用临时 SQLite 文件。
 - Pippit 测试使用本地 Fake CLI，不访问真实生成网络。
 - Kling Provider 测试使用 Fake MCP client，不触发付费生成。
 - 前端测试覆盖共享首页、导航、文档加载、自定义下拉、Hots 发布、创作提交和轮播行为。
 - Playwright 使用 Mock Provider 验证提交、轮询/落地、导出、下载和分享，不访问付费 Provider。
+- 管理测试覆盖白名单权限、积分调整、账号停用、邀请码、注册关闭和生成开关。
 - 普通 CI 不执行付费生成。
 
 新增功能必须遵循：

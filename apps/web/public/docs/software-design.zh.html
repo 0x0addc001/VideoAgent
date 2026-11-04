@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Arch" />
     <title>Arch · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=27" />
+    <link rel="stylesheet" href="../docs.css?v=28" />
   </head>
   <body data-document="software-design.zh.html">
     <main class="document-shell" id="document-shell">
@@ -77,7 +77,7 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v1.8</td>
+<td>v1.9</td>
 </tr>
 <tr>
 <td>更新日期</td>
@@ -126,6 +126,7 @@
 <li>支持 FFmpeg 合成、16:9/9:16/1:1 交付版本、封面、字幕和音轨。</li>
 <li>支持限时分享链接、公开/私有权限、过期和撤销。</li>
 <li>支持用户独立积分账户与预扣、退款流水，隔离共享 Provider 账户的计费风险。</li>
+<li>支持管理员控制台、用户状态、积分调整、邀请码、生成开关和审计日志。</li>
 <li>支持服务端统一授权的 Pippit CLI。</li>
 <li>支持 Pippit 文本生成视频、任务查询和积分余额读取。</li>
 <li>支持 Kling MCP 的文本生成视频、图生视频、动作控制和多模态参考能力。</li>
@@ -374,6 +375,10 @@
 <td>用户独立积分余额</td>
 </tr>
 <tr>
+<td><code>api.admin</code></td>
+<td>管理总览、用户、积分、任务、邀请码、设置与审计</td>
+</tr>
+<tr>
 <td><code>api.health</code></td>
 <td>API 与数据库健康检查</td>
 </tr>
@@ -580,6 +585,21 @@ pippit-tool-cli query-result</code></pre>
 <td><code>asset_id</code>, <code>token_hash</code>, <code>expires_at</code>, <code>revoked_at</code>, <code>access_count</code></td>
 <td>限时分享与访问计数</td>
 </tr>
+<tr>
+<td><code>platform_settings</code></td>
+<td><code>key</code>, <code>value</code>, <code>updated_by</code></td>
+<td>生成开关与注册模式</td>
+</tr>
+<tr>
+<td><code>invite_codes</code></td>
+<td><code>code_hash</code>, <code>max_uses</code>, <code>use_count</code>, <code>expires_at</code></td>
+<td>邀请制注册</td>
+</tr>
+<tr>
+<td><code>admin_audit_logs</code></td>
+<td><code>admin_id</code>, <code>action</code>, <code>target_type</code>, <code>target_id</code></td>
+<td>管理操作审计</td>
+</tr>
 </tbody></table></div>
 <p>统一使用 UUID 主键、UTC 时间戳和数据库外键。数据库使用通用 <code>JSON</code> 字段保存 Provider 原始响应。</p>
 <h2 id="13-核心状态定义">13. 核心状态定义</h2>
@@ -761,6 +781,51 @@ cancelled</code></pre>
 <td><code>/shares/{token}/content</code></td>
 <td>读取分享资产</td>
 </tr>
+<tr>
+<td>GET/PATCH</td>
+<td><code>/admin/settings</code></td>
+<td>读取和更新生成、注册策略</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/admin/overview</code></td>
+<td>管理总览</td>
+</tr>
+<tr>
+<td>GET/PATCH</td>
+<td><code>/admin/users</code>、<code>/admin/users/{id}</code></td>
+<td>用户列表与状态</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/admin/users/{id}/credits</code></td>
+<td>管理员调整积分</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/admin/jobs</code></td>
+<td>生成任务列表</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/admin/jobs/{id}/refund</code></td>
+<td>人工退款</td>
+</tr>
+<tr>
+<td>GET/POST</td>
+<td><code>/admin/invites</code></td>
+<td>邀请码列表与创建</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/admin/invites/{id}</code></td>
+<td>撤销邀请码</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/admin/audit</code></td>
+<td>管理审计日志</td>
+</tr>
 </tbody></table></div>
 <h2 id="15-前端设计">15. 前端设计</h2>
 <h3 id="15-1-信息架构">15.1 信息架构</h3>
@@ -775,6 +840,7 @@ cancelled</code></pre>
 <li><code>Docs</code>：按 PRD、Playbook、Arch、API、Dev、Test、Ops、FAQ、TODO 展示中英文文档，支持全文搜索。</li>
 <li>项目工作区：对话、Canvas、镜头检查器、生成和审核弹窗。</li>
 <li>品牌与浏览器标签页图标统一使用蓝色播放键；激活导航图标采用填充/线框反转。</li>
+<li>管理后台使用独立控制台布局，与用户创作界面隔离。</li>
 </ul>
 <h3 id="15-2-项目工作区">15.2 项目工作区</h3>
 <p>桌面端采用三栏：</p>
@@ -822,6 +888,9 @@ cancelled</code></pre>
 <li>认证、生成和上传分别执行分钟级限流；分布式部署需将计数迁移到 Redis。</li>
 <li>上传同时校验声明的 MIME、文件签名和大小。</li>
 <li>分享链接只保存 Token 哈希，并支持过期、撤销和访问计数。</li>
+<li>管理接口使用环境变量邮箱白名单授权，普通用户访问返回 <code>403</code>。</li>
+<li>停用账号会立即删除其全部 Session。</li>
+<li>生成开关在 Provider 估算和提交前检查，暂停时不产生外部费用。</li>
 </ul>
 <h2 id="18-可靠性设计">18. 可靠性设计</h2>
 <ul>
@@ -902,6 +971,7 @@ Celery + Redis</code></pre>
 <li>Playwright 使用 Mock Provider 完成注册、创作、上传、生成、导出、下载和分享。</li>
 <li>生成预扣积分，失败或取消时幂等退款。</li>
 <li>分享链接可撤销，私有资产不能由其他用户通过内容路由读取。</li>
+<li>管理员可管理账号、积分、邀请码和生成状态，所有变更写入审计日志。</li>
 </ol>
 <h2 id="24-主要风险">24. 主要风险</h2>
 <div class="table-wrap"><table><thead><tr>
@@ -942,6 +1012,6 @@ Celery + Redis</code></pre>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=27"></script>
+    <script src="../docs.js?v=28"></script>
   </body>
 </html>

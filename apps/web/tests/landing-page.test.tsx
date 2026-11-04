@@ -207,7 +207,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/product-requirements.html?v=27",
+      "/docs/product-requirements.html?v=28",
     );
     expect(container.querySelectorAll(".docs-tab-icon")).toHaveLength(9);
     expect(
@@ -232,7 +232,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/faq.html?v=27",
+      "/docs/faq.html?v=28",
     );
 
     fireEvent.click(container.querySelector(".language-button")!);
@@ -243,7 +243,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/faq.zh.html?v=27",
+      "/docs/faq.zh.html?v=28",
     );
     expect(
       [...container.querySelectorAll(".docs-tabs button")].map((button) =>
@@ -611,7 +611,7 @@ describe("LandingPage", () => {
     fireEvent.click(container.querySelector(".docs-search-results button")!);
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/operations.html?v=27",
+      "/docs/operations.html?v=28",
     );
   });
 

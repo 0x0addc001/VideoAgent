@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Dev" />
     <title>Dev · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=27" />
+    <link rel="stylesheet" href="../docs.css?v=28" />
   </head>
   <body data-document="software-implementation.zh.html">
     <main class="document-shell" id="document-shell">
@@ -72,7 +72,7 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v1.8</td>
+<td>v1.9</td>
 </tr>
 <tr>
 <td>更新日期</td>
@@ -119,6 +119,9 @@
 <li>FFmpeg 成片合成、字幕、音轨、横竖方版本和封面。</li>
 <li>私有资产下载、限时分享、撤销和访问计数。</li>
 <li>同源写请求校验与认证、生成、上传分层限流。</li>
+<li>管理员邮箱白名单、管理控制台、用户停用、积分调整和任务退款。</li>
+<li>邀请码注册、开放/邀请/关闭注册策略和全局生成开关。</li>
+<li>管理操作审计日志。</li>
 <li>Mock Provider。</li>
 <li>Pippit CLI 视频提交、任务查询和余额读取。</li>
 <li>Kling MCP 文本生成视频、图生视频、动作控制和多模态参考。</li>
@@ -313,6 +316,10 @@ https://example.com/api/   → FastAPI</code></pre>
 <td>用户独立积分余额</td>
 </tr>
 <tr>
+<td><code>api/admin.py</code></td>
+<td>管理总览、用户、积分、任务、邀请码、设置、审计</td>
+</tr>
+<tr>
 <td><code>middleware.py</code></td>
 <td>同源写请求校验与请求限流</td>
 </tr>
@@ -335,6 +342,18 @@ https://example.com/api/   → FastAPI</code></pre>
 <tr>
 <td><code>services/credits.py</code></td>
 <td>积分账户、预扣与幂等退款</td>
+</tr>
+<tr>
+<td><code>services/admin.py</code></td>
+<td>管理查询、账号停用、任务列表与审计</td>
+</tr>
+<tr>
+<td><code>services/invites.py</code></td>
+<td>邀请码创建、消费与撤销</td>
+</tr>
+<tr>
+<td><code>services/platform_settings.py</code></td>
+<td>生成开关与注册模式</td>
 </tr>
 <tr>
 <td><code>providers/pippit.py</code></td>
@@ -500,6 +519,18 @@ zh-CN</code></pre>
 <tr>
 <td><code>share_links</code></td>
 <td>Token 哈希、过期、撤销和访问计数</td>
+</tr>
+<tr>
+<td><code>platform_settings</code></td>
+<td>生成开关与注册策略</td>
+</tr>
+<tr>
+<td><code>invite_codes</code></td>
+<td>邀请码哈希、有效期和使用次数</td>
+</tr>
+<tr>
+<td><code>admin_audit_logs</code></td>
+<td>管理员操作审计</td>
 </tr>
 </tbody></table></div>
 <p>关键约束：</p>
@@ -710,6 +741,56 @@ task reference    → query-result   → JobStatus + result URL</code></pre>
 <td><code>/shares/{token}/content</code></td>
 <td>读取有效分享内容</td>
 </tr>
+<tr>
+<td>GET/PATCH</td>
+<td><code>/admin/settings</code></td>
+<td>读取或更新生成与注册策略</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/admin/overview</code></td>
+<td>管理总览</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/admin/users</code></td>
+<td>用户列表</td>
+</tr>
+<tr>
+<td>PATCH</td>
+<td><code>/admin/users/{id}</code></td>
+<td>停用或恢复用户</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/admin/users/{id}/credits</code></td>
+<td>调整用户积分</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/admin/jobs</code></td>
+<td>生成任务列表</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/admin/jobs/{id}/refund</code></td>
+<td>任务异常退款</td>
+</tr>
+<tr>
+<td>GET/POST</td>
+<td><code>/admin/invites</code></td>
+<td>邀请码列表与创建</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/admin/invites/{id}</code></td>
+<td>撤销邀请码</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/admin/audit</code></td>
+<td>管理审计日志</td>
+</tr>
 </tbody></table></div>
 <p>生成接口必须携带：</p>
 <pre><code class="language-text">Idempotency-Key: &lt;unique-client-generated-key&gt;</code></pre>
@@ -736,6 +817,10 @@ task reference    → query-result   → JobStatus + result URL</code></pre>
 <li>不安全方法校验 <code>Origin</code> 与 <code>Sec-Fetch-Site</code>。</li>
 <li>上传读取有字节上限，并校验声明的 MIME 与文件签名。</li>
 <li>分享 Token 只保存 SHA-256 哈希，过期或撤销后返回 404。</li>
+<li><code>VIDEOAGENT_ADMIN_EMAILS</code> 是管理权限的唯一引导来源。</li>
+<li>普通用户访问 <code>/admin/*</code> 返回 <code>403</code>，未登录返回 <code>401</code>。</li>
+<li>停用用户时删除其 Session；管理员不能停用自己。</li>
+<li>生成开关关闭后，估算和提交都返回 <code>503 GENERATION_DISABLED</code>。</li>
 </ul>
 <h2 id="13-本地开发">13. 本地开发</h2>
 <h3 id="13-1-启动-api">13.1 启动 API</h3>
@@ -870,8 +955,8 @@ VIDEOAGENT_TOKEN_ENCRYPTION_KEY</code></pre>
 </tr>
 <tr>
 <td><code>VIDEOAGENT_STARTING_USER_CREDITS</code></td>
-<td><code>100</code></td>
-<td>新用户初始配额</td>
+<td><code>0</code></td>
+<td>新用户初始配额，默认由管理员发放</td>
 </tr>
 <tr>
 <td><code>VIDEOAGENT_AUTH_RATE_LIMIT_PER_MINUTE</code></td>
@@ -887,6 +972,21 @@ VIDEOAGENT_TOKEN_ENCRYPTION_KEY</code></pre>
 <td><code>VIDEOAGENT_UPLOAD_RATE_LIMIT_PER_MINUTE</code></td>
 <td><code>20</code></td>
 <td>上传限流</td>
+</tr>
+<tr>
+<td><code>VIDEOAGENT_ADMIN_EMAILS</code></td>
+<td><code>[]</code></td>
+<td>管理员邮箱 JSON 列表</td>
+</tr>
+<tr>
+<td><code>VIDEOAGENT_REGISTRATION_MODE</code></td>
+<td><code>open</code></td>
+<td><code>open/invite/closed</code> 默认策略</td>
+</tr>
+<tr>
+<td><code>VIDEOAGENT_GENERATION_ENABLED</code></td>
+<td><code>true</code></td>
+<td>生成功能初始状态</td>
 </tr>
 <tr>
 <td><code>NEXT_PUBLIC_API_BASE_URL</code></td>
@@ -908,14 +1008,15 @@ pnpm --dir apps/web typecheck
 pnpm --dir apps/web build</code></pre>
 <p>测试组成：</p>
 <ul>
-<li>后端 43 个测试。</li>
-<li>前端 24 个测试。</li>
-<li>Playwright 2 个端到端测试。</li>
+<li>后端 47 个测试。</li>
+<li>前端 25 个测试。</li>
+<li>Playwright 3 个端到端测试。</li>
 <li>后端测试使用临时 SQLite 文件。</li>
 <li>Pippit 测试使用本地 Fake CLI，不访问真实生成网络。</li>
 <li>Kling Provider 测试使用 Fake MCP client，不触发付费生成。</li>
 <li>前端测试覆盖共享首页、导航、文档加载、自定义下拉、Hots 发布、创作提交和轮播行为。</li>
 <li>Playwright 使用 Mock Provider 验证提交、轮询/落地、导出、下载和分享，不访问付费 Provider。</li>
+<li>管理测试覆盖白名单权限、积分调整、账号停用、邀请码、注册关闭和生成开关。</li>
 <li>普通 CI 不执行付费生成。</li>
 </ul>
 <p>新增功能必须遵循：</p>
@@ -998,6 +1099,6 @@ pnpm --dir apps/web build</code></pre>
 <li>设计或实现边界变化已更新本文档。</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=27"></script>
+    <script src="../docs.js?v=28"></script>
   </body>
 </html>

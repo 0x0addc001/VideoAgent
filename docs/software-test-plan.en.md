@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v2.2 |
+| Document version | v2.3 |
 | Updated | 2026-11-04 |
 | Frameworks | pytest, Vitest, Testing Library, Playwright |
 
@@ -49,6 +49,10 @@ Backend:
 - FFmpeg composition, delivery, cover generation, sharing, expiry, and revocation.
 - User credit reservation, failure refunds, and idempotent ledger entries.
 - Same-origin write validation and authentication rate limiting.
+- Administrator email allowlists and non-admin denial.
+- User disablement, session revocation, and credit adjustment.
+- Invite creation, consumption, revocation, and registration modes.
+- Generation kill switch, job refunds, and audit logs.
 
 Frontend:
 
@@ -62,6 +66,7 @@ Frontend:
 - English-to-Chinese Docs switching.
 - Project list, authentication form, and project workspace.
 - Project uploads, film export, MP4 download, and share-link creation.
+- Administration console loading, settings changes, and denied access.
 
 ## 5. Provider Contract Tests
 
@@ -138,6 +143,10 @@ register → home prompt → create project → Agent storyboard → upload
 ```
 
 This flow never calls a paid Provider and is a required Pull Request gate.
+
+The administration E2E covers administrator sign-in, console loading, and
+generation pause. Backend integration tests cover non-admin `403` responses,
+credit adjustments, account disablement, invite registration, and audit logs.
 
 ## 8. Responsive and Accessibility Checks
 

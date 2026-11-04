@@ -27,6 +27,8 @@ Celery, or media processing.
 - Durable generation-job records with idempotency and API-driven status refresh.
 - Celery polling worker for long-running Pippit jobs.
 - Responsive landing page, authentication pages, project dashboard, and workspace.
+- Environment-allowlisted administration console for users, credits, jobs,
+  invites, runtime switches, Provider state, and audit logs.
 
 The default provider mode is `pippit`. The backend invokes the Pippit CLI under
 the server account, so individual VideoAgent users do not connect a Kling
@@ -98,6 +100,7 @@ Open:
 - Chinese: http://localhost:3000/zh-CN
 - API documentation: http://localhost:8000/docs
 - API health: http://localhost:8000/api/v1/health
+- Administration: http://localhost:3000/en/admin
 
 The no-Docker path uses SQLite at `services/api/.data/videoagent.db`.
 
@@ -139,6 +142,9 @@ Important variables:
 VIDEOAGENT_DATABASE_URL
 VIDEOAGENT_SESSION_SECRET
 VIDEOAGENT_TOKEN_ENCRYPTION_KEY
+VIDEOAGENT_ADMIN_EMAILS
+VIDEOAGENT_REGISTRATION_MODE
+VIDEOAGENT_GENERATION_ENABLED
 VIDEOAGENT_VIDEO_PROVIDER
 VIDEOAGENT_PIPPIT_CLI_COMMAND
 VIDEOAGENT_PIPPIT_ACCESS_KEY

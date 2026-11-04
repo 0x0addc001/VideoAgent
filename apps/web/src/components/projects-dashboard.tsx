@@ -37,15 +37,17 @@ export function ProjectsDashboard() {
   const [renameValue, setRenameValue] = useState("");
   const [showCreate, setShowCreate] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     let active = true;
 
     async function load() {
       try {
-        const [userResponse, projectsResponse] = await Promise.all([
+        const [userResponse, projectsResponse, adminResponse] = await Promise.all([
           fetch(`${API_BASE_URL}/auth/me`, { credentials: "include" }),
           fetch(`${API_BASE_URL}/projects`, { credentials: "include" }),
+          fetch(`${API_BASE_URL}/admin/me`, { credentials: "include" }),
         ]);
         if (userResponse.status === 401) {
           router.push("/login");
@@ -61,6 +63,7 @@ export function ProjectsDashboard() {
         if (active) {
           setUser(nextUser);
           setProjects(nextProjects.items);
+          setIsAdmin(adminResponse.ok);
         }
       } catch {
         if (active) {
@@ -179,6 +182,14 @@ export function ProjectsDashboard() {
             VideoAgent
           </Link>
           <div className="flex items-center gap-4">
+            {isAdmin ? (
+              <Link
+                className="rounded-full border border-[#1677ff]/35 px-4 py-2 text-sm text-[#8ed2ff]"
+                href="/admin"
+              >
+                Admin
+              </Link>
+            ) : null}
             <span className="hidden text-sm text-white/45 sm:block">{user?.email}</span>
             <button
               className="flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-sm transition hover:bg-white/10"
