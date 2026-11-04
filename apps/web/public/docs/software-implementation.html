@@ -238,6 +238,10 @@ status
 <td>Uploads, downloads, exports, sharing, and revocation</td>
 </tr>
 <tr>
+<td><code>api.skills</code></td>
+<td>Skill listing, persistence, and AI optimization</td>
+</tr>
+<tr>
 <td><code>api.credits</code></td>
 <td>Per-user VideoAgent balance</td>
 </tr>
@@ -260,6 +264,10 @@ status
 <tr>
 <td><code>services.workflow</code></td>
 <td>Concept, outline, script, and ready state transitions</td>
+</tr>
+<tr>
+<td><code>services.skill_optimizer</code></td>
+<td>Structured Skill planning and contract generation</td>
 </tr>
 <tr>
 <td><code>providers.pippit</code></td>
@@ -394,6 +402,10 @@ Chinese: product-requirements.zh.html</code></pre>
 <td>Concept, outline, script, and generation approval state</td>
 </tr>
 <tr>
+<td><code>user_skills</code></td>
+<td>Published Skill instructions, prompt template, and I/O contracts</td>
+</tr>
+<tr>
 <td><code>generation_jobs</code></td>
 <td>Provider task and idempotency</td>
 </tr>
@@ -490,6 +502,14 @@ Chinese: product-requirements.zh.html</code></pre>
 <tr>
 <td><code>POST</code></td>
 <td><code>/projects/{id}/workflow/decision</code></td>
+</tr>
+<tr>
+<td><code>GET/POST</code></td>
+<td><code>/skills</code></td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/skills/optimize</code></td>
 </tr>
 <tr>
 <td><code>GET/PUT</code></td>
@@ -636,7 +656,7 @@ pnpm --dir apps/web typecheck
 pnpm --dir apps/web build
 pnpm test:e2e
 python scripts\build_pages.py</code></pre>
-<p>Backend coverage currently consists of 56 tests, frontend coverage consists of 26 Vitest tests, and Playwright contains five no-fee browser flows. Playwright uses the Mock Provider for generation and therefore never consumes real Provider credits.</p></article>
+<p>Backend coverage currently consists of 58 tests, frontend coverage consists of 27 Vitest tests, and Playwright contains six no-fee browser flows. Playwright uses the Mock Provider for generation and therefore never consumes real Provider credits.</p></article>
     </main>
     <script src="../docs.js?v=29"></script>
   </body>

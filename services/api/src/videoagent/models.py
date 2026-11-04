@@ -419,6 +419,31 @@ class ProjectWorkflow(Base):
     )
 
 
+class UserSkill(Base):
+    __tablename__ = "user_skills"
+    __table_args__ = (UniqueConstraint("owner_id", "skill_id"),)
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    owner_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+    )
+    skill_id: Mapped[str] = mapped_column(String(120), index=True)
+    title: Mapped[str] = mapped_column(String(160))
+    description: Mapped[str] = mapped_column(Text)
+    instructions: Mapped[str] = mapped_column(Text)
+    prompt_template: Mapped[str] = mapped_column(Text)
+    input_schema: Mapped[dict[str, object]] = mapped_column(JSON, default=dict)
+    output_schema: Mapped[dict[str, object]] = mapped_column(JSON, default=dict)
+    visibility: Mapped[str] = mapped_column(String(16), default="public", index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+
 class ProviderConnection(Base):
     __tablename__ = "provider_connections"
     __table_args__ = (UniqueConstraint("user_id", "provider"),)

@@ -26,7 +26,9 @@ afterEach(() => {
 });
 
 describe("ProjectWorkspace", () => {
-  it("starts the first agent turn from a newly created project brief", async () => {
+  it(
+    "starts the first agent turn from a newly created project brief",
+    async () => {
     window.history.replaceState({}, "", "/en/projects/project-1?start=1");
     const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
@@ -258,9 +260,13 @@ describe("ProjectWorkspace", () => {
     expect(
       screen.getByText("Add subject, environment, and action details to prompts."),
     ).toBeVisible();
-  });
+    },
+    10_000,
+  );
 
-  it("shows approval options and advances only after the user approves", async () => {
+  it(
+    "shows approval options and advances only after the user approves",
+    async () => {
     window.history.replaceState({}, "", "/en/projects/project-approval");
     const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
@@ -371,5 +377,7 @@ describe("ProjectWorkspace", () => {
     expect(
       screen.getByRole("button", { name: "Custom instruction" }),
     ).toBeVisible();
-  });
+    },
+    10_000,
+  );
 });

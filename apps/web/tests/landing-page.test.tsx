@@ -121,7 +121,7 @@ describe("LandingPage", () => {
     expect(container.querySelectorAll("#skills .skill-group")).toHaveLength(0);
     expect(
       container.querySelectorAll("#skills .skill-card:not(.skill-publish-card)"),
-    ).toHaveLength(22);
+    ).toHaveLength(23);
     expect(container.querySelector("#skills")).toHaveTextContent("Search all resources");
     expect(container.querySelector("#skills")).toHaveTextContent(
       "kling/text_to_video",
@@ -129,6 +129,7 @@ describe("LandingPage", () => {
     expect(container.querySelector("#skills")).toHaveTextContent("Style transfer");
     expect(container.querySelector("#skills")).toHaveTextContent("Product film");
     expect(container.querySelector("#skills")).toHaveTextContent("Short drama");
+    expect(container.querySelector("#skills")).toHaveTextContent("Skill synthesis");
     expect(container.querySelector("#skills")).toHaveTextContent("Storyboard review");
     expect(container.querySelector("#skills .skill-card-copy small")).not.toBeInTheDocument();
     expect(container.querySelector("#skills .view-search input")).toBeInTheDocument();
@@ -446,8 +447,47 @@ describe("LandingPage", () => {
     expect(container.querySelector(".community-likes")).toHaveTextContent("0");
   });
 
-  it("publishes a user skill with a namespaced ID", () => {
-    const { container } = render(<LandingPage {...props} mode="app" />);
+  it("publishes a user skill with a namespaced ID", async () => {
+    const optimized = {
+      skill_id: "lip_sync",
+      title: "Lip Sync",
+      description: "Synchronize speech motion to a supplied audio track.",
+      instructions:
+        "Goal\nSynchronize speech motion.\n\nQuality gates\nPreserve identity.",
+      prompt_template: "Synchronize this character with the supplied audio:",
+      input_schema: { type: "object", required: ["request"] },
+      output_schema: { type: "object", required: ["result"] },
+    };
+    const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith("/skills/optimize") && init?.method === "POST") {
+        return Promise.resolve(Response.json(optimized));
+      }
+      if (url.endsWith("/skills") && init?.method === "POST") {
+        return Promise.resolve(
+          Response.json({
+            ...optimized,
+            id: "skill-1",
+            user_id: "skill_author",
+            visibility: "public",
+            created_at: "2026-11-05T00:00:00Z",
+            updated_at: "2026-11-05T00:00:00Z",
+          }),
+        );
+      }
+      if (url.endsWith("/skills")) {
+        return Promise.resolve(Response.json({ items: [] }));
+      }
+      return Promise.resolve(new Response(null, { status: 401 }));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const { container } = render(
+      <LandingPage
+        {...props}
+        accountApiBase="/api/account"
+        mode="app"
+      />,
+    );
 
     fireEvent.click(
       [...container.querySelectorAll(".site-header button")].find(
@@ -455,20 +495,61 @@ describe("LandingPage", () => {
       )!,
     );
     fireEvent.click(container.querySelector(".skill-publish-card")!);
-    fireEvent.change(container.querySelector(".skill-publish-dialog input")!, {
-      target: { value: "Lip Sync" },
-    });
-    fireEvent.change(container.querySelector(".skill-publish-dialog textarea")!, {
-      target: { value: "Synchronize speech motion to a supplied audio track." },
-    });
+    fireEvent.change(
+      [...container.querySelectorAll(".skill-publish-dialog label")].find(
+        (label) => label.textContent?.includes("Your idea"),
+      )!.querySelector("textarea")!,
+      {
+        target: {
+          value: "Create a reusable lip sync workflow for character videos",
+        },
+      },
+    );
+    fireEvent.click(
+      [...container.querySelectorAll(".skill-optimize-row button")][0]!,
+    );
+    await waitFor(() =>
+      expect(container.querySelector('input[placeholder="my_skill"]')).toHaveValue(
+        "lip_sync",
+      ),
+    );
     fireEvent.click(
       container.querySelector('.skill-publish-dialog button[type="submit"]')!,
     );
 
-    expect(
-      container.querySelector("#skills .skill-card:not(.skill-publish-card)"),
-    ).toHaveTextContent("local_user/lip_sync");
+    await waitFor(() =>
+      expect(
+        container.querySelector("#skills .skill-card:not(.skill-publish-card)"),
+      ).toHaveTextContent("skill_author/lip_sync"),
+    );
     expect(container.querySelector("#skills")).toHaveTextContent("Lip Sync");
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/account/skills",
+      expect.objectContaining({
+        method: "POST",
+        body: expect.stringContaining('"instructions"'),
+      }),
+    );
+  });
+
+  it("opens Skill synthesis directly in the structured skill studio", () => {
+    const { container } = render(<LandingPage {...props} mode="app" />);
+
+    fireEvent.click(
+      [...container.querySelectorAll(".site-header button")].find(
+        (button) => button.textContent === "Skills",
+      )!,
+    );
+    const synthesis = [...container.querySelectorAll("#skills .skill-card")].find(
+      (card) => card.textContent?.includes("skill_synthesis"),
+    )!;
+    fireEvent.click(synthesis);
+
+    expect(container.querySelector(".skill-publish-dialog")).toBeInTheDocument();
+    expect(container.querySelector(".skill-optimize-action")).toBeInTheDocument();
+    expect(container.querySelector(".skill-publish-dialog textarea")).toHaveValue(
+      "A reusable video skill that ",
+    );
   });
 
   it("searches Skills, Hots, and Assets", () => {

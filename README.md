@@ -20,6 +20,8 @@ Celery, or media processing.
   organization.
 - Staged VideoAgent approvals for overall direction, episode and shot outline,
   scene script, and generation readiness.
+- Persisted Skill Studio with AI-assisted structuring, quality gates, prompt
+  templates, and input/output contracts.
 - LangGraph agent orchestration.
 - Deterministic local planner and configurable OpenAI-compatible planner.
 - Credit estimation and explicit generation approval.

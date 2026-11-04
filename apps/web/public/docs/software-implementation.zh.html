@@ -316,6 +316,10 @@ https://example.com/api/   → FastAPI</code></pre>
 <td>上传、下载、导出、分享与撤销</td>
 </tr>
 <tr>
+<td><code>api/skills.py</code></td>
+<td>Skill 读取、持久化和 AI 优化</td>
+</tr>
+<tr>
 <td><code>api/credits.py</code></td>
 <td>用户独立积分余额</td>
 </tr>
@@ -334,6 +338,10 @@ https://example.com/api/   → FastAPI</code></pre>
 <tr>
 <td><code>services/workflow.py</code></td>
 <td>Concept、Outline、Script、Ready 状态迁移</td>
+</tr>
+<tr>
+<td><code>services/skill_optimizer.py</code></td>
+<td>将粗略想法整理为结构化 Skill 契约</td>
 </tr>
 <tr>
 <td><code>services/generation_jobs.py</code></td>
@@ -512,6 +520,10 @@ zh-CN</code></pre>
 <tr>
 <td><code>project_workflows</code></td>
 <td>整体设定、分集/分镜大纲、逐场剧本与生成审批状态</td>
+</tr>
+<tr>
+<td><code>user_skills</code></td>
+<td>用户 Skill 名称、说明、执行规范、提示词和输入输出契约</td>
 </tr>
 <tr>
 <td><code>generation_jobs</code></td>
@@ -702,6 +714,16 @@ task reference    → query-result   → JobStatus + result URL</code></pre>
 <td>POST</td>
 <td><code>/projects/{id}/workflow/decision</code></td>
 <td>批准、调整或自定义修改</td>
+</tr>
+<tr>
+<td>GET/POST</td>
+<td><code>/skills</code></td>
+<td>读取和保存当前用户 Skill</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/skills/optimize</code></td>
+<td>AI 优化 Skill 草稿</td>
 </tr>
 <tr>
 <td>GET</td>
@@ -1070,14 +1092,14 @@ pnpm --dir apps/web typecheck
 pnpm --dir apps/web build</code></pre>
 <p>测试组成：</p>
 <ul>
-<li>后端 56 个测试。</li>
-<li>前端 26 个测试。</li>
-<li>Playwright 5 个端到端测试。</li>
+<li>后端 58 个测试。</li>
+<li>前端 27 个测试。</li>
+<li>Playwright 6 个端到端测试。</li>
 <li>后端测试使用临时 SQLite 文件。</li>
 <li>Pippit 测试使用本地 Fake CLI，不访问真实生成网络。</li>
 <li>Kling Provider 测试使用 Fake MCP client，不触发付费生成。</li>
-<li>前端测试覆盖共享首页、导航、文档加载、自定义下拉、Hots 发布、创作提交、历史目录和逐层审批。</li>
-<li>Playwright 使用 Mock Provider 验证提交、轮询/落地、导出、下载和分享，不访问付费 Provider。</li>
+<li>前端测试覆盖共享首页、导航、文档加载、自定义下拉、Hots 发布、创作提交、历史目录、逐层审批、Skill AI 优化和持久化发布。</li>
+<li>Playwright 使用 Mock Provider 验证审批、生成、导出、分享，以及 Skill AI 优化和持久化，不访问付费 Provider。</li>
 <li>管理测试覆盖白名单权限、积分调整、账号停用、邀请码、注册关闭和生成开关。</li>
 <li>普通 CI 不执行付费生成。</li>
 </ul>

@@ -7,8 +7,14 @@ const ALLOWED_GET_PATHS = new Set([
   "auth/me",
   "credits",
   "providers/pippit/credits",
+  "skills",
 ]);
-const ALLOWED_POST_PATHS = new Set(["auth/logout", "projects"]);
+const ALLOWED_POST_PATHS = new Set([
+  "auth/logout",
+  "projects",
+  "skills",
+  "skills/optimize",
+]);
 
 function allowed(path: string, method: "GET" | "POST" | "PATCH" | "DELETE") {
   if (path === "admin" || path.startsWith("admin/")) return true;

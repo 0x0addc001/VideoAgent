@@ -134,6 +134,11 @@ Component tests cover:
 - Stage approval options cover overall direction, episode and shot outline, and
   scene script; custom instructions keep the current stage.
 - Shot estimation and generation remain disabled until the script is approved.
+- Skill Studio captures purpose, instructions, quality gates, starter prompt,
+  and input/output contracts.
+- AI optimization converts a rough idea into a structured draft, and saved
+  Skills reload from the server.
+- `video_agent/skill_synthesis` opens Skill Studio directly.
 - Search, language, notifications, credits, and avatar controls use
   translucent surfaces.
 - Avatar opens login and registration when signed out and sign-out when signed in.
@@ -146,6 +151,12 @@ to verify:
 ```text
 register → home prompt → create project → three approvals → select shot → upload
 → estimate → generate → poll/materialize → export → download → share
+```
+
+An additional no-fee Skill flow verifies:
+
+```text
+register → Skills → rough idea → AI optimize → publish → reload
 ```
 
 This flow never calls a paid Provider and is a required Pull Request gate.

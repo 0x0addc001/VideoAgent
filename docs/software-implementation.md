@@ -230,11 +230,13 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 | `api/evaluation.py` | 项目故事板即时评估 |
 | `api/providers.py` | Pippit 服务端状态和积分余额 |
 | `api/assets.py` | 上传、下载、导出、分享与撤销 |
+| `api/skills.py` | Skill 读取、持久化和 AI 优化 |
 | `api/credits.py` | 用户独立积分余额 |
 | `api/admin.py` | 管理总览、用户、积分、任务、邀请码、设置、审计 |
 | `middleware.py` | 同源写请求校验与请求限流 |
 | `services/storyboards.py` | 故事板领域操作 |
 | `services/workflow.py` | Concept、Outline、Script、Ready 状态迁移 |
+| `services/skill_optimizer.py` | 将粗略想法整理为结构化 Skill 契约 |
 | `services/generation_jobs.py` | Job 刷新和 Shot 状态联动 |
 | `services/evaluation.py` | 一致性、覆盖、清晰度和节奏指标计算 |
 | `services/media.py` | 文件校验、结果落地、FFmpeg 合成、封面与分享 |
@@ -315,6 +317,7 @@ ORM 表：
 | `workspace_folders` | 历史对话的项目目录 |
 | `workspace_folder_items` | 对话与项目目录的收纳关系 |
 | `project_workflows` | 整体设定、分集/分镜大纲、逐场剧本与生成审批状态 |
+| `user_skills` | 用户 Skill 名称、说明、执行规范、提示词和输入输出契约 |
 | `generation_jobs` | Provider 任务、幂等键和结果 |
 | `provider_connections` | Provider 授权信息 |
 | `oauth_flows` | OAuth 事务状态 |
@@ -413,6 +416,8 @@ task reference    → query-result   → JobStatus + result URL
 | PUT | `/workspace/threads/{id}/folder` | 收纳或移出历史对话 |
 | GET | `/projects/{id}/workflow` | 当前逐层审批状态 |
 | POST | `/projects/{id}/workflow/decision` | 批准、调整或自定义修改 |
+| GET/POST | `/skills` | 读取和保存当前用户 Skill |
+| POST | `/skills/optimize` | AI 优化 Skill 草稿 |
 | GET | `/projects/{id}/storyboard` | 获取故事板 |
 | PUT | `/projects/{id}/storyboard` | 整体替换故事板 |
 | PATCH | `/projects/{id}/storyboard/order` | 调整镜头顺序并保留 Shot ID 与资产 |
@@ -598,14 +603,14 @@ pnpm --dir apps/web build
 
 测试组成：
 
-- 后端 56 个测试。
-- 前端 26 个测试。
-- Playwright 5 个端到端测试。
+- 后端 58 个测试。
+- 前端 27 个测试。
+- Playwright 6 个端到端测试。
 - 后端测试使用临时 SQLite 文件。
 - Pippit 测试使用本地 Fake CLI，不访问真实生成网络。
 - Kling Provider 测试使用 Fake MCP client，不触发付费生成。
-- 前端测试覆盖共享首页、导航、文档加载、自定义下拉、Hots 发布、创作提交、历史目录和逐层审批。
-- Playwright 使用 Mock Provider 验证提交、轮询/落地、导出、下载和分享，不访问付费 Provider。
+- 前端测试覆盖共享首页、导航、文档加载、自定义下拉、Hots 发布、创作提交、历史目录、逐层审批、Skill AI 优化和持久化发布。
+- Playwright 使用 Mock Provider 验证审批、生成、导出、分享，以及 Skill AI 优化和持久化，不访问付费 Provider。
 - 管理测试覆盖白名单权限、积分调整、账号停用、邀请码、注册关闭和生成开关。
 - 普通 CI 不执行付费生成。
 

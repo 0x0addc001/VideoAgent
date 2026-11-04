@@ -12,6 +12,7 @@ import {
   Heart,
   Play,
   Search,
+  Sparkles,
   UserRound,
   Video,
 } from "lucide-react";
@@ -57,11 +58,28 @@ type PublishedHot = {
 };
 
 type PublishedSkill = {
+  id?: string;
   body: string;
+  description?: string;
+  instructions?: string;
+  inputSchema?: Record<string, unknown>;
+  outputSchema?: Record<string, unknown>;
   prompt: string;
+  promptTemplate?: string;
   skillId: string;
   title: string;
   userId: string;
+  visibility?: "private" | "public";
+};
+
+type OptimizedSkill = {
+  skill_id: string;
+  title: string;
+  description: string;
+  instructions: string;
+  prompt_template: string;
+  input_schema: Record<string, unknown>;
+  output_schema: Record<string, unknown>;
 };
 
 type DocsSearchEntry = {
@@ -493,14 +511,6 @@ function initialsFromEmail(email: string): string {
   return characters.filter(Boolean).join("").toUpperCase();
 }
 
-function userIdFromEmail(email: string): string {
-  const localPart = email.split("@")[0]?.trim().toLowerCase() ?? "";
-  return (
-    localPart.replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "") ||
-    "local_user"
-  );
-}
-
 function searchExcerpt(text: string, query: string): string {
   const index = text.toLowerCase().indexOf(query.trim().toLowerCase());
   if (index < 0) return text.slice(0, 120);
@@ -531,10 +541,18 @@ export function LandingPage({
   const [publishedHots, setPublishedHots] = useState<PublishedHot[]>([]);
   const [skillsQuery, setSkillsQuery] = useState("");
   const [publishSkillOpen, setPublishSkillOpen] = useState(false);
+  const [skillIdeaDraft, setSkillIdeaDraft] = useState("");
   const [skillIdDraft, setSkillIdDraft] = useState("");
+  const [skillTitleDraft, setSkillTitleDraft] = useState("");
   const [skillDescriptionDraft, setSkillDescriptionDraft] = useState("");
+  const [skillInstructionsDraft, setSkillInstructionsDraft] = useState("");
+  const [skillPromptDraft, setSkillPromptDraft] = useState("");
+  const [skillInputSchema, setSkillInputSchema] = useState<Record<string, unknown>>({});
+  const [skillOutputSchema, setSkillOutputSchema] = useState<Record<string, unknown>>({});
+  const [skillPublishError, setSkillPublishError] = useState<string | null>(null);
+  const [isOptimizingSkill, setIsOptimizingSkill] = useState(false);
+  const [isSavingSkill, setIsSavingSkill] = useState(false);
   const [publishedSkills, setPublishedSkills] = useState<PublishedSkill[]>([]);
-  const [skillUserId, setSkillUserId] = useState("local_user");
   const [hotsQuery, setHotsQuery] = useState("");
   const [assetQuery, setAssetQuery] = useState("");
   const [assetType, setAssetType] = useState<"video" | "skill">("video");
@@ -614,7 +632,6 @@ export function LandingPage({
           if (account.email) {
             setAccountEmail(account.email);
             setDisplayAvatar(initialsFromEmail(account.email) || null);
-            setSkillUserId(userIdFromEmail(account.email));
           }
         }
       } catch {
@@ -639,8 +656,45 @@ export function LandingPage({
       }
     }
 
+    async function loadSkills() {
+      try {
+        const response = await fetch(`${accountApiBase}/skills`, {
+          credentials: "include",
+        });
+        if (!active || !response.ok) return;
+        const payload = (await response.json()) as {
+          items?: Array<
+            OptimizedSkill & {
+              id: string;
+              user_id: string;
+              visibility: "private" | "public";
+            }
+          >;
+        };
+        setPublishedSkills(
+          (payload.items ?? []).map((item) => ({
+            id: item.id,
+            body: item.description,
+            description: item.description,
+            instructions: item.instructions,
+            inputSchema: item.input_schema,
+            outputSchema: item.output_schema,
+            prompt: item.prompt_template,
+            promptTemplate: item.prompt_template,
+            skillId: item.skill_id,
+            title: item.title,
+            userId: item.user_id,
+            visibility: item.visibility,
+          })),
+        );
+      } catch {
+        // Signed-out users still see the bundled Skill catalogue.
+      }
+    }
+
     void loadAccount();
     void loadCredits();
+    void loadSkills();
     return () => {
       active = false;
     };
@@ -851,40 +905,149 @@ export function LandingPage({
     setPublishOpen(false);
   }
 
+  function resetSkillStudio(idea = "") {
+    setSkillPublishError(null);
+    setSkillIdeaDraft(idea);
+    setSkillIdDraft("");
+    setSkillTitleDraft("");
+    setSkillDescriptionDraft("");
+    setSkillInstructionsDraft("");
+    setSkillPromptDraft("");
+    setSkillInputSchema({});
+    setSkillOutputSchema({});
+  }
+
   function openSkillPublisher() {
     if (mode === "project") {
       setPreviewNoticeOpen(true);
       return;
     }
+    resetSkillStudio();
     setPublishSkillOpen(true);
   }
 
-  function publishSkill(event: FormEvent<HTMLFormElement>) {
+  function openSkillSynthesis() {
+    if (mode === "project") {
+      setPreviewNoticeOpen(true);
+      return;
+    }
+    resetSkillStudio("A reusable video skill that ");
+    setPublishSkillOpen(true);
+  }
+
+  async function optimizeSkillDraft() {
+    if (mode === "project" || !accountApiBase) {
+      setPreviewNoticeOpen(true);
+      return;
+    }
+    const idea = (skillIdeaDraft || skillDescriptionDraft || skillInstructionsDraft).trim();
+    if (!idea) {
+      setSkillPublishError(content.skills.skillPublishError);
+      return;
+    }
+    setSkillPublishError(null);
+    setIsOptimizingSkill(true);
+    try {
+      const response = await fetch(`${accountApiBase}/skills/optimize`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idea,
+          title: skillTitleDraft || undefined,
+          description: skillDescriptionDraft || undefined,
+          instructions: skillInstructionsDraft || undefined,
+          locale: docsLocale,
+        }),
+      });
+      if (!response.ok) {
+        setSkillPublishError(content.skills.skillPublishError);
+        return;
+      }
+      const draft = (await response.json()) as OptimizedSkill;
+      setSkillIdDraft(draft.skill_id);
+      setSkillTitleDraft(draft.title);
+      setSkillDescriptionDraft(draft.description);
+      setSkillInstructionsDraft(draft.instructions);
+      setSkillPromptDraft(draft.prompt_template);
+      setSkillInputSchema(draft.input_schema);
+      setSkillOutputSchema(draft.output_schema);
+    } catch {
+      setSkillPublishError(content.skills.skillPublishError);
+    } finally {
+      setIsOptimizingSkill(false);
+    }
+  }
+
+  async function publishSkill(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (mode === "project" || !accountApiBase) {
+      setPreviewNoticeOpen(true);
+      return;
+    }
     const description = skillDescriptionDraft.trim();
     const normalizedSkillId = skillIdDraft
       .trim()
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, "_")
       .replace(/^_+|_+$/g, "");
-    if (!normalizedSkillId || !description) return;
-    const title = normalizedSkillId
-      .split("_")
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(" ");
-    setPublishedSkills((current) => [
-      {
-        body: description,
-        prompt: `${description} `,
-        skillId: normalizedSkillId,
-        title,
-        userId: skillUserId,
-      },
-      ...current,
-    ]);
-    setSkillIdDraft("");
-    setSkillDescriptionDraft("");
-    setPublishSkillOpen(false);
+    const title = skillTitleDraft.trim();
+    const instructions = skillInstructionsDraft.trim();
+    const promptTemplate = skillPromptDraft.trim();
+    if (!normalizedSkillId || !title || !description || !instructions || !promptTemplate) {
+      setSkillPublishError(content.skills.skillPublishError);
+      return;
+    }
+    setSkillPublishError(null);
+    setIsSavingSkill(true);
+    try {
+      const response = await fetch(`${accountApiBase}/skills`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          skill_id: normalizedSkillId,
+          title,
+          description,
+          instructions,
+          prompt_template: promptTemplate,
+          input_schema: skillInputSchema,
+          output_schema: skillOutputSchema,
+          visibility: "public",
+        }),
+      });
+      if (!response.ok) {
+        setSkillPublishError(content.skills.skillPublishError);
+        return;
+      }
+      const saved = (await response.json()) as OptimizedSkill & {
+        id: string;
+        user_id: string;
+        visibility: "private" | "public";
+      };
+      setPublishedSkills((current) => [
+        {
+          id: saved.id,
+          body: saved.description,
+          description: saved.description,
+          instructions: saved.instructions,
+          inputSchema: saved.input_schema,
+          outputSchema: saved.output_schema,
+          prompt: saved.prompt_template,
+          promptTemplate: saved.prompt_template,
+          skillId: saved.skill_id,
+          title: saved.title,
+          userId: saved.user_id,
+          visibility: saved.visibility,
+        },
+        ...current,
+      ]);
+      setPublishSkillOpen(false);
+    } catch {
+      setSkillPublishError(content.skills.skillPublishError);
+    } finally {
+      setIsSavingSkill(false);
+    }
   }
 
   function openView(view: LandingView) {
@@ -1394,7 +1557,11 @@ export function LandingPage({
             <button
               className="feature-card skill-card"
               key={`${item.userId}/${item.skillId}`}
-              onClick={() => useSkill(item.skillId, item.prompt)}
+              onClick={() =>
+                item.userId === "video_agent" && item.skillId === "skill_synthesis"
+                  ? openSkillSynthesis()
+                  : useSkill(item.skillId, item.prompt)
+              }
               type="button"
             >
               <span className="skill-code">
@@ -1650,11 +1817,43 @@ export function LandingPage({
             <p className="preview-eyebrow">Skills</p>
             <h2 id="publish-skill-title">{content.skills.publishTitle}</h2>
             <label>
+              <span>{content.skills.skillIdeaLabel}</span>
+              <textarea
+                onChange={(event) => setSkillIdeaDraft(event.target.value)}
+                placeholder={content.skills.skillDescriptionLabel}
+                value={skillIdeaDraft}
+              />
+            </label>
+            <div className="skill-optimize-row">
+              <span>
+                {content.skills.useSkillSynthesis}: video_agent/skill_synthesis
+              </span>
+              <button
+                className="skill-optimize-action"
+                disabled={!skillIdeaDraft.trim() || isOptimizingSkill}
+                onClick={() => void optimizeSkillDraft()}
+                type="button"
+              >
+                <Sparkles aria-hidden="true" />
+                {isOptimizingSkill
+                  ? content.skills.optimizing
+                  : content.skills.optimizeWithAi}
+              </button>
+            </div>
+            <label>
               <span>{content.skills.skillIdLabel}</span>
               <input
                 onChange={(event) => setSkillIdDraft(event.target.value)}
                 placeholder="my_skill"
                 value={skillIdDraft}
+              />
+            </label>
+            <label>
+              <span>{content.skills.skillTitleLabel}</span>
+              <input
+                onChange={(event) => setSkillTitleDraft(event.target.value)}
+                placeholder="Editorial product film"
+                value={skillTitleDraft}
               />
             </label>
             <label>
@@ -1664,6 +1863,26 @@ export function LandingPage({
                 value={skillDescriptionDraft}
               />
             </label>
+            <label>
+              <span>{content.skills.skillInstructionsLabel}</span>
+              <textarea
+                className="skill-instructions-input"
+                onChange={(event) => setSkillInstructionsDraft(event.target.value)}
+                value={skillInstructionsDraft}
+              />
+            </label>
+            <label>
+              <span>{content.skills.skillPromptLabel}</span>
+              <textarea
+                onChange={(event) => setSkillPromptDraft(event.target.value)}
+                value={skillPromptDraft}
+              />
+            </label>
+            {skillPublishError ? (
+              <p aria-live="polite" className="skill-publish-error">
+                {skillPublishError}
+              </p>
+            ) : null}
             <div className="publish-actions">
               <button
                 className="publish-cancel"
@@ -1674,10 +1893,17 @@ export function LandingPage({
               </button>
               <button
                 className="primary-action"
-                disabled={!skillIdDraft.trim() || !skillDescriptionDraft.trim()}
+                disabled={
+                  isSavingSkill ||
+                  !skillIdDraft.trim() ||
+                  !skillTitleDraft.trim() ||
+                  !skillDescriptionDraft.trim() ||
+                  !skillInstructionsDraft.trim() ||
+                  !skillPromptDraft.trim()
+                }
                 type="submit"
               >
-                {content.skills.publish}
+                {isSavingSkill ? content.skills.savingSkill : content.skills.publish}
               </button>
             </div>
           </form>

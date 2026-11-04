@@ -162,6 +162,9 @@
 <li>历史导航展示 Projects 与 Recents，项目目录支持创建、重命名、删除和拖拽收纳。</li>
 <li>Agent 逐层展示整体设定、分集/分镜大纲和逐场剧本审批选项，自定义意见保持当前阶段。</li>
 <li>只有剧本批准后才允许估算和生成镜头。</li>
+<li>Skill 发布表单包含用途、执行规范、质量门禁、启动提示词和输入输出契约。</li>
+<li>AI 优化按钮能把粗略想法整理为结构化 Skill，保存后从服务端恢复。</li>
+<li>内置 <code>video_agent/skill_synthesis</code> 直接打开 Skill Studio。</li>
 <li>搜索、语言、通知、积分和头像使用半透明表面。</li>
 <li>头像在未登录时提供登录与注册，登录后提供退出。</li>
 <li>API 文档开头展示属性表。</li>
@@ -170,6 +173,8 @@
 <p>Playwright 使用真实 Next.js 页面、FastAPI、SQLite 和 Mock Provider，验证：</p>
 <pre><code class="language-text">注册 → 首页创意 → 创建项目 → 三轮审批 → 选择镜头 → 上传素材
 → 积分估算 → 生成 → 轮询/落地 → 合成导出 → 下载 → 分享</code></pre>
+<p>另有一条无费用 Skill 链路：</p>
+<pre><code class="language-text">注册 → Skills → 输入粗略想法 → AI 优化 → 发布 → 刷新后恢复</code></pre>
 <p>该链路不调用真实付费 Provider，应作为每个 Pull Request 的必过门禁。</p>
 <p>管理后台 E2E 验证管理员登录、控制台加载和暂停生成；后端集成测试验证普通用户 返回 <code>403</code>、积分调整、账号停用、邀请码注册和审计日志。</p>
 <h2 id="8-响应式与可访问性">8. 响应式与可访问性</h2>

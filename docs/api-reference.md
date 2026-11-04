@@ -264,6 +264,26 @@ separate from the server-owned Provider account pool.
 }
 ```
 
+## Skills
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/skills` | List Skills saved by the current user |
+| `POST` | `/skills` | Persist a structured Skill |
+| `POST` | `/skills/optimize` | Convert a rough capability idea into a structured draft |
+
+The optimizer returns a stable `skill_id`, title, description, detailed
+instructions, starter prompt, and input/output JSON schemas. Saved Skills are
+scoped to the authenticated account and are loaded back into the Skills view.
+
+```json
+{
+  "idea": "Turn product stills into premium campaign videos",
+  "title": "Editorial product film",
+  "locale": "en"
+}
+```
+
 ### Evaluate Storyboard
 
 `POST /projects/{project_id}/evaluate`

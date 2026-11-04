@@ -377,6 +377,10 @@ query-result</code></pre>
 <td>Concept, outline, script, and generation approval state</td>
 </tr>
 <tr>
+<td><code>user_skills</code></td>
+<td>Published Skill instructions, prompt template, and I/O contracts</td>
+</tr>
+<tr>
 <td><code>generation_jobs</code></td>
 <td>Provider task, idempotency key, status, result</td>
 </tr>
@@ -456,6 +460,10 @@ query-result</code></pre>
 <td>Read and decide concept, outline, and script approval stages</td>
 </tr>
 <tr>
+<td>Skills</td>
+<td>List and persist user Skills; optimize rough ideas into structured drafts</td>
+</tr>
+<tr>
 <td>Evaluation</td>
 <td><code>POST /projects/{id}/evaluate</code></td>
 </tr>
@@ -508,6 +516,10 @@ query-result</code></pre>
 <p>organization.</p>
 <li>A three-part canvas: current-conversation asset tree, selected asset/document</li>
 <p>canvas, and approval-driven VideoAgent conversation.</p>
+<li>Skill Studio persists reusable Skills with a stable namespace, instructions,</li>
+<p>quality gates, prompt template, and input/output contracts. <code>AI optimize</code> turns an early idea into that structure.</p>
+<li>The built-in <code>video_agent/skill_synthesis</code> Skill opens Skill Studio directly</li>
+<p>to help authors compose new Skills.</p>
 </ul>
 <p>The project workspace progresses through overall direction, episode and shot outline, scene script, and generation-ready states. Each transition requires an explicit user decision. Refinement and custom instructions remain on the current stage.</p>
 <h2 id="13-documentation-language">13. Documentation Language</h2>

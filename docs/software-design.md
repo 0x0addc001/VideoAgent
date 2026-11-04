@@ -332,6 +332,7 @@ CLI 负责国内站 OAuth、MCP 传输和工具参数。Provider 适配器将 Kl
 | `workspace_folders` | `id`, `owner_id`, `name` | 历史对话的项目目录 |
 | `workspace_folder_items` | `folder_id`, `project_id` | 对话与项目目录的收纳关系 |
 | `project_workflows` | `project_id`, `stage`, `status` | 整体设定、大纲、剧本与生成审批状态 |
+| `user_skills` | `owner_id`, `skill_id`, `instructions`, `input_schema`, `output_schema` | 用户发布的结构化 Skill |
 | `storyboards` | `id`, `project_id`, `version` | 每个项目唯一的当前故事板 |
 | `shots` | `id`, `storyboard_id`, `index`, `prompt_en`, `prompt_zh`, `status` | 镜头定义 |
 | `provider_connections` | `id`, `user_id`, `provider`, `encrypted_tokens` | Provider 授权信息 |
@@ -432,6 +433,8 @@ cancelled
 | PUT | `/workspace/threads/{id}/folder` | 收纳或移出历史对话 |
 | GET | `/projects/{id}/workflow` | 读取逐层审批状态 |
 | POST | `/projects/{id}/workflow/decision` | 批准、调整或自定义修改当前阶段 |
+| GET/POST | `/skills` | 读取和保存用户 Skill |
+| POST | `/skills/optimize` | 使用 AI 将粗略想法整理为结构化 Skill |
 | GET | `/projects/{id}/storyboard` | 获取故事板 |
 | PUT | `/projects/{id}/storyboard` | 整体替换故事板 |
 | PATCH | `/projects/{id}/storyboard/order` | 调整镜头顺序并保留 Shot ID |
@@ -465,6 +468,8 @@ cancelled
 - 公共入口：左侧导航、连续视频背景、居中创作框、灵感快捷项和八项生成设置。
 - `Agents`：首页创作入口和 VideoAgent 对话。
 - `Skills`：统一可搜索 Skill 目录，卡片显示 `user_id/skill_id`；Kling 原生能力使用 `kling`，跨 Provider 工作流使用 `video_agent`，用户可发布 Skill。
+- Skill Studio 将用户 Skill 持久化到数据库；发布前包含用途、执行规范、质量门禁、启动提示词和输入/输出契约，并提供 AI 优化。
+- 内置 `video_agent/skill_synthesis` 用于帮助用户编写和合成新的 Skill，点击后直接打开 Skill Studio。
 - `Agents`：首页提供产品广告、创作者 Vlog、微短剧、音乐 MV、视频本地化和批量测款六类 Playbook；选择后统一设置提示词、Skill、Hook、风格、画幅、时长和审核模式，再次点击当前项会恢复应用前草稿。
 - Skills 目录还覆盖视频本地化、批量变体、剧本助手、智能预演、运镜设计、音乐 MV、参考复刻和外部 Agent 接力。
 - `Hots`：可搜索社区瀑布流，视频自动播放，展示标题、作者、喜欢数，并支持发布。

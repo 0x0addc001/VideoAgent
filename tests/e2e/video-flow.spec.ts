@@ -91,6 +91,40 @@ test("does not expose the obsolete projects index", async ({ page }) => {
   await expect(page.getByText("VideoAgent Studio")).toHaveCount(0);
 });
 
+test("optimizes and persists a published Skill", async ({ page }) => {
+  const email = `skill-e2e-${Date.now()}@example.com`;
+  await page.goto("/en/register");
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password").fill("Correct-Horse-Battery9");
+  await page.getByRole("button", { name: "Create account" }).click();
+  await expect(page).toHaveURL(/\/en#assets$/);
+
+  await page.goto("/en");
+  await page.getByRole("button", { name: "Skills", exact: true }).click();
+  await page.getByRole("button", { name: "Publish skill", exact: true }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog
+    .getByLabel("Your idea")
+    .fill("Create a reusable lip sync workflow for character videos");
+  await dialog.getByRole("button", { name: "AI optimize" }).click();
+  await expect(dialog.getByPlaceholder("my_skill")).toHaveValue(
+    "create_a_reusable_lip_sync_workflow_for_character_videos",
+  );
+  await dialog
+    .getByRole("button", { name: "Publish skill", exact: true })
+    .click();
+  await expect(dialog).toBeHidden();
+
+  await expect(page.locator("#skills")).toContainText(
+    "Create A Reusable Lip Sync Workflow For Character Videos",
+  );
+  await page.reload();
+  await page.getByRole("button", { name: "Skills", exact: true }).click();
+  await expect(page.locator("#skills")).toContainText(
+    "Create A Reusable Lip Sync Workflow For Character Videos",
+  );
+});
+
 test("switches the complete documentation set", async ({ page }) => {
   await page.goto("/en");
   await page.getByRole("button", { name: "Docs", exact: true }).click();

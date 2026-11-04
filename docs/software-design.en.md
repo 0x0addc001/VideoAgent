@@ -245,6 +245,7 @@ sound cue, or proof first.
 | `workspace_folders` | Project folders for conversation organization |
 | `workspace_folder_items` | Conversation-to-folder filing |
 | `project_workflows` | Concept, outline, script, and generation approval state |
+| `user_skills` | Published Skill instructions, prompt template, and I/O contracts |
 | `generation_jobs` | Provider task, idempotency key, status, result |
 | `provider_connections` | Provider authorization metadata |
 | `oauth_flows` | OAuth transaction state |
@@ -270,6 +271,7 @@ Base path: `/api/v1`
 | Agent | Get messages, send a message |
 | Workspace | Folders, recent conversations, and drag-to-file conversation organization |
 | Workflow | Read and decide concept, outline, and script approval stages |
+| Skills | List and persist user Skills; optimize rough ideas into structured drafts |
 | Evaluation | `POST /projects/{id}/evaluate` |
 | Generation | Estimate, submit, job status |
 | Providers | Pippit status and credits |
@@ -304,6 +306,11 @@ The shared Landing UI owns:
   organization.
 - A three-part canvas: current-conversation asset tree, selected asset/document
   canvas, and approval-driven VideoAgent conversation.
+- Skill Studio persists reusable Skills with a stable namespace, instructions,
+  quality gates, prompt template, and input/output contracts. `AI optimize`
+  turns an early idea into that structure.
+- The built-in `video_agent/skill_synthesis` Skill opens Skill Studio directly
+  to help authors compose new Skills.
 
 The project workspace progresses through overall direction, episode and shot
 outline, scene script, and generation-ready states. Each transition requires an

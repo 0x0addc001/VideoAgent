@@ -1,3 +1,4 @@
+import re
 from datetime import datetime
 from typing import Literal
 from uuid import UUID
@@ -406,6 +407,56 @@ class ExportRequest(BaseModel):
 class ExportResponse(BaseModel):
     items: list[AssetRead]
     cover: AssetRead | None = None
+
+
+class SkillOptimizeRequest(BaseModel):
+    idea: str = Field(min_length=3, max_length=8_000)
+    title: str | None = Field(default=None, max_length=160)
+    description: str | None = Field(default=None, max_length=4_000)
+    instructions: str | None = Field(default=None, max_length=20_000)
+    locale: SupportedLocale = "en"
+
+    @field_validator("idea")
+    @classmethod
+    def idea_must_not_be_blank(cls, value: str) -> str:
+        normalized = value.strip()
+        if not normalized:
+            raise ValueError("Idea must not be blank")
+        return normalized
+
+
+class SkillOptimizeResponse(BaseModel):
+    skill_id: str = Field(min_length=1, max_length=120)
+    title: str = Field(min_length=1, max_length=160)
+    description: str = Field(min_length=1, max_length=4_000)
+    instructions: str = Field(min_length=1, max_length=20_000)
+    prompt_template: str = Field(min_length=1, max_length=4_000)
+    input_schema: dict[str, object] = Field(default_factory=dict)
+    output_schema: dict[str, object] = Field(default_factory=dict)
+
+    @field_validator("skill_id")
+    @classmethod
+    def normalize_skill_id(cls, value: str) -> str:
+        normalized = re.sub(r"[^a-z0-9]+", "_", value.strip().lower()).strip("_")
+        if not normalized:
+            raise ValueError("Skill ID must contain letters or numbers")
+        return normalized[:120]
+
+
+class UserSkillCreate(SkillOptimizeResponse):
+    visibility: Literal["private", "public"] = "public"
+
+
+class UserSkillRead(SkillOptimizeResponse):
+    id: UUID
+    user_id: str
+    visibility: Literal["private", "public"]
+    created_at: datetime
+    updated_at: datetime
+
+
+class UserSkillList(BaseModel):
+    items: list[UserSkillRead]
 
 
 class AgentMessageCreate(BaseModel):

@@ -560,6 +560,11 @@ pippit-tool-cli query-result</code></pre>
 <td>整体设定、大纲、剧本与生成审批状态</td>
 </tr>
 <tr>
+<td><code>user_skills</code></td>
+<td><code>owner_id</code>, <code>skill_id</code>, <code>instructions</code>, <code>input_schema</code>, <code>output_schema</code></td>
+<td>用户发布的结构化 Skill</td>
+</tr>
+<tr>
 <td><code>storyboards</code></td>
 <td><code>id</code>, <code>project_id</code>, <code>version</code></td>
 <td>每个项目唯一的当前故事板</td>
@@ -746,6 +751,16 @@ cancelled</code></pre>
 <td>批准、调整或自定义修改当前阶段</td>
 </tr>
 <tr>
+<td>GET/POST</td>
+<td><code>/skills</code></td>
+<td>读取和保存用户 Skill</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/skills/optimize</code></td>
+<td>使用 AI 将粗略想法整理为结构化 Skill</td>
+</tr>
+<tr>
 <td>GET</td>
 <td><code>/projects/{id}/storyboard</code></td>
 <td>获取故事板</td>
@@ -877,6 +892,8 @@ cancelled</code></pre>
 <li>公共入口：左侧导航、连续视频背景、居中创作框、灵感快捷项和八项生成设置。</li>
 <li><code>Agents</code>：首页创作入口和 VideoAgent 对话。</li>
 <li><code>Skills</code>：统一可搜索 Skill 目录，卡片显示 <code>user_id/skill_id</code>；Kling 原生能力使用 <code>kling</code>，跨 Provider 工作流使用 <code>video_agent</code>，用户可发布 Skill。</li>
+<li>Skill Studio 将用户 Skill 持久化到数据库；发布前包含用途、执行规范、质量门禁、启动提示词和输入/输出契约，并提供 AI 优化。</li>
+<li>内置 <code>video_agent/skill_synthesis</code> 用于帮助用户编写和合成新的 Skill，点击后直接打开 Skill Studio。</li>
 <li><code>Agents</code>：首页提供产品广告、创作者 Vlog、微短剧、音乐 MV、视频本地化和批量测款六类 Playbook；选择后统一设置提示词、Skill、Hook、风格、画幅、时长和审核模式，再次点击当前项会恢复应用前草稿。</li>
 <li>Skills 目录还覆盖视频本地化、批量变体、剧本助手、智能预演、运镜设计、音乐 MV、参考复刻和外部 Agent 接力。</li>
 <li><code>Hots</code>：可搜索社区瀑布流，视频自动播放，展示标题、作者、喜欢数，并支持发布。</li>
