@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.3 |
+| Document version | v1.4 |
 | Updated | 2026-11-04 |
 | Design reference | `software-design.en.md` |
 | Test reference | `software-test-plan.en.md` |
@@ -21,6 +21,7 @@ features.
 - Left navigation: Agents, Skills, Hots, Assets, Docs.
 - Home composer with Skill and Hook selectors, six production playbooks, and
   transparent custom dropdowns.
+- Auto-growing prompt textarea with suggestions rendered only in the empty state.
 - Flat searchable Skills catalogue using `user_id/skill_id`, plus user publishing.
 - Searchable Hots feed with looping video playback, Skill-backed scenario
   reuse, and session-local publishing.
@@ -220,8 +221,9 @@ own namespace; current storage is frontend-session-local.
 
 Production playbooks are defined in `packages/landing/src/content.ts` with a
 prompt, Skill, Hook, style, frame, duration, and review mode. Applying one
-updates the full composer draft. Hots cards carry a Skill ID so scenario reuse
-enters Agents with the matching Skill selected.
+updates the full composer draft; clicking the active playbook again restores
+the saved pre-playbook composer state. Hots cards carry a Skill ID so scenario
+reuse enters Agents with the matching Skill selected.
 
 ## 9. Documentation Localization
 
@@ -343,5 +345,6 @@ provider tests are not part of normal CI.
 
 | Version | Date | Description |
 | --- | --- | --- |
+| v1.4 | 2026-11-04 | Add auto-growing prompt sizing and empty-state-only suggestions |
 | v1.3 | 2026-11-04 | Add production playbooks, Hook selector, scenario Skills, and Skill-backed Hots reuse |
 | v1.2 | 2026-11-03 | Align Skills catalogue, Hots playback/publish, bilingual Docs, icon behavior, APIs, and tests |

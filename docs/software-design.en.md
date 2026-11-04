@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.3 |
+| Document version | v1.4 |
 | Updated | 2026-11-04 |
 | Backend | Python + FastAPI |
 | Frontend | Next.js + TypeScript |
@@ -233,8 +233,10 @@ session-local.
 The Agents composer includes production playbooks for product ads, creator
 vlogs, micro drama, music videos, localization, and batch variants. Selecting a
 playbook sets the prompt, Skill, Hook, style, frame, duration, and review mode
-as one coherent starting point. Hook controls the first-three-second strategy:
-visual impact, narrative twist, spoken hook, sound cue, or proof first.
+as one coherent starting point. Playbooks use toggle behavior: selecting the
+active playbook again restores the pre-playbook draft. Hook controls the
+first-three-second strategy: visual impact, narrative twist, spoken hook,
+sound cue, or proof first.
 
 Frame-level visual-language-model review is a target extension.
 
@@ -349,10 +351,13 @@ FFmpeg workers, Alembic migrations, and a reverse proxy.
     product UI and follows the complete six-document order.
 11. Production playbooks and Skill-backed Hots scenarios provide editable,
     reusable starting points.
+12. The prompt editor grows with stacked or wrapped content, and empty-state
+    suggestions hide as soon as non-whitespace input exists.
 
 ## 17. Change Log
 
 | Version | Date | Description |
 | --- | --- | --- |
+| v1.4 | 2026-11-04 | Add auto-growing prompt input and empty-state-only suggestions |
 | v1.3 | 2026-11-04 | Add production playbooks, Hook control, scenario Skills, and reusable Hots scenarios |
 | v1.2 | 2026-11-03 | Align architecture, Skills catalogue, provider limits, UI behavior, bilingual Docs, APIs, and current test baseline |

@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.2 |
+| Document version | v1.3 |
 | Updated | 2026-11-04 |
 | Current frameworks | pytest, Vitest, Testing Library |
 | Target E2E framework | Playwright |
@@ -119,7 +119,10 @@ Current component tests should continue to cover:
   normal Review card.
 - Production playbooks fill the prompt and recommended Skill, Hook, style,
   frame, duration, and review settings.
+- Re-clicking the active playbook cancels it and restores the prior composer state.
 - Hots scenario cards open Agents with the corresponding Skill and prompt.
+- The textarea grows with multiline content, and suggestions disappear while
+  the prompt contains non-whitespace text.
 - Docs labels are `PRD`, `Design`, `Interface`, `Impl`, `Test`, and `Ops`.
 - Globe control changes only Docs source and language.
 - Skills, Hots, Assets, and Docs search controls stay pinned while content
@@ -197,5 +200,6 @@ Only with explicit user approval and budget:
 
 | Version | Date | Description |
 | --- | --- | --- |
+| v1.3 | 2026-11-04 | Add auto-growing prompt and empty-state suggestion coverage; current frontend baseline is 23 tests |
 | v1.2 | 2026-11-04 | Add playbook and Skill-backed Hots scenarios; align current 35/22 frontend baseline |
 | v1.1 | 2026-11-04 | Align current 35/19 baseline, Skills, Hots, Assets, bilingual Docs, and target tests |

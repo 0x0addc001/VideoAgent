@@ -204,7 +204,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/product-requirements.html?v=17",
+      "/docs/product-requirements.html?v=18",
     );
     expect(container.querySelectorAll(".docs-tab-icon")).toHaveLength(6);
     expect(
@@ -221,7 +221,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/product-requirements.zh.html?v=17",
+      "/docs/product-requirements.zh.html?v=18",
     );
     expect(
       [...container.querySelectorAll(".docs-tabs button")].map((button) =>
@@ -231,6 +231,30 @@ describe("LandingPage", () => {
     expect(container.querySelector(".site-header > nav")).toHaveTextContent(
       "Agents",
     );
+  });
+
+  it("grows the prompt with its content and hides suggestions while typing", () => {
+    const { container } = render(<LandingPage {...props} />);
+    const textarea = container.querySelector(
+      ".creation-composer textarea",
+    ) as HTMLTextAreaElement;
+    Object.defineProperty(textarea, "scrollHeight", {
+      configurable: true,
+      get: () => 188,
+    });
+
+    fireEvent.change(textarea, {
+      target: { value: "First line\nSecond line\nThird line" },
+    });
+
+    expect(textarea.style.height).toBe("188px");
+    expect(container.querySelector(".idea-row")).not.toBeInTheDocument();
+    expect(container.querySelector(".playbook-row")).toBeInTheDocument();
+
+    fireEvent.change(textarea, { target: { value: "" } });
+
+    expect(container.querySelector(".idea-row")).toBeInTheDocument();
+    expect(container.querySelector(".playbook-row")).toBeInTheDocument();
   });
 
   it("uses a custom transparent settings menu", () => {
@@ -460,6 +484,17 @@ describe("LandingPage", () => {
       container.querySelector('.composer-select-trigger[aria-label="Review"]'),
     ).toHaveTextContent("Ask first");
     expect(playbook).toHaveAttribute("aria-pressed", "true");
+
+    fireEvent.click(playbook!);
+
+    expect(playbook).toHaveAttribute("aria-pressed", "false");
+    expect(container.querySelector(".creation-composer textarea")).toHaveValue("");
+    expect(
+      container.querySelector('.composer-select-trigger[aria-label="Skill"]'),
+    ).toHaveTextContent("Skill");
+    expect(
+      container.querySelector('.composer-select-trigger[aria-label="Hook"]'),
+    ).toHaveTextContent("Hook");
   });
 
   it("opens a scenario from Hots with its skill already selected", () => {
@@ -519,7 +554,7 @@ describe("LandingPage", () => {
     fireEvent.click(container.querySelector(".docs-search-results button")!);
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/operations.html?v=17",
+      "/docs/operations.html?v=18",
     );
   });
 

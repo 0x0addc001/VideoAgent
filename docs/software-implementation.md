@@ -2,7 +2,7 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v1.3 |
+| 文档版本 | v1.4 |
 | 更新日期 | 2026-11-04 |
 | 对应设计 | `docs/software-design.md` |
 | 测试规范 | `docs/software-test-plan.md` |
@@ -22,6 +22,7 @@
 - 左侧 Agents、Skills、Hots、Assets、Docs 导航和独立视图切换。
 - 蓝色播放键品牌、无框标签页图标和激活图标填充/线框反转。
 - 首页连续视频轮播、流式主标语、Skill/Hook 选择器、场景 Playbook、自定义透明下拉和 Action 生成入口。
+- 创作输入框根据 `scrollHeight` 自动增高，并在输入非空时隐藏示例灵感；Playbook 保持可用，重复点击当前项会恢复应用前草稿。
 - Skills 使用单一可搜索目录，显示 `user_id/skill_id`，支持当前会话内发布 Skill。
 - Hots 支持搜索、循环视频、作者、喜欢数、当前会话内发布，以及带 Skill 的场景复用。
 - Assets 使用瀑布流，并通过 Video/Skill 内部分页区分类型；Video 卡片悬浮静音播放，Skill 卡片无封面并展示 private/public 和 `yyyy-mm-dd` 编辑时间。
@@ -660,6 +661,7 @@ pnpm --dir apps/web build
 
 | 版本 | 日期 | 说明 |
 | --- | --- | --- |
+| v1.4 | 2026-11-04 | 输入框随内容自动增高，灵感与 Playbook 仅在空态显示 |
 | v1.3 | 2026-11-04 | 增加创作 Playbook、Hook 选择器、场景 Skill 和带 Skill 的 Hots 复用 |
 | v1.1 | 2026-11-02 | 将视频链路切换为服务端 Pippit CLI，移除 Web 用户级 Kling 绑定 |
 | v1.2 | 2026-11-03 | 对齐共享 Landing UI、Hots、自定义下拉、内嵌文档、当前 API 与测试数量 |

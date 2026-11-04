@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent PRD" />
     <title>PRD · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=17" />
+    <link rel="stylesheet" href="../docs.css?v=18" />
   </head>
   <body data-document="product-requirements.zh.html">
     <main class="document-shell" id="document-shell">
@@ -48,7 +48,7 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v1.1</td>
+<td>v1.2</td>
 </tr>
 <tr>
 <td>更新日期</td>
@@ -84,10 +84,13 @@ Docs</code></pre>
 <ul>
 <li>首页提供醒目的创作输入框。</li>
 <li>创作框支持 Skill、Hook、风格、画幅、时长、模型、清晰度、音频和审核设定。</li>
+<li>输入框随文字行数或自动换行向下扩展。</li>
+<li>灵感提示和创作 Playbook 仅在输入框为空时显示。</li>
 <li>用户可以在开始创作前选择一个 Skill。</li>
 <li>创作设定的菜单根据视口剩余空间自动向上或向下展开，并始终限制在可视区域内。</li>
 <li>创作场景提供产品广告、创作者 Vlog、微短剧、音乐 MV、视频本地化和批量测款的一键起点。</li>
 <li>选择创作场景后，自动填入提示词，并设置推荐的 Skill、Hook、风格、画幅、时长与审核方式。</li>
+<li>再次点击当前已选中的 Playbook 可取消选择，并恢复应用该 Playbook 前的创作状态。</li>
 <li>提交后创建项目并进入项目工作区。</li>
 <li>VideoAgent 主标题和播放键图标同时参与流式输出。</li>
 </ul>
@@ -236,8 +239,10 @@ Ops</code></pre>
 <li>头像根据登录状态提供登录、注册或退出。</li>
 <li>创作 Playbook 可填充提示词和推荐制作参数。</li>
 <li>Hots 场景卡片进入 Agents 时选中对应 Skill。</li>
+<li>输入框随内容向下扩展，输入内容后空态建议隐藏。</li>
+<li>重复点击已激活的 Playbook 会取消选择，并恢复应用前的草稿。</li>
 </ol></article>
     </main>
-    <script src="../docs.js?v=17"></script>
+    <script src="../docs.js?v=18"></script>
   </body>
 </html>

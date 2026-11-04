@@ -103,7 +103,7 @@ const HERO_LINE_TWO: HeroPart[] = [
   { text: "Director", accent: true },
 ];
 
-const DOCS_ASSET_VERSION = "17";
+const DOCS_ASSET_VERSION = "18";
 
 function heroPartsLength(parts: readonly HeroPart[]) {
   return parts.reduce((total, part) => total + Array.from(part.text).length, 0);
@@ -211,6 +211,16 @@ type ComposerSelectProps = {
 type ComposerMenuLayout = {
   maxHeight: number;
   placement: "bottom" | "top";
+};
+
+type ComposerPlaybookSnapshot = {
+  aspectRatio: LandingProjectDraft["aspectRatio"];
+  durationSeconds: LandingProjectDraft["durationSeconds"];
+  hook: LandingHook;
+  prompt: string;
+  reviewMode: LandingProjectDraft["reviewMode"];
+  skill: string;
+  style: string;
 };
 
 const COMPOSER_MENU_GAP = 8;
@@ -507,6 +517,7 @@ export function LandingPage({
   const languageRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
+  const playbookSnapshotRef = useRef<ComposerPlaybookSnapshot | null>(null);
 
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -622,6 +633,28 @@ export function LandingPage({
   }, [previewNoticeOpen]);
 
   useEffect(() => {
+    const textarea = promptRef.current;
+    if (!textarea) return;
+
+    const resizePrompt = () => {
+      const minimumHeight = 64;
+      const maximumHeight = 280;
+      textarea.style.height = "auto";
+      const nextHeight = Math.min(
+        Math.max(textarea.scrollHeight, minimumHeight),
+        maximumHeight,
+      );
+      textarea.style.height = `${nextHeight}px`;
+      textarea.style.overflowY =
+        textarea.scrollHeight > maximumHeight ? "auto" : "hidden";
+    };
+
+    resizePrompt();
+    window.addEventListener("resize", resizePrompt);
+    return () => window.removeEventListener("resize", resizePrompt);
+  }, [prompt]);
+
+  useEffect(() => {
     if (!publishOpen) return;
 
     function closePublisher(event: KeyboardEvent) {
@@ -684,6 +717,7 @@ export function LandingPage({
   function usePrompt(value: string) {
     setPrompt(value);
     setSelectedPlaybook(null);
+    playbookSnapshotRef.current = null;
     setActiveView("agents");
     window.history.replaceState(null, "", "#agents");
     window.setTimeout(() => promptRef.current?.focus(), 250);
@@ -694,7 +728,38 @@ export function LandingPage({
     usePrompt(value);
   }
 
+  function clearPlaybookSelection() {
+    setSelectedPlaybook(null);
+    playbookSnapshotRef.current = null;
+  }
+
   function applyPlaybook(playbook: LandingPlaybook) {
+    if (selectedPlaybook === playbook.id) {
+      const snapshot = playbookSnapshotRef.current;
+      if (snapshot) {
+        setPrompt(snapshot.prompt);
+        setSkill(snapshot.skill);
+        setHook(snapshot.hook);
+        setStyle(snapshot.style);
+        setAspectRatio(snapshot.aspectRatio);
+        setDurationSeconds(snapshot.durationSeconds);
+        setReviewMode(snapshot.reviewMode);
+      }
+      setSelectedPlaybook(null);
+      playbookSnapshotRef.current = null;
+      promptRef.current?.focus();
+      return;
+    }
+
+    playbookSnapshotRef.current = {
+      aspectRatio,
+      durationSeconds,
+      hook,
+      prompt,
+      reviewMode,
+      skill,
+      style,
+    };
     setPrompt(playbook.prompt);
     setSkill(playbook.skill);
     setStyle(playbook.style);
@@ -1053,29 +1118,33 @@ export function LandingPage({
               onChange={(event) => {
                 setPrompt(event.target.value);
                 setSelectedPlaybook(null);
+                playbookSnapshotRef.current = null;
               }}
               placeholder={content.composer.placeholder}
               ref={promptRef}
-              rows={3}
+              rows={1}
               value={prompt}
             />
-            <div className="idea-row">
-              <div>
-                {content.composer.examples.map((example) => (
-                  <button
-                    key={example}
-                    onClick={() => {
-                      setPrompt(example);
-                      setSelectedPlaybook(null);
-                      promptRef.current?.focus();
-                    }}
-                    type="button"
-                  >
-                    {example}
-                  </button>
-                ))}
+            {!prompt.trim() ? (
+              <div className="idea-row">
+                <div>
+                  {content.composer.examples.map((example) => (
+                    <button
+                      key={example}
+                      onClick={() => {
+                        setPrompt(example);
+                        setSelectedPlaybook(null);
+                        playbookSnapshotRef.current = null;
+                        promptRef.current?.focus();
+                      }}
+                      type="button"
+                    >
+                      {example}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : null}
             <div
               aria-label={content.composer.playbooksLabel}
               className="playbook-row"
@@ -1095,7 +1164,10 @@ export function LandingPage({
               <ComposerSelect
                 className="composer-select-skill"
                 label={content.composer.skillLabel}
-                onChange={setSkill}
+                onChange={(value) => {
+                  setSkill(value);
+                  clearPlaybookSelection();
+                }}
                 options={[
                   { label: "Auto", value: "auto" },
                   ...[...publishedSkills, ...content.skills.items].map((item) => ({
@@ -1107,7 +1179,10 @@ export function LandingPage({
               />
               <ComposerSelect
                 label={content.composer.hookLabel}
-                onChange={(value) => setHook(value as LandingHook)}
+                onChange={(value) => {
+                  setHook(value as LandingHook);
+                  clearPlaybookSelection();
+                }}
                 options={content.composer.hookOptions.map((option) => ({
                   label: option.label,
                   value: option.id,
@@ -1116,7 +1191,10 @@ export function LandingPage({
               />
               <ComposerSelect
                 label={content.composer.styleLabel}
-                onChange={setStyle}
+                onChange={(value) => {
+                  setStyle(value);
+                  clearPlaybookSelection();
+                }}
                 options={[
                   { label: "Auto", value: "auto" },
                   ...content.composer.styles.map((option) => ({
@@ -1128,9 +1206,10 @@ export function LandingPage({
               />
               <ComposerSelect
                 label={content.composer.frameLabel}
-                onChange={(value) =>
-                  setAspectRatio(value as LandingProjectDraft["aspectRatio"])
-                }
+                onChange={(value) => {
+                  setAspectRatio(value as LandingProjectDraft["aspectRatio"]);
+                  clearPlaybookSelection();
+                }}
                 options={[
                   { label: "Auto", value: "auto" },
                   ...["16:9", "9:16", "1:1"].map((ratio) => ({
@@ -1142,13 +1221,14 @@ export function LandingPage({
               />
               <ComposerSelect
                 label={content.composer.lengthLabel}
-                onChange={(value) =>
+                onChange={(value) => {
                   setDurationSeconds(
                     value === "auto"
                       ? "auto"
                       : (Number(value) as LandingProjectDraft["durationSeconds"]),
-                  )
-                }
+                  );
+                  clearPlaybookSelection();
+                }}
                 options={[
                   { label: "Auto", value: "auto" },
                   ...[5, 10].map((duration) => ({
@@ -1195,9 +1275,10 @@ export function LandingPage({
               />
               <ComposerSelect
                 label={content.composer.reviewLabel}
-                onChange={(value) =>
+                onChange={(value) => {
                   setReviewMode(value as LandingProjectDraft["reviewMode"])
-                }
+                  clearPlaybookSelection();
+                }}
                 options={content.composer.reviewOptions.map((option) => ({
                   label: option.label,
                   value: option.id,

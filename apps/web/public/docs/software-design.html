@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Design" />
     <title>Design · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=17" />
+    <link rel="stylesheet" href="../docs.css?v=18" />
   </head>
   <body data-document="software-design.html">
     <main class="document-shell" id="document-shell">
@@ -56,7 +56,7 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v1.3</td>
+<td>v1.4</td>
 </tr>
 <tr>
 <td>Updated</td>
@@ -336,7 +336,7 @@ query-result</code></pre>
 </tbody></table></div>
 <p>Workflow skills do not display an internal flow label. Review uses the same card form as every other skill and has no separate action button.</p>
 <p>Selecting a skill preloads a concrete prompt in the Agents composer. The Agents composer also includes a Skill selector. Signed-in users can publish a skill under their own <code>&lt;user_id&gt;/&lt;skill_id&gt;</code> namespace; current publication is session-local.</p>
-<p>The Agents composer includes production playbooks for product ads, creator vlogs, micro drama, music videos, localization, and batch variants. Selecting a playbook sets the prompt, Skill, Hook, style, frame, duration, and review mode as one coherent starting point. Hook controls the first-three-second strategy: visual impact, narrative twist, spoken hook, sound cue, or proof first.</p>
+<p>The Agents composer includes production playbooks for product ads, creator vlogs, micro drama, music videos, localization, and batch variants. Selecting a playbook sets the prompt, Skill, Hook, style, frame, duration, and review mode as one coherent starting point. Playbooks use toggle behavior: selecting the active playbook again restores the pre-playbook draft. Hook controls the first-three-second strategy: visual impact, narrative twist, spoken hook, sound cue, or proof first.</p>
 <p>Frame-level visual-language-model review is a target extension.</p>
 <h2 id="10-data-model">10. Data Model</h2>
 <div class="table-wrap"><table><thead><tr>
@@ -487,6 +487,8 @@ optional Celery + Redis</code></pre>
 <p>product UI and follows the complete six-document order.</p>
 <li>Production playbooks and Skill-backed Hots scenarios provide editable,</li>
 <p>reusable starting points.</p>
+<li>The prompt editor grows with stacked or wrapped content, and empty-state</li>
+<p>suggestions hide as soon as non-whitespace input exists.</p>
 </ol>
 <h2 id="17-change-log">17. Change Log</h2>
 <div class="table-wrap"><table><thead><tr>
@@ -494,6 +496,11 @@ optional Celery + Redis</code></pre>
 <th>Date</th>
 <th>Description</th>
 </tr></thead><tbody>
+<tr>
+<td>v1.4</td>
+<td>2026-11-04</td>
+<td>Add auto-growing prompt input and empty-state-only suggestions</td>
+</tr>
 <tr>
 <td>v1.3</td>
 <td>2026-11-04</td>
@@ -506,6 +513,6 @@ optional Celery + Redis</code></pre>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=17"></script>
+    <script src="../docs.js?v=18"></script>
   </body>
 </html>

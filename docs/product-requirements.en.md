@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.1 |
+| Document version | v1.2 |
 | Updated | 2026-11-04 |
 
 ## 1. Product Goal
@@ -55,6 +55,8 @@ shows the account email and a sign-out action.
 - The home view contains a prominent prompt composer.
 - The composer supports skill, hook, style, frame, duration, model, quality,
   audio, and review settings.
+- The prompt editor grows downward as wrapped text or line count increases.
+- Idea prompts and production playbooks are visible only when the prompt is empty.
 - A user can select a Skill before starting.
 - Composer setting menus open above or below the trigger based on viewport
   space and remain inside the visible area.
@@ -62,6 +64,8 @@ shows the account email and a sign-out action.
   creator vlogs, micro drama, music videos, localization, and batch variants.
 - Applying a playbook fills the prompt and sets its recommended Skill, Hook,
   style, frame, duration, and review mode.
+- Selecting the active playbook again cancels it and restores the composer
+  state that existed before the playbook was applied.
 - Submitting creates a project and enters the project workspace.
 - The VideoAgent headline and icon stream together.
 
@@ -215,3 +219,6 @@ Docs requirements:
 14. Avatar provides login, registration, or sign-out based on session state.
 15. Production playbooks fill the prompt and recommended production settings.
 16. Hots scenario cards open Agents with the corresponding Skill selected.
+17. The prompt grows with its content and empty-state suggestions disappear
+    while typing.
+18. Re-clicking the active playbook cancels selection and restores the previous draft.

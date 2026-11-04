@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Impl" />
     <title>Impl · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=17" />
+    <link rel="stylesheet" href="../docs.css?v=18" />
   </head>
   <body data-document="software-implementation.html">
     <main class="document-shell" id="document-shell">
@@ -55,7 +55,7 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v1.3</td>
+<td>v1.4</td>
 </tr>
 <tr>
 <td>Updated</td>
@@ -80,6 +80,7 @@
 <li>Left navigation: Agents, Skills, Hots, Assets, Docs.</li>
 <li>Home composer with Skill and Hook selectors, six production playbooks, and</li>
 <p>transparent custom dropdowns.</p>
+<li>Auto-growing prompt textarea with suggestions rendered only in the empty state.</li>
 <li>Flat searchable Skills catalogue using <code>user_id/skill_id</code>, plus user publishing.</li>
 <li>Searchable Hots feed with looping video playback, Skill-backed scenario</li>
 <p>reuse, and session-local publishing.</p>
@@ -308,7 +309,7 @@ video_agent/music_video
 video_agent/reference_remake
 video_agent/agent_handoff</code></pre>
 <p>Workflow skills do not display a flow label. Review uses the same card form and has no separate project action. Signed-in users can publish a skill under their own namespace; current storage is frontend-session-local.</p>
-<p>Production playbooks are defined in <code>packages/landing/src/content.ts</code> with a prompt, Skill, Hook, style, frame, duration, and review mode. Applying one updates the full composer draft. Hots cards carry a Skill ID so scenario reuse enters Agents with the matching Skill selected.</p>
+<p>Production playbooks are defined in <code>packages/landing/src/content.ts</code> with a prompt, Skill, Hook, style, frame, duration, and review mode. Applying one updates the full composer draft; clicking the active playbook again restores the saved pre-playbook composer state. Hots cards carry a Skill ID so scenario reuse enters Agents with the matching Skill selected.</p>
 <h2 id="9-documentation-localization">9. Documentation Localization</h2>
 <p>The product UI remains English. The globe control changes only Docs language.</p>
 <pre><code class="language-text">English: product-requirements.html
@@ -514,6 +515,11 @@ python scripts\build_pages.py</code></pre>
 <th>Description</th>
 </tr></thead><tbody>
 <tr>
+<td>v1.4</td>
+<td>2026-11-04</td>
+<td>Add auto-growing prompt sizing and empty-state-only suggestions</td>
+</tr>
+<tr>
 <td>v1.3</td>
 <td>2026-11-04</td>
 <td>Add production playbooks, Hook selector, scenario Skills, and Skill-backed Hots reuse</td>
@@ -525,6 +531,6 @@ python scripts\build_pages.py</code></pre>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=17"></script>
+    <script src="../docs.js?v=18"></script>
   </body>
 </html>
