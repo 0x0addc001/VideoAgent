@@ -45,6 +45,36 @@ async def test_agent_rejects_empty_message(client):
 
 
 @pytest.mark.api
+async def test_local_agent_uses_hook_duration_and_aspect_settings(client):
+    assert (await register(client)).status_code == 201
+    project = (
+        await client.post(
+            "/api/v1/projects",
+            json={
+                "title": "Proof-led product film",
+                "brief": (
+                    "A precise product demonstration\n\n"
+                    "Production settings: product_film · Hook proof · Product · "
+                    "9:16 · 10s · Kling/Kling Video 4.0 · 720p · "
+                    "Audio auto · Review ask"
+                ),
+            },
+        )
+    ).json()
+
+    response = await client.post(
+        f"/api/v1/projects/{project['id']}/messages",
+        json={"content": "Show the result before explaining the product"},
+    )
+
+    assert response.status_code == 200
+    shots = response.json()["storyboard"]["shots"]
+    assert all(shot["duration_seconds"] == 10 for shot in shots)
+    assert all(shot["aspect_ratio"] == "9:16" for shot in shots)
+    assert "visibly demonstrating the product result or proof" in shots[0]["prompt_en"]
+
+
+@pytest.mark.api
 async def test_other_user_cannot_message_project(client):
     assert (await register(client, email="owner@example.com")).status_code == 201
     project = await client.post("/api/v1/projects", json={"title": "Private"})

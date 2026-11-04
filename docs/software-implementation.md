@@ -586,7 +586,7 @@ pnpm --dir apps/web build
 
 测试组成：
 
-- 后端 51 个测试。
+- 后端 52 个测试。
 - 前端 26 个测试。
 - Playwright 4 个端到端测试。
 - 后端测试使用临时 SQLite 文件。

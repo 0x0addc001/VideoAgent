@@ -1,3 +1,4 @@
+import re
 from typing import Literal, Protocol
 
 from langchain_openai import ChatOpenAI
@@ -29,29 +30,56 @@ class LocalStoryboardPlanner:
     async def plan(self, context: PlanningContext) -> StoryboardPlan:
         subject = context.user_message or context.project_brief or context.project_title
         chinese = context.locale == "zh-CN"
+        hook_match = re.search(r"Hook\s+([a-z]+)", context.project_brief, re.IGNORECASE)
+        hook = hook_match.group(1).lower() if hook_match else "auto"
+        duration_match = re.search(r"·\s*(\d+)s\s*·", context.project_brief)
+        duration = min(15, max(1, int(duration_match.group(1)))) if duration_match else 5
+        aspect_match = re.search(r"·\s*(16:9|9:16|1:1)\s*·", context.project_brief)
+        aspect_ratio = aspect_match.group(1) if aspect_match else "16:9"
+        hook_guidance = {
+            "visual": "Open with a striking, instantly readable visual.",
+            "narrative": "Open with a concise visual question or narrative twist.",
+            "spoken": "Open with a direct spoken hook delivered to camera.",
+            "sound": "Open with a distinctive sound cue that establishes the mood.",
+            "proof": "Open by visibly demonstrating the product result or proof.",
+        }.get(hook, "")
+        hook_guidance_zh = {
+            "visual": "以直接、清晰的强视觉画面开场。",
+            "narrative": "以简洁的视觉疑问或叙事反转开场。",
+            "spoken": "以面向镜头的直接口播钩子开场。",
+            "sound": "以建立情绪的标志性声音开场。",
+            "proof": "以可见的产品效果或实证开场。",
+        }.get(hook, "")
+        opening_prompt = (
+            f"Cinematic establishing shot for {subject}, dramatic lighting. {hook_guidance}"
+        ).strip()
         shots = [
             ShotInput(
                 description="电影感建立镜头" if chinese else "Cinematic establishing shot",
-                prompt_en=f"Cinematic establishing shot for {subject}, dramatic lighting",
-                prompt_zh=f"为“{subject}”设计电影感建立镜头，戏剧化光影" if chinese else None,
-                duration_seconds=5,
-                aspect_ratio="16:9",
+                prompt_en=opening_prompt,
+                prompt_zh=(
+                    f"为“{subject}”设计电影感建立镜头，戏剧化光影。{hook_guidance_zh}"
+                    if chinese
+                    else None
+                ),
+                duration_seconds=duration,
+                aspect_ratio=aspect_ratio,
                 generation_mode="text_to_video",
             ),
             ShotInput(
                 description="产品细节镜头" if chinese else "Product detail shot",
                 prompt_en=f"Macro product detail shot for {subject}, shallow depth of field",
                 prompt_zh=f"“{subject}”的产品细节微距镜头，浅景深" if chinese else None,
-                duration_seconds=4,
-                aspect_ratio="16:9",
+                duration_seconds=duration,
+                aspect_ratio=aspect_ratio,
                 generation_mode="text_to_video",
             ),
             ShotInput(
                 description="品牌收尾镜头" if chinese else "Hero closing shot",
                 prompt_en=f"Hero closing shot for {subject}, elegant camera movement",
                 prompt_zh=f"“{subject}”的英雄收尾镜头，优雅运镜" if chinese else None,
-                duration_seconds=5,
-                aspect_ratio="16:9",
+                duration_seconds=duration,
+                aspect_ratio=aspect_ratio,
                 generation_mode="text_to_video",
             ),
         ]
