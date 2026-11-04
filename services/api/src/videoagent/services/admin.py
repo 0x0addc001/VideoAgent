@@ -73,9 +73,7 @@ async def user_read(
     project_count = int(
         (
             await session.scalar(
-                select(func.count())
-                .select_from(Project)
-                .where(Project.owner_id == user.id)
+                select(func.count()).select_from(Project).where(Project.owner_id == user.id)
             )
         )
         or 0
