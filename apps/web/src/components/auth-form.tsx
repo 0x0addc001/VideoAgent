@@ -73,7 +73,7 @@ export function AuthForm({ mode }: AuthFormProps) {
       if (next?.startsWith("/") && !next.startsWith("//")) {
         window.location.href = next;
       } else {
-        router.push("/projects");
+        router.push("/#assets");
       }
       router.refresh();
     } catch {

@@ -1,3 +1,5 @@
+import asyncio
+
 import pytest
 
 from tests.conftest import register
@@ -16,6 +18,20 @@ async def test_register_logs_user_in_and_persists_locale(client):
     me = await client.get("/api/v1/auth/me")
     assert me.status_code == 200
     assert me.json()["email"] == "creator@example.com"
+
+    credits = await client.get("/api/v1/credits")
+    assert credits.status_code == 200
+    assert credits.json()["credits"] == 100
+
+
+@pytest.mark.api
+async def test_concurrent_initial_account_reads_reuse_registration_credit_account(client):
+    assert (await register(client)).status_code == 201
+
+    responses = await asyncio.gather(*(client.get("/api/v1/credits") for _ in range(4)))
+
+    assert [response.status_code for response in responses] == [200, 200, 200, 200]
+    assert {response.json()["credits"] for response in responses} == {100}
 
 
 @pytest.mark.api

@@ -193,13 +193,14 @@ to `services/api/.env`:
 ```env
 VIDEOAGENT_LLM_BASE_URL=https://api.deepseek.com/v1
 VIDEOAGENT_LLM_API_KEY=sk-your-private-key
-VIDEOAGENT_LLM_MODEL=deepseek-chat
+VIDEOAGENT_LLM_MODEL=deepseek-flash
 ```
 
-Restart the API after changing the file. `deepseek-chat` is recommended for
-structured storyboard output; `deepseek-reasoner` can be selected for deeper
-reasoning but is slower and should be validated against structured output
-before production use.
+Restart the API after changing the file. Model IDs must match the configured
+endpoint's `/models` response; the current endpoint exposes `deepseek-flash`
+and `deepseek-v4-pro`. VideoAgent automatically falls back to a plain chat
+completion plus strict JSON validation when an endpoint does not support
+OpenAI JSON Schema structured output.
 
 ## Repository structure
 

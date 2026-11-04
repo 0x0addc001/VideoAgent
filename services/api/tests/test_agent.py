@@ -1,6 +1,10 @@
+import json
+from types import SimpleNamespace
+
 import pytest
 
 from tests.conftest import register
+from videoagent.agent.planner import OpenAIStoryboardPlanner, PlanningContext
 
 
 @pytest.mark.api
@@ -72,6 +76,52 @@ async def test_local_agent_uses_hook_duration_and_aspect_settings(client):
     assert all(shot["duration_seconds"] == 10 for shot in shots)
     assert all(shot["aspect_ratio"] == "9:16" for shot in shots)
     assert "visibly demonstrating the product result or proof" in shots[0]["prompt_en"]
+
+
+@pytest.mark.unit
+async def test_openai_compatible_planner_falls_back_when_json_schema_is_unsupported():
+    class UnsupportedStructuredModel:
+        async def ainvoke(self, prompt: str) -> object:
+            raise RuntimeError("This response_format type is unavailable now")
+
+    class PlainChatModel:
+        async def ainvoke(self, messages: list[tuple[str, str]]) -> object:
+            assert messages[0][0] == "system"
+            return SimpleNamespace(
+                content=json.dumps(
+                    {
+                        "assistant_message": "Storyboard ready.",
+                        "storyboard": {
+                            "shots": [
+                                {
+                                    "description": "Reveal",
+                                    "prompt_en": "A cinematic product reveal",
+                                    "prompt_zh": "电影感产品亮相",
+                                    "duration_seconds": 5,
+                                    "aspect_ratio": "16:9",
+                                    "generation_mode": "text_to_video",
+                                }
+                            ]
+                        },
+                    }
+                )
+            )
+
+    planner = object.__new__(OpenAIStoryboardPlanner)
+    planner._structured = UnsupportedStructuredModel()  # type: ignore[attr-defined]
+    planner._chat = PlainChatModel()  # type: ignore[attr-defined]
+
+    result = await planner.plan(
+        PlanningContext(
+            locale="en",
+            project_title="Fallback",
+            project_brief="Product reveal",
+            user_message="Create a shot",
+        )
+    )
+
+    assert result.assistant_message == "Storyboard ready."
+    assert result.storyboard.shots[0].prompt_en == "A cinematic product reveal"
 
 
 @pytest.mark.api

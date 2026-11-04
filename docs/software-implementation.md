@@ -256,18 +256,18 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 | `components/app-landing-page.tsx` | 首页创作框提交、项目创建和路由跳转 |
 | `app/[locale]/register/page.tsx` | 注册页 |
 | `app/[locale]/login/page.tsx` | 登录页 |
-| `app/[locale]/projects/page.tsx` | 项目工作台入口 |
 | `app/[locale]/projects/[projectId]/page.tsx` | 项目编辑工作区 |
 | `packages/landing` | 左侧导航、共享品牌、视频主视觉、创作框、Hots 和 Docs |
 | `locale-switcher.tsx` | 中英文切换 |
 | `auth-form.tsx` | 注册/登录请求 |
-| `projects-dashboard.tsx` | 项目列表、新建、重命名和删除 |
 | `project-workspace.tsx` | 自动开始首轮 Agent 对话、故事板、镜头设置和生成 |
 | `scripts/build_pages.py` | 生成文档 HTML、目录与静态资源 |
 
 前端通过 `NEXT_PUBLIC_API_BASE_URL` 访问 FastAPI，所有鉴权请求设置 `credentials: "include"`。
 
 前端请求类型以 FastAPI OpenAPI 契约为准。
+
+Assets 是项目和资产的统一入口；项目详情路由用于打开具体工作区。
 
 ## 8. 国际化实现
 
@@ -586,9 +586,9 @@ pnpm --dir apps/web build
 
 测试组成：
 
-- 后端 52 个测试。
-- 前端 26 个测试。
-- Playwright 4 个端到端测试。
+- 后端 54 个测试。
+- 前端 25 个测试。
+- Playwright 5 个端到端测试。
 - 后端测试使用临时 SQLite 文件。
 - Pippit 测试使用本地 Fake CLI，不访问真实生成网络。
 - Kling Provider 测试使用 Fake MCP client，不触发付费生成。

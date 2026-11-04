@@ -10,7 +10,7 @@ test("runs a complete mock video workflow without paid generation", async ({
   await page.getByLabel("Email").fill(email);
   await page.getByLabel("Password").fill(password);
   await page.getByRole("button", { name: "Create account" }).click();
-  await expect(page).toHaveURL(/\/en\/projects$/);
+  await expect(page).toHaveURL(/\/en#assets$/);
 
   await page.goto("/en");
   await page
@@ -70,6 +70,13 @@ test("runs a complete mock video workflow without paid generation", async ({
   );
 });
 
+test("does not expose the obsolete projects index", async ({ page }) => {
+  const response = await page.goto("/en/projects");
+
+  expect(response?.status()).toBe(404);
+  await expect(page.getByText("VideoAgent Studio")).toHaveCount(0);
+});
+
 test("switches the complete documentation set", async ({ page }) => {
   await page.goto("/en");
   await page.getByRole("button", { name: "Docs", exact: true }).click();
@@ -98,7 +105,7 @@ test("administrator can pause generation from the administration console", async
   await page.getByLabel("Email").fill("admin-playwright@example.com");
   await page.getByLabel("Password").fill("Correct-Horse-Battery9");
   await page.getByRole("button", { name: "Create account" }).click();
-  await expect(page).toHaveURL(/\/en\/projects$/);
+  await expect(page).toHaveURL(/\/en#assets$/);
 
   await page.goto("/en/admin");
   await expect(

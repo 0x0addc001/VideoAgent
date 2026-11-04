@@ -41,6 +41,8 @@ export default defineConfig({
         VIDEOAGENT_MEDIA_DIR: mediaDirectory,
         VIDEOAGENT_VIDEO_PROVIDER: "mock",
         VIDEOAGENT_STARTING_USER_CREDITS: "100",
+        VIDEOAGENT_LLM_API_KEY: "",
+        VIDEOAGENT_LLM_MODEL: "",
         VIDEOAGENT_ADMIN_EMAILS: '["admin-playwright@example.com"]',
         VIDEOAGENT_ALLOWED_ORIGINS: `["${webUrl}"]`,
         VIDEOAGENT_FRONTEND_BASE_URL: webUrl,

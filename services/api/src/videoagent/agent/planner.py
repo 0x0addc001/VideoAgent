@@ -1,3 +1,4 @@
+import json
 import re
 from typing import Literal, Protocol
 
@@ -101,13 +102,13 @@ class OpenAIStoryboardPlanner:
     def __init__(self, settings: Settings) -> None:
         if not settings.llm_api_key or not settings.llm_model:
             raise ValueError("LLM provider is not configured")
-        model = ChatOpenAI(
+        self._chat = ChatOpenAI(
             api_key=settings.llm_api_key,
             base_url=settings.llm_base_url,
             model=settings.llm_model,
             temperature=0.4,
         )
-        self._model = model.with_structured_output(StoryboardPlan)
+        self._structured = self._chat.with_structured_output(StoryboardPlan)
 
     async def plan(self, context: PlanningContext) -> StoryboardPlan:
         prompt = (
@@ -117,10 +118,34 @@ class OpenAIStoryboardPlanner:
             f"Locale: {context.locale}. Project: {context.project_title}. "
             f"Brief: {context.project_brief}. User request: {context.user_message}"
         )
-        result = await self._model.ainvoke(prompt)
-        if not isinstance(result, StoryboardPlan):
-            raise TypeError("LLM returned an unexpected structured response")
-        return result
+        try:
+            result = await self._structured.ainvoke(prompt)
+            if not isinstance(result, StoryboardPlan):
+                raise TypeError("LLM returned an unexpected structured response")
+            return result
+        except Exception as exc:
+            if "response_format" not in str(exc).lower():
+                raise
+
+        schema = json.dumps(StoryboardPlan.model_json_schema(), ensure_ascii=False)
+        fallback = await self._chat.ainvoke(
+            [
+                (
+                    "system",
+                    "Return one valid JSON object only, with no Markdown fences. "
+                    f"It must validate against this JSON Schema: {schema}",
+                ),
+                ("human", prompt),
+            ]
+        )
+        content = fallback.content
+        if not isinstance(content, str):
+            raise TypeError("LLM returned a non-text structured response")
+        start = content.find("{")
+        end = content.rfind("}")
+        if start < 0 or end < start:
+            raise ValueError("LLM did not return a JSON object")
+        return StoryboardPlan.model_validate_json(content[start : end + 1])
 
 
 def build_storyboard_planner(settings: Settings) -> StoryboardPlanner:

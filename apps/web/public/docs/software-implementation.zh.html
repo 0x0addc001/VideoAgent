@@ -406,10 +406,6 @@ https://example.com/api/   → FastAPI</code></pre>
 <td>登录页</td>
 </tr>
 <tr>
-<td><code>app/[locale]/projects/page.tsx</code></td>
-<td>项目工作台入口</td>
-</tr>
-<tr>
 <td><code>app/[locale]/projects/[projectId]/page.tsx</code></td>
 <td>项目编辑工作区</td>
 </tr>
@@ -426,10 +422,6 @@ https://example.com/api/   → FastAPI</code></pre>
 <td>注册/登录请求</td>
 </tr>
 <tr>
-<td><code>projects-dashboard.tsx</code></td>
-<td>项目列表、新建、重命名和删除</td>
-</tr>
-<tr>
 <td><code>project-workspace.tsx</code></td>
 <td>自动开始首轮 Agent 对话、故事板、镜头设置和生成</td>
 </tr>
@@ -440,6 +432,7 @@ https://example.com/api/   → FastAPI</code></pre>
 </tbody></table></div>
 <p>前端通过 <code>NEXT_PUBLIC_API_BASE_URL</code> 访问 FastAPI，所有鉴权请求设置 <code>credentials: &quot;include&quot;</code>。</p>
 <p>前端请求类型以 FastAPI OpenAPI 契约为准。</p>
+<p>Assets 是项目和资产的统一入口；项目详情路由用于打开具体工作区。</p>
 <h2 id="8-国际化实现">8. 国际化实现</h2>
 <p>保留的语言资源：</p>
 <pre><code class="language-text">en
@@ -1027,9 +1020,9 @@ pnpm --dir apps/web typecheck
 pnpm --dir apps/web build</code></pre>
 <p>测试组成：</p>
 <ul>
-<li>后端 52 个测试。</li>
-<li>前端 26 个测试。</li>
-<li>Playwright 4 个端到端测试。</li>
+<li>后端 54 个测试。</li>
+<li>前端 25 个测试。</li>
+<li>Playwright 5 个端到端测试。</li>
 <li>后端测试使用临时 SQLite 文件。</li>
 <li>Pippit 测试使用本地 Fake CLI，不访问真实生成网络。</li>
 <li>Kling Provider 测试使用 Fake MCP client，不触发付费生成。</li>

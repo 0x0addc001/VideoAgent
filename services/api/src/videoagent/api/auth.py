@@ -65,7 +65,7 @@ async def register(
         )
     if mode == "invite":
         await consume_invite(session, payload.invite_code)
-    user = await register_user(session, payload)
+    user = await register_user(session, payload, settings)
     token, _ = await create_session(session, user, settings)
     set_session_cookie(response, settings, token)
     return UserRead.model_validate(user)

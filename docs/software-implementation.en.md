@@ -183,8 +183,10 @@ status
 | `packages/landing/src/content.ts` | English UI and Chinese resources |
 | `app-landing-page.tsx` | Product home project creation |
 | `project-workspace.tsx` | Conversation, canvas, inspector, generation, review |
-| `projects-dashboard.tsx` | Project list, rename, archive |
 | `scripts/build_pages.py` | bilingual Docs build |
+
+Assets is the unified index for projects and generated media. A project detail
+route opens its workspace.
 
 ## 8. Skills Implementation
 
@@ -358,7 +360,7 @@ pnpm test:e2e
 python scripts\build_pages.py
 ```
 
-Backend coverage currently consists of 52 tests, frontend coverage consists of
-26 Vitest tests, and Playwright contains four no-fee browser flows. Playwright
+Backend coverage currently consists of 54 tests, frontend coverage consists of
+25 Vitest tests, and Playwright contains five no-fee browser flows. Playwright
 uses the Mock Provider for generation and therefore never consumes real
 Provider credits.

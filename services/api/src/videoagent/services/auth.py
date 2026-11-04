@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from videoagent.config import Settings
 from videoagent.errors import AppError
-from videoagent.models import Session, User, UserStatus
+from videoagent.models import CreditAccount, Session, User, UserStatus
 from videoagent.schemas import RegisterRequest
 from videoagent.security import (
     hash_password,
@@ -24,7 +24,11 @@ async def get_user_by_email(session: AsyncSession, email: str) -> User | None:
     return result.scalar_one_or_none()
 
 
-async def register_user(session: AsyncSession, payload: RegisterRequest) -> User:
+async def register_user(
+    session: AsyncSession,
+    payload: RegisterRequest,
+    settings: Settings,
+) -> User:
     email = normalize_email(str(payload.email))
     if await get_user_by_email(session, email) is not None:
         raise AppError(
@@ -40,6 +44,13 @@ async def register_user(session: AsyncSession, payload: RegisterRequest) -> User
         status=UserStatus.ACTIVE.value,
     )
     session.add(user)
+    await session.flush()
+    session.add(
+        CreditAccount(
+            user_id=user.id,
+            balance=settings.starting_user_credits,
+        )
+    )
     await session.commit()
     await session.refresh(user)
     return user

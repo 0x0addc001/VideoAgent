@@ -19,6 +19,8 @@ async def app(tmp_path: Path):
         media_dir=str(tmp_path / "media"),
         admin_emails=["admin@example.com"],
         starting_user_credits=100,
+        llm_api_key=None,
+        llm_model=None,
     )
     application = create_app(settings)
     async with application.router.lifespan_context(application):

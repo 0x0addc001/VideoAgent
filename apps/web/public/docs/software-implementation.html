@@ -300,14 +300,11 @@ status
 <td>Conversation, canvas, inspector, generation, review</td>
 </tr>
 <tr>
-<td><code>projects-dashboard.tsx</code></td>
-<td>Project list, rename, archive</td>
-</tr>
-<tr>
 <td><code>scripts/build_pages.py</code></td>
 <td>bilingual Docs build</td>
 </tr>
 </tbody></table></div>
+<p>Assets is the unified index for projects and generated media. A project detail route opens its workspace.</p>
 <h2 id="8-skills-implementation">8. Skills Implementation</h2>
 <p>Skills is one flat searchable catalogue. Cards show <code>user_id/skill_id</code> and preload actionable prompts into the Agents composer. Provider-native capabilities use the provider namespace, while cross-provider workflows use <code>video_agent</code>:</p>
 <pre><code class="language-text">video_agent/search_all_resources
@@ -595,7 +592,7 @@ pnpm --dir apps/web typecheck
 pnpm --dir apps/web build
 pnpm test:e2e
 python scripts\build_pages.py</code></pre>
-<p>Backend coverage currently consists of 52 tests, frontend coverage consists of 26 Vitest tests, and Playwright contains four no-fee browser flows. Playwright uses the Mock Provider for generation and therefore never consumes real Provider credits.</p></article>
+<p>Backend coverage currently consists of 54 tests, frontend coverage consists of 25 Vitest tests, and Playwright contains five no-fee browser flows. Playwright uses the Mock Provider for generation and therefore never consumes real Provider credits.</p></article>
     </main>
     <script src="../docs.js?v=29"></script>
   </body>
