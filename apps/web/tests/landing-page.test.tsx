@@ -64,8 +64,13 @@ describe("LandingPage", () => {
       "language-switcher",
       "notification-switcher",
       "credit-count",
-      "account-avatar account-avatar-default",
+      "account-switcher",
     ]);
+    expect(container.querySelector(".account-menu")).not.toBeVisible();
+    fireEvent.click(container.querySelector(".account-avatar")!);
+    expect(container.querySelector(".account-menu")).toBeVisible();
+    expect(container.querySelector(".account-menu")).toHaveTextContent("Log in");
+    expect(container.querySelector(".account-menu")).toHaveTextContent("Register");
     expect(container.querySelector("footer")).not.toBeInTheDocument();
     expect(container.querySelectorAll(".hero-video-frame")).toHaveLength(6);
     const videoSources = [...container.querySelectorAll(".hero-video-frame source")].map(
@@ -217,6 +222,43 @@ describe("LandingPage", () => {
     );
     expect(styleTrigger).toHaveTextContent("Cinematic");
     expect(container.querySelector(".composer-select-menu")).not.toBeInTheDocument();
+  });
+
+  it("shows the signed-in account menu and signs out", async () => {
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.endsWith("/credits")) {
+        return { ok: true, json: async () => ({ credits: 42 }) };
+      }
+      if (url.endsWith("/auth/me")) {
+        return { ok: true, json: async () => ({ email: "creator@example.com" }) };
+      }
+      return { ok: true, json: async () => ({}) };
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const { container } = render(
+      <LandingPage {...props} accountApiBase="/api/account" mode="app" />,
+    );
+
+    await waitFor(() =>
+      expect(container.querySelector(".account-avatar")).toHaveTextContent("CR"),
+    );
+    fireEvent.click(container.querySelector(".account-avatar")!);
+    expect(container.querySelector(".account-menu")).toHaveTextContent(
+      "creator@example.com",
+    );
+    fireEvent.click(
+      [...container.querySelectorAll(".account-menu button")].find(
+        (button) => button.textContent === "Sign out",
+      )!,
+    );
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/account/auth/logout",
+        expect.objectContaining({ method: "POST" }),
+      ),
+    );
+    expect(container.querySelector(".account-menu")).toHaveTextContent("Log in");
   });
 
   it("publishes a Hots post from the app feed", () => {

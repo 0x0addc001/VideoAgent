@@ -38,7 +38,8 @@ require the signed-in product.
 
 - English public UI; `/zh-CN` redirects to `/en`.
 - Left navigation with shared visual and icon behavior.
-- Home composer with seven project settings and custom transparent dropdowns.
+- Home composer with a Skill selector, seven production settings, and custom
+  translucent dropdowns.
 - Project creation, listing, reading, renaming, and archival.
 - User ownership isolation.
 - LangGraph single-node storyboard planning.
@@ -265,9 +266,13 @@ The shared Landing UI owns:
 - Continuous background carousel with no inter-frame gap.
 - Streaming hero title and blue play brand mark.
 - Custom transparent composer dropdowns.
-- Skills catalogue.
+- Flat searchable Skills catalogue with user publishing.
 - Hots masonry feed with looping muted video playback.
-- Embedded Docs and collapsible table of contents.
+- Searchable Assets waterfall with internal Video/Skill tabs.
+- Searchable embedded Docs with a collapsible table of contents.
+- Semi-transparent search, language, notification, credit, and avatar controls.
+- Downward-opening language, notification, account, search, and composer menus.
+- Avatar account actions for login, registration, and sign-out.
 
 The formal product uses `mode="app"` and creates projects. The project
 homepage uses `mode="project"` and displays a preview dialog for actions that
@@ -279,7 +284,8 @@ need the product runtime.
 - The globe button beside notifications controls documentation language only.
 - English documents are generated as `*.html`.
 - Chinese documents are generated as `*.zh.html`.
-- Document tabs are fixed as `Design`, `Impl`, `Test`, and `API`.
+- Document tabs are fixed as `PRD`, `Design`, `Interface`, `Impl`, `Test`, and
+  `Ops`.
 
 ## 14. Security and Reliability
 

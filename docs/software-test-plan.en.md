@@ -62,7 +62,7 @@ Frontend:
 - English-to-Chinese Docs switching.
 - Project list, authentication form, and project workspace.
 
-Current baseline: 35 backend tests and 17 frontend tests.
+Current baseline: 35 backend tests and 18 frontend tests.
 
 ## 5. Target Coverage
 
@@ -123,6 +123,9 @@ Current component tests should continue to cover:
 - Skills, Hots, Assets, and Docs search controls stay pinned while content
   scrolls.
 - Assets switches between Video and Skill tabs without repeating type labels.
+- Search, language, notifications, credits, and avatar controls use translucent
+  surfaces and open their menus downward.
+- Avatar opens login and registration when signed out and sign-out when signed in.
 
 ## 9. Responsive and Accessibility Checks
 
@@ -189,4 +192,4 @@ Only with explicit user approval and budget:
 
 | Version | Date | Description |
 | --- | --- | --- |
-| v1.1 | 2026-11-04 | Align current 35/17 baseline, Skills, Hots, Assets, bilingual Docs, and target tests |
+| v1.1 | 2026-11-04 | Align current 35/18 baseline, Skills, Hots, Assets, bilingual Docs, and target tests |

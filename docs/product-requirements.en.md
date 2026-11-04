@@ -46,6 +46,11 @@ Avatar
 ```
 
 The account-control container has no outer border.
+Search, language, notifications, credits, and avatar controls use translucent
+surfaces. Their menus open downward and use the same translucent treatment.
+
+The avatar opens login and registration when signed out. When signed in, it
+shows the account email and a sign-out action.
 
 ## 4. Agents
 
@@ -193,3 +198,4 @@ Docs requirements:
 11. Assets uses a waterfall layout without playback.
 12. Docs includes PRD, Design, Interface, Impl, Test, and Ops in order.
 13. Docs search and bilingual switching work.
+14. Avatar provides login, registration, or sign-out based on session state.

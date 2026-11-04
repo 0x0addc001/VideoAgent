@@ -406,6 +406,8 @@ export function LandingPage({
     accountCredits === null ? "—" : String(accountCredits),
   );
   const [displayAvatar, setDisplayAvatar] = useState<string | null>(null);
+  const [accountEmail, setAccountEmail] = useState<string | null>(null);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [prompt, setPrompt] = useState("");
   const [skill, setSkill] = useState("auto");
   const [style, setStyle] = useState<string>("auto");
@@ -423,6 +425,7 @@ export function LandingPage({
   const [composerError, setComposerError] = useState<string | null>(null);
   const notificationRef = useRef<HTMLDivElement>(null);
   const languageRef = useRef<HTMLDivElement>(null);
+  const accountRef = useRef<HTMLDivElement>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
@@ -454,6 +457,9 @@ export function LandingPage({
       if (!languageRef.current?.contains(event.target as Node)) {
         setLanguageOpen(false);
       }
+      if (!accountRef.current?.contains(event.target as Node)) {
+        setAccountMenuOpen(false);
+      }
     }
 
     document.addEventListener("pointerdown", closeMenus);
@@ -473,6 +479,7 @@ export function LandingPage({
         if (accountResponse.ok) {
           const account = (await accountResponse.json()) as { email?: string };
           if (account.email) {
+            setAccountEmail(account.email);
             setDisplayAvatar(initialsFromEmail(account.email) || null);
             setSkillUserId(userIdFromEmail(account.email));
           }
@@ -685,6 +692,26 @@ export function LandingPage({
     }
   }
 
+  async function signOut() {
+    setAccountMenuOpen(false);
+    if (mode === "project" || !accountApiBase) {
+      setPreviewNoticeOpen(true);
+      return;
+    }
+
+    try {
+      const response = await fetch(`${accountApiBase}/auth/logout`, {
+        credentials: "include",
+        method: "POST",
+      });
+      if (!response.ok) return;
+      setAccountEmail(null);
+      setDisplayAvatar(null);
+    } catch {
+      // Keep the current session when logout cannot be confirmed.
+    }
+  }
+
   function openDocsResult(entry: DocsSearchEntry) {
     setActiveDocument(entry.document);
     setDocsLocale(entry.lang);
@@ -840,13 +867,58 @@ export function LandingPage({
             <Gem aria-hidden="true" className="credit-icon" strokeWidth={1.6} />
             <span>{displayCredits}</span>
           </span>
-          <span
-            aria-label={content.nav.account}
-            className={`account-avatar${displayAvatar ? "" : " account-avatar-default"}`}
-            title={content.nav.account}
-          >
-            {displayAvatar ?? <UserRound className="avatar-placeholder" />}
-          </span>
+          <div className="account-switcher" ref={accountRef}>
+            <button
+              aria-expanded={accountMenuOpen}
+              aria-label={content.nav.account}
+              className={`account-avatar${displayAvatar ? "" : " account-avatar-default"}`}
+              onClick={() => setAccountMenuOpen((current) => !current)}
+              title={content.nav.account}
+              type="button"
+            >
+              {displayAvatar ?? <UserRound className="avatar-placeholder" />}
+            </button>
+            <div className="account-menu" hidden={!accountMenuOpen}>
+              {accountEmail ? (
+                <>
+                  <span className="account-email">{accountEmail}</span>
+                  <button onClick={() => void signOut()} type="button">
+                    {content.nav.signOut}
+                  </button>
+                </>
+              ) : mode === "app" ? (
+                <>
+                  <a href={`/${locale}/login`} onClick={() => setAccountMenuOpen(false)}>
+                    {content.nav.logIn}
+                  </a>
+                  <a href={`/${locale}/register`} onClick={() => setAccountMenuOpen(false)}>
+                    {content.nav.register}
+                  </a>
+                </>
+              ) : (
+                <>
+                  <button
+                    onClick={() => {
+                      setAccountMenuOpen(false);
+                      setPreviewNoticeOpen(true);
+                    }}
+                    type="button"
+                  >
+                    {content.nav.logIn}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setAccountMenuOpen(false);
+                      setPreviewNoticeOpen(true);
+                    }}
+                    type="button"
+                  >
+                    {content.nav.register}
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
       </div>
 
       {activeView === "agents" ? (

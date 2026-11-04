@@ -315,7 +315,7 @@ button {
   min-height: 36px;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.035);
+  background: rgba(255, 255, 255, 0.08);
   color: #d2c9bf;
   cursor: pointer;
   font-size: var(--text-small);
@@ -348,9 +348,14 @@ button {
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 16px;
-  background: #17140f;
+  background: rgba(12, 15, 22, 0.74);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
   padding: 6px;
+  backdrop-filter: blur(20px);
+}
+
+.language-options[hidden] {
+  display: none;
 }
 
 .language-options a,
@@ -1126,7 +1131,7 @@ html[lang="zh-CN"] .hero-description {
   resize: vertical;
   border: 1px solid rgba(255, 255, 255, 0.13);
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.035);
+  background: rgba(255, 255, 255, 0.08);
   color: var(--text);
   font-family: var(--body);
   font-size: 1rem;
@@ -1587,7 +1592,7 @@ html[lang="zh-CN"] .va-landing select {
   place-items: center;
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.035);
+  background: rgba(255, 255, 255, 0.08);
   color: #d2c9bf;
   cursor: pointer;
 }
@@ -1605,9 +1610,10 @@ html[lang="zh-CN"] .va-landing select {
 }
 
 .account-avatar {
-  border-color: rgba(0, 184, 255, 0.78);
-  background: #1677ff;
+  border-color: rgba(79, 172, 255, 0.64);
+  background: rgba(22, 119, 255, 0.58);
   color: white;
+  backdrop-filter: blur(12px);
 }
 
 .account-avatar::after {
@@ -1615,8 +1621,60 @@ html[lang="zh-CN"] .va-landing select {
 }
 
 .account-avatar-default {
-  border-color: var(--accent);
-  background: var(--accent);
+  border-color: rgba(79, 172, 255, 0.64);
+  background: rgba(22, 119, 255, 0.52);
+}
+
+.account-switcher {
+  position: relative;
+}
+
+.account-menu {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 10px);
+  right: 0;
+  display: grid;
+  width: 220px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: rgba(12, 15, 22, 0.74);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  padding: 6px;
+  backdrop-filter: blur(20px);
+}
+
+.account-menu[hidden] {
+  display: none;
+}
+
+.account-menu a,
+.account-menu button {
+  display: block;
+  width: 100%;
+  border: 0;
+  border-radius: 11px;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.95rem;
+  padding: 11px 13px;
+  text-align: left;
+}
+
+.account-menu a:hover,
+.account-menu button:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.account-email {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.82rem;
+  padding: 10px 13px 8px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .notification-button svg {
@@ -1626,16 +1684,21 @@ html[lang="zh-CN"] .va-landing select {
 
 .notification-panel {
   position: absolute;
-  top: auto;
-  bottom: calc(100% + 10px);
+  top: calc(100% + 10px);
+  bottom: auto;
   left: 50%;
   width: 210px;
   border: 1px solid var(--line);
   border-radius: 16px;
-  background: #17140f;
+  background: rgba(12, 15, 22, 0.74);
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4);
   padding: 16px;
   transform: translateX(-50%);
+  backdrop-filter: blur(20px);
+}
+
+.notification-panel[hidden] {
+  display: none;
 }
 
 .notification-panel p {
@@ -1942,7 +2005,7 @@ html[lang="zh-CN"] .hero-copy h1 {
   gap: 9px;
   border: 1px solid rgba(255, 255, 255, 0.13);
   border-radius: 14px;
-  background: rgba(11, 10, 8, 0.92);
+  background: rgba(11, 10, 8, 0.58);
   color: var(--muted);
   padding: 0 12px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
@@ -2430,7 +2493,7 @@ html[lang="zh-CN"] .hero-copy h1 {
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 14px;
-  background: rgba(11, 14, 20, 0.96);
+  background: rgba(11, 14, 20, 0.74);
   box-shadow: 0 22px 52px rgba(0, 0, 0, 0.4);
   padding: 6px;
   backdrop-filter: blur(18px);
@@ -2824,7 +2887,8 @@ html[lang="zh-CN"] .hero-copy h1 {
 .composer-select-menu {
   position: absolute;
   z-index: 30;
-  bottom: calc(100% + 8px);
+  top: calc(100% + 8px);
+  bottom: auto;
   left: 50%;
   display: grid;
   min-width: 100%;
