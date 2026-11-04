@@ -5,7 +5,6 @@ import {
   Ban,
   CheckCircle2,
   CircleDollarSign,
-  Clock3,
   Film,
   KeyRound,
   LayoutDashboard,
@@ -316,12 +315,12 @@ export function AdminDashboard() {
       <main className="grid min-h-screen place-items-center bg-[#080b11] px-6 text-white">
         <section className="max-w-lg text-center">
           <ShieldCheck className="mx-auto h-14 w-14 text-[#4ba3ff]" />
-          <h1 className="mt-6 text-3xl font-semibold">Administrator access required</h1>
-          <p className="mt-3 leading-7 text-white/45">
+          <h1 className="mt-6 text-4xl font-semibold">Administrator access required</h1>
+          <p className="mt-4 text-lg leading-8 text-white/45">
             This account is not listed in VIDEOAGENT_ADMIN_EMAILS.
           </p>
           <Link
-            className="mt-7 inline-flex rounded-full border border-white/15 px-5 py-3 text-sm"
+            className="mt-7 inline-flex rounded-full border border-white/15 px-5 py-3 text-base"
             href="/"
           >
             Return to VideoAgent
@@ -352,14 +351,16 @@ export function AdminDashboard() {
 
   return (
     <main className="min-h-screen bg-[#080b11] text-white">
-      <div className="grid min-h-screen lg:grid-cols-[240px_1fr]">
+      <div className="grid min-h-screen lg:grid-cols-[260px_1fr]">
         <aside className="border-b border-white/8 bg-[#0c1018] px-5 pb-5 lg:border-b-0 lg:border-r">
           <div className="flex h-16 items-center border-b border-white/8">
-          <Link className="flex items-center gap-3 font-semibold leading-none" href="/">
-            <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-[#1677ff]/45 bg-[#1677ff]/15 text-[#7dc4ff]">
-              <Video className="h-4 w-4" />
+          <Link className="flex items-center gap-3 text-xl font-semibold leading-none" href="/">
+            <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-[#1677ff]/45 bg-[#1677ff]/15 text-[#7dc4ff]">
+              <Video className="h-5 w-5" />
             </span>
-            <span>VideoAgent</span>
+            <span>
+              VideoAgent <span className="text-[#7dc4ff]">Operations</span>
+            </span>
           </Link>
           </div>
           <nav className="mt-5 grid gap-1">
@@ -372,7 +373,7 @@ export function AdminDashboard() {
             ].map(([id, label, Icon]) => (
               <button
                 className={cn(
-                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm transition",
+                  "flex items-center gap-3 rounded-xl px-3.5 py-3 text-left text-lg transition",
                   section === id
                     ? "bg-[#1677ff]/12 text-[#92d3ff]"
                     : "text-white/45 hover:bg-white/5 hover:text-white",
@@ -381,20 +382,20 @@ export function AdminDashboard() {
                 onClick={() => setSection(id as Section)}
                 type="button"
               >
-                <Icon className="h-[18px] w-[18px]" />
+                <Icon className="h-5 w-5" />
                 {label as string}
               </button>
             ))}
           </nav>
           <div className="mt-10 rounded-2xl border border-white/8 bg-white/[0.03] p-4">
-            <p className="text-xs text-white/30">Signed in as</p>
-            <p className="mt-2 truncate text-sm text-white/75">{adminEmail}</p>
+            <p className="text-base text-white/35">Signed in as</p>
+            <p className="mt-2 truncate text-base text-white/75">{adminEmail}</p>
             <button
-              className="mt-4 flex items-center gap-2 text-xs text-white/40 hover:text-white"
+              className="mt-4 flex items-center gap-2 text-base text-white/45 hover:text-white"
               onClick={() => void logout()}
               type="button"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-5 w-5" />
               Sign out
             </button>
           </div>
@@ -402,20 +403,20 @@ export function AdminDashboard() {
 
         <div className="min-w-0">
           <header className="flex min-h-16 items-center justify-between border-b border-white/8 px-5 sm:px-8">
-            <h1 className="text-lg font-medium">VideoAgent Administration</h1>
+            <h1 className="text-2xl font-medium">VideoAgent Administration</h1>
             <button
-              className="flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-xs text-white/55 hover:text-white"
+              className="flex items-center gap-2 rounded-full border border-white/10 px-4 py-2.5 text-base text-white/60 hover:text-white"
               onClick={() => void load()}
               type="button"
             >
-              <RefreshCw className="h-3.5 w-3.5" />
+              <RefreshCw className="h-4 w-4" />
               Refresh
             </button>
           </header>
 
           <div className="p-5 sm:p-8">
             {error ? (
-              <p className="mb-5 rounded-xl border border-red-400/20 bg-red-400/8 px-4 py-3 text-sm text-red-200">
+              <p className="mb-5 rounded-xl border border-red-400/20 bg-red-400/8 px-4 py-3 text-base text-red-200">
                 {error}
               </p>
             ) : null}
@@ -429,19 +430,19 @@ export function AdminDashboard() {
                       key={label}
                     >
                       <div className="flex items-center justify-between">
-                        <p className="text-sm text-white/38">{label}</p>
+                        <p className="text-lg text-white/45">{label}</p>
                         <Icon className="h-4 w-4 text-[#4ba3ff]" />
                       </div>
                       <p className="mt-5 text-4xl font-semibold tracking-[-0.04em]">{value}</p>
-                      <p className="mt-2 text-xs text-white/28">{detail}</p>
+                      <p className="mt-2 text-base text-white/35">{detail}</p>
                     </article>
                   ))}
                 </div>
 
                 <div className="grid gap-5 xl:grid-cols-2">
                   <section className="rounded-2xl border border-white/8 bg-[#0d121b] p-5">
-                    <h2 className="font-medium">Runtime</h2>
-                    <dl className="mt-5 grid gap-4 text-sm">
+                    <h2 className="text-xl font-medium">Runtime</h2>
+                    <dl className="mt-5 grid gap-4 text-base">
                       <div className="flex justify-between gap-4">
                         <dt className="text-white/38">Provider</dt>
                         <dd>{provider?.provider ?? overview?.provider ?? "unknown"}</dd>
@@ -472,21 +473,21 @@ export function AdminDashboard() {
                   </section>
 
                   <section className="rounded-2xl border border-white/8 bg-[#0d121b] p-5">
-                    <h2 className="font-medium">Recent administration activity</h2>
+                    <h2 className="text-xl font-medium">Recent administration activity</h2>
                     <div className="mt-4 divide-y divide-white/6">
                       {audit.slice(0, 7).map((entry) => (
                         <div className="flex items-center justify-between gap-4 py-3" key={entry.id}>
                           <div>
-                            <p className="text-sm text-white/75">{entry.action}</p>
-                            <p className="mt-1 text-xs text-white/28">
+                            <p className="text-base text-white/75">{entry.action}</p>
+                            <p className="mt-1 text-base text-white/35">
                               {entry.target_type} · {entry.target_id.slice(0, 8)}
                             </p>
                           </div>
-                          <span className="text-xs text-white/28">{formatDate(entry.created_at)}</span>
+                          <span className="text-base text-white/35">{formatDate(entry.created_at)}</span>
                         </div>
                       ))}
                       {audit.length === 0 ? (
-                        <p className="py-6 text-sm text-white/30">No administration actions yet.</p>
+                        <p className="py-6 text-base text-white/35">No administration actions yet.</p>
                       ) : null}
                     </div>
                   </section>
@@ -498,7 +499,7 @@ export function AdminDashboard() {
               <section>
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                   <div>
-                    <h2 className="text-3xl font-semibold tracking-[-0.04em]">Users & credits</h2>
+                    <h2 className="text-4xl font-semibold tracking-[-0.04em]">Users & credits</h2>
                   </div>
                   <form
                     className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.035] px-4 py-2"
@@ -510,7 +511,7 @@ export function AdminDashboard() {
                     <Search className="h-4 w-4 text-white/30" />
                     <input
                       aria-label="Search users"
-                      className="w-52 bg-transparent text-sm outline-none placeholder:text-white/25"
+                      className="w-60 bg-transparent text-base outline-none placeholder:text-white/30"
                       onChange={(event) => setUserQuery(event.target.value)}
                       placeholder="Search by email"
                       value={userQuery}
@@ -518,8 +519,8 @@ export function AdminDashboard() {
                   </form>
                 </div>
                 <div className="mt-7 overflow-x-auto rounded-2xl border border-white/8">
-                  <table className="w-full min-w-[860px] text-left text-sm">
-                    <thead className="bg-white/[0.035] text-xs uppercase tracking-[0.14em] text-white/30">
+                  <table className="w-full min-w-[920px] text-left text-base">
+                    <thead className="bg-white/[0.035] text-base uppercase tracking-[0.1em] text-white/35">
                       <tr>
                         <th className="px-5 py-4">User</th>
                         <th className="px-5 py-4">Status</th>
@@ -536,7 +537,7 @@ export function AdminDashboard() {
                           <td className="px-5 py-4">
                             <button
                               className={cn(
-                                "rounded-full px-2.5 py-1 text-xs capitalize",
+                                "rounded-full px-3 py-1.5 text-base capitalize",
                                 user.status === "active"
                                   ? "bg-emerald-400/10 text-emerald-300"
                                   : "bg-red-400/10 text-red-300",
@@ -557,7 +558,7 @@ export function AdminDashboard() {
                             >
                               <input
                                 aria-label={`Credit adjustment for ${user.email}`}
-                                className="w-24 rounded-lg border border-white/10 bg-black/20 px-3 py-2 outline-none focus:border-[#1677ff]"
+                                className="w-28 rounded-lg border border-white/10 bg-black/20 px-3 py-2 text-base outline-none focus:border-[#1677ff]"
                                 onChange={(event) =>
                                   setCreditAmounts((current) => ({
                                     ...current,
@@ -568,7 +569,7 @@ export function AdminDashboard() {
                                 value={creditAmounts[user.id] ?? ""}
                               />
                               <button
-                                className="rounded-lg bg-[#1677ff] px-3 py-2 text-xs font-semibold disabled:opacity-40"
+                                className="rounded-lg bg-[#1677ff] px-3 py-2 text-base font-semibold disabled:opacity-40"
                                 disabled={busyAction === `credits-${user.id}`}
                                 type="submit"
                               >
@@ -587,10 +588,10 @@ export function AdminDashboard() {
 
             {section === "jobs" ? (
               <section>
-                <h2 className="text-3xl font-semibold tracking-[-0.04em]">Generation jobs</h2>
+                <h2 className="text-4xl font-semibold tracking-[-0.04em]">Generation jobs</h2>
                 <div className="mt-7 overflow-x-auto rounded-2xl border border-white/8">
-                  <table className="w-full min-w-[820px] text-left text-sm">
-                    <thead className="bg-white/[0.035] text-xs uppercase tracking-[0.14em] text-white/30">
+                  <table className="w-full min-w-[900px] text-left text-base">
+                    <thead className="bg-white/[0.035] text-base uppercase tracking-[0.1em] text-white/35">
                       <tr>
                         <th className="px-5 py-4">Project</th>
                         <th className="px-5 py-4">User</th>
@@ -607,7 +608,7 @@ export function AdminDashboard() {
                           <td className="px-5 py-4 text-white/45">{job.user_email}</td>
                           <td className="px-5 py-4">{job.provider}</td>
                           <td className="px-5 py-4">
-                            <span className="rounded-full bg-white/5 px-2.5 py-1 text-xs">
+                            <span className="rounded-full bg-white/5 px-3 py-1.5 text-base">
                               {job.status}
                             </span>
                           </td>
@@ -615,7 +616,7 @@ export function AdminDashboard() {
                           <td className="px-5 py-4">
                             {["failed", "cancelled", "submission_uncertain"].includes(job.status) ? (
                               <button
-                                className="rounded-lg border border-[#1677ff]/35 px-3 py-2 text-xs text-[#8ed2ff] disabled:opacity-40"
+                                className="rounded-lg border border-[#1677ff]/35 px-3 py-2 text-base text-[#8ed2ff] disabled:opacity-40"
                                 disabled={busyAction === `job-${job.id}`}
                                 onClick={() => void refundJob(job)}
                                 type="button"
@@ -636,12 +637,12 @@ export function AdminDashboard() {
 
             {section === "invites" ? (
               <section>
-                <h2 className="text-3xl font-semibold tracking-[-0.04em]">Invite codes</h2>
+                <h2 className="text-4xl font-semibold tracking-[-0.04em]">Invite codes</h2>
                 <form
                   className="mt-7 grid gap-3 rounded-2xl border border-white/8 bg-[#0d121b] p-5 md:grid-cols-[1fr_140px_auto]"
                   onSubmit={createInvite}
                 >
-                  <label className="text-sm">
+                  <label className="text-base">
                     <span className="text-white/45">Label</span>
                     <input
                       className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 outline-none focus:border-[#1677ff]"
@@ -650,7 +651,7 @@ export function AdminDashboard() {
                       value={inviteLabel}
                     />
                   </label>
-                  <label className="text-sm">
+                  <label className="text-base">
                     <span className="text-white/45">Max uses</span>
                     <input
                       className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-4 py-3 outline-none focus:border-[#1677ff]"
@@ -661,7 +662,7 @@ export function AdminDashboard() {
                     />
                   </label>
                   <button
-                    className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-[#1677ff] px-5 py-3 text-sm font-semibold disabled:opacity-40"
+                    className="mt-6 flex items-center justify-center gap-2 rounded-xl bg-[#1677ff] px-5 py-3 text-base font-semibold disabled:opacity-40"
                     disabled={busyAction === "invite-create"}
                     type="submit"
                   >
@@ -671,10 +672,10 @@ export function AdminDashboard() {
                 </form>
                 {newInviteCode ? (
                   <div className="mt-4 rounded-2xl border border-emerald-400/20 bg-emerald-400/5 p-4">
-                    <p className="text-xs uppercase tracking-[0.16em] text-emerald-300">
+                    <p className="text-base uppercase tracking-[0.12em] text-emerald-300">
                       New code · shown once
                     </p>
-                    <code className="mt-2 block break-all text-sm text-white">{newInviteCode}</code>
+                    <code className="mt-2 block break-all text-base text-white">{newInviteCode}</code>
                   </div>
                 ) : null}
                 <div className="mt-6 grid gap-3">
@@ -684,14 +685,14 @@ export function AdminDashboard() {
                       key={invite.id}
                     >
                       <div>
-                        <p className="font-medium">{invite.label || "Untitled invite"}</p>
-                        <p className="mt-1 text-xs text-white/30">
+                        <p className="text-lg font-medium">{invite.label || "Untitled invite"}</p>
+                        <p className="mt-1 text-base text-white/35">
                           {invite.use_count}/{invite.max_uses} used · expires{" "}
                           {invite.expires_at ? formatDate(invite.expires_at) : "never"}
                         </p>
                       </div>
                       <button
-                        className="flex items-center gap-2 self-start rounded-lg border border-red-400/20 px-3 py-2 text-xs text-red-300 disabled:opacity-30 sm:self-auto"
+                        className="flex items-center gap-2 self-start rounded-lg border border-red-400/20 px-3 py-2 text-base text-red-300 disabled:opacity-30 sm:self-auto"
                         disabled={Boolean(invite.revoked_at) || busyAction === `invite-${invite.id}`}
                         onClick={() => void revokeInvite(invite)}
                         type="button"
@@ -707,13 +708,13 @@ export function AdminDashboard() {
 
             {section === "settings" ? (
               <section>
-                <h2 className="text-3xl font-semibold tracking-[-0.04em]">Platform settings</h2>
+                <h2 className="text-4xl font-semibold tracking-[-0.04em]">Platform settings</h2>
                 <div className="mt-7 grid gap-4 lg:grid-cols-2">
                   <article className="rounded-2xl border border-white/8 bg-[#0d121b] p-5">
                     <div className="flex items-start justify-between gap-5">
                       <div>
-                        <h3 className="font-medium">Video generation</h3>
-                        <p className="mt-2 text-sm leading-6 text-white/35">
+                        <h3 className="text-lg font-medium">Video generation</h3>
+                        <p className="mt-2 text-base leading-7 text-white/40">
                           Immediately pause all estimates and billable Provider submissions.
                         </p>
                       </div>
@@ -725,7 +726,7 @@ export function AdminDashboard() {
                     </div>
                     <button
                       className={cn(
-                        "mt-6 rounded-xl px-4 py-2.5 text-sm font-semibold disabled:opacity-40",
+                        "mt-6 rounded-xl px-4 py-3 text-base font-semibold disabled:opacity-40",
                         overview?.generation_enabled
                           ? "border border-red-400/25 text-red-300"
                           : "bg-[#1677ff] text-white",
@@ -743,15 +744,15 @@ export function AdminDashboard() {
                   </article>
 
                   <article className="rounded-2xl border border-white/8 bg-[#0d121b] p-5">
-                    <h3 className="font-medium">Registration</h3>
-                    <p className="mt-2 text-sm leading-6 text-white/35">
+                    <h3 className="text-lg font-medium">Registration</h3>
+                    <p className="mt-2 text-base leading-7 text-white/40">
                       Open registration, require an invite, or close account creation.
                     </p>
                     <div className="mt-6 grid grid-cols-3 gap-2">
                       {(["open", "invite", "closed"] as const).map((mode) => (
                         <button
                           className={cn(
-                            "rounded-xl border px-3 py-2.5 text-xs capitalize",
+                            "rounded-xl border px-3 py-2.5 text-base capitalize",
                             overview?.registration_mode === mode
                               ? "border-[#1677ff]/50 bg-[#1677ff]/12 text-[#8ed2ff]"
                               : "border-white/8 text-white/35",
@@ -770,9 +771,9 @@ export function AdminDashboard() {
                   <article className="rounded-2xl border border-white/8 bg-[#0d121b] p-5 lg:col-span-2">
                     <div className="flex items-center gap-3">
                       <CircleDollarSign className="h-5 w-5 text-[#4ba3ff]" />
-                      <h3 className="font-medium">Cost protection</h3>
+                      <h3 className="text-lg font-medium">Cost protection</h3>
                     </div>
-                    <p className="mt-3 max-w-3xl text-sm leading-7 text-white/35">
+                    <p className="mt-3 max-w-3xl text-base leading-8 text-white/40">
                       Provider accounts are shared at the infrastructure layer. Keep new-user credits at
                       zero, grant credits manually, and pause generation before any Provider incident.
                     </p>
