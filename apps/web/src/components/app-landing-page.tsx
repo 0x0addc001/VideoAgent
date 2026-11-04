@@ -39,7 +39,7 @@ export function AppLandingPage() {
       content.composer.styles.find((option) => option.id === draft.style)?.label ??
       draft.style;
     const settings =
-      `Production settings: ${style} · ${draft.aspectRatio} · ` +
+      `Production settings: ${draft.skill} · ${style} · ${draft.aspectRatio} · ` +
       `${draft.durationSeconds}s · ${draft.model} · ${draft.resolution} · ` +
       `Audio ${draft.audio} · Review ${draft.reviewMode}`;
     const response = await fetch("/api/account/projects", {

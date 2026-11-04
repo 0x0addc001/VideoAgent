@@ -1,4 +1,4 @@
-# VideoAgent API Reference
+# VideoAgent Interface Reference
 
 Base URL:
 

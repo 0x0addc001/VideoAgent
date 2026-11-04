@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="VideoAgent PRD" />
+    <title>PRD · VideoAgent</title>
+    <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
+    <link rel="stylesheet" href="../docs.css?v=14" />
+  </head>
+  <body data-document="product-requirements.html">
+    <main class="document-shell" id="document-shell">
+      <aside class="document-toc" id="document-toc">
+        <button
+          class="toc-toggle"
+          id="toc-toggle"
+          type="button"
+          aria-controls="toc-panel"
+          aria-expanded="true"
+          aria-label="Contents"
+        >
+          <span class="toc-toggle-icon" aria-hidden="true">☰</span>
+          <span class="toc-toggle-label">Contents</span>
+          <span class="toc-toggle-chevron" aria-hidden="true">‹</span>
+        </button>
+        <nav class="toc-panel" id="toc-panel" aria-label="Contents">
+          <p class="toc-kicker">CONTENTS</p>
+          <a class="toc-link toc-level-1" href="#videoagent-product-requirements">VideoAgent Product Requirements</a>
+<a class="toc-link toc-level-2" href="#1-product-goal">1. Product Goal</a>
+<a class="toc-link toc-level-2" href="#2-target-users">2. Target Users</a>
+<a class="toc-link toc-level-2" href="#3-navigation">3. Navigation</a>
+<a class="toc-link toc-level-2" href="#4-agents">4. Agents</a>
+<a class="toc-link toc-level-2" href="#5-skills">5. Skills</a>
+<a class="toc-link toc-level-3" href="#5-1-catalogue">5.1 Catalogue</a>
+<a class="toc-link toc-level-3" href="#5-2-search-and-publishing">5.2 Search and Publishing</a>
+<a class="toc-link toc-level-2" href="#6-hots">6. Hots</a>
+<a class="toc-link toc-level-2" href="#7-assets">7. Assets</a>
+<a class="toc-link toc-level-2" href="#8-docs">8. Docs</a>
+<a class="toc-link toc-level-2" href="#9-authentication-and-credits">9. Authentication and Credits</a>
+<a class="toc-link toc-level-2" href="#10-non-functional-requirements">10. Non-Functional Requirements</a>
+<a class="toc-link toc-level-2" href="#11-acceptance-criteria">11. Acceptance Criteria</a>
+        </nav>
+      </aside>
+      <article class="document"><h1 id="videoagent-product-requirements">VideoAgent Product Requirements</h1>
+<div class="table-wrap"><table><thead><tr>
+<th>Attribute</th>
+<th>Value</th>
+</tr></thead><tbody>
+<tr>
+<td>Document version</td>
+<td>v1.0</td>
+</tr>
+<tr>
+<td>Status</td>
+<td>Current product baseline</td>
+</tr>
+<tr>
+<td>Updated</td>
+<td>2026-11-04</td>
+</tr>
+<tr>
+<td>Product</td>
+<td>VideoAgent</td>
+</tr>
+</tbody></table></div>
+<h2 id="1-product-goal">1. Product Goal</h2>
+<p>VideoAgent helps a creator act as the director: describe an idea, select a skill or production setting, generate controllable shots, review the result, and keep finished or in-progress work organized in one workspace.</p>
+<p>The product avoids marketing-only screens. Every primary view must expose a concrete creation, review, publishing, search, or asset-management action.</p>
+<h2 id="2-target-users">2. Target Users</h2>
+<ul>
+<li>Independent video creators.</li>
+<li>Product and brand marketing teams.</li>
+<li>Social media operators.</li>
+<li>Short-drama and narrative creators.</li>
+<li>Users who need controllable video generation across multiple model providers.</li>
+</ul>
+<h2 id="3-navigation">3. Navigation</h2>
+<p>Desktop navigation is fixed on the left in this order:</p>
+<pre><code class="language-text">Agents
+Skills
+Hots
+Assets
+Docs</code></pre>
+<p>The account controls are fixed in the upper-right in this order:</p>
+<pre><code class="language-text">Language
+Notifications
+Credits
+Avatar</code></pre>
+<p>The account-control container has no outer border.</p>
+<h2 id="4-agents">4. Agents</h2>
+<ul>
+<li>The home view contains a prominent prompt composer.</li>
+<li>The composer supports style, frame, duration, model, quality, audio, and</li>
+<p>review settings.</p>
+<li>A user can select a Skill before starting.</li>
+<li>Submitting creates a project and enters the project workspace.</li>
+<li>The VideoAgent headline and icon stream together.</li>
+</ul>
+<h2 id="5-skills">5. Skills</h2>
+<h3 id="5-1-catalogue">5.1 Catalogue</h3>
+<p>Skills are one flat catalogue. They are not separated into atomic and workflow sections.</p>
+<p>Official skill IDs use:</p>
+<pre><code class="language-text">video_agent/&lt;skill_id&gt;</code></pre>
+<p>Examples:</p>
+<pre><code class="language-text">video_agent/text_to_video
+video_agent/image_to_video
+video_agent/reference_to_video
+video_agent/first_last_frame
+video_agent/motion_control
+video_agent/video_extend
+video_agent/video_edit
+video_agent/video_upscale
+video_agent/product_film
+video_agent/creator_vlog
+video_agent/short_drama
+video_agent/review</code></pre>
+<p>Workflow skills do not display an internal flow diagram.</p>
+<p>Review is a normal skill card. It has no separate action button.</p>
+<h3 id="5-2-search-and-publishing">5.2 Search and Publishing</h3>
+<ul>
+<li>Skills has a top search field.</li>
+<li>Search matches user ID, skill ID, title, and description.</li>
+<li>A user can publish a skill using the same publish interaction pattern used by</li>
+<p>Hots.</p>
+<li>User-published IDs follow <code>&lt;user_id&gt;/&lt;skill_id&gt;</code>.</li>
+<li>Publishing is session-local until a persistent community API is implemented.</li>
+</ul>
+<h2 id="6-hots">6. Hots</h2>
+<ul>
+<li>Hots is listed above Assets in navigation.</li>
+<li>The top area contains a search field.</li>
+<li>Cards play muted looping video.</li>
+<li>Each card shows the title first and author and likes below.</li>
+<li>Users can publish a post from the feed.</li>
+<li>Search matches title, author, and prompt.</li>
+</ul>
+<h2 id="7-assets">7. Assets</h2>
+<p>Assets contains the current user's finished and in-progress work.</p>
+<ul>
+<li>The top area contains a search field.</li>
+<li>Cards are arranged as a waterfall.</li>
+<li>Each card identifies its type: <code>video</code> or <code>skill</code>.</li>
+<li>Each card shows permission: <code>private</code> or <code>public</code>.</li>
+<li>Edit time uses <code>yyyy-mm-dd</code>.</li>
+<li>Duration, progress, and summary are not shown.</li>
+<li>Assets are preview images only and do not autoplay.</li>
+</ul>
+<h2 id="8-docs">8. Docs</h2>
+<p>Document order:</p>
+<pre><code class="language-text">PRD
+Design
+Interface
+Impl
+Test
+Ops</code></pre>
+<p>English labels and Chinese short labels:</p>
+<div class="table-wrap"><table><thead><tr>
+<th>English</th>
+<th>Chinese</th>
+</tr></thead><tbody>
+<tr>
+<td>PRD</td>
+<td>产品</td>
+</tr>
+<tr>
+<td>Design</td>
+<td>设计</td>
+</tr>
+<tr>
+<td>Interface</td>
+<td>接口</td>
+</tr>
+<tr>
+<td>Impl</td>
+<td>实现</td>
+</tr>
+<tr>
+<td>Test</td>
+<td>测试</td>
+</tr>
+<tr>
+<td>Ops</td>
+<td>运营</td>
+</tr>
+</tbody></table></div>
+<p>Docs requirements:</p>
+<ul>
+<li>A search field is available at the top.</li>
+<li>Search covers document text in both languages.</li>
+<li>The language control changes only Docs.</li>
+<li>The left table of contents supports navigation, highlighting, and collapse.</li>
+<li>English and Chinese versions use the same document order.</li>
+<li>The Docs area uses a fixed dark theme without a theme toggle.</li>
+</ul>
+<h2 id="9-authentication-and-credits">9. Authentication and Credits</h2>
+<ul>
+<li>Users authenticate with email and password.</li>
+<li>Credentials are stored only as cryptographic hashes.</li>
+<li>Sessions use HttpOnly cookies.</li>
+<li>The upper-right credit count reflects the active server provider.</li>
+<li>Generation requires explicit approval before a billable provider call.</li>
+</ul>
+<h2 id="10-non-functional-requirements">10. Non-Functional Requirements</h2>
+<ul>
+<li>Desktop and mobile layouts must avoid clipped controls.</li>
+<li>All primary controls must be keyboard accessible.</li>
+<li>Motion supports <code>prefers-reduced-motion</code>.</li>
+<li>Search and filtering are client-side for current static views.</li>
+<li>User-published Skills and Hots posts are not persisted across devices yet.</li>
+<li>Public product UI is English; Chinese is currently enabled only for Docs.</li>
+</ul>
+<h2 id="11-acceptance-criteria">11. Acceptance Criteria</h2>
+<ol>
+<li>Navigation order is Agents, Skills, Hots, Assets, Docs.</li>
+<li>Hots is above Assets.</li>
+<li>Agents can choose a Skill.</li>
+<li>Skills is one searchable flat catalogue using <code>user_id/skill_id</code>.</li>
+<li>Official Skills use the <code>video_agent</code> namespace.</li>
+<li>Users can publish a Skill.</li>
+<li>Review appears as a normal Skill card.</li>
+<li>Hots and Assets both provide top search.</li>
+<li>Hots cards play video and show title above author and likes.</li>
+<li>Assets distinguishes video and skill, permission, and <code>yyyy-mm-dd</code> edit time.</li>
+<li>Assets uses a waterfall layout without playback.</li>
+<li>Docs includes PRD, Design, Interface, Impl, Test, and Ops in order.</li>
+<li>Docs search and bilingual switching work.</li>
+</ol></article>
+    </main>
+    <script src="../docs.js?v=14"></script>
+  </body>
+</html>

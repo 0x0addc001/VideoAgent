@@ -62,7 +62,7 @@ Frontend:
 - English-to-Chinese Docs switching.
 - Project list, authentication form, and project workspace.
 
-Current baseline: 35 backend tests and 14 frontend tests.
+Current baseline: 35 backend tests and 17 frontend tests.
 
 ## 5. Target Coverage
 
@@ -116,8 +116,9 @@ Current component tests should continue to cover:
 - Hots metadata order: title above author and likes.
 - Every Hots card contains an autoplaying muted looping video.
 - Publish entry uses the blue play icon.
-- Skills contains atomic skills, workflow skills, and Review.
-- Docs labels are `Design`, `Impl`, `Test`, and `API`.
+- Skills is one searchable catalogue with `user_id/skill_id` labels and a
+  normal Review card.
+- Docs labels are `PRD`, `Design`, `Interface`, `Impl`, `Test`, and `Ops`.
 - Globe control changes only Docs source and language.
 
 ## 9. Responsive and Accessibility Checks
@@ -185,4 +186,4 @@ Only with explicit user approval and budget:
 
 | Version | Date | Description |
 | --- | --- | --- |
-| v1.1 | 2026-11-03 | Align current 35/14 baseline, Skills, Hots, bilingual Docs, and target tests |
+| v1.1 | 2026-11-04 | Align current 35/17 baseline, Skills, Hots, Assets, bilingual Docs, and target tests |

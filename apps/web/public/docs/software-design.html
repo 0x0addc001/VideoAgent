@@ -39,9 +39,6 @@
 <a class="toc-link toc-level-3" href="#8-1-pippit-cli">8.1 Pippit CLI</a>
 <a class="toc-link toc-level-3" href="#8-2-kling-mcp-and-provider-discovery">8.2 Kling MCP and provider discovery</a>
 <a class="toc-link toc-level-2" href="#9-skills-catalogue">9. Skills Catalogue</a>
-<a class="toc-link toc-level-3" href="#9-1-atomic-skills">9.1 Atomic skills</a>
-<a class="toc-link toc-level-3" href="#9-2-workflow-skills">9.2 Workflow skills</a>
-<a class="toc-link toc-level-3" href="#9-3-review">9.3 Review</a>
 <a class="toc-link toc-level-2" href="#10-data-model">10. Data Model</a>
 <a class="toc-link toc-level-2" href="#11-api-surface">11. API Surface</a>
 <a class="toc-link toc-level-2" href="#12-frontend-design">12. Frontend Design</a>
@@ -92,9 +89,9 @@
 <p>VideoAgent is a director-oriented AI video workspace. The public navigation contains five isolated views:</p>
 <ul>
 <li><strong>Agents:</strong> home creation composer and VideoAgent conversations.</li>
-<li><strong>Skills:</strong> atomic generation tasks, composed workflows, and instant review.</li>
-<li><strong>Assets:</strong> finished and in-progress work with status, updated time,</li>
-<p>duration, summary, and playable previews.</p>
+<li><strong>Skills:</strong> one searchable catalogue of generation, workflow, and review skills.</li>
+<li><strong>Assets:</strong> a waterfall library of the user's videos and skills with</li>
+<p>permission and edit time.</p>
 <li><strong>Hots:</strong> community feed with author, likes, playback, and local publishing.</li>
 <li><strong>Docs:</strong> embedded bilingual documentation with a collapsible table of contents.</li>
 </ul>
@@ -249,72 +246,62 @@ query-result</code></pre>
 <h3 id="8-2-kling-mcp-and-provider-discovery">8.2 Kling MCP and provider discovery</h3>
 <p>Kling MCP exposes broader atomic capabilities including text-to-video, image-to-video, motion control, and Omni-Ref. These capabilities inform the Skills catalogue and the target provider model, but Pippit CLI remains the active server generation path in the current baseline.</p>
 <h2 id="9-skills-catalogue">9. Skills Catalogue</h2>
-<p>Skills are organized into three levels:</p>
-<h3 id="9-1-atomic-skills">9.1 Atomic skills</h3>
+<p>Skills use one flat, searchable catalogue. Every card shows its <code>user_id/skill_id</code> identifier at the upper left. Official skills use the <code>video_agent</code> namespace.</p>
 <div class="table-wrap"><table><thead><tr>
-<th>Skill</th>
+<th>Skill ID</th>
 <th>Input and result</th>
 </tr></thead><tbody>
 <tr>
-<td><code>text_to_video</code></td>
+<td><code>video_agent/text_to_video</code></td>
 <td>Text prompt to one video clip</td>
 </tr>
 <tr>
-<td><code>image_to_video</code></td>
+<td><code>video_agent/image_to_video</code></td>
 <td>Still image to controlled motion</td>
 </tr>
 <tr>
-<td><code>reference_to_video</code></td>
+<td><code>video_agent/reference_to_video</code></td>
 <td>Image, video, or audio references to a generated clip</td>
 </tr>
 <tr>
-<td><code>first_last_frame</code></td>
+<td><code>video_agent/first_last_frame</code></td>
 <td>Opening and closing frames to a continuous transition</td>
 </tr>
 <tr>
-<td><code>motion_control</code></td>
+<td><code>video_agent/motion_control</code></td>
 <td>Driving-video motion applied to a subject image</td>
 </tr>
 <tr>
-<td><code>video_extend</code></td>
+<td><code>video_agent/video_extend</code></td>
 <td>Continue an existing clip</td>
 </tr>
 <tr>
-<td><code>video_edit</code></td>
+<td><code>video_agent/video_edit</code></td>
 <td>Prompt-directed modification of existing footage</td>
 </tr>
 <tr>
-<td><code>video_upscale</code></td>
+<td><code>video_agent/video_upscale</code></td>
 <td>Raise video resolution up to 4K</td>
 </tr>
-</tbody></table></div>
-<h3 id="9-2-workflow-skills">9.2 Workflow skills</h3>
-<div class="table-wrap"><table><thead><tr>
-<th>Workflow</th>
-<th>Capability chain</th>
-</tr></thead><tbody>
 <tr>
-<td>Product film</td>
-<td>Image edit → image-to-video → review → assembly</td>
+<td><code>video_agent/product_film</code></td>
+<td>A composed product-video workflow</td>
 </tr>
 <tr>
-<td>Creator vlog</td>
-<td>Script → storyboard → text/image-to-video → review</td>
+<td><code>video_agent/creator_vlog</code></td>
+<td>A composed creator-vlog workflow</td>
 </tr>
 <tr>
-<td>Short drama</td>
-<td>Roles → scenes → multi-shot → review → timeline</td>
+<td><code>video_agent/short_drama</code></td>
+<td>A composed short-drama workflow</td>
+</tr>
+<tr>
+<td><code>video_agent/review</code></td>
+<td>Score consistency, coverage, clarity, and pacing</td>
 </tr>
 </tbody></table></div>
-<p>Selecting a skill preloads a concrete prompt in the Agents composer.</p>
-<h3 id="9-3-review">9.3 Review</h3>
-<p>The implemented review endpoint evaluates the storyboard before generation:</p>
-<ul>
-<li>Consistency</li>
-<li>Coverage</li>
-<li>Prompt clarity</li>
-<li>Pacing</li>
-</ul>
+<p>Workflow skills do not display an internal flow label. Review uses the same card form as every other skill and has no separate action button.</p>
+<p>Selecting a skill preloads a concrete prompt in the Agents composer. The Agents composer also includes a Skill selector. Signed-in users can publish a skill under their own <code>&lt;user_id&gt;/&lt;skill_id&gt;</code> namespace; current publication is session-local.</p>
 <p>Frame-level visual-language-model review is a target extension.</p>
 <h2 id="10-data-model">10. Data Model</h2>
 <div class="table-wrap"><table><thead><tr>
@@ -452,9 +439,10 @@ optional Celery + Redis</code></pre>
 <li>Jobs and storyboards survive a page refresh or API restart.</li>
 <li>Provider credentials never reach the browser.</li>
 <li>Review returns consistency, coverage, clarity, and pacing.</li>
-<li>Skills distinguishes atomic skills, workflows, and review.</li>
+<li>Skills is a flat searchable catalogue using <code>user_id/skill_id</code>, with</li>
+<p>workflows and Review presented as normal skill cards.</p>
 <li>Documentation can switch between English and Chinese without changing the</li>
-<p>product UI.</p>
+<p>product UI and follows the complete six-document order.</p>
 </ol>
 <h2 id="17-change-log">17. Change Log</h2>
 <div class="table-wrap"><table><thead><tr>

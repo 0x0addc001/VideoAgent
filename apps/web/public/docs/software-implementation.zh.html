@@ -101,12 +101,13 @@
 <ul>
 <li>Next.js App Router Web 界面；公开产品入口当前固定英文，<code>/zh-CN</code> 重定向到 <code>/en</code>。</li>
 <li>正式站与 GitHub Pages 项目主页共享 <code>packages/landing</code> UI。</li>
-<li>左侧 Agents、Skills、Assets、Hots、Docs 导航和独立视图切换。</li>
+<li>左侧 Agents、Skills、Hots、Assets、Docs 导航和独立视图切换。</li>
 <li>蓝色播放键品牌、无框标签页图标和激活图标填充/线框反转。</li>
-<li>首页连续视频轮播、流式主标语、自定义透明下拉和 Action 生成入口。</li>
-<li>Hots 社区卡片展示作者与喜欢数，发布记录保存在当前前端会话。</li>
-<li>Assets 以成品/半成品卡片展示状态、更新时间、时长、摘要和可播放视频预览。</li>
-<li>内嵌文档阅读器、文档图标切换、固定深色主题、左侧可折叠目录和章节高亮。</li>
+<li>首页连续视频轮播、流式主标语、Skill 选择器、自定义透明下拉和 Action 生成入口。</li>
+<li>Skills 使用单一可搜索目录，显示 <code>user_id/skill_id</code>，支持当前会话内发布 Skill。</li>
+<li>Hots 支持搜索、循环视频、作者、喜欢数和当前会话内发布。</li>
+<li>Assets 使用瀑布流，区分 video/skill、private/public 和 <code>yyyy-mm-dd</code> 编辑时间，不自动播放。</li>
+<li>六份中英文文档、全文搜索、固定深色主题、左侧可折叠目录和章节高亮。</li>
 <li>注册、登录、登出和服务端会话。</li>
 <li>用户级项目创建、列表、读取、重命名和归档。</li>
 <li>用户数据所有权隔离。</li>
@@ -805,7 +806,7 @@ pnpm --dir apps/web build</code></pre>
 <p>当前基线：</p>
 <ul>
 <li>后端 35 个测试。</li>
-<li>前端 14 个测试。</li>
+<li>前端 17 个测试。</li>
 <li>后端测试使用临时 SQLite 文件。</li>
 <li>Pippit 测试使用本地 Fake CLI，不访问真实生成网络。</li>
 <li>前端测试覆盖共享首页、导航、文档加载、自定义下拉、Hots 发布、创作提交和轮播行为。</li>

@@ -19,12 +19,13 @@ features.
 - Next.js App Router product UI with English public routes.
 - `/zh-CN` redirects to `/en`.
 - Shared Landing UI used by the product and GitHub Pages homepage.
-- Left navigation: Agents, Skills, Assets, Hots, Docs.
-- Home composer with a transparent custom dropdown system.
-- Skills catalogue with atomic tasks, composed workflows, and review.
-- Hots masonry feed with looping video playback and session-local publishing.
-- Assets cards with status, updated time, duration, summary, and video controls.
-- Embedded bilingual Docs with a collapsible table of contents.
+- Left navigation: Agents, Skills, Hots, Assets, Docs.
+- Home composer with a Skill selector and transparent custom dropdowns.
+- Flat searchable Skills catalogue using `user_id/skill_id`, plus user publishing.
+- Searchable Hots feed with looping video playback and session-local publishing.
+- Searchable Assets waterfall with `video/skill`, permission, and edit date.
+- Searchable bilingual Docs with six documents, a collapsible table of contents,
+  and full-text lookup across languages.
 - Registration, login, logout, server-side sessions, and user isolation.
 - Project create, list, read, rename, and archive.
 - Storyboard read and whole-document replacement.
@@ -182,42 +183,41 @@ status
 
 ## 8. Skills Implementation
 
-Atomic skill cards expose concrete task codes and preload actionable prompts
-into the Agents composer:
+Skills is one flat searchable catalogue. Cards show `user_id/skill_id` and
+preload actionable prompts into the Agents composer:
 
 ```text
-text_to_video
-image_to_video
-reference_to_video
-first_last_frame
-motion_control
-video_extend
-video_edit
-video_upscale
+video_agent/text_to_video
+video_agent/image_to_video
+video_agent/reference_to_video
+video_agent/first_last_frame
+video_agent/motion_control
+video_agent/video_extend
+video_agent/video_edit
+video_agent/video_upscale
+video_agent/product_film
+video_agent/creator_vlog
+video_agent/short_drama
+video_agent/review
 ```
 
-Workflow cards compose those capabilities:
-
-```text
-Product film
-Creator vlog
-Short drama
-```
-
-Review remains a separate wide panel because it evaluates a project storyboard
-rather than invoking a generation model.
+Workflow skills do not display a flow label. Review uses the same card form and
+has no separate project action. Signed-in users can publish a skill under their
+own namespace; current storage is frontend-session-local.
 
 ## 9. Documentation Localization
 
 The product UI remains English. The globe control changes only Docs language.
 
 ```text
-English: software-design.html
-Chinese: software-design.zh.html
+English: product-requirements.html
+Chinese: product-requirements.zh.html
 ```
 
-This pattern applies to Design, Impl, Test, and API documents. The language
-selection is saved in `localStorage` under `videoagent-docs-locale`.
+The same pattern applies to all six documents in this order: PRD, Design,
+Interface, Impl, Test, and Ops. Docs search uses `docs-search.json` across both
+languages. The language selection is saved in `localStorage` under
+`videoagent-docs-locale`.
 
 ## 10. Data Model
 
@@ -305,7 +305,7 @@ pnpm --dir apps/web build
 python scripts\build_pages.py
 ```
 
-Current baseline: 35 backend tests and 14 frontend tests. Playwright and paid
+Current baseline: 35 backend tests and 17 frontend tests. Playwright and paid
 provider tests are not part of normal CI.
 
 ## 15. Known Gaps

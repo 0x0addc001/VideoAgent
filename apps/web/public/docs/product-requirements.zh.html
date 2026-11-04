@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="VideoAgent PRD" />
+    <title>PRD · VideoAgent</title>
+    <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
+    <link rel="stylesheet" href="../docs.css?v=14" />
+  </head>
+  <body data-document="product-requirements.zh.html">
+    <main class="document-shell" id="document-shell">
+      <aside class="document-toc" id="document-toc">
+        <button
+          class="toc-toggle"
+          id="toc-toggle"
+          type="button"
+          aria-controls="toc-panel"
+          aria-expanded="true"
+          aria-label="目录"
+        >
+          <span class="toc-toggle-icon" aria-hidden="true">☰</span>
+          <span class="toc-toggle-label">目录</span>
+          <span class="toc-toggle-chevron" aria-hidden="true">‹</span>
+        </button>
+        <nav class="toc-panel" id="toc-panel" aria-label="目录">
+          <p class="toc-kicker">目录</p>
+          <a class="toc-link toc-level-1" href="#videoagent-产品需求文档">VideoAgent 产品需求文档</a>
+<a class="toc-link toc-level-2" href="#1-产品目标">1. 产品目标</a>
+<a class="toc-link toc-level-2" href="#2-目标用户">2. 目标用户</a>
+<a class="toc-link toc-level-2" href="#3-导航">3. 导航</a>
+<a class="toc-link toc-level-2" href="#4-agents">4. Agents</a>
+<a class="toc-link toc-level-2" href="#5-skills">5. Skills</a>
+<a class="toc-link toc-level-3" href="#5-1-skill-目录">5.1 Skill 目录</a>
+<a class="toc-link toc-level-3" href="#5-2-搜索与发布">5.2 搜索与发布</a>
+<a class="toc-link toc-level-2" href="#6-hots">6. Hots</a>
+<a class="toc-link toc-level-2" href="#7-assets">7. Assets</a>
+<a class="toc-link toc-level-2" href="#8-docs">8. Docs</a>
+<a class="toc-link toc-level-2" href="#9-认证与积分">9. 认证与积分</a>
+<a class="toc-link toc-level-2" href="#10-非功能要求">10. 非功能要求</a>
+<a class="toc-link toc-level-2" href="#11-验收标准">11. 验收标准</a>
+        </nav>
+      </aside>
+      <article class="document"><h1 id="videoagent-产品需求文档">VideoAgent 产品需求文档</h1>
+<div class="table-wrap"><table><thead><tr>
+<th>属性</th>
+<th>内容</th>
+</tr></thead><tbody>
+<tr>
+<td>文档版本</td>
+<td>v1.0</td>
+</tr>
+<tr>
+<td>文档状态</td>
+<td>当前产品基线</td>
+</tr>
+<tr>
+<td>更新日期</td>
+<td>2026-11-04</td>
+</tr>
+<tr>
+<td>产品名称</td>
+<td>VideoAgent</td>
+</tr>
+</tbody></table></div>
+<h2 id="1-产品目标">1. 产品目标</h2>
+<p>VideoAgent 帮助用户以导演身份完成视频创作：描述想法、选择 Skill 或制作设定、 生成可控镜头、评估结果，并在同一工作台中管理成品与半成品。</p>
+<p>所有主页面都必须提供明确的选择、创建、搜索、发布、评估或资产管理能力， 不展示没有实际功能的宣传内容。</p>
+<h2 id="2-目标用户">2. 目标用户</h2>
+<ul>
+<li>独立视频创作者。</li>
+<li>产品与品牌营销团队。</li>
+<li>社交媒体运营人员。</li>
+<li>短剧和叙事内容创作者。</li>
+<li>需要跨多个模型服务进行可控视频生成的用户。</li>
+</ul>
+<h2 id="3-导航">3. 导航</h2>
+<p>桌面端左侧导航顺序固定为：</p>
+<pre><code class="language-text">Agents
+Skills
+Hots
+Assets
+Docs</code></pre>
+<p>账户操作固定在右上角，视觉顺序为：</p>
+<pre><code class="language-text">语言
+通知
+积分
+头像</code></pre>
+<p>账户操作组不显示外边框。</p>
+<h2 id="4-agents">4. Agents</h2>
+<ul>
+<li>首页提供醒目的创作输入框。</li>
+<li>创作框支持风格、画幅、时长、模型、清晰度、音频和审核设定。</li>
+<li>用户可以在开始创作前选择一个 Skill。</li>
+<li>提交后创建项目并进入项目工作区。</li>
+<li>VideoAgent 主标题和播放键图标同时参与流式输出。</li>
+</ul>
+<h2 id="5-skills">5. Skills</h2>
+<h3 id="5-1-skill-目录">5.1 Skill 目录</h3>
+<p>Skills 使用一个统一目录，不再区分 Atomic 和 Workflow。</p>
+<p>官方 Skill ID 格式：</p>
+<pre><code class="language-text">video_agent/&lt;skill_id&gt;</code></pre>
+<p>示例：</p>
+<pre><code class="language-text">video_agent/text_to_video
+video_agent/image_to_video
+video_agent/reference_to_video
+video_agent/first_last_frame
+video_agent/motion_control
+video_agent/video_extend
+video_agent/video_edit
+video_agent/video_upscale
+video_agent/product_film
+video_agent/creator_vlog
+video_agent/short_drama
+video_agent/review</code></pre>
+<p>Workflow Skill 不展示内部执行流程。</p>
+<p>Review 作为一个普通 Skill 卡片呈现，不再提供单独的 Open projects 操作。</p>
+<h3 id="5-2-搜索与发布">5.2 搜索与发布</h3>
+<ul>
+<li>Skills 顶部提供搜索框。</li>
+<li>搜索范围包含 user_id、skill_id、标题和描述。</li>
+<li>用户可以通过与 Hots 发布一致的方式发布 Skill。</li>
+<li>用户发布 ID 使用 <code>&lt;user_id&gt;/&lt;skill_id&gt;</code> 格式。</li>
+<li>当前发布内容仅保存在前端会话，尚未提供持久化社区 API。</li>
+</ul>
+<h2 id="6-hots">6. Hots</h2>
+<ul>
+<li>Hots 位于 Assets 上方。</li>
+<li>顶部提供搜索框。</li>
+<li>卡片使用循环播放的视频。</li>
+<li>标题在上，作者和喜欢数在下。</li>
+<li>用户可以从社区流发布作品。</li>
+<li>搜索范围包含标题、作者和 Prompt。</li>
+</ul>
+<h2 id="7-assets">7. Assets</h2>
+<p>Assets 展示当前用户的成品和半成品。</p>
+<ul>
+<li>顶部提供搜索框。</li>
+<li>卡片以瀑布流排布。</li>
+<li>必须区分 <code>video</code> 和 <code>skill</code>。</li>
+<li>必须展示权限：<code>private</code> 或 <code>public</code>。</li>
+<li>编辑时间统一使用 <code>yyyy-mm-dd</code>。</li>
+<li>不展示时长、进度和摘要。</li>
+<li>Assets 只显示预览图，不自动播放。</li>
+</ul>
+<h2 id="8-docs">8. Docs</h2>
+<p>文档顺序：</p>
+<pre><code class="language-text">PRD
+Design
+Interface
+Impl
+Test
+Ops</code></pre>
+<p>中文缩写：</p>
+<div class="table-wrap"><table><thead><tr>
+<th>英文</th>
+<th>中文</th>
+</tr></thead><tbody>
+<tr>
+<td>PRD</td>
+<td>产品</td>
+</tr>
+<tr>
+<td>Design</td>
+<td>设计</td>
+</tr>
+<tr>
+<td>Interface</td>
+<td>接口</td>
+</tr>
+<tr>
+<td>Impl</td>
+<td>实现</td>
+</tr>
+<tr>
+<td>Test</td>
+<td>测试</td>
+</tr>
+<tr>
+<td>Ops</td>
+<td>运营</td>
+</tr>
+</tbody></table></div>
+<p>文档要求：</p>
+<ul>
+<li>顶部提供搜索框。</li>
+<li>搜索覆盖中英文文档正文。</li>
+<li>语言按钮只影响文档，不影响其他英文产品界面。</li>
+<li>左侧目录支持跳转、高亮和折叠。</li>
+<li>中英文版本保持相同文档顺序。</li>
+<li>文档使用固定深色主题，不提供亮暗切换。</li>
+</ul>
+<h2 id="9-认证与积分">9. 认证与积分</h2>
+<ul>
+<li>用户通过邮箱和密码登录。</li>
+<li>密码仅保存加密哈希。</li>
+<li>会话使用 HttpOnly Cookie。</li>
+<li>右上角积分来自当前服务端 Provider。</li>
+<li>任何可能计费的生成请求都必须先获得用户明确批准。</li>
+</ul>
+<h2 id="10-非功能要求">10. 非功能要求</h2>
+<ul>
+<li>桌面端和移动端不得出现控件遮挡。</li>
+<li>所有核心控件应支持键盘操作。</li>
+<li>动效支持 <code>prefers-reduced-motion</code>。</li>
+<li>当前静态页面的搜索和筛选在前端完成。</li>
+<li>用户发布的 Skill 和 Hots 内容暂不跨设备持久化。</li>
+<li>公开产品界面使用英文，当前中文仅用于 Docs。</li>
+</ul>
+<h2 id="11-验收标准">11. 验收标准</h2>
+<ol>
+<li>导航顺序为 Agents、Skills、Hots、Assets、Docs。</li>
+<li>Hots 位于 Assets 上方。</li>
+<li>Agents 可以选择 Skill。</li>
+<li>Skills 使用统一的可搜索目录，并显示 <code>user_id/skill_id</code>。</li>
+<li>官方 Skill 使用 <code>video_agent</code> 命名空间。</li>
+<li>用户可以发布 Skill。</li>
+<li>Review 以普通 Skill 卡片呈现。</li>
+<li>Hots 和 Assets 均提供顶部搜索。</li>
+<li>Hots 卡片自动播放，标题位于作者与喜欢数上方。</li>
+<li>Assets 区分 video 和 skill、权限以及 <code>yyyy-mm-dd</code> 编辑时间。</li>
+<li>Assets 使用瀑布流且不播放。</li>
+<li>Docs 依次包含 PRD、Design、Interface、Impl、Test、Ops。</li>
+<li>Docs 搜索和双语切换可用。</li>
+</ol></article>
+    </main>
+    <script src="../docs.js?v=14"></script>
+  </body>
+</html>

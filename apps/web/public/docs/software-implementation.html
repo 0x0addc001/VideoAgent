@@ -81,12 +81,13 @@
 <li>Next.js App Router product UI with English public routes.</li>
 <li><code>/zh-CN</code> redirects to <code>/en</code>.</li>
 <li>Shared Landing UI used by the product and GitHub Pages homepage.</li>
-<li>Left navigation: Agents, Skills, Assets, Hots, Docs.</li>
-<li>Home composer with a transparent custom dropdown system.</li>
-<li>Skills catalogue with atomic tasks, composed workflows, and review.</li>
-<li>Hots masonry feed with looping video playback and session-local publishing.</li>
-<li>Assets cards with status, updated time, duration, summary, and video controls.</li>
-<li>Embedded bilingual Docs with a collapsible table of contents.</li>
+<li>Left navigation: Agents, Skills, Hots, Assets, Docs.</li>
+<li>Home composer with a Skill selector and transparent custom dropdowns.</li>
+<li>Flat searchable Skills catalogue using <code>user_id/skill_id</code>, plus user publishing.</li>
+<li>Searchable Hots feed with looping video playback and session-local publishing.</li>
+<li>Searchable Assets waterfall with <code>video/skill</code>, permission, and edit date.</li>
+<li>Searchable bilingual Docs with six documents, a collapsible table of contents,</li>
+<p>and full-text lookup across languages.</p>
 <li>Registration, login, logout, server-side sessions, and user isolation.</li>
 <li>Project create, list, read, rename, and archive.</li>
 <li>Storyboard read and whole-document replacement.</li>
@@ -284,25 +285,25 @@ status
 </tr>
 </tbody></table></div>
 <h2 id="8-skills-implementation">8. Skills Implementation</h2>
-<p>Atomic skill cards expose concrete task codes and preload actionable prompts into the Agents composer:</p>
-<pre><code class="language-text">text_to_video
-image_to_video
-reference_to_video
-first_last_frame
-motion_control
-video_extend
-video_edit
-video_upscale</code></pre>
-<p>Workflow cards compose those capabilities:</p>
-<pre><code class="language-text">Product film
-Creator vlog
-Short drama</code></pre>
-<p>Review remains a separate wide panel because it evaluates a project storyboard rather than invoking a generation model.</p>
+<p>Skills is one flat searchable catalogue. Cards show <code>user_id/skill_id</code> and preload actionable prompts into the Agents composer:</p>
+<pre><code class="language-text">video_agent/text_to_video
+video_agent/image_to_video
+video_agent/reference_to_video
+video_agent/first_last_frame
+video_agent/motion_control
+video_agent/video_extend
+video_agent/video_edit
+video_agent/video_upscale
+video_agent/product_film
+video_agent/creator_vlog
+video_agent/short_drama
+video_agent/review</code></pre>
+<p>Workflow skills do not display a flow label. Review uses the same card form and has no separate project action. Signed-in users can publish a skill under their own namespace; current storage is frontend-session-local.</p>
 <h2 id="9-documentation-localization">9. Documentation Localization</h2>
 <p>The product UI remains English. The globe control changes only Docs language.</p>
-<pre><code class="language-text">English: software-design.html
-Chinese: software-design.zh.html</code></pre>
-<p>This pattern applies to Design, Impl, Test, and API documents. The language selection is saved in <code>localStorage</code> under <code>videoagent-docs-locale</code>.</p>
+<pre><code class="language-text">English: product-requirements.html
+Chinese: product-requirements.zh.html</code></pre>
+<p>The same pattern applies to all six documents in this order: PRD, Design, Interface, Impl, Test, and Ops. Docs search uses <code>docs-search.json</code> across both languages. The language selection is saved in <code>localStorage</code> under <code>videoagent-docs-locale</code>.</p>
 <h2 id="10-data-model">10. Data Model</h2>
 <div class="table-wrap"><table><thead><tr>
 <th>Table</th>
@@ -448,7 +449,7 @@ pnpm --dir apps/web test
 pnpm --dir apps/web typecheck
 pnpm --dir apps/web build
 python scripts\build_pages.py</code></pre>
-<p>Current baseline: 35 backend tests and 14 frontend tests. Playwright and paid provider tests are not part of normal CI.</p>
+<p>Current baseline: 35 backend tests and 17 frontend tests. Playwright and paid provider tests are not part of normal CI.</p>
 <h2 id="15-known-gaps">15. Known Gaps</h2>
 <div class="table-wrap"><table><thead><tr>
 <th>Area</th>

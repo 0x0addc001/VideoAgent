@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import html
+import json
 import re
 import shutil
 import subprocess
@@ -13,10 +14,20 @@ DOCS = ROOT / "docs"
 DOCS_ASSET_VERSION = "14"
 
 DOCUMENTS = {
+    "product-requirements": {
+        "title": "PRD",
+        "en": "product-requirements.en.md",
+        "zh-CN": "product-requirements.md",
+    },
     "software-design": {
         "title": "Design",
         "en": "software-design.en.md",
         "zh-CN": "software-design.md",
+    },
+    "interface-reference": {
+        "title": "Interface",
+        "en": "api-reference.md",
+        "zh-CN": "api-reference.zh.md",
     },
     "software-implementation": {
         "title": "Impl",
@@ -28,10 +39,10 @@ DOCUMENTS = {
         "en": "software-test-plan.en.md",
         "zh-CN": "software-test-plan.md",
     },
-    "api-reference": {
-        "title": "API",
-        "en": "api-reference.md",
-        "zh-CN": "api-reference.zh.md",
+    "operations": {
+        "title": "Ops",
+        "en": "operations.en.md",
+        "zh-CN": "operations.md",
     },
 }
 
@@ -54,6 +65,14 @@ def heading_slug(text: str, used: set[str]) -> str:
         suffix += 1
     used.add(candidate)
     return candidate
+
+
+def plain_markdown_text(markdown: str) -> str:
+    text = re.sub(r"```[^\n]*", " ", markdown)
+    text = re.sub(r"!\[([^\]]*)\]\([^)]+\)", r"\1", text)
+    text = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", text)
+    text = re.sub(r"[#>*_~`|]", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
 
 
 def inline_text(text: str) -> str:
@@ -284,6 +303,7 @@ def main() -> None:
     )
     docs_output = OUTPUT / "docs"
     docs_output.mkdir(parents=True, exist_ok=True)
+    search_index: list[dict[str, str]] = []
 
     for document_id, document in DOCUMENTS.items():
         title = str(document["title"])
@@ -292,12 +312,27 @@ def main() -> None:
             source = DOCS / source_name
             if not source.exists():
                 raise FileNotFoundError(f"Missing documentation source: {source}")
-            body, toc = markdown_to_html(source.read_text(encoding="utf-8"))
+            markdown = source.read_text(encoding="utf-8")
+            body, toc = markdown_to_html(markdown)
             output_name = f"{document_id}{suffix}.html"
             (docs_output / output_name).write_text(
                 document_page(output_name, title, body, toc, lang),
                 encoding="utf-8",
             )
+            search_index.append(
+                {
+                    "document": output_name,
+                    "documentId": document_id,
+                    "lang": lang,
+                    "title": title,
+                    "text": plain_markdown_text(markdown),
+                }
+            )
+
+    (docs_output / "docs-search.json").write_text(
+        json.dumps(search_index, ensure_ascii=False, separators=(",", ":")),
+        encoding="utf-8",
+    )
 
     web_docs = WEB_PUBLIC / "docs"
     if web_docs.exists():

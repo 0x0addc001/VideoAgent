@@ -22,6 +22,7 @@ const props = {
 afterEach(() => {
   window.history.replaceState({}, "", "/");
   window.localStorage.clear();
+  vi.unstubAllGlobals();
 });
 
 describe("LandingPage", () => {
@@ -37,17 +38,22 @@ describe("LandingPage", () => {
     expect(nav?.textContent).toContain("Assets");
     expect(nav?.textContent).toContain("Hots");
     expect(nav?.textContent).toContain("Docs");
+    expect(
+      [...(nav?.querySelectorAll("button") ?? [])].map((button) =>
+        button.textContent?.trim(),
+      ),
+    ).toEqual(["Agents", "Skills", "Hots", "Assets", "Docs"]);
     expect(nav?.querySelectorAll(".nav-icon")).toHaveLength(5);
     expect(container.querySelector(".language-button")).toBeInTheDocument();
     expect(container.querySelector(".notification-button svg")).toBeInTheDocument();
     expect(container.querySelector(".brand-mark .brand-play")).toBeInTheDocument();
     expect(composer).toBeInTheDocument();
-    expect(composer?.querySelectorAll(".composer-select")).toHaveLength(7);
+    expect(composer?.querySelectorAll(".composer-select")).toHaveLength(8);
     expect(
       [...(composer?.querySelectorAll(".composer-select-trigger") ?? [])].map(
         (trigger) => trigger.textContent,
       ),
-    ).toEqual(["Style", "Frame", "Length", "Model", "Quality", "Audio", "Review"]);
+    ).toEqual(["Skill", "Style", "Frame", "Length", "Model", "Quality", "Audio", "Review"]);
     expect(composer?.querySelectorAll("select")).toHaveLength(0);
     expect(container.querySelector(".credit-count")).toHaveTextContent("0");
     expect(container.querySelector(".account-avatar svg")).toBeInTheDocument();
@@ -92,17 +98,20 @@ describe("LandingPage", () => {
         (button) => button.textContent === "Skills",
       )!,
     );
-    expect(container.querySelector("#skills .skill-group-heading")).toHaveTextContent(
-      "Atomic skills",
-    );
     expect(container.querySelector("#skills .skill-code")).toHaveTextContent(
-      "text_to_video",
+      "video_agent/text_to_video",
     );
-    expect(container.querySelectorAll("#skills .skill-group")).toHaveLength(2);
+    expect(container.querySelectorAll("#skills .skill-group")).toHaveLength(0);
+    expect(
+      container.querySelectorAll("#skills .skill-card:not(.skill-publish-card)"),
+    ).toHaveLength(12);
     expect(container.querySelector("#skills")).toHaveTextContent("Product film");
     expect(container.querySelector("#skills")).toHaveTextContent("Short drama");
+    expect(container.querySelector("#skills")).toHaveTextContent("Storyboard review");
+    expect(container.querySelector("#skills .skill-card-copy small")).not.toBeInTheDocument();
+    expect(container.querySelector("#skills .view-search input")).toBeInTheDocument();
+    expect(container.querySelector(".skill-publish-card")).toBeInTheDocument();
     expect(container.querySelector("#agents")).not.toBeInTheDocument();
-    expect(container.querySelector(".review-skill")).toHaveTextContent("Instant review");
 
     fireEvent.click(
       [...container.querySelectorAll(".site-header button")].find(
@@ -113,14 +122,13 @@ describe("LandingPage", () => {
       "Quiet Copenhagen",
     );
     expect(container.querySelector("#assets .asset-card")).toHaveTextContent(
-      "Today · 10:42",
+      "2026-11-03",
     );
-    expect(container.querySelector("#assets .asset-card")).toHaveTextContent(
-      "three-shot editorial vlog",
-    );
-    expect(container.querySelector("#assets .asset-card video")).toHaveAttribute(
-      "controls",
-    );
+    expect(container.querySelector("#assets .asset-card")).toHaveTextContent("video");
+    expect(container.querySelector("#assets .asset-card")).toHaveTextContent("public");
+    expect(container.querySelector("#assets .asset-card img")).toBeInTheDocument();
+    expect(container.querySelector("#assets video")).not.toBeInTheDocument();
+    expect(container.querySelector("#assets .view-search input")).toBeInTheDocument();
     expect(container.querySelector("#skills")).not.toBeInTheDocument();
 
     fireEvent.click(
@@ -154,14 +162,14 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/software-design.html?v=14",
+      "/docs/product-requirements.html?v=14",
     );
-    expect(container.querySelectorAll(".docs-tab-icon")).toHaveLength(4);
+    expect(container.querySelectorAll(".docs-tab-icon")).toHaveLength(6);
     expect(
       [...container.querySelectorAll(".docs-tabs button")].map((button) =>
         button.textContent?.trim(),
       ),
-    ).toEqual(["Design", "Impl", "Test", "API"]);
+    ).toEqual(["PRD", "Design", "Interface", "Impl", "Test", "Ops"]);
 
     fireEvent.click(container.querySelector(".language-button")!);
     fireEvent.click(
@@ -171,8 +179,13 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/software-design.zh.html?v=14",
+      "/docs/product-requirements.zh.html?v=14",
     );
+    expect(
+      [...container.querySelectorAll(".docs-tabs button")].map((button) =>
+        button.textContent?.trim(),
+      ),
+    ).toEqual(["产品", "设计", "接口", "实现", "测试", "运营"]);
     expect(container.querySelector(".site-header > nav")).toHaveTextContent(
       "Agents",
     );
@@ -218,6 +231,114 @@ describe("LandingPage", () => {
     expect(container.querySelector(".community-likes")).toHaveTextContent("0");
   });
 
+  it("publishes a user skill with a namespaced ID", () => {
+    const { container } = render(<LandingPage {...props} mode="app" />);
+
+    fireEvent.click(
+      [...container.querySelectorAll(".site-header button")].find(
+        (button) => button.textContent === "Skills",
+      )!,
+    );
+    fireEvent.click(container.querySelector(".skill-publish-card")!);
+    fireEvent.change(container.querySelector(".skill-publish-dialog input")!, {
+      target: { value: "Lip Sync" },
+    });
+    fireEvent.change(container.querySelector(".skill-publish-dialog textarea")!, {
+      target: { value: "Synchronize speech motion to a supplied audio track." },
+    });
+    fireEvent.click(
+      container.querySelector('.skill-publish-dialog button[type="submit"]')!,
+    );
+
+    expect(
+      container.querySelector("#skills .skill-card:not(.skill-publish-card)"),
+    ).toHaveTextContent("local_user/lip_sync");
+    expect(container.querySelector("#skills")).toHaveTextContent("Lip Sync");
+  });
+
+  it("searches Skills, Hots, and Assets", () => {
+    const { container } = render(<LandingPage {...props} />);
+
+    fireEvent.click(
+      [...container.querySelectorAll(".site-header button")].find(
+        (button) => button.textContent === "Skills",
+      )!,
+    );
+    fireEvent.change(container.querySelector("#skills .view-search input")!, {
+      target: { value: "video_agent/review" },
+    });
+    expect(
+      container.querySelectorAll("#skills .skill-card:not(.skill-publish-card)"),
+    ).toHaveLength(1);
+    expect(container.querySelector("#skills .skill-code")).toHaveTextContent(
+      "video_agent/review",
+    );
+
+    fireEvent.click(
+      [...container.querySelectorAll(".site-header button")].find(
+        (button) => button.textContent === "Hots",
+      )!,
+    );
+    fireEvent.change(container.querySelector("#hots .view-search input")!, {
+      target: { value: "night" },
+    });
+    expect(container.querySelectorAll("#hots .community-card video")).toHaveLength(1);
+    expect(container.querySelector("#hots")).toHaveTextContent("Night city");
+    expect(container.querySelector("#hots")).not.toHaveTextContent("Editorial vlog");
+
+    fireEvent.click(
+      [...container.querySelectorAll(".site-header button")].find(
+        (button) => button.textContent === "Assets",
+      )!,
+    );
+    fireEvent.change(container.querySelector("#assets .view-search input")!, {
+      target: { value: "skill" },
+    });
+    expect(container.querySelectorAll("#assets .asset-card")).toHaveLength(2);
+    expect(container.querySelector("#assets")).not.toHaveTextContent(
+      "Quiet Copenhagen",
+    );
+  });
+
+  it("searches bilingual documentation", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => [
+          {
+            document: "operations.html",
+            documentId: "operations",
+            lang: "en",
+            title: "Ops",
+            text: "Launch readiness, provider credits, and incident response.",
+          },
+        ],
+      }),
+    );
+    const { container } = render(<LandingPage {...props} />);
+
+    fireEvent.click(
+      [...container.querySelectorAll(".site-header button")].find(
+        (button) => button.textContent === "Docs",
+      )!,
+    );
+    await waitFor(() => expect(fetch).toHaveBeenCalled());
+    fireEvent.change(container.querySelector(".docs-search input")!, {
+      target: { value: "credits" },
+    });
+    await waitFor(() =>
+      expect(container.querySelector(".docs-search-results button")).toHaveTextContent(
+        "Ops",
+      ),
+    );
+    fireEvent.click(container.querySelector(".docs-search-results button")!);
+    expect(container.querySelector("#docs iframe")).toHaveAttribute(
+      "src",
+      "/docs/operations.html?v=14",
+    );
+  });
+
   it("submits the home composer as a complete project draft", async () => {
     const onCreateProject = vi.fn().mockResolvedValue(undefined);
     const { container } = render(
@@ -235,6 +356,7 @@ describe("LandingPage", () => {
     await waitFor(() =>
       expect(onCreateProject).toHaveBeenCalledWith({
         prompt: "A quiet Copenhagen morning told in one shot",
+        skill: "auto",
         style: "auto",
         aspectRatio: "auto",
         durationSeconds: "auto",

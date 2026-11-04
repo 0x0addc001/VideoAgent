@@ -11,6 +11,7 @@ import {
   Globe,
   Heart,
   Play,
+  Search,
   UserRound,
   Video,
 } from "lucide-react";
@@ -30,6 +31,7 @@ export type LandingHeroVideo = {
 
 export type LandingProjectDraft = {
   prompt: string;
+  skill: string;
   style: string;
   aspectRatio: "auto" | "16:9" | "9:16" | "1:1";
   durationSeconds: "auto" | 5 | 10;
@@ -43,6 +45,22 @@ type PublishedHot = {
   author: string;
   likes: number;
   prompt: string;
+  title: string;
+};
+
+type PublishedSkill = {
+  body: string;
+  prompt: string;
+  skillId: string;
+  title: string;
+  userId: string;
+};
+
+type DocsSearchEntry = {
+  document: string;
+  documentId: string;
+  lang: LandingLocale;
+  text: string;
   title: string;
 };
 
@@ -337,6 +355,21 @@ function initialsFromEmail(email: string): string {
   return characters.filter(Boolean).join("").toUpperCase();
 }
 
+function userIdFromEmail(email: string): string {
+  const localPart = email.split("@")[0]?.trim().toLowerCase() ?? "";
+  return (
+    localPart.replace(/[^a-z0-9]+/g, "_").replace(/^_+|_+$/g, "") ||
+    "local_user"
+  );
+}
+
+function searchExcerpt(text: string, query: string): string {
+  const index = text.toLowerCase().indexOf(query.trim().toLowerCase());
+  if (index < 0) return text.slice(0, 120);
+  const start = Math.max(0, index - 44);
+  return text.slice(start, Math.min(text.length, index + 100)).trim();
+}
+
 export function LandingPage({
   locale,
   mode,
@@ -358,11 +391,22 @@ export function LandingPage({
   const [publishOpen, setPublishOpen] = useState(false);
   const [publishDraft, setPublishDraft] = useState("");
   const [publishedHots, setPublishedHots] = useState<PublishedHot[]>([]);
+  const [skillsQuery, setSkillsQuery] = useState("");
+  const [publishSkillOpen, setPublishSkillOpen] = useState(false);
+  const [skillIdDraft, setSkillIdDraft] = useState("");
+  const [skillDescriptionDraft, setSkillDescriptionDraft] = useState("");
+  const [publishedSkills, setPublishedSkills] = useState<PublishedSkill[]>([]);
+  const [skillUserId, setSkillUserId] = useState("local_user");
+  const [hotsQuery, setHotsQuery] = useState("");
+  const [assetQuery, setAssetQuery] = useState("");
+  const [docsQuery, setDocsQuery] = useState("");
+  const [docsSearchIndex, setDocsSearchIndex] = useState<DocsSearchEntry[]>([]);
   const [displayCredits, setDisplayCredits] = useState(
     accountCredits === null ? "—" : String(accountCredits),
   );
   const [displayAvatar, setDisplayAvatar] = useState<string | null>(null);
   const [prompt, setPrompt] = useState("");
+  const [skill, setSkill] = useState("auto");
   const [style, setStyle] = useState<string>("auto");
   const [aspectRatio, setAspectRatio] =
     useState<LandingProjectDraft["aspectRatio"]>("auto");
@@ -429,6 +473,7 @@ export function LandingPage({
           const account = (await accountResponse.json()) as { email?: string };
           if (account.email) {
             setDisplayAvatar(initialsFromEmail(account.email) || null);
+            setSkillUserId(userIdFromEmail(account.email));
           }
         }
       } catch {
@@ -461,6 +506,29 @@ export function LandingPage({
   }, [accountApiBase, mode]);
 
   useEffect(() => {
+    if (activeView !== "docs" || docsSearchIndex.length > 0) {
+      return;
+    }
+
+    let active = true;
+    fetch(`${docsBase}docs-search.json`)
+      .then((response) => {
+        if (!response.ok) throw new Error("docs-search-unavailable");
+        return response.json() as Promise<DocsSearchEntry[]>;
+      })
+      .then((entries) => {
+        if (active) setDocsSearchIndex(entries);
+      })
+      .catch(() => {
+        // Search remains unavailable while the docs index cannot be loaded.
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [activeView, docsBase, docsSearchIndex.length]);
+
+  useEffect(() => {
     if (!previewNoticeOpen) return;
 
     function closePreview(event: KeyboardEvent) {
@@ -486,6 +554,19 @@ export function LandingPage({
     return () => document.removeEventListener("keydown", closePublisher);
   }, [publishOpen]);
 
+  useEffect(() => {
+    if (!publishSkillOpen) return;
+
+    function closeSkillPublisher(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setPublishSkillOpen(false);
+      }
+    }
+
+    document.addEventListener("keydown", closeSkillPublisher);
+    return () => document.removeEventListener("keydown", closeSkillPublisher);
+  }, [publishSkillOpen]);
+
   async function submitProject(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const normalizedPrompt = prompt.trim();
@@ -503,6 +584,7 @@ export function LandingPage({
     try {
       await onCreateProject({
         prompt: normalizedPrompt,
+        skill,
         style,
         aspectRatio,
         durationSeconds,
@@ -550,6 +632,42 @@ export function LandingPage({
     setPublishOpen(false);
   }
 
+  function openSkillPublisher() {
+    if (mode === "project") {
+      setPreviewNoticeOpen(true);
+      return;
+    }
+    setPublishSkillOpen(true);
+  }
+
+  function publishSkill(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const description = skillDescriptionDraft.trim();
+    const normalizedSkillId = skillIdDraft
+      .trim()
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "");
+    if (!normalizedSkillId || !description) return;
+    const title = normalizedSkillId
+      .split("_")
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(" ");
+    setPublishedSkills((current) => [
+      {
+        body: description,
+        prompt: `${description} `,
+        skillId: normalizedSkillId,
+        title,
+        userId: skillUserId,
+      },
+      ...current,
+    ]);
+    setSkillIdDraft("");
+    setSkillDescriptionDraft("");
+    setPublishSkillOpen(false);
+  }
+
   function openView(view: LandingView) {
     setActiveView(view);
     window.history.replaceState(null, "", `#${view}`);
@@ -557,6 +675,7 @@ export function LandingPage({
 
   function selectDocsLocale(nextLocale: LandingLocale) {
     setDocsLocale(nextLocale);
+    setDocsQuery("");
     setLanguageOpen(false);
     try {
       window.localStorage.setItem("videoagent-docs-locale", nextLocale);
@@ -565,10 +684,48 @@ export function LandingPage({
     }
   }
 
+  function openDocsResult(entry: DocsSearchEntry) {
+    setActiveDocument(entry.document);
+    setDocsLocale(entry.lang);
+    setDocsQuery("");
+  }
+
   const activeDocumentSource =
     docsLocale === "zh-CN"
       ? activeDocument.replace(/\.html$/, ".zh.html")
       : activeDocument;
+  const normalizedSkillsQuery = skillsQuery.trim().toLowerCase();
+  const visibleSkills = [...publishedSkills, ...content.skills.items].filter(
+    (item) =>
+      !normalizedSkillsQuery ||
+      `${item.userId}/${item.skillId} ${item.title} ${item.body}`
+        .toLowerCase()
+        .includes(normalizedSkillsQuery),
+  );
+  const normalizedHotsQuery = hotsQuery.trim().toLowerCase();
+  const visibleHots = [...publishedHots, ...content.hots.items].filter(
+    (item) =>
+      !normalizedHotsQuery ||
+      `${item.title} ${item.author} ${item.prompt}`
+        .toLowerCase()
+        .includes(normalizedHotsQuery),
+  );
+  const normalizedAssetQuery = assetQuery.trim().toLowerCase();
+  const visibleAssets = content.assets.items.filter(
+    (asset) =>
+      !normalizedAssetQuery ||
+      `${asset.title} ${asset.type} ${asset.permission}`
+        .toLowerCase()
+        .includes(normalizedAssetQuery),
+  );
+  const normalizedDocsQuery = docsQuery.trim().toLowerCase();
+  const docsSearchResults = normalizedDocsQuery
+    ? docsSearchIndex
+        .filter((entry) =>
+          `${entry.title} ${entry.text}`.toLowerCase().includes(normalizedDocsQuery),
+        )
+        .slice(0, 8)
+    : [];
 
   return (
     <main className="va-landing">
@@ -601,20 +758,20 @@ export function LandingPage({
             <span>{content.nav.skills}</span>
           </button>
           <button
-            aria-current={activeView === "assets" ? "page" : undefined}
-            onClick={() => openView("assets")}
-            type="button"
-          >
-            <Film aria-hidden="true" className="nav-icon" />
-            <span>{content.nav.assets}</span>
-          </button>
-          <button
             aria-current={activeView === "hots" ? "page" : undefined}
             onClick={() => openView("hots")}
             type="button"
           >
             <Flame aria-hidden="true" className="nav-icon" />
             <span>{content.nav.hots}</span>
+          </button>
+          <button
+            aria-current={activeView === "assets" ? "page" : undefined}
+            onClick={() => openView("assets")}
+            type="button"
+          >
+            <Film aria-hidden="true" className="nav-icon" />
+            <span>{content.nav.assets}</span>
           </button>
           <button
             aria-current={activeView === "docs" ? "page" : undefined}
@@ -752,6 +909,18 @@ export function LandingPage({
             </div>
             <div className="composer-controls" aria-label={content.composer.settingsLabel}>
               <ComposerSelect
+                label={content.composer.skillLabel}
+                onChange={setSkill}
+                options={[
+                  { label: "Auto", value: "auto" },
+                  ...content.skills.items.map((item) => ({
+                    label: `${item.userId}/${item.skillId}`,
+                    value: item.skillId,
+                  })),
+                ]}
+                value={skill}
+              />
+              <ComposerSelect
                 label={content.composer.styleLabel}
                 onChange={setStyle}
                 options={[
@@ -863,87 +1032,104 @@ export function LandingPage({
 
       {activeView === "skills" ? (
       <section className="section feature-section" id="skills">
-        <div className="skill-groups">
-          {[content.skills.atomic, content.skills.workflows].map((group) => (
-            <section className="skill-group" key={group.label}>
-              <header className="skill-group-heading">
-                <span>{group.label}</span>
-                <p>{group.hint}</p>
-              </header>
-              <div className="feature-grid">
-                {group.items.map((skill) => (
-                  <button
-                    className="feature-card skill-card"
-                    key={skill.code}
-                    onClick={() => usePrompt(skill.prompt)}
-                    type="button"
-                  >
-                    <span className="skill-code">{skill.code}</span>
-                    <span className="skill-card-copy">
-                      <strong>{skill.title}</strong>
-                      <p>{skill.body}</p>
-                      {"flow" in skill ? <small>{skill.flow}</small> : null}
-                    </span>
-                    <i aria-hidden="true">↗</i>
-                  </button>
-                ))}
-              </div>
-            </section>
+        <div className="view-toolbar">
+          <label className="view-search">
+            <Search aria-hidden="true" />
+            <input
+              aria-label={content.skills.searchPlaceholder}
+              onChange={(event) => setSkillsQuery(event.target.value)}
+              placeholder={content.skills.searchPlaceholder}
+              type="search"
+              value={skillsQuery}
+            />
+          </label>
+        </div>
+        <div className="feature-grid skill-grid">
+          <button
+            className="feature-card skill-card skill-publish-card"
+            onClick={openSkillPublisher}
+            type="button"
+          >
+            <Play aria-hidden="true" className="skill-publish-icon" />
+            <span>{content.skills.publish}</span>
+          </button>
+          {visibleSkills.map((item) => (
+            <button
+              className="feature-card skill-card"
+              key={`${item.userId}/${item.skillId}`}
+              onClick={() => usePrompt(item.prompt)}
+              type="button"
+            >
+              <span className="skill-code">
+                {item.userId}/{item.skillId}
+              </span>
+              <span className="skill-card-copy">
+                <strong>{item.title}</strong>
+                <p>{item.body}</p>
+              </span>
+              <i aria-hidden="true">↗</i>
+            </button>
           ))}
         </div>
-        <div className="review-skill">
-          <div>
-            <span>{content.skills.review.title}</span>
-            <p>{content.skills.review.body}</p>
-          </div>
-          {mode === "app" ? (
-            <a href={`/${locale}/projects`}>{content.skills.review.action} ↗</a>
-          ) : (
-            <button onClick={() => setPreviewNoticeOpen(true)} type="button">
-              {content.skills.review.action} ↗
-            </button>
-          )}
-        </div>
+        {visibleSkills.length === 0 ? (
+          <p className="view-empty">{content.skills.noResults}</p>
+        ) : null}
       </section>
       ) : null}
 
       {activeView === "assets" ? (
       <section className="section feature-section" id="assets">
-        <div className="asset-grid">
-          {content.assets.items.map((asset) => (
+        <div className="view-toolbar">
+          <label className="view-search">
+            <Search aria-hidden="true" />
+            <input
+              aria-label={content.assets.searchPlaceholder}
+              onChange={(event) => setAssetQuery(event.target.value)}
+              placeholder={content.assets.searchPlaceholder}
+              type="search"
+              value={assetQuery}
+            />
+          </label>
+        </div>
+        <div className="asset-stream">
+          {visibleAssets.map((asset) => (
             <article className="asset-card" key={asset.title}>
               <div className="asset-media">
-                <video
-                  aria-label={`${asset.title} preview`}
-                  controls
-                  loop
-                  muted
-                  playsInline
-                  poster={videos[asset.videoIndex].poster}
-                  preload="metadata"
-                >
-                  <source src={videos[asset.videoIndex].src} type="video/mp4" />
-                </video>
+                <img alt="" src={videos[asset.imageIndex].poster} />
               </div>
               <div className="asset-info">
                 <div className="asset-title-row">
                   <h2>{asset.title}</h2>
-                  <span>{asset.status}</span>
                 </div>
-                <p>{asset.summary}</p>
                 <div className="asset-meta">
-                  <span>{asset.updatedAt}</span>
-                  <span>{asset.duration}</span>
+                  <span className="asset-type">{asset.type}</span>
+                  <span className="asset-permission">{asset.permission}</span>
+                  <time dateTime={asset.editedAt}>{asset.editedAt}</time>
                 </div>
               </div>
             </article>
           ))}
         </div>
+        {visibleAssets.length === 0 ? (
+          <p className="view-empty">{content.assets.noResults}</p>
+        ) : null}
       </section>
       ) : null}
 
       {activeView === "hots" ? (
       <section className="section hots-section" id="hots">
+        <div className="view-toolbar">
+          <label className="view-search">
+            <Search aria-hidden="true" />
+            <input
+              aria-label={content.hots.searchPlaceholder}
+              onChange={(event) => setHotsQuery(event.target.value)}
+              placeholder={content.hots.searchPlaceholder}
+              type="search"
+              value={hotsQuery}
+            />
+          </label>
+        </div>
         <div className="community-stream">
           <button
             className="community-card community-publish-card"
@@ -953,7 +1139,7 @@ export function LandingPage({
             <Play aria-hidden="true" className="community-publish-icon" />
             <span>{content.hots.publish}</span>
           </button>
-          {[...publishedHots, ...content.hots.items].map((item, index) => (
+          {visibleHots.map((item, index) => (
             <button
               className={`community-card community-card-${(index % 5) + 1}`}
               key={`${item.author}-${item.title}-${index}`}
@@ -990,22 +1176,61 @@ export function LandingPage({
             </button>
           ))}
         </div>
+        {visibleHots.length === 0 ? (
+          <p className="view-empty">{content.hots.noResults}</p>
+        ) : null}
       </section>
       ) : null}
 
       {activeView === "docs" ? (
         <section className="docs-view" id="docs">
+          <div className="docs-search-wrap">
+            <label className="view-search docs-search">
+              <Search aria-hidden="true" />
+              <input
+                aria-label="Search docs"
+                onChange={(event) => setDocsQuery(event.target.value)}
+                placeholder="Search docs"
+                type="search"
+                value={docsQuery}
+              />
+            </label>
+            {docsQuery.trim() ? (
+              <div className="docs-search-results" role="list">
+                {docsSearchResults.length > 0 ? (
+                  docsSearchResults.map((entry) => (
+                    <button
+                      key={`${entry.document}-${entry.lang}`}
+                      onClick={() => openDocsResult(entry)}
+                      type="button"
+                    >
+                      <span>{entry.title}</span>
+                      <small>
+                        {entry.lang === "zh-CN" ? "中文" : "English"} ·{" "}
+                        {searchExcerpt(entry.text, docsQuery)}
+                      </small>
+                    </button>
+                  ))
+                ) : (
+                  <p>No matching documents</p>
+                )}
+              </div>
+            ) : null}
+          </div>
           <div aria-label={content.nav.docs} className="docs-tabs" role="tablist">
             {content.documents.map((document) => (
               <button
                 aria-selected={activeDocument === document.path}
                 key={document.path}
-                onClick={() => setActiveDocument(document.path)}
+                onClick={() => {
+                  setActiveDocument(document.path);
+                  setDocsQuery("");
+                }}
                 role="tab"
                 type="button"
               >
                 <FileText aria-hidden="true" className="docs-tab-icon" />
-                {document.label}
+                {docsLocale === "zh-CN" ? document.labelZh : document.label}
               </button>
             ))}
           </div>
@@ -1017,6 +1242,67 @@ export function LandingPage({
             />
           </div>
         </section>
+      ) : null}
+
+      {publishSkillOpen ? (
+        <div
+          className="preview-backdrop"
+          onPointerDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setPublishSkillOpen(false);
+            }
+          }}
+        >
+          <form
+            aria-labelledby="publish-skill-title"
+            aria-modal="true"
+            className="preview-dialog publish-dialog skill-publish-dialog"
+            onSubmit={publishSkill}
+            role="dialog"
+          >
+            <button
+              aria-label={content.skills.close}
+              className="preview-close"
+              onClick={() => setPublishSkillOpen(false)}
+              type="button"
+            >
+              ×
+            </button>
+            <p className="preview-eyebrow">Skills</p>
+            <h2 id="publish-skill-title">{content.skills.publishTitle}</h2>
+            <label>
+              <span>{content.skills.skillIdLabel}</span>
+              <input
+                onChange={(event) => setSkillIdDraft(event.target.value)}
+                placeholder="my_skill"
+                value={skillIdDraft}
+              />
+            </label>
+            <label>
+              <span>{content.skills.skillDescriptionLabel}</span>
+              <textarea
+                onChange={(event) => setSkillDescriptionDraft(event.target.value)}
+                value={skillDescriptionDraft}
+              />
+            </label>
+            <div className="publish-actions">
+              <button
+                className="publish-cancel"
+                onClick={() => setPublishSkillOpen(false)}
+                type="button"
+              >
+                {content.skills.cancel}
+              </button>
+              <button
+                className="primary-action"
+                disabled={!skillIdDraft.trim() || !skillDescriptionDraft.trim()}
+                type="submit"
+              >
+                {content.skills.publish}
+              </button>
+            </div>
+          </form>
+        </div>
       ) : null}
 
       {publishOpen ? (

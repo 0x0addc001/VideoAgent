@@ -22,9 +22,9 @@ VideoAgent is a director-oriented AI video workspace. The public navigation
 contains five isolated views:
 
 - **Agents:** home creation composer and VideoAgent conversations.
-- **Skills:** atomic generation tasks, composed workflows, and instant review.
-- **Assets:** finished and in-progress work with status, updated time,
-  duration, summary, and playable previews.
+- **Skills:** one searchable catalogue of generation, workflow, and review skills.
+- **Assets:** a waterfall library of the user's videos and skills with
+  permission and edit time.
 - **Hots:** community feed with author, likes, playback, and local publishing.
 - **Docs:** embedded bilingual documentation with a collapsible table of contents.
 
@@ -190,39 +190,32 @@ active server generation path in the current baseline.
 
 ## 9. Skills Catalogue
 
-Skills are organized into three levels:
+Skills use one flat, searchable catalogue. Every card shows its
+`user_id/skill_id` identifier at the upper left. Official skills use the
+`video_agent` namespace.
 
-### 9.1 Atomic skills
-
-| Skill | Input and result |
+| Skill ID | Input and result |
 | --- | --- |
-| `text_to_video` | Text prompt to one video clip |
-| `image_to_video` | Still image to controlled motion |
-| `reference_to_video` | Image, video, or audio references to a generated clip |
-| `first_last_frame` | Opening and closing frames to a continuous transition |
-| `motion_control` | Driving-video motion applied to a subject image |
-| `video_extend` | Continue an existing clip |
-| `video_edit` | Prompt-directed modification of existing footage |
-| `video_upscale` | Raise video resolution up to 4K |
+| `video_agent/text_to_video` | Text prompt to one video clip |
+| `video_agent/image_to_video` | Still image to controlled motion |
+| `video_agent/reference_to_video` | Image, video, or audio references to a generated clip |
+| `video_agent/first_last_frame` | Opening and closing frames to a continuous transition |
+| `video_agent/motion_control` | Driving-video motion applied to a subject image |
+| `video_agent/video_extend` | Continue an existing clip |
+| `video_agent/video_edit` | Prompt-directed modification of existing footage |
+| `video_agent/video_upscale` | Raise video resolution up to 4K |
+| `video_agent/product_film` | A composed product-video workflow |
+| `video_agent/creator_vlog` | A composed creator-vlog workflow |
+| `video_agent/short_drama` | A composed short-drama workflow |
+| `video_agent/review` | Score consistency, coverage, clarity, and pacing |
 
-### 9.2 Workflow skills
+Workflow skills do not display an internal flow label. Review uses the same
+card form as every other skill and has no separate action button.
 
-| Workflow | Capability chain |
-| --- | --- |
-| Product film | Image edit → image-to-video → review → assembly |
-| Creator vlog | Script → storyboard → text/image-to-video → review |
-| Short drama | Roles → scenes → multi-shot → review → timeline |
-
-Selecting a skill preloads a concrete prompt in the Agents composer.
-
-### 9.3 Review
-
-The implemented review endpoint evaluates the storyboard before generation:
-
-- Consistency
-- Coverage
-- Prompt clarity
-- Pacing
+Selecting a skill preloads a concrete prompt in the Agents composer. The
+Agents composer also includes a Skill selector. Signed-in users can publish a
+skill under their own `<user_id>/<skill_id>` namespace; current publication is
+session-local.
 
 Frame-level visual-language-model review is a target extension.
 
@@ -324,9 +317,10 @@ FFmpeg workers, Alembic migrations, and a reverse proxy.
 6. Jobs and storyboards survive a page refresh or API restart.
 7. Provider credentials never reach the browser.
 8. Review returns consistency, coverage, clarity, and pacing.
-9. Skills distinguishes atomic skills, workflows, and review.
+9. Skills is a flat searchable catalogue using `user_id/skill_id`, with
+   workflows and Review presented as normal skill cards.
 10. Documentation can switch between English and Chinese without changing the
-    product UI.
+    product UI and follows the complete six-document order.
 
 ## 17. Change Log
 
