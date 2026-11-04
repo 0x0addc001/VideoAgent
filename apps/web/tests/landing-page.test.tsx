@@ -194,7 +194,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/product-requirements.html?v=15",
+      "/docs/product-requirements.html?v=16",
     );
     expect(container.querySelectorAll(".docs-tab-icon")).toHaveLength(6);
     expect(
@@ -211,7 +211,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/product-requirements.zh.html?v=15",
+      "/docs/product-requirements.zh.html?v=16",
     );
     expect(
       [...container.querySelectorAll(".docs-tabs button")].map((button) =>
@@ -238,6 +238,32 @@ describe("LandingPage", () => {
     );
     expect(styleTrigger).toHaveTextContent("Cinematic");
     expect(container.querySelector(".composer-select-menu")).not.toBeInTheDocument();
+  });
+
+  it("opens composer menus upward when there is not enough space below", () => {
+    vi.stubGlobal("innerHeight", 400);
+    const { container } = render(<LandingPage {...props} />);
+    const styleTrigger = container.querySelector(
+      '.composer-select-trigger[aria-label="Style"]',
+    )!;
+    vi.spyOn(styleTrigger, "getBoundingClientRect").mockReturnValue({
+      bottom: 360,
+      height: 40,
+      left: 0,
+      right: 180,
+      top: 320,
+      width: 180,
+      x: 0,
+      y: 320,
+      toJSON: () => ({}),
+    } as DOMRect);
+
+    fireEvent.click(styleTrigger);
+
+    expect(container.querySelector(".composer-select-menu")).toHaveAttribute(
+      "data-placement",
+      "top",
+    );
   });
 
   it("shows the signed-in account menu and signs out", async () => {
@@ -431,7 +457,7 @@ describe("LandingPage", () => {
     fireEvent.click(container.querySelector(".docs-search-results button")!);
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/operations.html?v=15",
+      "/docs/operations.html?v=16",
     );
   });
 

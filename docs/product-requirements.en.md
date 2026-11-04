@@ -56,6 +56,8 @@ shows the account email and a sign-out action.
 - The composer supports style, frame, duration, model, quality, audio, and
   review settings.
 - A user can select a Skill before starting.
+- Composer setting menus open above or below the trigger based on viewport
+  space and remain inside the visible area.
 - Submitting creates a project and enters the project workspace.
 - The VideoAgent headline and icon stream together.
 

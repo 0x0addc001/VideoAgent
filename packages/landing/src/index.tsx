@@ -96,7 +96,7 @@ const HERO_LINE_TWO: HeroPart[] = [
   { text: "Director", accent: true },
 ];
 
-const DOCS_ASSET_VERSION = "15";
+const DOCS_ASSET_VERSION = "16";
 
 function heroPartsLength(parts: readonly HeroPart[]) {
   return parts.reduce((total, part) => total + Array.from(part.text).length, 0);
@@ -201,6 +201,46 @@ type ComposerSelectProps = {
   value: string;
 };
 
+type ComposerMenuLayout = {
+  maxHeight: number;
+  placement: "bottom" | "top";
+};
+
+const COMPOSER_MENU_GAP = 8;
+const COMPOSER_MENU_SAFE_INSET = 12;
+const COMPOSER_MENU_MAX_HEIGHT = 320;
+
+function getComposerMenuLayout(
+  trigger: HTMLButtonElement,
+  optionCount: number,
+): ComposerMenuLayout {
+  const rect = trigger.getBoundingClientRect();
+  const estimatedMenuHeight = Math.min(
+    optionCount * 38 + 14,
+    COMPOSER_MENU_MAX_HEIGHT,
+  );
+  const spaceBelow =
+    window.innerHeight -
+    rect.bottom -
+    COMPOSER_MENU_GAP -
+    COMPOSER_MENU_SAFE_INSET;
+  const spaceAbove =
+    rect.top - COMPOSER_MENU_GAP - COMPOSER_MENU_SAFE_INSET;
+  const placement =
+    estimatedMenuHeight > spaceBelow && spaceAbove > spaceBelow
+      ? "top"
+      : "bottom";
+  const availableHeight = placement === "top" ? spaceAbove : spaceBelow;
+
+  return {
+    maxHeight: Math.max(
+      0,
+      Math.min(estimatedMenuHeight, availableHeight),
+    ),
+    placement,
+  };
+}
+
 function ComposerSelect({
   className = "",
   label,
@@ -209,21 +249,37 @@ function ComposerSelect({
   value,
 }: ComposerSelectProps) {
   const [open, setOpen] = useState(false);
+  const [menuLayout, setMenuLayout] = useState<ComposerMenuLayout>({
+    maxHeight: COMPOSER_MENU_MAX_HEIGHT,
+    placement: "bottom",
+  });
   const rootRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const selectedOption = options.find((option) => option.value === value);
   const visibleLabel = value === "auto" ? label : (selectedOption?.label ?? value);
 
   useEffect(() => {
     if (!open) return;
 
+    const keepMenuInViewport = () => {
+      if (!triggerRef.current) return;
+      setMenuLayout(getComposerMenuLayout(triggerRef.current, options.length));
+    };
     const closeOnOutsidePointer = (event: PointerEvent) => {
       if (!rootRef.current?.contains(event.target as Node)) {
         setOpen(false);
       }
     };
+    keepMenuInViewport();
     document.addEventListener("pointerdown", closeOnOutsidePointer);
-    return () => document.removeEventListener("pointerdown", closeOnOutsidePointer);
-  }, [open]);
+    window.addEventListener("resize", keepMenuInViewport);
+    window.addEventListener("scroll", keepMenuInViewport, true);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePointer);
+      window.removeEventListener("resize", keepMenuInViewport);
+      window.removeEventListener("scroll", keepMenuInViewport, true);
+    };
+  }, [open, options.length]);
 
   return (
     <div className={`composer-select ${className}`.trim()} ref={rootRef}>
@@ -232,17 +288,32 @@ function ComposerSelect({
         aria-haspopup="listbox"
         aria-label={label}
         className="composer-select-trigger"
-        onClick={() => setOpen((current) => !current)}
+        onClick={(event) => {
+          if (open) {
+            setOpen(false);
+            return;
+          }
+          setMenuLayout(
+            getComposerMenuLayout(event.currentTarget, options.length),
+          );
+          setOpen(true);
+        }}
         onKeyDown={(event) => {
           if (event.key === "Escape") setOpen(false);
         }}
+        ref={triggerRef}
         type="button"
       >
         <span>{visibleLabel}</span>
         <ChevronDown aria-hidden="true" className="composer-select-arrow" />
       </button>
       {open ? (
-        <div className="composer-select-menu" role="listbox">
+        <div
+          className="composer-select-menu"
+          data-placement={menuLayout.placement}
+          role="listbox"
+          style={{ maxHeight: `${menuLayout.maxHeight}px` }}
+        >
           {options.map((option) => (
             <button
               aria-selected={option.value === value}

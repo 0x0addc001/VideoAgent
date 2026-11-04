@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Design" />
     <title>Design · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=15" />
+    <link rel="stylesheet" href="../docs.css?v=16" />
   </head>
   <body data-document="software-design.html">
     <main class="document-shell" id="document-shell">
@@ -405,7 +405,8 @@ query-result</code></pre>
 <p>hover and Skill cards omit cover images.</p>
 <li>Searchable embedded Docs with a collapsible table of contents.</li>
 <li>Semi-transparent search, language, notification, credit, and avatar controls.</li>
-<li>Downward-opening language, notification, account, search, and composer menus.</li>
+<li>Viewport-aware composer menus that flip above the trigger when needed, plus</li>
+<p>downward-opening language, notification, account, and search menus.</p>
 <li>Avatar account actions for login, registration, and sign-out.</li>
 </ul>
 <p>The formal product uses <code>mode=&quot;app&quot;</code> and creates projects. The project homepage uses <code>mode=&quot;project&quot;</code> and displays a preview dialog for actions that need the product runtime.</p>
@@ -465,6 +466,6 @@ optional Celery + Redis</code></pre>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=15"></script>
+    <script src="../docs.js?v=16"></script>
   </body>
 </html>

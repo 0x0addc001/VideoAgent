@@ -123,6 +123,8 @@ Current component tests should continue to cover:
   scrolls.
 - Assets switches between Video and Skill tabs without repeating type labels.
 - Video assets preview on hover and pause on leave; Skill assets have no cover.
+- Composer menus stay inside the viewport and flip above the trigger when
+  there is insufficient space below.
 - Search, language, notifications, credits, and avatar controls use translucent
   surfaces and open their menus downward.
 - Avatar opens login and registration when signed out and sign-out when signed in.

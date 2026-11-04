@@ -274,7 +274,8 @@ The shared Landing UI owns:
   hover and Skill cards omit cover images.
 - Searchable embedded Docs with a collapsible table of contents.
 - Semi-transparent search, language, notification, credit, and avatar controls.
-- Downward-opening language, notification, account, search, and composer menus.
+- Viewport-aware composer menus that flip above the trigger when needed, plus
+  downward-opening language, notification, account, and search menus.
 - Avatar account actions for login, registration, and sign-out.
 
 The formal product uses `mode="app"` and creates projects. The project

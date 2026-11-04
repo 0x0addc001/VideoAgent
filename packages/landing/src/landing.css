@@ -2905,8 +2905,11 @@ html[lang="zh-CN"] .hero-copy h1 {
   display: grid;
   min-width: 100%;
   width: max-content;
-  max-width: 240px;
-  overflow: hidden;
+  max-width: min(240px, calc(100vw - 24px));
+  max-height: min(320px, calc(100dvh - 24px));
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
   border: 1px solid rgba(79, 172, 255, 0.34);
   border-radius: 14px;
   background: rgba(8, 17, 30, 0.74);
@@ -2914,6 +2917,11 @@ html[lang="zh-CN"] .hero-copy h1 {
   box-shadow: 0 18px 42px rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(22px) saturate(135%);
   transform: translateX(-50%);
+}
+
+.composer-select-menu[data-placement="top"] {
+  top: auto;
+  bottom: calc(100% + 8px);
 }
 
 .composer-select-option {
