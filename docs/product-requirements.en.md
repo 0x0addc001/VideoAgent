@@ -93,6 +93,7 @@ Review is a normal skill card. It has no separate action button.
 ### 5.2 Search and Publishing
 
 - Skills has a top search field.
+- The search field stays pinned to the top while content scrolls.
 - Search matches user ID, skill ID, title, and description.
 - A user can publish a skill using the same publish interaction pattern used by
   Hots.
@@ -103,6 +104,7 @@ Review is a normal skill card. It has no separate action button.
 
 - Hots is listed above Assets in navigation.
 - The top area contains a search field.
+- The search field stays pinned to the top while content scrolls.
 - Cards play muted looping video.
 - Each card shows the title first and author and likes below.
 - Users can publish a post from the feed.
@@ -113,8 +115,10 @@ Review is a normal skill card. It has no separate action button.
 Assets contains the current user's finished and in-progress work.
 
 - The top area contains a search field.
+- The search field stays pinned to the top while content scrolls.
 - Cards are arranged as a waterfall.
-- Each card identifies its type: `video` or `skill`.
+- Internal Video and Skill tabs separate the two asset types; cards do not
+  repeat type labels.
 - Each card shows permission: `private` or `public`.
 - Edit time uses `yyyy-mm-dd`.
 - Duration, progress, and summary are not shown.
@@ -147,6 +151,7 @@ English labels and Chinese short labels:
 Docs requirements:
 
 - A search field is available at the top.
+- The search field stays pinned to the top while content scrolls.
 - Search covers document text in both languages.
 - The language control changes only Docs.
 - The left table of contents supports navigation, highlighting, and collapse.
@@ -181,7 +186,8 @@ Docs requirements:
 7. Review appears as a normal Skill card.
 8. Hots and Assets both provide top search.
 9. Hots cards play video and show title above author and likes.
-10. Assets distinguishes video and skill, permission, and `yyyy-mm-dd` edit time.
+10. Assets uses internal Video and Skill tabs and shows permission and
+    `yyyy-mm-dd` edit time.
 11. Assets uses a waterfall layout without playback.
 12. Docs includes PRD, Design, Interface, Impl, Test, and Ops in order.
 13. Docs search and bilingual switching work.

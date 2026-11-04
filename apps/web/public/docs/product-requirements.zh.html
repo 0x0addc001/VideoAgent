@@ -118,6 +118,7 @@ video_agent/review</code></pre>
 <h3 id="5-2-搜索与发布">5.2 搜索与发布</h3>
 <ul>
 <li>Skills 顶部提供搜索框。</li>
+<li>搜索框在页面滚动时固定在顶部。</li>
 <li>搜索范围包含 user_id、skill_id、标题和描述。</li>
 <li>用户可以通过与 Hots 发布一致的方式发布 Skill。</li>
 <li>用户发布 ID 使用 <code>&lt;user_id&gt;/&lt;skill_id&gt;</code> 格式。</li>
@@ -127,6 +128,7 @@ video_agent/review</code></pre>
 <ul>
 <li>Hots 位于 Assets 上方。</li>
 <li>顶部提供搜索框。</li>
+<li>搜索框在页面滚动时固定在顶部。</li>
 <li>卡片使用循环播放的视频。</li>
 <li>标题在上，作者和喜欢数在下。</li>
 <li>用户可以从社区流发布作品。</li>
@@ -136,8 +138,9 @@ video_agent/review</code></pre>
 <p>Assets 展示当前用户的成品和半成品。</p>
 <ul>
 <li>顶部提供搜索框。</li>
+<li>搜索框在页面滚动时固定在顶部。</li>
 <li>卡片以瀑布流排布。</li>
-<li>必须区分 <code>video</code> 和 <code>skill</code>。</li>
+<li>使用 Video 和 Skill 两个内部分页区分类型，不在每张卡片上重复类型标签。</li>
 <li>必须展示权限：<code>private</code> 或 <code>public</code>。</li>
 <li>编辑时间统一使用 <code>yyyy-mm-dd</code>。</li>
 <li>不展示时长、进度和摘要。</li>
@@ -184,6 +187,7 @@ Ops</code></pre>
 <p>文档要求：</p>
 <ul>
 <li>顶部提供搜索框。</li>
+<li>搜索框在页面滚动时固定在顶部。</li>
 <li>搜索覆盖中英文文档正文。</li>
 <li>语言按钮只影响文档，不影响其他英文产品界面。</li>
 <li>左侧目录支持跳转、高亮和折叠。</li>
@@ -218,7 +222,7 @@ Ops</code></pre>
 <li>Review 以普通 Skill 卡片呈现。</li>
 <li>Hots 和 Assets 均提供顶部搜索。</li>
 <li>Hots 卡片自动播放，标题位于作者与喜欢数上方。</li>
-<li>Assets 区分 video 和 skill、权限以及 <code>yyyy-mm-dd</code> 编辑时间。</li>
+<li>Assets 通过 Video/Skill 内部分页区分类型，并展示权限和 <code>yyyy-mm-dd</code> 编辑时间。</li>
 <li>Assets 使用瀑布流且不播放。</li>
 <li>Docs 依次包含 PRD、Design、Interface、Impl、Test、Ops。</li>
 <li>Docs 搜索和双语切换可用。</li>

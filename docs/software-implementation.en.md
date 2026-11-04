@@ -23,7 +23,8 @@ features.
 - Home composer with a Skill selector and transparent custom dropdowns.
 - Flat searchable Skills catalogue using `user_id/skill_id`, plus user publishing.
 - Searchable Hots feed with looping video playback and session-local publishing.
-- Searchable Assets waterfall with `video/skill`, permission, and edit date.
+- Searchable Assets waterfall with internal Video/Skill tabs, permission, and
+  `yyyy-mm-dd` edit date; cards do not repeat type labels or play media.
 - Searchable bilingual Docs with six documents, a collapsible table of contents,
   and full-text lookup across languages.
 - Registration, login, logout, server-side sessions, and user isolation.

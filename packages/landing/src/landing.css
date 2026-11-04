@@ -1926,6 +1926,11 @@ html[lang="zh-CN"] .hero-copy h1 {
 }
 
 .view-toolbar {
+  position: sticky;
+  z-index: 18;
+  top: 20px;
+  width: fit-content;
+  max-width: 100%;
   margin-bottom: 14px;
 }
 
@@ -1937,9 +1942,11 @@ html[lang="zh-CN"] .hero-copy h1 {
   gap: 9px;
   border: 1px solid rgba(255, 255, 255, 0.13);
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.035);
+  background: rgba(11, 10, 8, 0.92);
   color: var(--muted);
   padding: 0 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+  backdrop-filter: blur(18px);
   transition: border-color 160ms ease;
 }
 
@@ -1977,6 +1984,20 @@ html[lang="zh-CN"] .hero-copy h1 {
 .asset-stream {
   column-count: 3;
   column-gap: 12px;
+}
+
+.asset-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.asset-toolbar .view-search {
+  width: min(440px, 54vw);
+}
+
+.asset-tabs {
+  flex-wrap: nowrap;
 }
 
 .asset-card {
@@ -2050,11 +2071,6 @@ html[lang="zh-CN"] .hero-copy h1 {
   font-family: "Manrope", var(--body);
   font-size: 0.78rem;
   padding-top: 12px;
-}
-
-.asset-type {
-  color: #8fdcff;
-  text-transform: uppercase;
 }
 
 .asset-permission {
@@ -2642,6 +2658,14 @@ html[lang="zh-CN"] .hero-copy h1 {
 
   .asset-stream {
     column-count: 1;
+  }
+
+  .asset-toolbar {
+    flex-wrap: wrap;
+  }
+
+  .asset-toolbar .view-search {
+    width: min(100%, 440px);
   }
 
   .community-stream {

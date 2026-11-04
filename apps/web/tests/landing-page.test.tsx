@@ -124,11 +124,19 @@ describe("LandingPage", () => {
     expect(container.querySelector("#assets .asset-card")).toHaveTextContent(
       "2026-11-03",
     );
-    expect(container.querySelector("#assets .asset-card")).toHaveTextContent("video");
     expect(container.querySelector("#assets .asset-card")).toHaveTextContent("public");
     expect(container.querySelector("#assets .asset-card img")).toBeInTheDocument();
     expect(container.querySelector("#assets video")).not.toBeInTheDocument();
     expect(container.querySelector("#assets .view-search input")).toBeInTheDocument();
+    fireEvent.click(
+      [...container.querySelectorAll("#assets .asset-tabs button")].find(
+        (button) => button.textContent?.trim() === "Skill",
+      )!,
+    );
+    expect(container.querySelectorAll("#assets .asset-card")).toHaveLength(2);
+    expect(container.querySelector("#assets")).not.toHaveTextContent(
+      "Quiet Copenhagen",
+    );
     expect(container.querySelector("#skills")).not.toBeInTheDocument();
 
     fireEvent.click(
@@ -291,12 +299,17 @@ describe("LandingPage", () => {
         (button) => button.textContent === "Assets",
       )!,
     );
+    fireEvent.click(
+      [...container.querySelectorAll("#assets .asset-tabs button")].find(
+        (button) => button.textContent?.trim() === "Skill",
+      )!,
+    );
     fireEvent.change(container.querySelector("#assets .view-search input")!, {
-      target: { value: "skill" },
+      target: { value: "review" },
     });
-    expect(container.querySelectorAll("#assets .asset-card")).toHaveLength(2);
-    expect(container.querySelector("#assets")).not.toHaveTextContent(
-      "Quiet Copenhagen",
+    expect(container.querySelectorAll("#assets .asset-card")).toHaveLength(1);
+    expect(container.querySelector("#assets")).toHaveTextContent(
+      "Storyboard review",
     );
   });
 

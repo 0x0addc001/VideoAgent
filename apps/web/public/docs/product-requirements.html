@@ -119,6 +119,7 @@ video_agent/review</code></pre>
 <h3 id="5-2-search-and-publishing">5.2 Search and Publishing</h3>
 <ul>
 <li>Skills has a top search field.</li>
+<li>The search field stays pinned to the top while content scrolls.</li>
 <li>Search matches user ID, skill ID, title, and description.</li>
 <li>A user can publish a skill using the same publish interaction pattern used by</li>
 <p>Hots.</p>
@@ -129,6 +130,7 @@ video_agent/review</code></pre>
 <ul>
 <li>Hots is listed above Assets in navigation.</li>
 <li>The top area contains a search field.</li>
+<li>The search field stays pinned to the top while content scrolls.</li>
 <li>Cards play muted looping video.</li>
 <li>Each card shows the title first and author and likes below.</li>
 <li>Users can publish a post from the feed.</li>
@@ -138,8 +140,10 @@ video_agent/review</code></pre>
 <p>Assets contains the current user's finished and in-progress work.</p>
 <ul>
 <li>The top area contains a search field.</li>
+<li>The search field stays pinned to the top while content scrolls.</li>
 <li>Cards are arranged as a waterfall.</li>
-<li>Each card identifies its type: <code>video</code> or <code>skill</code>.</li>
+<li>Internal Video and Skill tabs separate the two asset types; cards do not</li>
+<p>repeat type labels.</p>
 <li>Each card shows permission: <code>private</code> or <code>public</code>.</li>
 <li>Edit time uses <code>yyyy-mm-dd</code>.</li>
 <li>Duration, progress, and summary are not shown.</li>
@@ -186,6 +190,7 @@ Ops</code></pre>
 <p>Docs requirements:</p>
 <ul>
 <li>A search field is available at the top.</li>
+<li>The search field stays pinned to the top while content scrolls.</li>
 <li>Search covers document text in both languages.</li>
 <li>The language control changes only Docs.</li>
 <li>The left table of contents supports navigation, highlighting, and collapse.</li>
@@ -220,7 +225,8 @@ Ops</code></pre>
 <li>Review appears as a normal Skill card.</li>
 <li>Hots and Assets both provide top search.</li>
 <li>Hots cards play video and show title above author and likes.</li>
-<li>Assets distinguishes video and skill, permission, and <code>yyyy-mm-dd</code> edit time.</li>
+<li>Assets uses internal Video and Skill tabs and shows permission and</li>
+<p><code>yyyy-mm-dd</code> edit time.</p>
 <li>Assets uses a waterfall layout without playback.</li>
 <li>Docs includes PRD, Design, Interface, Impl, Test, and Ops in order.</li>
 <li>Docs search and bilingual switching work.</li>

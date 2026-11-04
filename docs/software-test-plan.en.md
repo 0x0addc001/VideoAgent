@@ -120,6 +120,9 @@ Current component tests should continue to cover:
   normal Review card.
 - Docs labels are `PRD`, `Design`, `Interface`, `Impl`, `Test`, and `Ops`.
 - Globe control changes only Docs source and language.
+- Skills, Hots, Assets, and Docs search controls stay pinned while content
+  scrolls.
+- Assets switches between Video and Skill tabs without repeating type labels.
 
 ## 9. Responsive and Accessibility Checks
 

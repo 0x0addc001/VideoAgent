@@ -25,7 +25,7 @@
 - 首页连续视频轮播、流式主标语、Skill 选择器、自定义透明下拉和 Action 生成入口。
 - Skills 使用单一可搜索目录，显示 `user_id/skill_id`，支持当前会话内发布 Skill。
 - Hots 支持搜索、循环视频、作者、喜欢数和当前会话内发布。
-- Assets 使用瀑布流，区分 video/skill、private/public 和 `yyyy-mm-dd` 编辑时间，不自动播放。
+- Assets 使用瀑布流，并通过 Video/Skill 内部分页区分类型；卡片展示 private/public 和 `yyyy-mm-dd` 编辑时间，不重复类型标签，不自动播放。
 - 六份中英文文档、全文搜索、固定深色主题、左侧可折叠目录和章节高亮。
 - 注册、登录、登出和服务端会话。
 - 用户级项目创建、列表、读取、重命名和归档。

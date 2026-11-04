@@ -169,6 +169,10 @@ export const landingContent = {
       title: "Your finished and in-progress work",
       searchPlaceholder: "Search videos and skills",
       noResults: "No matching assets",
+      tabs: {
+        video: "Video",
+        skill: "Skill",
+      },
       items: [
         {
           title: "Quiet Copenhagen",
@@ -481,6 +485,10 @@ export const landingContent = {
       title: "你的成品与半成品",
       searchPlaceholder: "搜索视频和 Skill",
       noResults: "没有匹配的资产",
+      tabs: {
+        video: "视频",
+        skill: "技能",
+      },
       items: [
         {
           title: "哥本哈根清晨",

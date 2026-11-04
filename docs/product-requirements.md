@@ -90,6 +90,7 @@ Review 作为一个普通 Skill 卡片呈现，不再提供单独的 Open projec
 ### 5.2 搜索与发布
 
 - Skills 顶部提供搜索框。
+- 搜索框在页面滚动时固定在顶部。
 - 搜索范围包含 user_id、skill_id、标题和描述。
 - 用户可以通过与 Hots 发布一致的方式发布 Skill。
 - 用户发布 ID 使用 `<user_id>/<skill_id>` 格式。
@@ -99,6 +100,7 @@ Review 作为一个普通 Skill 卡片呈现，不再提供单独的 Open projec
 
 - Hots 位于 Assets 上方。
 - 顶部提供搜索框。
+- 搜索框在页面滚动时固定在顶部。
 - 卡片使用循环播放的视频。
 - 标题在上，作者和喜欢数在下。
 - 用户可以从社区流发布作品。
@@ -109,8 +111,9 @@ Review 作为一个普通 Skill 卡片呈现，不再提供单独的 Open projec
 Assets 展示当前用户的成品和半成品。
 
 - 顶部提供搜索框。
+- 搜索框在页面滚动时固定在顶部。
 - 卡片以瀑布流排布。
-- 必须区分 `video` 和 `skill`。
+- 使用 Video 和 Skill 两个内部分页区分类型，不在每张卡片上重复类型标签。
 - 必须展示权限：`private` 或 `public`。
 - 编辑时间统一使用 `yyyy-mm-dd`。
 - 不展示时长、进度和摘要。
@@ -143,6 +146,7 @@ Ops
 文档要求：
 
 - 顶部提供搜索框。
+- 搜索框在页面滚动时固定在顶部。
 - 搜索覆盖中英文文档正文。
 - 语言按钮只影响文档，不影响其他英文产品界面。
 - 左侧目录支持跳转、高亮和折叠。
@@ -177,7 +181,7 @@ Ops
 7. Review 以普通 Skill 卡片呈现。
 8. Hots 和 Assets 均提供顶部搜索。
 9. Hots 卡片自动播放，标题位于作者与喜欢数上方。
-10. Assets 区分 video 和 skill、权限以及 `yyyy-mm-dd` 编辑时间。
+10. Assets 通过 Video/Skill 内部分页区分类型，并展示权限和 `yyyy-mm-dd` 编辑时间。
 11. Assets 使用瀑布流且不播放。
 12. Docs 依次包含 PRD、Design、Interface、Impl、Test、Ops。
 13. Docs 搜索和双语切换可用。

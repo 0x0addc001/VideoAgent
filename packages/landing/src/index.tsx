@@ -399,6 +399,7 @@ export function LandingPage({
   const [skillUserId, setSkillUserId] = useState("local_user");
   const [hotsQuery, setHotsQuery] = useState("");
   const [assetQuery, setAssetQuery] = useState("");
+  const [assetType, setAssetType] = useState<"video" | "skill">("video");
   const [docsQuery, setDocsQuery] = useState("");
   const [docsSearchIndex, setDocsSearchIndex] = useState<DocsSearchEntry[]>([]);
   const [displayCredits, setDisplayCredits] = useState(
@@ -713,10 +714,11 @@ export function LandingPage({
   const normalizedAssetQuery = assetQuery.trim().toLowerCase();
   const visibleAssets = content.assets.items.filter(
     (asset) =>
-      !normalizedAssetQuery ||
-      `${asset.title} ${asset.type} ${asset.permission}`
-        .toLowerCase()
-        .includes(normalizedAssetQuery),
+      asset.type === assetType &&
+      (!normalizedAssetQuery ||
+        `${asset.title} ${asset.permission}`
+          .toLowerCase()
+          .includes(normalizedAssetQuery)),
   );
   const normalizedDocsQuery = docsQuery.trim().toLowerCase();
   const docsSearchResults = normalizedDocsQuery
@@ -1079,7 +1081,7 @@ export function LandingPage({
 
       {activeView === "assets" ? (
       <section className="section feature-section" id="assets">
-        <div className="view-toolbar">
+        <div className="view-toolbar asset-toolbar">
           <label className="view-search">
             <Search aria-hidden="true" />
             <input
@@ -1090,6 +1092,26 @@ export function LandingPage({
               value={assetQuery}
             />
           </label>
+          <div className="docs-tabs asset-tabs" role="tablist">
+            <button
+              aria-selected={assetType === "video"}
+              onClick={() => setAssetType("video")}
+              role="tab"
+              type="button"
+            >
+              <Video aria-hidden="true" className="docs-tab-icon" />
+              {content.assets.tabs.video}
+            </button>
+            <button
+              aria-selected={assetType === "skill"}
+              onClick={() => setAssetType("skill")}
+              role="tab"
+              type="button"
+            >
+              <Clapperboard aria-hidden="true" className="docs-tab-icon" />
+              {content.assets.tabs.skill}
+            </button>
+          </div>
         </div>
         <div className="asset-stream">
           {visibleAssets.map((asset) => (
@@ -1102,7 +1124,6 @@ export function LandingPage({
                   <h2>{asset.title}</h2>
                 </div>
                 <div className="asset-meta">
-                  <span className="asset-type">{asset.type}</span>
                   <span className="asset-permission">{asset.permission}</span>
                   <time dateTime={asset.editedAt}>{asset.editedAt}</time>
                 </div>
