@@ -6,7 +6,9 @@
 | 更新日期 | 2026-11-04 |
 | 后端技术 | Python + FastAPI |
 | 前端技术 | Next.js + TypeScript |
-| 模型技术 | Seedance 2.5 Draft（Pippit）、Seedance 2.5（Pippit）、Seedance 2.0 Fast VIP（Pippit）、Seedance 2.0 VIP（Pippit）、Seedance 2.0 Mini 体验版（Pippit）、Seedance 2.0 Mini（Pippit）、Wan 3.0（Pippit）、HappyHorse 1.1（Pippit） |
+| 模型技术 | Seedance 2.5 Draft（Pippit）、Seedance 2.5（Pippit）、Seedance 2.0 Fast VIP（Pippit）、Seedance 2.0 VIP（Pippit）、Seedance 2.0 Mini 体验版（Pippit）、Seedance 2.0 Mini（Pippit）、Wan 3.0（Pippit）、HappyHorse 1.1（Pippit）、Kling Video 2.5（Kling）、Kling Video 2.6（Kling）、Kling Video O1（Kling）、Kling Video 3.0（Kling）、Kling Video 3.0 Omni（Kling）、Kling Video 3.0 Turbo（Kling）、Kling Video 4.0（Kling）、Kling 2.6 Motion Control（Kling）、Kling 3.0 Motion Control（Kling）、Kling Image 3.0 Omni（Kling）、Kling Image O1（Kling）、Kling Image 3.0（Kling）、Kling Image 2.1（Kling） |
+
+Pippit 是当前正式生成的默认链路；Kling 模型通过已连接的 Kling MCP 可用，目前列在能力目录中，尚未接入正式产品后端的默认生成路由。
 
 ## 1. 文档目的
 
