@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Design" />
     <title>Design · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=18" />
+    <link rel="stylesheet" href="../docs.css?v=19" />
   </head>
   <body data-document="software-design.zh.html">
     <main class="document-shell" id="document-shell">
@@ -98,7 +98,7 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v1.4</td>
+<td>v1.5</td>
 </tr>
 <tr>
 <td>更新日期</td>
@@ -113,7 +113,7 @@
 <td>Next.js + TypeScript</td>
 </tr>
 <tr>
-<td>模型技术</td>
+<td>模型</td>
 <td>Seedance 2.5 Draft（Pippit）、Seedance 2.5（Pippit）、Seedance 2.0 Fast VIP（Pippit）、Seedance 2.0 VIP（Pippit）、Seedance 2.0 Mini 体验版（Pippit）、Seedance 2.0 Mini（Pippit）、Wan 3.0（Pippit）、HappyHorse 1.1（Pippit）、Kling Video 2.5（Kling）、Kling Video 2.6（Kling）、Kling Video O1（Kling）、Kling Video 3.0（Kling）、Kling Video 3.0 Omni（Kling）、Kling Video 3.0 Turbo（Kling）、Kling Video 4.0（Kling）、Kling 2.6 Motion Control（Kling）、Kling 3.0 Motion Control（Kling）、Kling Image 3.0 Omni（Kling）、Kling Image O1（Kling）、Kling Image 3.0（Kling）、Kling Image 2.1（Kling）</td>
 </tr>
 </tbody></table></div>
@@ -139,7 +139,8 @@
 <li>当前公开产品界面固定为英文；<code>/zh-CN</code> 路由统一重定向到 <code>/en</code>。</li>
 <li>项目主页与正式产品首页复用 <code>packages/landing</code> 同一套 UI，项目主页仅将不可用动作替换为预览提示。</li>
 <li>首页采用左侧导航、连续视频背景、居中创作框、场景 Playbook、Hook 控制和自定义透明下拉控件。</li>
-<li>创作输入框随内容行数自动向下增高；灵感提示和 Playbook 仅在输入为空时显示。</li>
+<li>创作输入框随内容行数自动向下增高；示例灵感仅在输入为空时显示，Playbook 保持可切换。</li>
+<li>模型选择器使用实时核验目录：Kling 7 个视频模型、Pippit 8 个视频模型，另有 Auto。</li>
 <li>搜索、语言、通知、积分和头像使用半透明表面，相关菜单向下展开；创作框选项菜单根据视口空间自动向上或向下展开并限制高度；头像支持登录、注册和退出。</li>
 <li>Hots 展示作者与喜欢数，并支持当前浏览器会话内的本地发布。</li>
 <li>支持项目创建、编辑、恢复和删除。</li>
@@ -1183,8 +1184,14 @@ Celery + Redis（可选）</code></pre>
 <td>当前基线</td>
 <td>输入框随内容自动增高，空态建议按输入状态显示</td>
 </tr>
+<tr>
+<td>v1.5</td>
+<td>2026-11-04</td>
+<td>当前基线</td>
+<td>文档属性改为 Model，模型下拉框同步全部实时可用视频模型</td>
+</tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=18"></script>
+    <script src="../docs.js?v=19"></script>
   </body>
 </html>

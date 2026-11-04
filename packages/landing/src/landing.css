@@ -2848,6 +2848,15 @@ html[lang="zh-CN"] .hero-copy h1 {
   transform: none;
 }
 
+.composer-select-model .composer-select-menu {
+  right: 0;
+  left: auto;
+  width: max-content;
+  min-width: 280px;
+  max-width: min(360px, calc(100vw - 24px));
+  transform: none;
+}
+
 .composer-select-trigger {
   display: flex;
   width: 100%;

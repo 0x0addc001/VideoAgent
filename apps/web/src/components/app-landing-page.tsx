@@ -38,10 +38,16 @@ export function AppLandingPage() {
     const style =
       content.composer.styles.find((option) => option.id === draft.style)?.label ??
       draft.style;
+    const model = content.composer.models.find(
+      (option) => option.id === draft.model,
+    );
+    const modelLabel = model
+      ? `${model.label} (${model.provider})`
+      : draft.model;
     const settings =
       `Production settings: ${draft.skill} · Hook ${draft.hook} · ${style} · ` +
       `${draft.aspectRatio} · ` +
-      `${draft.durationSeconds}s · ${draft.model} · ${draft.resolution} · ` +
+      `${draft.durationSeconds}s · ${modelLabel} · ${draft.resolution} · ` +
       `Audio ${draft.audio} · Review ${draft.reviewMode}`;
     const response = await fetch("/api/account/projects", {
       method: "POST",

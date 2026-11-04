@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.4 |
+| Document version | v1.5 |
 | Updated | 2026-11-04 |
 | Design reference | `software-design.en.md` |
 | Test reference | `software-test-plan.en.md` |
@@ -21,7 +21,8 @@ features.
 - Left navigation: Agents, Skills, Hots, Assets, Docs.
 - Home composer with Skill and Hook selectors, six production playbooks, and
   transparent custom dropdowns.
-- Auto-growing prompt textarea with suggestions rendered only in the empty state.
+- Auto-growing prompt textarea with idea suggestions rendered only in the empty state.
+- Complete live video-model catalogue with provider-labelled Pippit and Kling options.
 - Flat searchable Skills catalogue using `user_id/skill_id`, plus user publishing.
 - Searchable Hots feed with looping video playback, Skill-backed scenario
   reuse, and session-local publishing.
@@ -345,6 +346,7 @@ provider tests are not part of normal CI.
 
 | Version | Date | Description |
 | --- | --- | --- |
-| v1.4 | 2026-11-04 | Add auto-growing prompt sizing and empty-state-only suggestions |
+| v1.5 | 2026-11-04 | Synchronize the Model selector with all live Pippit and Kling video models |
+| v1.4 | 2026-11-04 | Add auto-growing prompt sizing and empty-state-only idea suggestions |
 | v1.3 | 2026-11-04 | Add production playbooks, Hook selector, scenario Skills, and Skill-backed Hots reuse |
 | v1.2 | 2026-11-03 | Align Skills catalogue, Hots playback/publish, bilingual Docs, icon behavior, APIs, and tests |

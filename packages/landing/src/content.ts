@@ -20,6 +20,12 @@ export type LandingPlaybook = {
   style: string;
 };
 
+export type LandingModel = {
+  id: string;
+  label: string;
+  provider: string;
+};
+
 export const landingContent = {
   en: {
     localeLabel: "English",
@@ -161,7 +167,52 @@ export const landingContent = {
         { id: "ugc", label: "UGC" },
         { id: "product", label: "Product" },
       ],
-      models: ["Auto", "Seedance 2.5", "Seedance 2.0 Mini", "Wan 3.0"],
+      models: [
+        { id: "auto", label: "Auto", provider: "" },
+        { id: "kling-video-v4_0", label: "Kling Video 4.0", provider: "Kling" },
+        {
+          id: "kling-video-v3_0_omni",
+          label: "Kling Video 3.0 Omni",
+          provider: "Kling",
+        },
+        { id: "kling-video-v3_0", label: "Kling Video 3.0", provider: "Kling" },
+        {
+          id: "kling-video-v3_0_turbo",
+          label: "Kling Video 3.0 Turbo",
+          provider: "Kling",
+        },
+        { id: "kling-video-o1", label: "Kling Video O1", provider: "Kling" },
+        { id: "kling-video-v2_6", label: "Kling Video 2.6", provider: "Kling" },
+        { id: "kling-video-v2_5", label: "Kling Video 2.5", provider: "Kling" },
+        {
+          id: "Seedance_2.5_draft",
+          label: "Seedance 2.5 Draft",
+          provider: "Pippit",
+        },
+        { id: "Seedance_2.5", label: "Seedance 2.5", provider: "Pippit" },
+        {
+          id: "seedance2.0_fast_vision",
+          label: "Seedance 2.0 Fast VIP",
+          provider: "Pippit",
+        },
+        {
+          id: "seedance2.0_vision",
+          label: "Seedance 2.0 VIP",
+          provider: "Pippit",
+        },
+        {
+          id: "Seedance_2.0_mini_lite",
+          label: "Seedance 2.0 Mini Preview",
+          provider: "Pippit",
+        },
+        {
+          id: "Seedance_2.0_mini",
+          label: "Seedance 2.0 Mini",
+          provider: "Pippit",
+        },
+        { id: "wan3.0", label: "Wan 3.0", provider: "Pippit" },
+        { id: "happyhorse-1.1", label: "HappyHorse 1.1", provider: "Pippit" },
+      ] as const satisfies readonly LandingModel[],
       resolutions: ["720p", "1080p"],
       audioOptions: [
         { id: "auto", label: "Auto" },
@@ -672,7 +723,52 @@ export const landingContent = {
         { id: "ugc", label: "真实感" },
         { id: "product", label: "产品片" },
       ],
-      models: ["自动", "Seedance 2.5", "Seedance 2.0 Mini", "Wan 3.0"],
+      models: [
+        { id: "auto", label: "自动", provider: "" },
+        { id: "kling-video-v4_0", label: "Kling Video 4.0", provider: "Kling" },
+        {
+          id: "kling-video-v3_0_omni",
+          label: "Kling Video 3.0 Omni",
+          provider: "Kling",
+        },
+        { id: "kling-video-v3_0", label: "Kling Video 3.0", provider: "Kling" },
+        {
+          id: "kling-video-v3_0_turbo",
+          label: "Kling Video 3.0 Turbo",
+          provider: "Kling",
+        },
+        { id: "kling-video-o1", label: "Kling Video O1", provider: "Kling" },
+        { id: "kling-video-v2_6", label: "Kling Video 2.6", provider: "Kling" },
+        { id: "kling-video-v2_5", label: "Kling Video 2.5", provider: "Kling" },
+        {
+          id: "Seedance_2.5_draft",
+          label: "Seedance 2.5 Draft",
+          provider: "Pippit",
+        },
+        { id: "Seedance_2.5", label: "Seedance 2.5", provider: "Pippit" },
+        {
+          id: "seedance2.0_fast_vision",
+          label: "Seedance 2.0 Fast VIP",
+          provider: "Pippit",
+        },
+        {
+          id: "seedance2.0_vision",
+          label: "Seedance 2.0 VIP",
+          provider: "Pippit",
+        },
+        {
+          id: "Seedance_2.0_mini_lite",
+          label: "Seedance 2.0 Mini 体验版",
+          provider: "Pippit",
+        },
+        {
+          id: "Seedance_2.0_mini",
+          label: "Seedance 2.0 Mini",
+          provider: "Pippit",
+        },
+        { id: "wan3.0", label: "Wan 3.0", provider: "Pippit" },
+        { id: "happyhorse-1.1", label: "HappyHorse 1.1", provider: "Pippit" },
+      ] as const satisfies readonly LandingModel[],
       resolutions: ["720p", "1080p"],
       audioOptions: [
         { id: "auto", label: "自动" },

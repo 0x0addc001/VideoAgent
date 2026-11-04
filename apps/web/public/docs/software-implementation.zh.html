@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Impl" />
     <title>Impl · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=18" />
+    <link rel="stylesheet" href="../docs.css?v=19" />
   </head>
   <body data-document="software-implementation.zh.html">
     <main class="document-shell" id="document-shell">
@@ -74,7 +74,7 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v1.4</td>
+<td>v1.5</td>
 </tr>
 <tr>
 <td>更新日期</td>
@@ -101,6 +101,7 @@
 <li>蓝色播放键品牌、无框标签页图标和激活图标填充/线框反转。</li>
 <li>首页连续视频轮播、流式主标语、Skill/Hook 选择器、场景 Playbook、自定义透明下拉和 Action 生成入口。</li>
 <li>创作输入框根据 <code>scrollHeight</code> 自动增高，并在输入非空时隐藏示例灵感；Playbook 保持可用，重复点击当前项会恢复应用前草稿。</li>
+<li>模型下拉框使用统一模型元数据，展示 Pippit 8 个、Kling 7 个当前可用的视频模型及 Provider。</li>
 <li>Skills 使用单一可搜索目录，显示 <code>user_id/skill_id</code>，支持当前会话内发布 Skill。</li>
 <li>Hots 支持搜索、循环视频、作者、喜欢数、当前会话内发布，以及带 Skill 的场景复用。</li>
 <li>Assets 使用瀑布流，并通过 Video/Skill 内部分页区分类型；Video 卡片悬浮静音播放，Skill 卡片无封面并展示 private/public 和 <code>yyyy-mm-dd</code> 编辑时间。</li>
@@ -958,9 +959,14 @@ pnpm --dir apps/web build</code></pre>
 <th>说明</th>
 </tr></thead><tbody>
 <tr>
+<td>v1.5</td>
+<td>2026-11-04</td>
+<td>模型下拉框同步全部 Pippit 与 Kling 当前可用视频模型</td>
+</tr>
+<tr>
 <td>v1.4</td>
 <td>2026-11-04</td>
-<td>输入框随内容自动增高，灵感与 Playbook 仅在空态显示</td>
+<td>输入框随内容自动增高，示例灵感仅在空态显示</td>
 </tr>
 <tr>
 <td>v1.3</td>
@@ -979,6 +985,6 @@ pnpm --dir apps/web build</code></pre>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=18"></script>
+    <script src="../docs.js?v=19"></script>
   </body>
 </html>

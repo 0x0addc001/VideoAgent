@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.2 |
+| Document version | v1.3 |
 | Updated | 2026-11-04 |
 
 ## 1. Product Goal
@@ -55,6 +55,8 @@ shows the account email and a sign-out action.
 - The home view contains a prominent prompt composer.
 - The composer supports skill, hook, style, frame, duration, model, quality,
   audio, and review settings.
+- The Model selector lists every currently available video model and labels
+  each option with its Pippit or Kling provider.
 - The prompt editor grows downward as wrapped text or line count increases.
 - Idea prompts and production playbooks are visible only when the prompt is empty.
 - A user can select a Skill before starting.
@@ -222,3 +224,4 @@ Docs requirements:
 17. The prompt grows with its content and empty-state suggestions disappear
     while typing.
 18. Re-clicking the active playbook cancels selection and restores the previous draft.
+19. The Model selector exposes all currently available video models.

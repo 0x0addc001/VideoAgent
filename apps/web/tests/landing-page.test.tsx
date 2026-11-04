@@ -204,7 +204,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/product-requirements.html?v=18",
+      "/docs/product-requirements.html?v=19",
     );
     expect(container.querySelectorAll(".docs-tab-icon")).toHaveLength(6);
     expect(
@@ -221,7 +221,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/product-requirements.zh.html?v=18",
+      "/docs/product-requirements.zh.html?v=19",
     );
     expect(
       [...container.querySelectorAll(".docs-tabs button")].map((button) =>
@@ -272,6 +272,41 @@ describe("LandingPage", () => {
     );
     expect(styleTrigger).toHaveTextContent("Cinematic");
     expect(container.querySelector(".composer-select-menu")).not.toBeInTheDocument();
+  });
+
+  it("lists every available video model with its provider", () => {
+    const { container } = render(<LandingPage {...props} />);
+    const modelTrigger = container.querySelector(
+      '.composer-select-trigger[aria-label="Model"]',
+    )!;
+
+    fireEvent.click(modelTrigger);
+
+    const options = [...container.querySelectorAll(".composer-select-option")];
+    expect(options).toHaveLength(16);
+    expect(options.map((option) => option.textContent)).toEqual([
+      "Auto",
+      "Kling Video 4.0 · Kling",
+      "Kling Video 3.0 Omni · Kling",
+      "Kling Video 3.0 · Kling",
+      "Kling Video 3.0 Turbo · Kling",
+      "Kling Video O1 · Kling",
+      "Kling Video 2.6 · Kling",
+      "Kling Video 2.5 · Kling",
+      "Seedance 2.5 Draft · Pippit",
+      "Seedance 2.5 · Pippit",
+      "Seedance 2.0 Fast VIP · Pippit",
+      "Seedance 2.0 VIP · Pippit",
+      "Seedance 2.0 Mini Preview · Pippit",
+      "Seedance 2.0 Mini · Pippit",
+      "Wan 3.0 · Pippit",
+      "HappyHorse 1.1 · Pippit",
+    ]);
+
+    fireEvent.click(
+      options.find((option) => option.textContent === "Kling Video 4.0 · Kling")!,
+    );
+    expect(modelTrigger).toHaveTextContent("Kling Video 4.0 · Kling");
   });
 
   it("opens composer menus upward when there is not enough space below", () => {
@@ -554,7 +589,7 @@ describe("LandingPage", () => {
     fireEvent.click(container.querySelector(".docs-search-results button")!);
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/operations.html?v=18",
+      "/docs/operations.html?v=19",
     );
   });
 
