@@ -139,6 +139,11 @@ type Evaluation = {
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api/v1";
+const PRODUCTION_SETTINGS_MARKER = /\n+\s*Production settings:/i;
+
+function creativeBrief(brief: string) {
+  return brief.split(PRODUCTION_SETTINGS_MARKER, 1)[0]?.trim() || brief.trim();
+}
 
 export function ProjectWorkspace({ projectId }: { projectId: string }) {
   const t = useTranslations("workspace");
@@ -209,7 +214,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
         const shouldStart =
           new URLSearchParams(window.location.search).get("start") === "1" &&
           nextMessages.length === 0 &&
-          Boolean(nextProject.brief.trim());
+          Boolean(creativeBrief(nextProject.brief));
         if (shouldStart) {
           const turnResponse = await fetch(
             `${API_BASE_URL}/projects/${projectId}/messages`,
@@ -217,7 +222,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
               method: "POST",
               credentials: "include",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ content: nextProject.brief.trim() }),
+              body: JSON.stringify({ content: creativeBrief(nextProject.brief) }),
             },
           );
           if (turnResponse.ok) {
@@ -294,7 +299,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
     if (!project) return;
     setIsWorking(true);
     setActionError(null);
-    const description = project.brief || project.title;
+    const description = creativeBrief(project.brief) || project.title;
 
     try {
       const response = await fetch(`${API_BASE_URL}/projects/${project.id}/storyboard`, {
@@ -404,40 +409,83 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
     }
   }
 
+  async function submitGeneration(shot: Shot) {
+    const response = await fetch(`${API_BASE_URL}/shots/${shot.id}/generate`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+        "Idempotency-Key": crypto.randomUUID(),
+      },
+      body: JSON.stringify({ approved: true }),
+    });
+    if (!response.ok) throw new Error("generation-failed");
+    const job = (await response.json()) as GenerationJob;
+    setStoryboard((current) =>
+      current
+        ? {
+            ...current,
+            shots: current.shots.map((item) =>
+              item.id === shot.id
+                ? {
+                    ...item,
+                    status: job.status === "succeeded" ? "completed" : "generating",
+                  }
+                : item,
+            ),
+          }
+        : current,
+    );
+    if (job.status !== "succeeded") {
+      setActiveJob(job);
+    }
+    return job;
+  }
+
   async function generateShot() {
     if (!selectedShot) return;
     setIsWorking(true);
     setActionError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/shots/${selectedShot.id}/generate`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-          "Idempotency-Key": crypto.randomUUID(),
+      await submitGeneration(selectedShot);
+    } catch {
+      setGenerationErrorOpen(true);
+    } finally {
+      setIsWorking(false);
+    }
+  }
+
+  async function generateFromAgent() {
+    if (!selectedShot || selectedShot.status === "completed") return;
+    setIsWorking(true);
+    setActionError(null);
+    try {
+      const estimateResponse = await fetch(
+        `${API_BASE_URL}/shots/${selectedShot.id}/estimate`,
+        {
+          method: "POST",
+          credentials: "include",
         },
-        body: JSON.stringify({ approved: true }),
-      });
-      if (!response.ok) throw new Error("generation-failed");
-      const job = (await response.json()) as GenerationJob;
-      setStoryboard((current) =>
-        current
-          ? {
-              ...current,
-              shots: current.shots.map((shot) =>
-                shot.id === selectedShot.id
-                  ? {
-                      ...shot,
-                      status: job.status === "succeeded" ? "completed" : "generating",
-                    }
-                  : shot,
-              ),
-            }
-          : current,
       );
-      if (job.status !== "succeeded") {
-        setActiveJob(job);
+      if (!estimateResponse.ok) throw new Error("estimate-failed");
+      const nextEstimate = (await estimateResponse.json()) as CostEstimate;
+      setEstimate(nextEstimate);
+      if (!window.confirm(t("agentGenerateConfirm", { credits: nextEstimate.credits }))) {
+        return;
       }
+      await submitGeneration(selectedShot);
+      setMessages((current) => [
+        ...current,
+        {
+          id: `generation-${crypto.randomUUID()}`,
+          role: "assistant",
+          content: t("agentGenerationStarted", {
+            shot: selectedShot.description,
+          }),
+          created_at: new Date().toISOString(),
+        },
+      ]);
+      setMobilePanel("canvas");
     } catch {
       setGenerationErrorOpen(true);
     } finally {
@@ -565,8 +613,10 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
     return (
       <main className="grid min-h-screen place-items-center bg-[#11100d] text-white">
         <div className="text-center">
-          <h1 className="text-2xl font-semibold">{t("notFound")}</h1>
-          <Link className="mt-5 inline-flex items-center gap-2 text-[#5cc8ff]" href="/projects">
+          <div aria-level={1} className="text-2xl font-semibold" role="heading">
+            {t("notFound")}
+          </div>
+          <Link className="mt-5 inline-flex items-center gap-2 text-[#5cc8ff]" href="/#assets">
             <ArrowLeft className="h-4 w-4" />
             {t("back")}
           </Link>
@@ -582,7 +632,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
           <Link
             aria-label={t("back")}
             className="grid size-9 place-items-center rounded-xl border border-white/10 text-white/55 transition hover:text-white"
-            href="/projects"
+            href="/#assets"
           >
             <ArrowLeft className="h-4 w-4" />
           </Link>
@@ -590,8 +640,18 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
             <Video className="h-4 w-4" />
           </span>
           <div className="min-w-0">
-            <h1 className="truncate text-sm font-semibold">{project.title}</h1>
-            <p className="truncate text-[11px] text-white/35">{project.brief || t("planFirst")}</p>
+            <div
+              aria-level={1}
+              className="truncate text-base font-semibold"
+              role="heading"
+            >
+              {project.title}
+            </div>
+            <p className="truncate text-xs text-white/35">
+              {storyboard
+                ? t("shotCount", { count: storyboard.shots.length })
+                : t("planFirst")}
+            </p>
           </div>
         </div>
       </header>
@@ -632,6 +692,39 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
               ))
             )}
           </div>
+          {selectedShot ? (
+            <div className="border-t border-white/8 p-4">
+              <div className="rounded-2xl border border-[#1677ff]/20 bg-[#1677ff]/[0.055] p-3">
+                <p className="text-[11px] uppercase tracking-[0.14em] text-[#8fdcff]">
+                  {t("currentShot")}
+                </p>
+                <p className="mt-1 line-clamp-1 text-sm text-white/70">
+                  {selectedShot.description}
+                </p>
+                <div className="mt-3 flex items-center gap-2">
+                  <button
+                    className="rounded-lg border border-white/10 px-3 py-2 text-xs text-white/55 hover:text-white"
+                    onClick={() => setMobilePanel("inspector")}
+                    type="button"
+                  >
+                    {t("agentAdjust")}
+                  </button>
+                  <button
+                    className="flex-1 rounded-lg bg-[#1677ff] px-3 py-2 text-xs font-semibold text-white disabled:opacity-40"
+                    disabled={isWorking || selectedShot.status === "completed"}
+                    onClick={() => void generateFromAgent()}
+                    type="button"
+                  >
+                    {selectedShot.status === "completed"
+                      ? t("completed")
+                      : isWorking
+                        ? t("generating")
+                        : t("agentGenerate")}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : null}
           <div className="border-t border-white/8 p-4">
             <label className="block rounded-2xl border border-white/10 bg-white/[0.035] p-3 focus-within:border-[#1677ff]/40">
               <span className="sr-only">{t("agent")}</span>

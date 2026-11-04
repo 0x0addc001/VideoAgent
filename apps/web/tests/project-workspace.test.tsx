@@ -148,11 +148,35 @@ describe("ProjectWorkspace", () => {
           }),
         );
       }
+      if (url.endsWith("/shots/shot-1/estimate") && init?.method === "POST") {
+        return Promise.resolve(
+          Response.json({
+            provider: "mock",
+            credits: 5,
+            duration_seconds: 5,
+          }),
+        );
+      }
+      if (url.endsWith("/shots/shot-1/generate") && init?.method === "POST") {
+        return Promise.resolve(
+          Response.json({
+            id: "job-1",
+            project_id: "project-1",
+            shot_id: "shot-1",
+            provider: "mock",
+            provider_task_id: "mock-task-1",
+            status: "succeeded",
+            result_url: null,
+            error_code: null,
+            created_at: "2026-11-03T00:00:02Z",
+          }),
+        );
+      }
       throw new Error(`Unexpected request: ${init?.method ?? "GET"} ${url}`);
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    render(
+    const { container } = render(
       <NextIntlClientProvider locale="en" messages={en}>
         <ProjectWorkspace projectId="project-1" />
       </NextIntlClientProvider>,
@@ -173,6 +197,21 @@ describe("ProjectWorkspace", () => {
       await screen.findByLabelText("I shaped this into a first treatment."),
     ).toBeVisible();
     expect(screen.getAllByText("A quiet Copenhagen morning")).not.toHaveLength(0);
+    expect(container.querySelector("h1")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Assets" })).toHaveAttribute(
+      "href",
+      "/#assets",
+    );
+
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    fireEvent.click(
+      screen.getByRole("button", { name: "Generate current video" }),
+    );
+    expect(
+      await screen.findAllByText(
+        "Generation started for: A quiet Copenhagen morning",
+      ),
+    ).not.toHaveLength(0);
 
     fireEvent.click(screen.getByRole("button", { name: "Move shot later" }));
     await waitFor(() =>
