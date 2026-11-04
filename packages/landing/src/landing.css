@@ -3106,6 +3106,7 @@ html[lang="zh-CN"] .hero-copy h1 {
   display: block;
   min-height: calc(100svh - 92px);
   overflow: visible;
+  background: var(--background);
   padding: 76px 0 80px;
 }
 
@@ -3119,7 +3120,7 @@ html[lang="zh-CN"] .hero-copy h1 {
   top: 0;
   left: 50%;
   width: 100vw;
-  height: 760px;
+  height: 100%;
   overflow: hidden;
   pointer-events: none;
   transform: translateX(-50%);

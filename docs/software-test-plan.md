@@ -102,7 +102,7 @@ Pippit 测试使用本地 Fake CLI，覆盖状态、积分、提交、查询、�
 - 再次点击当前 Playbook 会恢复应用前状态。
 - Hots 场景卡片进入 Agents 时选中对应 Skill 和提示词。
 - 输入框随多行内容增高，输入非空时隐藏示例灵感。
-- Model 目录包含全部 Kling 与 Pippit 视频模型。
+- Model 目录包含全部 Kling 与 Pippit 视频模型，并显示为 `服务商/模型`。
 - Docs 标签为 `PRD`、`Design`、`Interface`、`Impl`、`Test`、`Ops`、`FAQ`、`TODO`。
 - Globe 控件切换 Docs 语言。
 - Skills、Hots、Assets、Docs 搜索框保持固定。

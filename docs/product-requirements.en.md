@@ -55,8 +55,8 @@ shows the account email and a sign-out action.
 - The home view contains a prominent prompt composer.
 - The composer supports skill, hook, style, frame, duration, model, quality,
   audio, and review settings.
-- The Model selector lists every currently available video model and labels
-  each option with its Pippit or Kling provider.
+- The Model selector lists every currently available video model as
+  `Provider/Model`.
 - The prompt editor grows downward as wrapped text or line count increases.
 - Idea prompts are visible only when the prompt is empty; production playbooks
   remain available for switching.

@@ -107,7 +107,8 @@ Component tests cover:
 - Hots scenario cards open Agents with the corresponding Skill and prompt.
 - The textarea grows with multiline content, and idea suggestions disappear
   while the prompt contains non-whitespace text.
-- The Model selector includes every available Kling and Pippit video model.
+- The Model selector includes every available Kling and Pippit video model in
+  `Provider/Model` format.
 - Docs labels are `PRD`, `Design`, `Interface`, `Impl`, `Test`, `Ops`, `FAQ`,
   and `TODO`.
 - Globe control changes Docs source and language.

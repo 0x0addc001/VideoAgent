@@ -103,7 +103,7 @@ const HERO_LINE_TWO: HeroPart[] = [
   { text: "Director", accent: true },
 ];
 
-const DOCS_ASSET_VERSION = "21";
+const DOCS_ASSET_VERSION = "22";
 
 function heroPartsLength(parts: readonly HeroPart[]) {
   return parts.reduce((total, part) => total + Array.from(part.text).length, 0);
@@ -1247,7 +1247,7 @@ export function LandingPage({
                   ...content.composer.models
                     .filter((option) => option.id !== "auto")
                     .map((option) => ({
-                      label: `${option.label} · ${option.provider}`,
+                      label: `${option.provider}/${option.label}`,
                       value: option.id,
                     })),
                 ]}

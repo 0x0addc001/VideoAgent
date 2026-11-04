@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Design" />
     <title>Design · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=21" />
+    <link rel="stylesheet" href="../docs.css?v=22" />
   </head>
   <body data-document="software-design.html">
     <main class="document-shell" id="document-shell">
@@ -70,7 +70,7 @@
 </tr>
 <tr>
 <td>Model</td>
-<td>Seedance 2.5 Draft (Pippit), Seedance 2.5 (Pippit), Seedance 2.0 Fast VIP (Pippit), Seedance 2.0 VIP (Pippit), Seedance 2.0 Mini Preview (Pippit), Seedance 2.0 Mini (Pippit), Wan 3.0 (Pippit), HappyHorse 1.1 (Pippit), Kling Video 2.5 (Kling), Kling Video 2.6 (Kling), Kling Video O1 (Kling), Kling Video 3.0 (Kling), Kling Video 3.0 Omni (Kling), Kling Video 3.0 Turbo (Kling), Kling Video 4.0 (Kling), Kling 2.6 Motion Control (Kling), Kling 3.0 Motion Control (Kling), Kling Image 3.0 Omni (Kling), Kling Image O1 (Kling), Kling Image 3.0 (Kling), Kling Image 2.1 (Kling)</td>
+<td>Pippit/Seedance 2.5 Draft, Pippit/Seedance 2.5, Pippit/Seedance 2.0 Fast VIP, Pippit/Seedance 2.0 VIP, Pippit/Seedance 2.0 Mini Preview, Pippit/Seedance 2.0 Mini, Pippit/Wan 3.0, Pippit/HappyHorse 1.1, Kling/Kling Video 2.5, Kling/Kling Video 2.6, Kling/Kling Video O1, Kling/Kling Video 3.0, Kling/Kling Video 3.0 Omni, Kling/Kling Video 3.0 Turbo, Kling/Kling Video 4.0, Kling/Kling 2.6 Motion Control, Kling/Kling 3.0 Motion Control, Kling/Kling Image 3.0 Omni, Kling/Kling Image O1, Kling/Kling Image 3.0, Kling/Kling Image 2.1</td>
 </tr>
 </tbody></table></div>
 <p>VideoAgent integrates Pippit CLI and Kling MCP behind one provider boundary. Pippit provides video submission, task queries, and credits. Kling MCP provides text-to-video, image-to-video, motion control, and multimodal reference tools.</p>
@@ -317,7 +317,7 @@ query-result</code></pre>
 </tbody></table></div>
 <p>Review uses the same task-oriented card structure as other Skills.</p>
 <p>Selecting a skill preloads a concrete prompt in the Agents composer. The Agents composer also includes a Skill selector. Signed-in users can publish a skill under their own <code>&lt;user_id&gt;/&lt;skill_id&gt;</code> namespace.</p>
-<p>The Model selector uses the verified live catalogue: seven Kling video models and eight Pippit video models, plus Auto. Provider names are part of every option label so users can distinguish model families.</p>
+<p>The Model selector uses the verified live catalogue: seven Kling video models and eight Pippit video models, plus Auto. Options use <code>Provider/Model</code> naming so users can distinguish model families.</p>
 <p>The Agents composer includes production playbooks for product ads, creator vlogs, micro drama, music videos, localization, and batch variants. Selecting a playbook sets the prompt, Skill, Hook, style, frame, duration, and review mode as one coherent starting point. Playbooks use toggle behavior: selecting the active playbook again restores the pre-playbook draft. Hook controls the first-three-second strategy: visual impact, narrative twist, spoken hook, sound cue, or proof first.</p>
 <h2 id="10-data-model">10. Data Model</h2>
 <div class="table-wrap"><table><thead><tr>
@@ -463,6 +463,6 @@ Celery + Redis</code></pre>
 <p>suggestions hide as soon as non-whitespace input exists.</p>
 </ol></article>
     </main>
-    <script src="../docs.js?v=21"></script>
+    <script src="../docs.js?v=22"></script>
   </body>
 </html>

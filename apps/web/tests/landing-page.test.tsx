@@ -204,7 +204,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/product-requirements.html?v=21",
+      "/docs/product-requirements.html?v=22",
     );
     expect(container.querySelectorAll(".docs-tab-icon")).toHaveLength(8);
     expect(
@@ -219,7 +219,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/faq.html?v=21",
+      "/docs/faq.html?v=22",
     );
 
     fireEvent.click(container.querySelector(".language-button")!);
@@ -230,7 +230,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/faq.zh.html?v=21",
+      "/docs/faq.zh.html?v=22",
     );
     expect(
       [...container.querySelectorAll(".docs-tabs button")].map((button) =>
@@ -295,27 +295,27 @@ describe("LandingPage", () => {
     expect(options).toHaveLength(16);
     expect(options.map((option) => option.textContent)).toEqual([
       "Auto",
-      "Kling Video 4.0 · Kling",
-      "Kling Video 3.0 Omni · Kling",
-      "Kling Video 3.0 · Kling",
-      "Kling Video 3.0 Turbo · Kling",
-      "Kling Video O1 · Kling",
-      "Kling Video 2.6 · Kling",
-      "Kling Video 2.5 · Kling",
-      "Seedance 2.5 Draft · Pippit",
-      "Seedance 2.5 · Pippit",
-      "Seedance 2.0 Fast VIP · Pippit",
-      "Seedance 2.0 VIP · Pippit",
-      "Seedance 2.0 Mini Preview · Pippit",
-      "Seedance 2.0 Mini · Pippit",
-      "Wan 3.0 · Pippit",
-      "HappyHorse 1.1 · Pippit",
+      "Kling/Kling Video 4.0",
+      "Kling/Kling Video 3.0 Omni",
+      "Kling/Kling Video 3.0",
+      "Kling/Kling Video 3.0 Turbo",
+      "Kling/Kling Video O1",
+      "Kling/Kling Video 2.6",
+      "Kling/Kling Video 2.5",
+      "Pippit/Seedance 2.5 Draft",
+      "Pippit/Seedance 2.5",
+      "Pippit/Seedance 2.0 Fast VIP",
+      "Pippit/Seedance 2.0 VIP",
+      "Pippit/Seedance 2.0 Mini Preview",
+      "Pippit/Seedance 2.0 Mini",
+      "Pippit/Wan 3.0",
+      "Pippit/HappyHorse 1.1",
     ]);
 
     fireEvent.click(
-      options.find((option) => option.textContent === "Kling Video 4.0 · Kling")!,
+      options.find((option) => option.textContent === "Kling/Kling Video 4.0")!,
     );
-    expect(modelTrigger).toHaveTextContent("Kling Video 4.0 · Kling");
+    expect(modelTrigger).toHaveTextContent("Kling/Kling Video 4.0");
   });
 
   it("opens composer menus upward when there is not enough space below", () => {
@@ -598,7 +598,7 @@ describe("LandingPage", () => {
     fireEvent.click(container.querySelector(".docs-search-results button")!);
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/operations.html?v=21",
+      "/docs/operations.html?v=22",
     );
   });
 

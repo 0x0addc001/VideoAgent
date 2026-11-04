@@ -6,7 +6,7 @@
 | 更新日期 | 2026-11-04 |
 | 后端技术 | Python + FastAPI |
 | 前端技术 | Next.js + TypeScript |
-| 模型 | Seedance 2.5 Draft（Pippit）、Seedance 2.5（Pippit）、Seedance 2.0 Fast VIP（Pippit）、Seedance 2.0 VIP（Pippit）、Seedance 2.0 Mini 体验版（Pippit）、Seedance 2.0 Mini（Pippit）、Wan 3.0（Pippit）、HappyHorse 1.1（Pippit）、Kling Video 2.5（Kling）、Kling Video 2.6（Kling）、Kling Video O1（Kling）、Kling Video 3.0（Kling）、Kling Video 3.0 Omni（Kling）、Kling Video 3.0 Turbo（Kling）、Kling Video 4.0（Kling）、Kling 2.6 Motion Control（Kling）、Kling 3.0 Motion Control（Kling）、Kling Image 3.0 Omni（Kling）、Kling Image O1（Kling）、Kling Image 3.0（Kling）、Kling Image 2.1（Kling） |
+| 模型 | Pippit/Seedance 2.5 Draft、Pippit/Seedance 2.5、Pippit/Seedance 2.0 Fast VIP、Pippit/Seedance 2.0 VIP、Pippit/Seedance 2.0 Mini 体验版、Pippit/Seedance 2.0 Mini、Pippit/Wan 3.0、Pippit/HappyHorse 1.1、Kling/Kling Video 2.5、Kling/Kling Video 2.6、Kling/Kling Video O1、Kling/Kling Video 3.0、Kling/Kling Video 3.0 Omni、Kling/Kling Video 3.0 Turbo、Kling/Kling Video 4.0、Kling/Kling 2.6 Motion Control、Kling/Kling 3.0 Motion Control、Kling/Kling Image 3.0 Omni、Kling/Kling Image O1、Kling/Kling Image 3.0、Kling/Kling Image 2.1 |
 
 VideoAgent 通过统一 Provider 边界集成 Pippit CLI 与 Kling MCP。Pippit 提供视频提交、任务查询和积分能力，Kling MCP 提供文本生成视频、图生视频、动作控制和多模态参考能力。
 
@@ -34,7 +34,7 @@ VideoAgent 是一个面向内容创作者、营销人员和普通用户的 AI �
 
 - 首页采用左侧导航、连续视频背景、居中创作框、场景 Playbook、Hook 控制和自定义透明下拉控件。
 - 创作输入框随内容行数自动向下增高；示例灵感仅在输入为空时显示，Playbook 保持可切换。
-- 模型选择器使用实时核验目录：Kling 7 个视频模型、Pippit 8 个视频模型，另有 Auto。
+- 模型选择器使用实时核验目录：Kling 7 个视频模型、Pippit 8 个视频模型，另有 Auto；选项统一使用 `服务商/模型` 格式。
 - 搜索、语言、通知、积分和头像使用半透明表面，相关菜单向下展开；创作框选项菜单根据视口空间自动向上或向下展开并限制高度；头像支持登录、注册和退出。
 - Hots 展示作者与喜欢数，并支持发布。
 - 支持项目创建、编辑、恢复和删除。

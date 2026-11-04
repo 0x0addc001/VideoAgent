@@ -6,7 +6,7 @@
 | Updated | 2026-11-04 |
 | Backend | Python + FastAPI |
 | Frontend | Next.js + TypeScript |
-| Model | Seedance 2.5 Draft (Pippit), Seedance 2.5 (Pippit), Seedance 2.0 Fast VIP (Pippit), Seedance 2.0 VIP (Pippit), Seedance 2.0 Mini Preview (Pippit), Seedance 2.0 Mini (Pippit), Wan 3.0 (Pippit), HappyHorse 1.1 (Pippit), Kling Video 2.5 (Kling), Kling Video 2.6 (Kling), Kling Video O1 (Kling), Kling Video 3.0 (Kling), Kling Video 3.0 Omni (Kling), Kling Video 3.0 Turbo (Kling), Kling Video 4.0 (Kling), Kling 2.6 Motion Control (Kling), Kling 3.0 Motion Control (Kling), Kling Image 3.0 Omni (Kling), Kling Image O1 (Kling), Kling Image 3.0 (Kling), Kling Image 2.1 (Kling) |
+| Model | Pippit/Seedance 2.5 Draft, Pippit/Seedance 2.5, Pippit/Seedance 2.0 Fast VIP, Pippit/Seedance 2.0 VIP, Pippit/Seedance 2.0 Mini Preview, Pippit/Seedance 2.0 Mini, Pippit/Wan 3.0, Pippit/HappyHorse 1.1, Kling/Kling Video 2.5, Kling/Kling Video 2.6, Kling/Kling Video O1, Kling/Kling Video 3.0, Kling/Kling Video 3.0 Omni, Kling/Kling Video 3.0 Turbo, Kling/Kling Video 4.0, Kling/Kling 2.6 Motion Control, Kling/Kling 3.0 Motion Control, Kling/Kling Image 3.0 Omni, Kling/Kling Image O1, Kling/Kling Image 3.0, Kling/Kling Image 2.1 |
 
 VideoAgent integrates Pippit CLI and Kling MCP behind one provider boundary.
 Pippit provides video submission, task queries, and credits. Kling MCP provides
@@ -208,8 +208,8 @@ Agents composer also includes a Skill selector. Signed-in users can publish a
 skill under their own `<user_id>/<skill_id>` namespace.
 
 The Model selector uses the verified live catalogue: seven Kling video models
-and eight Pippit video models, plus Auto. Provider names are part of every
-option label so users can distinguish model families.
+and eight Pippit video models, plus Auto. Options use `Provider/Model` naming
+so users can distinguish model families.
 
 The Agents composer includes production playbooks for product ads, creator
 vlogs, micro drama, music videos, localization, and batch variants. Selecting a
