@@ -14,6 +14,7 @@ from videoagent.config import Settings
 from videoagent.errors import AppError
 from videoagent.models import GenerationJob, Project, User
 from videoagent.providers.base import VideoProvider
+from videoagent.providers.kling_cli import KlingCLIError, KlingCLIVideoProvider
 from videoagent.providers.pippit import PippitCLIError, PippitVideoProvider
 from videoagent.schemas import (
     AdminAuditList,
@@ -312,6 +313,7 @@ async def audit_logs(
 async def provider_status(
     user: Annotated[User, Depends(get_admin_user)],
     provider: Annotated[VideoProvider, Depends(get_video_provider)],
+    settings: Annotated[Settings, Depends(get_settings)],
 ) -> dict[str, object]:
     del user
     if isinstance(provider, PippitVideoProvider):
@@ -326,6 +328,24 @@ async def provider_status(
                 "provider": provider.name,
                 "connected": False,
                 "error": "Provider status is unavailable in this runtime.",
+            }
+    if isinstance(provider, KlingCLIVideoProvider):
+        try:
+            status = await provider.account_status()
+            actual_user_id = str(status.get("userId") or "")
+            expected_user_id = settings.kling_expected_user_id
+            return {
+                "provider": provider.name,
+                "connected": bool(actual_user_id)
+                and (not expected_user_id or actual_user_id == expected_user_id),
+                "userId": actual_user_id or None,
+                "expectedUserId": expected_user_id,
+            }
+        except (KlingCLIError, NotImplementedError):
+            return {
+                "provider": provider.name,
+                "connected": False,
+                "error": "Kling CLI status is unavailable.",
             }
     return {
         "provider": provider.name,

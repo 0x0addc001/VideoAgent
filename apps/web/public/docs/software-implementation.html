@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Dev" />
     <title>Dev · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=28" />
+    <link rel="stylesheet" href="../docs.css?v=29" />
   </head>
   <body data-document="software-implementation.html">
     <main class="document-shell" id="document-shell">
@@ -53,7 +53,7 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v1.9</td>
+<td>v2.0</td>
 </tr>
 <tr>
 <td>Updated</td>
@@ -95,7 +95,7 @@
 <li>LangGraph single-node storyboard planning.</li>
 <li>OpenAI-compatible and deterministic local planners.</li>
 <li>Cost estimate and explicit generation approval.</li>
-<li>Pippit CLI, Kling MCP, and Mock Provider adapters.</li>
+<li>Pippit CLI, China-region Kling CLI, and Mock Provider adapters.</li>
 <li>Celery polling with Redis.</li>
 <li>Per-user credit reservations and idempotent refunds.</li>
 <li>Image, video, and audio uploads with MIME, signature, and size validation.</li>
@@ -126,7 +126,7 @@
 ├── services/api/src/videoagent/
 │   ├── agent/                      # graph and planner
 │   ├── api/                        # FastAPI routes
-│   ├── providers/                  # Pippit, Kling MCP, Mock
+│   ├── providers/                  # Pippit, Kling China CLI, Mock
 │   ├── services/                   # storyboard, jobs, evaluation
 │   └── workers/
 ├── docs/                           # paired Markdown sources
@@ -141,7 +141,7 @@ FastAPI
   ├── SQLite by default
   ├── LangGraph
   ├── Pippit CLI
-  └── Kling MCP
+  └── Kling China CLI
 
 Celery Worker
   ├── Redis broker
@@ -260,6 +260,10 @@ status
 <tr>
 <td><code>providers.kling</code></td>
 <td>Kling MCP tool adapter and task mapping</td>
+</tr>
+<tr>
+<td><code>providers.kling_cli</code></td>
+<td>China-region Kling CLI submission, status, identity, and credits</td>
 </tr>
 <tr>
 <td><code>providers.mock</code></td>
@@ -591,8 +595,8 @@ pnpm --dir apps/web typecheck
 pnpm --dir apps/web build
 pnpm test:e2e
 python scripts\build_pages.py</code></pre>
-<p>Backend coverage currently consists of 47 tests, frontend coverage consists of 25 Vitest tests, and Playwright contains three no-fee browser flows. Playwright uses the Mock Provider for generation and therefore never consumes real Provider credits.</p></article>
+<p>Backend coverage currently consists of 51 tests, frontend coverage consists of 25 Vitest tests, and Playwright contains three no-fee browser flows. Playwright uses the Mock Provider for generation and therefore never consumes real Provider credits.</p></article>
     </main>
-    <script src="../docs.js?v=28"></script>
+    <script src="../docs.js?v=29"></script>
   </body>
 </html>

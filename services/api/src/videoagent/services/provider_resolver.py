@@ -5,6 +5,7 @@ from videoagent.errors import AppError
 from videoagent.models import User
 from videoagent.providers.base import VideoProvider
 from videoagent.providers.kling import KlingVideoProvider
+from videoagent.providers.kling_cli import KlingCLIVideoProvider
 from videoagent.providers.mcp_client import StreamableHTTPToolClient
 from videoagent.providers.mock import MockVideoProvider
 from videoagent.providers.oauth import KlingOAuthGateway
@@ -23,6 +24,12 @@ async def resolve_video_provider(
     mode = settings.video_provider.lower()
     if mode == "mock":
         return MockVideoProvider()
+
+    if settings.kling_backend.lower() == "cli":
+        return KlingCLIVideoProvider(
+            command=settings.kling_cli_command,
+            timeout_seconds=settings.kling_cli_timeout_seconds,
+        )
 
     token = await resolve_kling_access_token(
         session,

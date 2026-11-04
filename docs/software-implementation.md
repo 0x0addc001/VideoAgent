@@ -2,7 +2,7 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v1.9 |
+| 文档版本 | v2.0 |
 | 更新日期 | 2026-11-04 |
 | 后端框架 | Python + FastAPI |
 | 前端框架 | Next.js + TypeScript |
@@ -43,7 +43,7 @@
 - 管理操作审计日志。
 - Mock Provider。
 - Pippit CLI 视频提交、任务查询和余额读取。
-- Kling MCP 文本生成视频、图生视频、动作控制和多模态参考。
+- Kling 国内版 CLI 文本生成视频、任务查询、动作控制和多模态参考。
 - 任务状态 API 刷新。
 - Celery 后台轮询。
 - 故事板即时评估与前端审核弹窗。
@@ -71,7 +71,7 @@ VideoAgent/
 │   ├── src/videoagent/
 │   │   ├── agent/                  # LangGraph 和 Planner
 │   │   ├── api/                    # FastAPI 路由与依赖
-│   │   ├── providers/              # Mock、Pippit CLI、Kling MCP
+│   │   ├── providers/              # Mock、Pippit CLI、Kling 国内版 CLI
 │   │   ├── services/               # 业务服务
 │   │   ├── workers/                # Celery 配置和任务
 │   │   ├── config.py
@@ -102,7 +102,7 @@ Browser
         ├── PostgreSQL
         ├── LangGraph
         ├── Pippit CLI
-        └── Kling MCP
+        └── Kling 国内版 CLI
 
 Celery Worker
   ├── Redis Broker
@@ -241,7 +241,8 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 | `services/invites.py` | 邀请码创建、消费与撤销 |
 | `services/platform_settings.py` | 生成开关与注册模式 |
 | `providers/pippit.py` | Pippit CLI 子进程、JSON 契约和任务映射 |
-| `providers/kling.py` | Kling MCP 工具适配和任务映射 |
+| `providers/kling_cli.py` | Kling 国内版 CLI 提交、状态、身份和积分映射 |
+| `providers/kling.py` | 兼容的 Kling MCP 工具适配 |
 | `agent/graph.py` | LangGraph 编译和执行 |
 | `agent/planner.py` | 本地和远程故事板规划器 |
 | `workers/celery_app.py` | Celery 配置 |
@@ -555,6 +556,9 @@ docker compose -f deploy/docker-compose.yml up -d
 | `VIDEOAGENT_ADMIN_EMAILS` | `[]` | 管理员邮箱 JSON 列表 |
 | `VIDEOAGENT_REGISTRATION_MODE` | `open` | `open/invite/closed` 默认策略 |
 | `VIDEOAGENT_GENERATION_ENABLED` | `true` | 生成功能初始状态 |
+| `VIDEOAGENT_KLING_BACKEND` | `cli` | Kling 使用 `cli`，兼容模式可设 `mcp` |
+| `VIDEOAGENT_KLING_CLI_COMMAND` | `kling` | 国内版 CLI 命令 |
+| `VIDEOAGENT_KLING_EXPECTED_USER_ID` | 空 | 期望登录的国内站账号 ID |
 | `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:8000/api/v1` | 浏览器 API 地址 |
 
 `VIDEOAGENT_PIPPIT_ACCESS_KEY` 只适用于服务端或 CI。本地和生产主机优先使用
@@ -582,7 +586,7 @@ pnpm --dir apps/web build
 
 测试组成：
 
-- 后端 47 个测试。
+- 后端 51 个测试。
 - 前端 25 个测试。
 - Playwright 3 个端到端测试。
 - 后端测试使用临时 SQLite 文件。

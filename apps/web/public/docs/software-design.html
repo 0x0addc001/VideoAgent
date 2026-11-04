@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Arch" />
     <title>Arch · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=28" />
+    <link rel="stylesheet" href="../docs.css?v=29" />
   </head>
   <body data-document="software-design.html">
     <main class="document-shell" id="document-shell">
@@ -36,7 +36,7 @@
 <a class="toc-link toc-level-2" href="#7-agent-design">7. Agent Design</a>
 <a class="toc-link toc-level-2" href="#8-generation-and-provider-boundary">8. Generation and Provider Boundary</a>
 <a class="toc-link toc-level-3" href="#8-1-pippit-cli">8.1 Pippit CLI</a>
-<a class="toc-link toc-level-3" href="#8-2-kling-mcp">8.2 Kling MCP</a>
+<a class="toc-link toc-level-3" href="#8-2-kling-china-cli">8.2 Kling China CLI</a>
 <a class="toc-link toc-level-2" href="#9-skills-catalogue">9. Skills Catalogue</a>
 <a class="toc-link toc-level-2" href="#10-data-model">10. Data Model</a>
 <a class="toc-link toc-level-2" href="#11-api-surface">11. API Surface</a>
@@ -54,7 +54,7 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v1.9</td>
+<td>v2.0</td>
 </tr>
 <tr>
 <td>Updated</td>
@@ -73,7 +73,7 @@
 <td>Pippit/Seedance 2.5 Draft, Pippit/Seedance 2.5, Pippit/Seedance 2.0 Fast VIP, Pippit/Seedance 2.0 VIP, Pippit/Seedance 2.0 Mini Preview, Pippit/Seedance 2.0 Mini, Pippit/Wan 3.0, Pippit/HappyHorse 1.1, Kling/Kling Video 2.5, Kling/Kling Video 2.6, Kling/Kling Video O1, Kling/Kling Video 3.0, Kling/Kling Video 3.0 Omni, Kling/Kling Video 3.0 Turbo, Kling/Kling Video 4.0, Kling/Kling 2.6 Motion Control, Kling/Kling 3.0 Motion Control, Kling/Kling Image 3.0 Omni, Kling/Kling Image O1, Kling/Kling Image 3.0, Kling/Kling Image 2.1</td>
 </tr>
 </tbody></table></div>
-<p>VideoAgent integrates Pippit CLI and Kling MCP behind one provider boundary. Pippit provides video submission, task queries, and credits. Kling MCP provides text-to-video, image-to-video, motion control, and multimodal reference tools.</p>
+<p>VideoAgent integrates Pippit CLI and the China-region Kling CLI behind one provider boundary. Pippit provides video submission, task queries, and credits. Kling CLI provides text-to-video, image-to-video, motion control, and multimodal reference tools.</p>
 <h2 id="1-purpose">1. Purpose</h2>
 <p>This document describes VideoAgent's product architecture, core modules, directing workflow, data model, API contracts, provider integrations, security, testing, and deployment.</p>
 <h2 id="2-product-overview">2. Product Overview</h2>
@@ -99,7 +99,7 @@
 <li>Storyboard replacement and versioning.</li>
 <li>Cost estimation and explicit generation approval.</li>
 <li>Pippit CLI text-to-video submission, task polling, and credit query.</li>
-<li>Kling MCP text-to-video, image-to-video, motion control, and multimodal</li>
+<li>Kling China-region CLI text-to-video, motion control, and multimodal</li>
 <p>reference capabilities.</p>
 <li>Mock Provider and Celery polling.</li>
 <li>Instant storyboard review for consistency, coverage, clarity, and pacing.</li>
@@ -138,7 +138,7 @@ Next.js Route Handler /api/account/*
       ├── LangGraph
       ├── FFmpeg
       ├── Pippit CLI
-      └── Kling MCP
+      └── Kling China CLI
 
 Celery Worker + Redis
   → Pippit / Kling task status</code></pre>
@@ -181,7 +181,7 @@ Celery Worker + Redis
 </tr>
 <tr>
 <td>Video providers</td>
-<td>Pippit CLI, Kling MCP, Mock Provider</td>
+<td>Pippit CLI, Kling China CLI, Mock Provider</td>
 </tr>
 <tr>
 <td>Media</td>
@@ -230,8 +230,8 @@ get-credit-balance
 generate-video
 query-result</code></pre>
 <p>The server owns CLI authorization. Provider billing uses the configured server account, while each product user consumes an independent VideoAgent credit balance through <code>/credits</code>. Access keys and CLI session files never reach the browser.</p>
-<h3 id="8-2-kling-mcp">8.2 Kling MCP</h3>
-<p>Kling MCP exposes text-to-video, image-to-video, first/last-frame, motion control, and Omni-Ref tools. OAuth is managed by the connector. The provider adapter maps task state, errors, and result URLs into the shared <code>VideoProvider</code> contract so the project workflow does not depend on protocol or vendor details.</p>
+<h3 id="8-2-kling-china-cli">8.2 Kling China CLI</h3>
+<p>Kling uses the server-owned <code>@klingai/cli-cn</code> package and its China-region endpoints. The CLI owns OAuth, MCP transport, and tool validation. The provider adapter maps <code>generationId</code>, task state, errors, and result URLs into the shared <code>VideoProvider</code> contract. <code>VIDEOAGENT_KLING_EXPECTED_USER_ID</code> verifies the authorized account.</p>
 <h2 id="9-skills-catalogue">9. Skills Catalogue</h2>
 <p>Skills use one flat, searchable catalogue. Every card shows its <code>user_id/skill_id</code> identifier at the upper left. Provider-native capabilities use the provider namespace, such as <code>kling</code>; cross-provider workflows and product-level Skills use <code>video_agent</code>.</p>
 <div class="table-wrap"><table><thead><tr>
@@ -514,7 +514,7 @@ query-result</code></pre>
 <pre><code class="language-text">Next.js :3000
 FastAPI :8000
 SQLite
-Pippit CLI or Kling MCP
+Pippit CLI or Kling China CLI
 Celery + Redis</code></pre>
 <h2 id="16-acceptance-baseline">16. Acceptance Baseline</h2>
 <ol>
@@ -540,6 +540,6 @@ Celery + Redis</code></pre>
 <p>with every mutation recorded in the audit log.</p>
 </ol></article>
     </main>
-    <script src="../docs.js?v=28"></script>
+    <script src="../docs.js?v=29"></script>
   </body>
 </html>

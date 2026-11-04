@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Test" />
     <title>Test · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=28" />
+    <link rel="stylesheet" href="../docs.css?v=29" />
   </head>
   <body data-document="software-test-plan.zh.html">
     <main class="document-shell" id="document-shell">
@@ -48,7 +48,7 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v2.3</td>
+<td>v2.4</td>
 </tr>
 <tr>
 <td>更新日期</td>
@@ -95,6 +95,7 @@
 <li>用户停用、Session 撤销和积分调整。</li>
 <li>邀请码创建、消费、撤销和注册模式。</li>
 <li>生成 kill switch、任务退款和审计日志。</li>
+<li>国内版 Kling CLI 的提交参数、状态映射、账号身份和积分读取。</li>
 </ul>
 <p>前端：</p>
 <ul>
@@ -122,6 +123,7 @@
 <li>相同幂等键不会重复提交。</li>
 </ul>
 <p>Pippit 测试使用本地 Fake CLI，覆盖状态、积分、提交、查询、超时、缺失二进制、 无效 JSON 和缺失任务 ID。Kling 测试使用 Fake MCP Client，覆盖文生视频、 图生视频、动作控制、任务状态映射和结果提取。</p>
+<p>Kling 国内版另使用依赖注入测试覆盖 <code>text_to_video</code>、<code>query_tasks</code>、 <code>who_am_i</code> 和 <code>account</code>，测试不实际提交生成任务。</p>
 <h2 id="6-api-测试">6. API 测试</h2>
 <p>必须验证：</p>
 <ul>
@@ -194,7 +196,7 @@ Playwright + Mock Provider E2E
 <li>执行 <code>status</code> 与 <code>get-credit-balance</code>。</li>
 <li>查询 <code>/providers/pippit</code> 和 <code>/providers/pippit/credits</code>。</li>
 <li>验证日志不包含 Access Key。</li>
-<li>使用 Kling MCP <code>who_am_i</code> 验证授权与模型发现。</li>
+<li>使用 Kling 国内版 CLI <code>who_am_i</code> 验证授权、账号区域和模型发现。</li>
 </ol>
 <h3 id="获准的付费生成">获准的付费生成</h3>
 <p>仅在用户明确批准预算时：</p>
@@ -216,6 +218,6 @@ Playwright + Mock Provider E2E
 <li>付费 Provider 测试保持人工开启。</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=28"></script>
+    <script src="../docs.js?v=29"></script>
   </body>
 </html>

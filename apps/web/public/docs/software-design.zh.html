@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Arch" />
     <title>Arch · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=28" />
+    <link rel="stylesheet" href="../docs.css?v=29" />
   </head>
   <body data-document="software-design.zh.html">
     <main class="document-shell" id="document-shell">
@@ -45,7 +45,7 @@
 <a class="toc-link toc-level-3" href="#11-1-pippit-cli">11.1 Pippit CLI</a>
 <a class="toc-link toc-level-3" href="#11-2-provider-接口">11.2 Provider 接口</a>
 <a class="toc-link toc-level-3" href="#11-3-pippit-能力">11.3 Pippit 能力</a>
-<a class="toc-link toc-level-3" href="#11-4-kling-mcp">11.4 Kling MCP</a>
+<a class="toc-link toc-level-3" href="#11-4-kling-国内版-cli">11.4 Kling 国内版 CLI</a>
 <a class="toc-link toc-level-3" href="#11-5-凭据与进程安全">11.5 凭据与进程安全</a>
 <a class="toc-link toc-level-2" href="#12-数据模型">12. 数据模型</a>
 <a class="toc-link toc-level-2" href="#13-核心状态定义">13. 核心状态定义</a>
@@ -77,7 +77,7 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v1.9</td>
+<td>v2.0</td>
 </tr>
 <tr>
 <td>更新日期</td>
@@ -96,9 +96,9 @@
 <td>Pippit/Seedance 2.5 Draft、Pippit/Seedance 2.5、Pippit/Seedance 2.0 Fast VIP、Pippit/Seedance 2.0 VIP、Pippit/Seedance 2.0 Mini 体验版、Pippit/Seedance 2.0 Mini、Pippit/Wan 3.0、Pippit/HappyHorse 1.1、Kling/Kling Video 2.5、Kling/Kling Video 2.6、Kling/Kling Video O1、Kling/Kling Video 3.0、Kling/Kling Video 3.0 Omni、Kling/Kling Video 3.0 Turbo、Kling/Kling Video 4.0、Kling/Kling 2.6 Motion Control、Kling/Kling 3.0 Motion Control、Kling/Kling Image 3.0 Omni、Kling/Kling Image O1、Kling/Kling Image 3.0、Kling/Kling Image 2.1</td>
 </tr>
 </tbody></table></div>
-<p>VideoAgent 通过统一 Provider 边界集成 Pippit CLI 与 Kling MCP。Pippit 提供视频提交、任务查询和积分能力，Kling MCP 提供文本生成视频、图生视频、动作控制和多模态参考能力。</p>
+<p>VideoAgent 通过统一 Provider 边界集成 Pippit CLI 与 Kling 国内版 CLI。Pippit 提供视频提交、任务查询和积分能力，Kling CLI 通过国内站 MCP 提供文本生成视频、任务查询、动作控制和多模态参考能力。</p>
 <h2 id="1-文档目的">1. 文档目的</h2>
-<p>本文档描述 VideoAgent 的产品目标、系统架构、核心模块、Agent 编排、数据模型、接口规范、Pippit CLI 与 Kling MCP 集成、安全策略、测试策略及部署方式，供产品、前端、后端、测试和运维研发人员共同参考。</p>
+<p>本文档描述 VideoAgent 的产品目标、系统架构、核心模块、Agent 编排、数据模型、接口规范、Pippit CLI 与 Kling 国内版 CLI 集成、安全策略、测试策略及部署方式，供产品、前端、后端、测试和运维研发人员共同参考。</p>
 <h2 id="2-产品概述">2. 产品概述</h2>
 <p>VideoAgent 是一个面向内容创作者、营销人员和普通用户的 AI 视频创作平台。产品以“用户是导演”为核心，通过统一的左侧工作台进入 Agents、Skills、Hots、Assets 和 Docs；用户从首页创作框描述创意后创建项目，进入项目工作区与 VideoAgent 协作生成故事板并发起镜头生成。</p>
 <p>系统同时提供：</p>
@@ -129,7 +129,7 @@
 <li>支持管理员控制台、用户状态、积分调整、邀请码、生成开关和审计日志。</li>
 <li>支持服务端统一授权的 Pippit CLI。</li>
 <li>支持 Pippit 文本生成视频、任务查询和积分余额读取。</li>
-<li>支持 Kling MCP 的文本生成视频、图生视频、动作控制和多模态参考能力。</li>
+<li>支持 Kling 国内版 CLI 的文本生成视频、任务查询、动作控制和多模态参考能力。</li>
 <li>支持 Celery 后台轮询与前端任务状态轮询。</li>
 <li>保证 Provider Access Key、CLI 登录文件和 MCP 凭据不暴露给浏览器。</li>
 </ul>
@@ -172,7 +172,7 @@
 └──────────┬─────────┘  └──────────────────────────────────┘
            │
 ┌──────────▼───────────────────────────────────────────────┐
-│ Celery + Redis + Pippit CLI / Kling MCP / FFmpeg        │
+│ Celery + Redis + Pippit CLI / Kling CLI / FFmpeg        │
 │ 任务提交 / 轮询 / 状态更新 / 媒体合成                    │
 └──────────────────────────────────────────────────────────┘</code></pre>
 <p>正式产品使用 Next.js Route Handler 将浏览器 <code>/api/account/*</code> 请求代理到 FastAPI，避免浏览器直接依赖后端域名。任务状态同步采用前端轮询：</p>
@@ -220,11 +220,11 @@
 </tr>
 <tr>
 <td>视频服务</td>
-<td>Pippit CLI、Kling MCP、Mock Provider</td>
+<td>Pippit CLI、Kling 国内版 CLI、Mock Provider</td>
 </tr>
 <tr>
 <td>服务端授权</td>
-<td>Pippit CLI 凭据与 Kling MCP OAuth</td>
+<td>Pippit CLI 凭据与 Kling 国内版 CLI OAuth</td>
 </tr>
 <tr>
 <td>MCP</td>
@@ -407,8 +407,12 @@
 <td>无外部依赖的测试 Provider</td>
 </tr>
 <tr>
+<td><code>providers.kling_cli</code></td>
+<td>Kling 国内版 CLI Provider</td>
+</tr>
+<tr>
 <td><code>providers.kling</code>、<code>providers.mcp_client</code>、<code>providers.oauth</code></td>
-<td>Kling MCP Provider、工具客户端与 OAuth</td>
+<td>兼容的 Kling MCP Provider、工具客户端与 OAuth</td>
 </tr>
 <tr>
 <td><code>services.storyboards</code></td>
@@ -490,8 +494,8 @@ pippit-tool-cli get-credit-balance
 pippit-tool-cli generate-video
 pippit-tool-cli query-result</code></pre>
 <p>Provider 使用参数数组启动 CLI，不经过 Shell 字符串拼接；stdout 仅接受 JSON，stderr 和完整命令参数不返回到浏览器。 模型与分辨率由服务端环境变量可选配置，留空时使用 CLI 服务的默认值。</p>
-<h3 id="11-4-kling-mcp">11.4 Kling MCP</h3>
-<p>Kling MCP 通过统一工具调用边界暴露视频能力：</p>
+<h3 id="11-4-kling-国内版-cli">11.4 Kling 国内版 CLI</h3>
+<p>Kling 通过 <code>@klingai/cli-cn</code> 的国内站内置 MCP 端点暴露视频能力：</p>
 <ul>
 <li>文本生成视频。</li>
 <li>图生视频与首尾帧。</li>
@@ -499,7 +503,7 @@ pippit-tool-cli query-result</code></pre>
 <li>Omni-Ref 多模态参考。</li>
 <li>任务查询和结果 URL 解析。</li>
 </ul>
-<p>MCP OAuth 由连接器管理，工具调用参数使用结构化对象。Provider 适配器将 Kling 的任务状态、错误和结果映射到与 Pippit 相同的 <code>VideoProvider</code> 契约， 上层项目工作流无需感知具体厂商协议。</p>
+<p>CLI 负责国内站 OAuth、MCP 传输和工具参数。Provider 适配器将 Kling 的 <code>generationId</code>、任务状态、错误和结果 URL 映射到与 Pippit 相同的 <code>VideoProvider</code> 契约。<code>VIDEOAGENT_KLING_EXPECTED_USER_ID</code> 用于校验登录账号。</p>
 <h3 id="11-5-凭据与进程安全">11.5 凭据与进程安全</h3>
 <ul>
 <li>CLI 登录文件由操作系统安全存储管理，不写入仓库或数据库。</li>
@@ -944,7 +948,7 @@ NEXT_PUBLIC_API_BASE_URL</code></pre>
 <pre><code class="language-text">Next.js :3000
 FastAPI :8000
 SQLite（默认）
-Pippit CLI 或 Kling MCP
+Pippit CLI 或 Kling 国内版 CLI
 Celery + Redis</code></pre>
 <p>Markdown 文档在构建时生成 HTML，并复制到 <code>public/docs</code>。</p>
 <p>部署流程：</p>
@@ -1012,6 +1016,6 @@ Celery + Redis</code></pre>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=28"></script>
+    <script src="../docs.js?v=29"></script>
   </body>
 </html>

@@ -18,7 +18,7 @@ VideoAgent operates three content layers:
 ## 2. Release Readiness
 
 - Complete authentication and credit-usage acceptance.
-- Verify Pippit CLI authorization and Kling MCP OAuth.
+- Verify Pippit CLI authorization and Kling China-region CLI OAuth.
 - Publish PRD, Playbook, Arch, API, Dev, Test, Ops, FAQ, and TODO.
 - Verify English and Chinese Docs switching.
 - Verify project creation, storyboard planning, generation approval, and job
@@ -58,7 +58,7 @@ VideoAgent operates three content layers:
 
 ## 5. Provider and Cost Operations
 
-- Pippit CLI and Kling MCP are available through the provider boundary.
+- Pippit CLI and Kling China-region CLI are available through the provider boundary.
 - Billable generation requires explicit user approval.
 - Provider submission uses database idempotency keys.
 - Credits and provider status are read server-side.

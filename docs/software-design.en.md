@@ -2,14 +2,15 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.9 |
+| Document version | v2.0 |
 | Updated | 2026-11-04 |
 | Backend framework | Python + FastAPI |
 | Frontend framework | Next.js + TypeScript |
 | Model | Pippit/Seedance 2.5 Draft, Pippit/Seedance 2.5, Pippit/Seedance 2.0 Fast VIP, Pippit/Seedance 2.0 VIP, Pippit/Seedance 2.0 Mini Preview, Pippit/Seedance 2.0 Mini, Pippit/Wan 3.0, Pippit/HappyHorse 1.1, Kling/Kling Video 2.5, Kling/Kling Video 2.6, Kling/Kling Video O1, Kling/Kling Video 3.0, Kling/Kling Video 3.0 Omni, Kling/Kling Video 3.0 Turbo, Kling/Kling Video 4.0, Kling/Kling 2.6 Motion Control, Kling/Kling 3.0 Motion Control, Kling/Kling Image 3.0 Omni, Kling/Kling Image O1, Kling/Kling Image 3.0, Kling/Kling Image 2.1 |
 
-VideoAgent integrates Pippit CLI and Kling MCP behind one provider boundary.
-Pippit provides video submission, task queries, and credits. Kling MCP provides
+VideoAgent integrates Pippit CLI and the China-region Kling CLI behind one
+provider boundary. Pippit provides video submission, task queries, and credits.
+Kling CLI provides
 text-to-video, image-to-video, motion control, and multimodal reference tools.
 
 ## 1. Purpose
@@ -44,7 +45,7 @@ contains five isolated views:
 - Storyboard replacement and versioning.
 - Cost estimation and explicit generation approval.
 - Pippit CLI text-to-video submission, task polling, and credit query.
-- Kling MCP text-to-video, image-to-video, motion control, and multimodal
+- Kling China-region CLI text-to-video, motion control, and multimodal
   reference capabilities.
 - Mock Provider and Celery polling.
 - Instant storyboard review for consistency, coverage, clarity, and pacing.
@@ -89,7 +90,7 @@ Next.js Route Handler /api/account/*
       ├── LangGraph
       ├── FFmpeg
       ├── Pippit CLI
-      └── Kling MCP
+      └── Kling China CLI
 
 Celery Worker + Redis
   → Pippit / Kling task status
@@ -107,7 +108,7 @@ Celery Worker + Redis
 | Agent | LangGraph, LangChain OpenAI-compatible provider |
 | Database | SQLAlchemy 2 Async, SQLite |
 | Jobs | Celery with Redis |
-| Video providers | Pippit CLI, Kling MCP, Mock Provider |
+| Video providers | Pippit CLI, Kling China CLI, Mock Provider |
 | Media | FFmpeg, local filesystem storage |
 | Testing | pytest, Vitest, Testing Library, Playwright |
 | Quality | Ruff, mypy, TypeScript |
@@ -172,13 +173,13 @@ account, while each product user consumes an independent VideoAgent credit
 balance through `/credits`. Access keys and CLI session files never reach the
 browser.
 
-### 8.2 Kling MCP
+### 8.2 Kling China CLI
 
-Kling MCP exposes text-to-video, image-to-video, first/last-frame, motion
-control, and Omni-Ref tools. OAuth is managed by the connector. The provider
-adapter maps task state, errors, and result URLs into the shared
-`VideoProvider` contract so the project workflow does not depend on protocol
-or vendor details.
+Kling uses the server-owned `@klingai/cli-cn` package and its China-region
+endpoints. The CLI owns OAuth, MCP transport, and tool validation. The provider
+adapter maps `generationId`, task state, errors, and result URLs into the shared
+`VideoProvider` contract. `VIDEOAGENT_KLING_EXPECTED_USER_ID` verifies the
+authorized account.
 
 ## 9. Skills Catalogue
 
@@ -327,7 +328,7 @@ Local development:
 Next.js :3000
 FastAPI :8000
 SQLite
-Pippit CLI or Kling MCP
+Pippit CLI or Kling China CLI
 Celery + Redis
 ```
 

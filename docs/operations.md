@@ -18,7 +18,7 @@ VideoAgent 按三层内容运营：
 ## 2. 发布准备
 
 - 完成认证和积分消耗验收。
-- 确认 Pippit CLI 授权与 Kling MCP OAuth。
+- 确认 Pippit CLI 授权与 Kling 国内版 CLI OAuth。
 - 发布 PRD、Playbook、Arch、API、Dev、Test、Ops、FAQ、TODO 九份文档。
 - 验证中英文文档切换。
 - 验证项目创建、故事板规划、生成审批和任务轮询。
@@ -50,7 +50,7 @@ VideoAgent 按三层内容运营：
 
 ## 5. Provider 与成本运营
 
-- Pippit CLI 与 Kling MCP 通过统一 Provider 边界提供能力。
+- Pippit CLI 与 Kling 国内版 CLI 通过统一 Provider 边界提供能力。
 - 计费生成必须获得用户明确批准。
 - Provider 提交使用数据库幂等键。
 - 积分和 Provider 状态由服务端读取。

@@ -22,6 +22,7 @@ Celery, or media processing.
 - Persisted generation jobs with idempotency protection.
 - Mock video provider for development and CI.
 - Pippit CLI provider for video submission, status polling, and credit balance.
+- Kling China-region CLI provider through `@klingai/cli-cn`.
 - Server-owned Pippit authorization; credentials remain outside browser code,
   API responses, and the repository.
 - Durable generation-job records with idempotency and API-driven status refresh.
@@ -30,9 +31,10 @@ Celery, or media processing.
 - Environment-allowlisted administration console for users, credits, jobs,
   invites, runtime switches, Provider state, and audit logs.
 
-The default provider mode is `pippit`. The backend invokes the Pippit CLI under
-the server account, so individual VideoAgent users do not connect a Kling
-account. The `mock` mode is available for tests and offline UI development.
+The default provider mode is `pippit`. Kling uses the server-owned China-region
+CLI and `https://klingai.com/mcp`; individual users do not provide Kling tokens
+to the browser. The `mock` mode is available for tests and offline UI
+development.
 
 ## Prerequisites
 
@@ -42,6 +44,7 @@ account. The `mock` mode is available for tests and offline UI development.
 - pnpm 11+
 - FFmpeg and ffprobe
 - Pippit CLI 1.0.48+ for live video generation
+- `@klingai/cli-cn` 0.2.3+ for China-region Kling generation
 
 Docker is optional for the current automated tests. The provided Compose file
 starts PostgreSQL, Redis, and MinIO for production-like development.
@@ -61,6 +64,15 @@ Install and authorize Pippit on the machine that runs the API:
 npx @pippit-dev/cli@latest install
 pippit-tool-cli login
 pippit-tool-cli status
+```
+
+Install and authorize Kling China-region:
+
+```powershell
+npm uninstall -g @klingai/cli-global
+npm install -g @klingai/cli-cn@latest --registry=https://registry.npmjs.org
+kling login
+kling who_am_i
 ```
 
 The Windows installer can report a `curl` failure even when the package itself
@@ -151,6 +163,9 @@ VIDEOAGENT_PIPPIT_ACCESS_KEY
 VIDEOAGENT_PIPPIT_VIDEO_MODEL
 VIDEOAGENT_PIPPIT_VIDEO_RESOLUTION
 VIDEOAGENT_PIPPIT_TIMEOUT_SECONDS
+VIDEOAGENT_KLING_BACKEND=cli
+VIDEOAGENT_KLING_CLI_COMMAND=kling
+VIDEOAGENT_KLING_EXPECTED_USER_ID
 VIDEOAGENT_CELERY_ENABLED
 VIDEOAGENT_CELERY_BROKER_URL
 VIDEOAGENT_CELERY_RESULT_BACKEND

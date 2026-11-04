@@ -358,9 +358,7 @@ export function AdminDashboard() {
             <span className="grid size-10 shrink-0 place-items-center rounded-xl border border-[#1677ff]/45 bg-[#1677ff]/15 text-[#7dc4ff]">
               <Video className="h-5 w-5" />
             </span>
-            <span>
-              VideoAgent <span className="text-[#7dc4ff]">Operations</span>
-            </span>
+            <span>VideoAgent</span>
           </Link>
           </div>
           <nav className="mt-5 grid gap-1">

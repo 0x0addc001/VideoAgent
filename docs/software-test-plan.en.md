@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v2.3 |
+| Document version | v2.4 |
 | Updated | 2026-11-04 |
 | Frameworks | pytest, Vitest, Testing Library, Playwright |
 
@@ -53,6 +53,7 @@ Backend:
 - User disablement, session revocation, and credit adjustment.
 - Invite creation, consumption, revocation, and registration modes.
 - Generation kill switch, job refunds, and audit logs.
+- China-region Kling CLI submission, status mapping, identity, and credits.
 
 Frontend:
 
@@ -181,7 +182,8 @@ secret and dependency scans
 2. Run `status` and `get-credit-balance`.
 3. Query `/providers/pippit` and `/providers/pippit/credits`.
 4. Verify logs omit access keys.
-5. Verify Kling MCP `who_am_i` confirms authorization and model discovery.
+5. Verify China-region Kling CLI `who_am_i` confirms authorization, account
+   region, and model discovery.
 
 ### Authorized paid generation
 

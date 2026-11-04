@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.4 |
+| Document version | v1.5 |
 | Updated | 2026-11-04 |
 | Base path | `/api/v1` |
 | Authentication | HttpOnly Session Cookie |
@@ -378,6 +378,14 @@ Operators authorize the CLI on the API host before enabling live generation.
 If the server CLI is not logged in, the credits endpoint returns `connected:
 false` and `credits: null`. A missing binary returns `503`; an upstream CLI
 failure returns `502`.
+
+## Kling Provider
+
+VideoAgent uses the server-owned China-region `@klingai/cli-cn` package and the
+`https://klingai.com/mcp` endpoint. Kling tokens never reach the browser.
+`VIDEOAGENT_KLING_EXPECTED_USER_ID` pins the authorized domestic account.
+Operators can use `kling who_am_i` and `kling account` for read-only identity
+and credit checks.
 
 ## Errors
 

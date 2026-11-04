@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Dev" />
     <title>Dev · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=28" />
+    <link rel="stylesheet" href="../docs.css?v=29" />
   </head>
   <body data-document="software-implementation.zh.html">
     <main class="document-shell" id="document-shell">
@@ -72,7 +72,7 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v1.9</td>
+<td>v2.0</td>
 </tr>
 <tr>
 <td>更新日期</td>
@@ -124,7 +124,7 @@
 <li>管理操作审计日志。</li>
 <li>Mock Provider。</li>
 <li>Pippit CLI 视频提交、任务查询和余额读取。</li>
-<li>Kling MCP 文本生成视频、图生视频、动作控制和多模态参考。</li>
+<li>Kling 国内版 CLI 文本生成视频、任务查询、动作控制和多模态参考。</li>
 <li>任务状态 API 刷新。</li>
 <li>Celery 后台轮询。</li>
 <li>故事板即时评估与前端审核弹窗。</li>
@@ -150,7 +150,7 @@
 │   ├── src/videoagent/
 │   │   ├── agent/                  # LangGraph 和 Planner
 │   │   ├── api/                    # FastAPI 路由与依赖
-│   │   ├── providers/              # Mock、Pippit CLI、Kling MCP
+│   │   ├── providers/              # Mock、Pippit CLI、Kling 国内版 CLI
 │   │   ├── services/               # 业务服务
 │   │   ├── workers/                # Celery 配置和任务
 │   │   ├── config.py
@@ -177,7 +177,7 @@
         ├── PostgreSQL
         ├── LangGraph
         ├── Pippit CLI
-        └── Kling MCP
+        └── Kling 国内版 CLI
 
 Celery Worker
   ├── Redis Broker
@@ -360,8 +360,12 @@ https://example.com/api/   → FastAPI</code></pre>
 <td>Pippit CLI 子进程、JSON 契约和任务映射</td>
 </tr>
 <tr>
+<td><code>providers/kling_cli.py</code></td>
+<td>Kling 国内版 CLI 提交、状态、身份和积分映射</td>
+</tr>
+<tr>
 <td><code>providers/kling.py</code></td>
-<td>Kling MCP 工具适配和任务映射</td>
+<td>兼容的 Kling MCP 工具适配</td>
 </tr>
 <tr>
 <td><code>agent/graph.py</code></td>
@@ -989,6 +993,21 @@ VIDEOAGENT_TOKEN_ENCRYPTION_KEY</code></pre>
 <td>生成功能初始状态</td>
 </tr>
 <tr>
+<td><code>VIDEOAGENT_KLING_BACKEND</code></td>
+<td><code>cli</code></td>
+<td>Kling 使用 <code>cli</code>，兼容模式可设 <code>mcp</code></td>
+</tr>
+<tr>
+<td><code>VIDEOAGENT_KLING_CLI_COMMAND</code></td>
+<td><code>kling</code></td>
+<td>国内版 CLI 命令</td>
+</tr>
+<tr>
+<td><code>VIDEOAGENT_KLING_EXPECTED_USER_ID</code></td>
+<td>空</td>
+<td>期望登录的国内站账号 ID</td>
+</tr>
+<tr>
 <td><code>NEXT_PUBLIC_API_BASE_URL</code></td>
 <td><code>http://localhost:8000/api/v1</code></td>
 <td>浏览器 API 地址</td>
@@ -1008,7 +1027,7 @@ pnpm --dir apps/web typecheck
 pnpm --dir apps/web build</code></pre>
 <p>测试组成：</p>
 <ul>
-<li>后端 47 个测试。</li>
+<li>后端 51 个测试。</li>
 <li>前端 25 个测试。</li>
 <li>Playwright 3 个端到端测试。</li>
 <li>后端测试使用临时 SQLite 文件。</li>
@@ -1099,6 +1118,6 @@ pnpm --dir apps/web build</code></pre>
 <li>设计或实现边界变化已更新本文档。</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=28"></script>
+    <script src="../docs.js?v=29"></script>
   </body>
 </html>

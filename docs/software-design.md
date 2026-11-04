@@ -2,17 +2,17 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v1.9 |
+| 文档版本 | v2.0 |
 | 更新日期 | 2026-11-04 |
 | 后端框架 | Python + FastAPI |
 | 前端框架 | Next.js + TypeScript |
 | 模型 | Pippit/Seedance 2.5 Draft、Pippit/Seedance 2.5、Pippit/Seedance 2.0 Fast VIP、Pippit/Seedance 2.0 VIP、Pippit/Seedance 2.0 Mini 体验版、Pippit/Seedance 2.0 Mini、Pippit/Wan 3.0、Pippit/HappyHorse 1.1、Kling/Kling Video 2.5、Kling/Kling Video 2.6、Kling/Kling Video O1、Kling/Kling Video 3.0、Kling/Kling Video 3.0 Omni、Kling/Kling Video 3.0 Turbo、Kling/Kling Video 4.0、Kling/Kling 2.6 Motion Control、Kling/Kling 3.0 Motion Control、Kling/Kling Image 3.0 Omni、Kling/Kling Image O1、Kling/Kling Image 3.0、Kling/Kling Image 2.1 |
 
-VideoAgent 通过统一 Provider 边界集成 Pippit CLI 与 Kling MCP。Pippit 提供视频提交、任务查询和积分能力，Kling MCP 提供文本生成视频、图生视频、动作控制和多模态参考能力。
+VideoAgent 通过统一 Provider 边界集成 Pippit CLI 与 Kling 国内版 CLI。Pippit 提供视频提交、任务查询和积分能力，Kling CLI 通过国内站 MCP 提供文本生成视频、任务查询、动作控制和多模态参考能力。
 
 ## 1. 文档目的
 
-本文档描述 VideoAgent 的产品目标、系统架构、核心模块、Agent 编排、数据模型、接口规范、Pippit CLI 与 Kling MCP 集成、安全策略、测试策略及部署方式，供产品、前端、后端、测试和运维研发人员共同参考。
+本文档描述 VideoAgent 的产品目标、系统架构、核心模块、Agent 编排、数据模型、接口规范、Pippit CLI 与 Kling 国内版 CLI 集成、安全策略、测试策略及部署方式，供产品、前端、后端、测试和运维研发人员共同参考。
 
 ## 2. 产品概述
 
@@ -48,7 +48,7 @@ VideoAgent 是一个面向内容创作者、营销人员和普通用户的 AI �
 - 支持管理员控制台、用户状态、积分调整、邀请码、生成开关和审计日志。
 - 支持服务端统一授权的 Pippit CLI。
 - 支持 Pippit 文本生成视频、任务查询和积分余额读取。
-- 支持 Kling MCP 的文本生成视频、图生视频、动作控制和多模态参考能力。
+- 支持 Kling 国内版 CLI 的文本生成视频、任务查询、动作控制和多模态参考能力。
 - 支持 Celery 后台轮询与前端任务状态轮询。
 - 保证 Provider Access Key、CLI 登录文件和 MCP 凭据不暴露给浏览器。
 
@@ -99,7 +99,7 @@ VideoAgent 是一个面向内容创作者、营销人员和普通用户的 AI �
 └──────────┬─────────┘  └──────────────────────────────────┘
            │
 ┌──────────▼───────────────────────────────────────────────┐
-│ Celery + Redis + Pippit CLI / Kling MCP / FFmpeg        │
+│ Celery + Redis + Pippit CLI / Kling CLI / FFmpeg        │
 │ 任务提交 / 轮询 / 状态更新 / 媒体合成                    │
 └──────────────────────────────────────────────────────────┘
 ```
@@ -124,8 +124,8 @@ GET /jobs/{job_id} → FastAPI 查询 Provider → 更新数据库 → 返回最
 | Agent | LangGraph |
 | 模型调用 | LangChain OpenAI-compatible Provider |
 | 数据校验 | Pydantic v2 |
-| 视频服务 | Pippit CLI、Kling MCP、Mock Provider |
-| 服务端授权 | Pippit CLI 凭据与 Kling MCP OAuth |
+| 视频服务 | Pippit CLI、Kling 国内版 CLI、Mock Provider |
+| 服务端授权 | Pippit CLI 凭据与 Kling 国内版 CLI OAuth |
 | MCP | Python MCP SDK |
 | 数据库 | SQLite |
 | ORM | SQLAlchemy 2 Async、asyncpg |
@@ -206,7 +206,8 @@ VideoAgent/
 | `providers.base` | Provider 抽象接口 |
 | `providers.pippit` | Pippit CLI 适配器 |
 | `providers.mock` | 无外部依赖的测试 Provider |
-| `providers.kling`、`providers.mcp_client`、`providers.oauth` | Kling MCP Provider、工具客户端与 OAuth |
+| `providers.kling_cli` | Kling 国内版 CLI Provider |
+| `providers.kling`、`providers.mcp_client`、`providers.oauth` | 兼容的 Kling MCP Provider、工具客户端与 OAuth |
 | `services.storyboards` | 故事板领域操作 |
 | `services.generation_jobs` | Provider 状态与 Shot 状态联动 |
 | `services.evaluation` | 一致性、覆盖度、清晰度和节奏计算 |
@@ -296,9 +297,9 @@ Provider 使用参数数组启动 CLI，不经过 Shell
 字符串拼接；stdout 仅接受 JSON，stderr 和完整命令参数不返回到浏览器。
 模型与分辨率由服务端环境变量可选配置，留空时使用 CLI 服务的默认值。
 
-### 11.4 Kling MCP
+### 11.4 Kling 国内版 CLI
 
-Kling MCP 通过统一工具调用边界暴露视频能力：
+Kling 通过 `@klingai/cli-cn` 的国内站内置 MCP 端点暴露视频能力：
 
 - 文本生成视频。
 - 图生视频与首尾帧。
@@ -306,9 +307,9 @@ Kling MCP 通过统一工具调用边界暴露视频能力：
 - Omni-Ref 多模态参考。
 - 任务查询和结果 URL 解析。
 
-MCP OAuth 由连接器管理，工具调用参数使用结构化对象。Provider 适配器将
-Kling 的任务状态、错误和结果映射到与 Pippit 相同的 `VideoProvider` 契约，
-上层项目工作流无需感知具体厂商协议。
+CLI 负责国内站 OAuth、MCP 传输和工具参数。Provider 适配器将 Kling 的
+`generationId`、任务状态、错误和结果 URL 映射到与 Pippit 相同的
+`VideoProvider` 契约。`VIDEOAGENT_KLING_EXPECTED_USER_ID` 用于校验登录账号。
 
 ### 11.5 凭据与进程安全
 
@@ -595,7 +596,7 @@ NEXT_PUBLIC_API_BASE_URL
 Next.js :3000
 FastAPI :8000
 SQLite（默认）
-Pippit CLI 或 Kling MCP
+Pippit CLI 或 Kling 国内版 CLI
 Celery + Redis
 ```
 

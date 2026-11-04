@@ -2,7 +2,7 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v1.4 |
+| 文档版本 | v1.5 |
 | 更新日期 | 2026-11-04 |
 | 基础路径 | `/api/v1` |
 | 认证方式 | HttpOnly Session Cookie |
@@ -374,6 +374,13 @@ VideoAgent 配额。
   "credits": 42
 }
 ```
+
+## Kling Provider
+
+VideoAgent 使用服务端 `@klingai/cli-cn` 连接国内站 `https://klingai.com/mcp`。
+浏览器不会接收到 Kling Token。管理员可通过 `VIDEOAGENT_KLING_EXPECTED_USER_ID`
+锁定允许使用的国内账号。当前 CLI 用户可通过 `kling who_am_i` 与 `kling account`
+只读核验身份和余额。
 
 ## 错误格式
 

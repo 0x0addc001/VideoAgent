@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.9 |
+| Document version | v2.0 |
 | Updated | 2026-11-04 |
 | Backend framework | Python + FastAPI |
 | Frontend framework | Next.js + TypeScript |
@@ -35,7 +35,7 @@ boundaries, runtime flow, provider adapters, and engineering conventions.
 - LangGraph single-node storyboard planning.
 - OpenAI-compatible and deterministic local planners.
 - Cost estimate and explicit generation approval.
-- Pippit CLI, Kling MCP, and Mock Provider adapters.
+- Pippit CLI, China-region Kling CLI, and Mock Provider adapters.
 - Celery polling with Redis.
 - Per-user credit reservations and idempotent refunds.
 - Image, video, and audio uploads with MIME, signature, and size validation.
@@ -68,7 +68,7 @@ VideoAgent/
 ├── services/api/src/videoagent/
 │   ├── agent/                      # graph and planner
 │   ├── api/                        # FastAPI routes
-│   ├── providers/                  # Pippit, Kling MCP, Mock
+│   ├── providers/                  # Pippit, Kling China CLI, Mock
 │   ├── services/                   # storyboard, jobs, evaluation
 │   └── workers/
 ├── docs/                           # paired Markdown sources
@@ -87,7 +87,7 @@ FastAPI
   ├── SQLite by default
   ├── LangGraph
   ├── Pippit CLI
-  └── Kling MCP
+  └── Kling China CLI
 
 Celery Worker
   ├── Redis broker
@@ -170,6 +170,7 @@ status
 | `services.credits` | Credit accounts, reservations, and refunds |
 | `providers.pippit` | CLI process and JSON adaptation |
 | `providers.kling` | Kling MCP tool adapter and task mapping |
+| `providers.kling_cli` | China-region Kling CLI submission, status, identity, and credits |
 | `providers.mock` | Deterministic local generation |
 | `agent.graph` | One-node LangGraph |
 | `agent.planner` | Local/OpenAI-compatible planners |
@@ -357,7 +358,7 @@ pnpm test:e2e
 python scripts\build_pages.py
 ```
 
-Backend coverage currently consists of 47 tests, frontend coverage consists of
+Backend coverage currently consists of 51 tests, frontend coverage consists of
 25 Vitest tests, and Playwright contains three no-fee browser flows. Playwright
 uses the Mock Provider for generation and therefore never consumes real
 Provider credits.

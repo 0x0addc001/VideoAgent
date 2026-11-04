@@ -31,7 +31,7 @@
 
 | ID | 待办 | 验收结果 | 优先级 |
 | --- | --- | --- | --- |
-| TODO-PROVIDER-001 | Kling 后端生成路由 | Web 项目可按模型元数据选择 Pippit 或 Kling Provider | P0 |
+| TODO-PROVIDER-001 | Kling 国内版真实生成验收 | 使用国内版 CLI 完成一次经批准的文生视频、轮询、下载和余额核对 | P0 |
 | TODO-PROVIDER-002 | Provider Capability Discovery | 模型时长、比例、音频、参考输入和输出能力由服务端统一发现 | P0 |
 | TODO-PROVIDER-003 | Provider 取消与统一错误模型 | 两类 Provider 均支持取消、超时、限流和可重试错误分类 | P0 |
 | TODO-PROVIDER-004 | 自动模型路由与降级 | 按任务、预算和可用性选择模型，并保留用户显式选择 | P1 |

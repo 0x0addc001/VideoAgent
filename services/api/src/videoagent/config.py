@@ -38,9 +38,13 @@ class Settings(BaseSettings):
     pippit_video_model: str | None = None
     pippit_video_resolution: str | None = None
     pippit_timeout_seconds: int = Field(default=180, ge=10, le=1800)
-    kling_mcp_url: str = "https://kling.ai/mcp"
+    kling_backend: str = "cli"
+    kling_cli_command: str = "kling"
+    kling_cli_timeout_seconds: int = Field(default=180, ge=10, le=1800)
+    kling_expected_user_id: str | None = None
+    kling_mcp_url: str = "https://klingai.com/mcp"
     kling_access_token: str | None = None
-    kling_auth_base_url: str = "https://kling.ai/auth"
+    kling_auth_base_url: str = "https://klingai.com/auth"
     kling_oauth_client_id: str | None = None
     kling_oauth_redirect_uri: str = "http://localhost:8000/api/v1/providers/kling/callback"
     kling_scopes: list[str] = [

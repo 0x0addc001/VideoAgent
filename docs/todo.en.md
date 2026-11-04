@@ -31,7 +31,7 @@
 
 | ID | TODO | Acceptance | Priority |
 | --- | --- | --- | --- |
-| TODO-PROVIDER-001 | Route Kling generation through the backend | A web project can select Pippit or Kling from model metadata | P0 |
+| TODO-PROVIDER-001 | China-region Kling acceptance | Complete an approved text-to-video, poll, download, and credit reconciliation through the domestic CLI | P0 |
 | TODO-PROVIDER-002 | Provider capability discovery | Duration, aspect, audio, reference inputs, and output capabilities are server-discovered | P0 |
 | TODO-PROVIDER-003 | Provider cancellation and unified errors | Both providers support cancel, timeout, throttling, and retry classification | P0 |
 | TODO-PROVIDER-004 | Automatic routing and fallback | Tasks select models by task, budget, and availability while respecting explicit choice | P1 |

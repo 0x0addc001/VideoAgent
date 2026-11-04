@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Test" />
     <title>Test · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=28" />
+    <link rel="stylesheet" href="../docs.css?v=29" />
   </head>
   <body data-document="software-test-plan.html">
     <main class="document-shell" id="document-shell">
@@ -48,7 +48,7 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v2.3</td>
+<td>v2.4</td>
 </tr>
 <tr>
 <td>Updated</td>
@@ -95,6 +95,7 @@
 <li>User disablement, session revocation, and credit adjustment.</li>
 <li>Invite creation, consumption, revocation, and registration modes.</li>
 <li>Generation kill switch, job refunds, and audit logs.</li>
+<li>China-region Kling CLI submission, status mapping, identity, and credits.</li>
 </ul>
 <p>Frontend:</p>
 <ul>
@@ -201,7 +202,8 @@ secret and dependency scans</code></pre>
 <li>Run <code>status</code> and <code>get-credit-balance</code>.</li>
 <li>Query <code>/providers/pippit</code> and <code>/providers/pippit/credits</code>.</li>
 <li>Verify logs omit access keys.</li>
-<li>Verify Kling MCP <code>who_am_i</code> confirms authorization and model discovery.</li>
+<li>Verify China-region Kling CLI <code>who_am_i</code> confirms authorization, account</li>
+<p>region, and model discovery.</p>
 </ol>
 <h3 id="authorized-paid-generation">Authorized paid generation</h3>
 <p>Only with explicit user approval and budget:</p>
@@ -224,6 +226,6 @@ secret and dependency scans</code></pre>
 <li>Paid Provider tests remain opt-in.</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=28"></script>
+    <script src="../docs.js?v=29"></script>
   </body>
 </html>

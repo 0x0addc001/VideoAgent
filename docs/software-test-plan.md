@@ -2,7 +2,7 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v2.3 |
+| 文档版本 | v2.4 |
 | 更新日期 | 2026-11-04 |
 | 测试框架 | pytest、Vitest、Testing Library、Playwright |
 
@@ -51,6 +51,7 @@
 - 用户停用、Session 撤销和积分调整。
 - 邀请码创建、消费、撤销和注册模式。
 - 生成 kill switch、任务退款和审计日志。
+- 国内版 Kling CLI 的提交参数、状态映射、账号身份和积分读取。
 
 前端：
 
@@ -81,6 +82,9 @@
 Pippit 测试使用本地 Fake CLI，覆盖状态、积分、提交、查询、超时、缺失二进制、
 无效 JSON 和缺失任务 ID。Kling 测试使用 Fake MCP Client，覆盖文生视频、
 图生视频、动作控制、任务状态映射和结果提取。
+
+Kling 国内版另使用依赖注入测试覆盖 `text_to_video`、`query_tasks`、
+`who_am_i` 和 `account`，测试不实际提交生成任务。
 
 ## 6. API 测试
 
@@ -169,7 +173,7 @@ Playwright + Mock Provider E2E
 2. 执行 `status` 与 `get-credit-balance`。
 3. 查询 `/providers/pippit` 和 `/providers/pippit/credits`。
 4. 验证日志不包含 Access Key。
-5. 使用 Kling MCP `who_am_i` 验证授权与模型发现。
+5. 使用 Kling 国内版 CLI `who_am_i` 验证授权、账号区域和模型发现。
 
 ### 获准的付费生成
 
