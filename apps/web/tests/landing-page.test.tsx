@@ -286,14 +286,14 @@ describe("LandingPage", () => {
     );
 
     fireEvent.click(styleTrigger!);
-    expect(container.querySelector(".composer-select-menu")).toBeInTheDocument();
+    expect(document.querySelector(".composer-select-menu")).toBeInTheDocument();
     fireEvent.click(
-      [...container.querySelectorAll(".composer-select-option")].find(
+      [...document.querySelectorAll(".composer-select-option")].find(
         (option) => option.textContent === "Cinematic",
       )!,
     );
     expect(styleTrigger).toHaveTextContent("Cinematic");
-    expect(container.querySelector(".composer-select-menu")).not.toBeInTheDocument();
+    expect(document.querySelector(".composer-select-menu")).not.toBeInTheDocument();
   });
 
   it("lists every available video model with its provider", () => {
@@ -304,7 +304,7 @@ describe("LandingPage", () => {
 
     fireEvent.click(modelTrigger);
 
-    const options = [...container.querySelectorAll(".composer-select-option")];
+    const options = [...document.querySelectorAll(".composer-select-option")];
     expect(options).toHaveLength(16);
     expect(options.map((option) => option.textContent)).toEqual([
       "Auto",
@@ -351,10 +351,39 @@ describe("LandingPage", () => {
 
     fireEvent.click(styleTrigger);
 
-    expect(container.querySelector(".composer-select-menu")).toHaveAttribute(
+    expect(document.querySelector(".composer-select-menu")).toHaveAttribute(
       "data-placement",
       "top",
     );
+  });
+
+  it("keeps length and quality menus inside the viewport near the bottom", () => {
+    vi.stubGlobal("innerHeight", 300);
+    const { container } = render(<LandingPage {...props} />);
+
+    for (const label of ["Length", "Quality"]) {
+      const trigger = container.querySelector(
+        `.composer-select-trigger[aria-label="${label}"]`,
+      )!;
+      vi.spyOn(trigger, "getBoundingClientRect").mockReturnValue({
+        bottom: 280,
+        height: 40,
+        left: 900,
+        right: 1080,
+        top: 240,
+        width: 180,
+        x: 900,
+        y: 240,
+        toJSON: () => ({}),
+      } as DOMRect);
+
+      fireEvent.click(trigger);
+      const menu = document.querySelector(".composer-select-menu") as HTMLElement;
+      expect(menu).toHaveAttribute("data-placement", "top");
+      expect(Number.parseFloat(menu.style.top)).toBeGreaterThanOrEqual(12);
+      expect(Number.parseFloat(menu.style.maxHeight)).toBeLessThanOrEqual(220);
+      fireEvent.click(trigger);
+    }
   });
 
   it("shows the signed-in account menu and signs out", async () => {

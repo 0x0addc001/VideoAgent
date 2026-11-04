@@ -587,8 +587,8 @@ pnpm --dir apps/web build
 测试组成：
 
 - 后端 51 个测试。
-- 前端 25 个测试。
-- Playwright 3 个端到端测试。
+- 前端 26 个测试。
+- Playwright 4 个端到端测试。
 - 后端测试使用临时 SQLite 文件。
 - Pippit 测试使用本地 Fake CLI，不访问真实生成网络。
 - Kling Provider 测试使用 Fake MCP client，不触发付费生成。

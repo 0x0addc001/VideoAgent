@@ -93,7 +93,7 @@ test("switches the complete documentation set", async ({ page }) => {
   );
 });
 
-test("administrator can pause generation from the control room", async ({ page }) => {
+test("administrator can pause generation from the administration console", async ({ page }) => {
   await page.goto("/en/register");
   await page.getByLabel("Email").fill("admin-playwright@example.com");
   await page.getByLabel("Password").fill("Correct-Horse-Battery9");
@@ -109,5 +109,22 @@ test("administrator can pause generation from the control room", async ({ page }
   await page.getByRole("button", { name: "Platform settings" }).click();
   await page.getByRole("button", { name: "Pause generation" }).click();
   await expect(page.getByRole("button", { name: "Enable generation" })).toBeVisible();
+});
+
+test("keeps composer dropdowns inside a short viewport", async ({ page }) => {
+  await page.setViewportSize({ width: 1280, height: 560 });
+  await page.goto("/en");
+
+  for (const label of ["Length", "Quality"]) {
+    const trigger = page.getByRole("button", { name: label, exact: true });
+    await trigger.click();
+    const menu = page.getByRole("listbox");
+    await expect(menu).toBeVisible();
+    const box = await menu.boundingBox();
+    expect(box).not.toBeNull();
+    expect(box!.y).toBeGreaterThanOrEqual(0);
+    expect(box!.y + box!.height).toBeLessThanOrEqual(560);
+    await trigger.click();
+  }
 });
 

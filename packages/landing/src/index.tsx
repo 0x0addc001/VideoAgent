@@ -16,6 +16,7 @@ import {
   Video,
 } from "lucide-react";
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import {
   landingContent,
   type LandingHook,
@@ -203,14 +204,18 @@ type ComposerSelectOption = {
 type ComposerSelectProps = {
   className?: string;
   label: string;
+  menuWidth?: number;
   onChange: (value: string) => void;
   options: readonly ComposerSelectOption[];
   value: string;
 };
 
 type ComposerMenuLayout = {
+  left: number;
   maxHeight: number;
   placement: "bottom" | "top";
+  top: number;
+  width: number;
 };
 
 type ComposerPlaybookSnapshot = {
@@ -230,14 +235,17 @@ const COMPOSER_MENU_MAX_HEIGHT = 320;
 function getComposerMenuLayout(
   trigger: HTMLButtonElement,
   optionCount: number,
+  menuWidth: number,
 ): ComposerMenuLayout {
   const rect = trigger.getBoundingClientRect();
+  const viewportWidth = window.visualViewport?.width ?? window.innerWidth;
+  const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
   const estimatedMenuHeight = Math.min(
     optionCount * 38 + 14,
     COMPOSER_MENU_MAX_HEIGHT,
   );
   const spaceBelow =
-    window.innerHeight -
+    viewportHeight -
     rect.bottom -
     COMPOSER_MENU_GAP -
     COMPOSER_MENU_SAFE_INSET;
@@ -248,29 +256,51 @@ function getComposerMenuLayout(
       ? "top"
       : "bottom";
   const availableHeight = placement === "top" ? spaceAbove : spaceBelow;
+  const maxHeight = Math.max(
+    0,
+    Math.min(estimatedMenuHeight, availableHeight),
+  );
+  const width = Math.min(menuWidth, viewportWidth - COMPOSER_MENU_SAFE_INSET * 2);
+  const desiredLeft = rect.left + rect.width / 2 - width / 2;
+  const left = Math.max(
+    COMPOSER_MENU_SAFE_INSET,
+    Math.min(desiredLeft, viewportWidth - width - COMPOSER_MENU_SAFE_INSET),
+  );
+  const top =
+    placement === "bottom"
+      ? rect.bottom + COMPOSER_MENU_GAP
+      : Math.max(
+          COMPOSER_MENU_SAFE_INSET,
+          rect.top - COMPOSER_MENU_GAP - maxHeight,
+        );
 
   return {
-    maxHeight: Math.max(
-      0,
-      Math.min(estimatedMenuHeight, availableHeight),
-    ),
+    left,
+    maxHeight,
     placement,
+    top,
+    width,
   };
 }
 
 function ComposerSelect({
   className = "",
   label,
+  menuWidth = 200,
   onChange,
   options,
   value,
 }: ComposerSelectProps) {
   const [open, setOpen] = useState(false);
   const [menuLayout, setMenuLayout] = useState<ComposerMenuLayout>({
+    left: COMPOSER_MENU_SAFE_INSET,
     maxHeight: COMPOSER_MENU_MAX_HEIGHT,
     placement: "bottom",
+    top: COMPOSER_MENU_SAFE_INSET,
+    width: menuWidth,
   });
   const rootRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const selectedOption = options.find((option) => option.value === value);
   const visibleLabel = value === "auto" ? label : (selectedOption?.label ?? value);
@@ -280,10 +310,15 @@ function ComposerSelect({
 
     const keepMenuInViewport = () => {
       if (!triggerRef.current) return;
-      setMenuLayout(getComposerMenuLayout(triggerRef.current, options.length));
+      setMenuLayout(
+        getComposerMenuLayout(triggerRef.current, options.length, menuWidth),
+      );
     };
     const closeOnOutsidePointer = (event: PointerEvent) => {
-      if (!rootRef.current?.contains(event.target as Node)) {
+      if (
+        !rootRef.current?.contains(event.target as Node) &&
+        !menuRef.current?.contains(event.target as Node)
+      ) {
         setOpen(false);
       }
     };
@@ -296,7 +331,7 @@ function ComposerSelect({
       window.removeEventListener("resize", keepMenuInViewport);
       window.removeEventListener("scroll", keepMenuInViewport, true);
     };
-  }, [open, options.length]);
+  }, [menuWidth, open, options.length]);
 
   return (
     <div className={`composer-select ${className}`.trim()} ref={rootRef}>
@@ -311,7 +346,7 @@ function ComposerSelect({
             return;
           }
           setMenuLayout(
-            getComposerMenuLayout(event.currentTarget, options.length),
+            getComposerMenuLayout(event.currentTarget, options.length, menuWidth),
           );
           setOpen(true);
         }}
@@ -324,12 +359,25 @@ function ComposerSelect({
         <span>{visibleLabel}</span>
         <ChevronDown aria-hidden="true" className="composer-select-arrow" />
       </button>
-      {open ? (
+      {open && typeof document !== "undefined"
+        ? createPortal(
         <div
           className="composer-select-menu"
           data-placement={menuLayout.placement}
+          ref={menuRef}
           role="listbox"
-          style={{ maxHeight: `${menuLayout.maxHeight}px` }}
+          style={{
+            bottom: "auto",
+            left: `${menuLayout.left}px`,
+            maxHeight: `${menuLayout.maxHeight}px`,
+            maxWidth: `${menuLayout.width}px`,
+            minWidth: 0,
+            position: "fixed",
+            top: `${menuLayout.top}px`,
+            transform: "none",
+            width: `${menuLayout.width}px`,
+            zIndex: 1000,
+          }}
         >
           {options.map((option) => (
             <button
@@ -346,8 +394,10 @@ function ComposerSelect({
               {option.label}
             </button>
           ))}
-        </div>
-      ) : null}
+        </div>,
+        document.body,
+      )
+        : null}
     </div>
   );
 }
@@ -1164,6 +1214,7 @@ export function LandingPage({
               <ComposerSelect
                 className="composer-select-skill"
                 label={content.composer.skillLabel}
+                menuWidth={300}
                 onChange={(value) => {
                   setSkill(value);
                   clearPlaybookSelection();
@@ -1179,6 +1230,7 @@ export function LandingPage({
               />
               <ComposerSelect
                 label={content.composer.hookLabel}
+                menuWidth={220}
                 onChange={(value) => {
                   setHook(value as LandingHook);
                   clearPlaybookSelection();
@@ -1191,6 +1243,7 @@ export function LandingPage({
               />
               <ComposerSelect
                 label={content.composer.styleLabel}
+                menuWidth={190}
                 onChange={(value) => {
                   setStyle(value);
                   clearPlaybookSelection();
@@ -1206,6 +1259,7 @@ export function LandingPage({
               />
               <ComposerSelect
                 label={content.composer.frameLabel}
+                menuWidth={170}
                 onChange={(value) => {
                   setAspectRatio(value as LandingProjectDraft["aspectRatio"]);
                   clearPlaybookSelection();
@@ -1221,6 +1275,7 @@ export function LandingPage({
               />
               <ComposerSelect
                 label={content.composer.lengthLabel}
+                menuWidth={170}
                 onChange={(value) => {
                   setDurationSeconds(
                     value === "auto"
@@ -1241,6 +1296,7 @@ export function LandingPage({
               <ComposerSelect
                 className="composer-select-model"
                 label={content.composer.modelLabel}
+                menuWidth={340}
                 onChange={setModel}
                 options={[
                   { label: "Auto", value: "auto" },
@@ -1255,6 +1311,7 @@ export function LandingPage({
               />
               <ComposerSelect
                 label={content.composer.resolutionLabel}
+                menuWidth={180}
                 onChange={(value) =>
                   setResolution(value as LandingProjectDraft["resolution"])
                 }
@@ -1269,6 +1326,7 @@ export function LandingPage({
               />
               <ComposerSelect
                 label={content.composer.audioLabel}
+                menuWidth={180}
                 onChange={(value) => setAudio(value as LandingProjectDraft["audio"])}
                 options={content.composer.audioOptions.map((option) => ({
                   label: option.label,
@@ -1278,6 +1336,7 @@ export function LandingPage({
               />
               <ComposerSelect
                 label={content.composer.reviewLabel}
+                menuWidth={210}
                 onChange={(value) => {
                   setReviewMode(value as LandingProjectDraft["reviewMode"])
                   clearPlaybookSelection();
