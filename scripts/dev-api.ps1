@@ -10,5 +10,5 @@ chcp.com 65001 > $null
 $apiRoot = Join-Path $PSScriptRoot "..\services\api"
 Set-Location $apiRoot
 uv sync --dev
-uv run uvicorn videoagent.main:app --reload --port 8000
+uv run uvicorn videoagent.main:app --port 8000
 

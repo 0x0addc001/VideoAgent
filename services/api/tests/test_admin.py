@@ -2,6 +2,7 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from tests.conftest import register
+from videoagent.providers.pippit import PippitVideoProvider
 
 
 async def admin_client(app):
@@ -130,4 +131,23 @@ async def test_admin_creates_and_revokes_invite_codes(app):
     revoked = await admin.delete(f"/api/v1/admin/invites/{invite['id']}")
     assert revoked.status_code == 200
     assert revoked.json()["revoked_at"]
+    await admin.aclose()
+
+
+@pytest.mark.api
+async def test_provider_status_failure_does_not_break_admin_data(app):
+    admin = await admin_client(app)
+    provider = PippitVideoProvider(command=("fake-pippit",))
+
+    async def unsupported() -> dict[str, object]:
+        raise NotImplementedError
+
+    provider.account_status = unsupported  # type: ignore[method-assign]
+    app.state.video_provider = provider
+
+    response = await admin.get("/api/v1/admin/provider")
+
+    assert response.status_code == 200
+    assert response.json()["connected"] is False
+    assert response.json()["error"] == "Provider status is unavailable in this runtime."
     await admin.aclose()

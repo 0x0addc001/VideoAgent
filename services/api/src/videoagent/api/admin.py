@@ -321,8 +321,12 @@ async def provider_status(
                 "provider": provider.name,
                 "connected": status.get("logged_in") is True,
             }
-        except PippitCLIError as exc:
-            return {"provider": provider.name, "connected": False, "error": str(exc)}
+        except (PippitCLIError, NotImplementedError):
+            return {
+                "provider": provider.name,
+                "connected": False,
+                "error": "Provider status is unavailable in this runtime.",
+            }
     return {
         "provider": provider.name,
         "connected": None,

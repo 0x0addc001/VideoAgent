@@ -140,7 +140,7 @@ export function AdminDashboard() {
   async function load(query = userQuery) {
     setError(null);
     try {
-      const [identity, nextOverview, nextUsers, nextJobs, nextInvites, nextAudit, nextProvider] =
+      const [identity, nextOverview, nextUsers, nextJobs, nextInvites, nextAudit] =
         await Promise.all([
           jsonRequest<{ email: string }>("/admin/me"),
           jsonRequest<Overview>("/admin/overview"),
@@ -150,7 +150,6 @@ export function AdminDashboard() {
           jsonRequest<{ items: AdminJob[] }>("/admin/jobs"),
           jsonRequest<{ items: Invite[] }>("/admin/invites"),
           jsonRequest<{ items: AuditEntry[] }>("/admin/audit"),
-          jsonRequest<ProviderStatus>("/admin/provider"),
         ]);
       setAdminEmail(identity.email);
       setOverview(nextOverview);
@@ -158,7 +157,15 @@ export function AdminDashboard() {
       setJobs(nextJobs.items);
       setInvites(nextInvites.items);
       setAudit(nextAudit.items);
-      setProvider(nextProvider);
+      try {
+        setProvider(await jsonRequest<ProviderStatus>("/admin/provider"));
+      } catch {
+        setProvider({
+          provider: nextOverview.provider,
+          connected: null,
+          error: "Provider status is unavailable.",
+        });
+      }
       setAccessDenied(false);
     } catch (caught) {
       const message = caught instanceof Error ? caught.message : "";
@@ -346,17 +353,16 @@ export function AdminDashboard() {
   return (
     <main className="min-h-screen bg-[#080b11] text-white">
       <div className="grid min-h-screen lg:grid-cols-[240px_1fr]">
-        <aside className="border-b border-white/8 bg-[#0c1018] p-5 lg:border-b-0 lg:border-r">
-          <Link className="flex items-center gap-3 font-semibold" href="/">
-            <span className="grid size-9 place-items-center rounded-xl border border-[#1677ff]/45 bg-[#1677ff]/15 text-[#7dc4ff]">
+        <aside className="border-b border-white/8 bg-[#0c1018] px-5 pb-5 lg:border-b-0 lg:border-r">
+          <div className="flex h-16 items-center border-b border-white/8">
+          <Link className="flex items-center gap-3 font-semibold leading-none" href="/">
+            <span className="grid size-9 shrink-0 place-items-center rounded-xl border border-[#1677ff]/45 bg-[#1677ff]/15 text-[#7dc4ff]">
               <Video className="h-4 w-4" />
             </span>
-            VideoAgent
+            <span>VideoAgent</span>
           </Link>
-          <p className="mt-2 pl-12 text-[10px] uppercase tracking-[0.22em] text-white/25">
-            Operations
-          </p>
-          <nav className="mt-9 grid gap-1">
+          </div>
+          <nav className="mt-5 grid gap-1">
             {[
               ["overview", "Overview", LayoutDashboard],
               ["users", "Users & credits", Users],
@@ -396,10 +402,7 @@ export function AdminDashboard() {
 
         <div className="min-w-0">
           <header className="flex min-h-16 items-center justify-between border-b border-white/8 px-5 sm:px-8">
-            <div>
-              <p className="text-xs uppercase tracking-[0.2em] text-[#4ba3ff]">Control room</p>
-              <h1 className="mt-1 text-lg font-medium">VideoAgent Administration</h1>
-            </div>
+            <h1 className="text-lg font-medium">VideoAgent Administration</h1>
             <button
               className="flex items-center gap-2 rounded-full border border-white/10 px-4 py-2 text-xs text-white/55 hover:text-white"
               onClick={() => void load()}
@@ -495,8 +498,7 @@ export function AdminDashboard() {
               <section>
                 <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
                   <div>
-                    <p className="text-sm text-[#4ba3ff]">Accounts</p>
-                    <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em]">Users & credits</h2>
+                    <h2 className="text-3xl font-semibold tracking-[-0.04em]">Users & credits</h2>
                   </div>
                   <form
                     className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.035] px-4 py-2"
@@ -585,8 +587,7 @@ export function AdminDashboard() {
 
             {section === "jobs" ? (
               <section>
-                <p className="text-sm text-[#4ba3ff]">Provider activity</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em]">Generation jobs</h2>
+                <h2 className="text-3xl font-semibold tracking-[-0.04em]">Generation jobs</h2>
                 <div className="mt-7 overflow-x-auto rounded-2xl border border-white/8">
                   <table className="w-full min-w-[820px] text-left text-sm">
                     <thead className="bg-white/[0.035] text-xs uppercase tracking-[0.14em] text-white/30">
@@ -635,8 +636,7 @@ export function AdminDashboard() {
 
             {section === "invites" ? (
               <section>
-                <p className="text-sm text-[#4ba3ff]">Controlled access</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em]">Invite codes</h2>
+                <h2 className="text-3xl font-semibold tracking-[-0.04em]">Invite codes</h2>
                 <form
                   className="mt-7 grid gap-3 rounded-2xl border border-white/8 bg-[#0d121b] p-5 md:grid-cols-[1fr_140px_auto]"
                   onSubmit={createInvite}
@@ -707,8 +707,7 @@ export function AdminDashboard() {
 
             {section === "settings" ? (
               <section>
-                <p className="text-sm text-[#4ba3ff]">Launch controls</p>
-                <h2 className="mt-2 text-3xl font-semibold tracking-[-0.04em]">Platform settings</h2>
+                <h2 className="text-3xl font-semibold tracking-[-0.04em]">Platform settings</h2>
                 <div className="mt-7 grid gap-4 lg:grid-cols-2">
                   <article className="rounded-2xl border border-white/8 bg-[#0d121b] p-5">
                     <div className="flex items-start justify-between gap-5">
