@@ -148,6 +148,7 @@ async def test_provider_status_failure_does_not_break_admin_data(app):
     response = await admin.get("/api/v1/admin/provider")
 
     assert response.status_code == 200
-    assert response.json()["connected"] is False
-    assert response.json()["error"] == "Provider status is unavailable in this runtime."
+    assert response.json()["pippit"]["connected"] is False
+    assert response.json()["pippit"]["error"] == "Pippit status is unavailable."
+    assert "kling" in response.json()
     await admin.aclose()

@@ -84,10 +84,18 @@ type AuditEntry = {
   created_at: string;
 };
 
-type ProviderStatus = {
+type ProviderAccountStatus = {
   provider: string;
   connected: boolean | null;
+  credits?: number | null;
+  userId?: string | null;
+  expectedUserId?: string | null;
   error?: string;
+};
+
+type ProviderStatus = ProviderAccountStatus & {
+  pippit?: ProviderAccountStatus;
+  kling?: ProviderAccountStatus;
 };
 
 const API_BASE = "/api/account";
@@ -115,6 +123,16 @@ function formatDate(value: string) {
     dateStyle: "medium",
     timeStyle: "short",
   }).format(new Date(value));
+}
+
+function providerLabel(account: ProviderAccountStatus | undefined) {
+  if (!account) return "Not configured";
+  if (account.connected !== true) {
+    return account.connected === false ? "Disconnected" : "Not configured";
+  }
+  const parts = ["Connected"];
+  if (account.credits != null) parts.push(`${account.credits} credits`);
+  return parts.join(" · ");
 }
 
 export function AdminDashboard() {
@@ -442,17 +460,18 @@ export function AdminDashboard() {
                     <h2 className="text-xl font-medium">Runtime</h2>
                     <dl className="mt-5 grid gap-4 text-base">
                       <div className="flex justify-between gap-4">
-                        <dt className="text-white/38">Provider</dt>
-                        <dd>{provider?.provider ?? overview?.provider ?? "unknown"}</dd>
+                        <dt className="text-white/38">Pippit</dt>
+                        <dd>{providerLabel(provider?.pippit)}</dd>
                       </div>
                       <div className="flex justify-between gap-4">
-                        <dt className="text-white/38">Provider connection</dt>
-                        <dd>
-                          {provider?.connected === true
-                            ? "Connected"
-                            : provider?.connected === false
-                              ? "Disconnected"
-                              : "Not exposed"}
+                        <dt className="text-white/38">Kling China</dt>
+                        <dd className="text-right">
+                          {providerLabel(provider?.kling)}
+                          {provider?.kling?.userId ? (
+                            <span className="block text-sm text-white/30">
+                              ID {provider.kling.userId}
+                            </span>
+                          ) : null}
                         </dd>
                       </div>
                       <div className="flex justify-between gap-4">

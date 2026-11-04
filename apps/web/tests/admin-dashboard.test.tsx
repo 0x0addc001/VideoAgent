@@ -60,7 +60,18 @@ describe("AdminDashboard", () => {
         return Promise.resolve(Response.json({ items: [] }));
       }
       if (url.endsWith("/admin/provider")) {
-        return Promise.resolve(Response.json({ provider: "pippit", connected: true }));
+        return Promise.resolve(
+          Response.json({
+            provider: "pippit",
+            pippit: { provider: "pippit", connected: true, credits: 42 },
+            kling: {
+              provider: "kling",
+              connected: true,
+              credits: 200,
+              userId: "5867025089",
+            },
+          }),
+        );
       }
       if (url.endsWith("/admin/settings") && init?.method === "PATCH") {
         return Promise.resolve(
@@ -81,6 +92,8 @@ describe("AdminDashboard", () => {
     ).toBeVisible();
     expect(screen.getByText("12")).toBeVisible();
     expect(screen.getByText("admin@example.com")).toBeVisible();
+    expect(screen.getByText("Kling China")).toBeVisible();
+    expect(screen.getByText("ID 5867025089")).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Platform settings" }));
     fireEvent.click(screen.getByRole("button", { name: "Pause generation" }));
 

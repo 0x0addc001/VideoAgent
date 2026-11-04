@@ -1,3 +1,4 @@
+import asyncio
 from typing import Annotated
 from uuid import UUID
 
@@ -53,6 +54,75 @@ from videoagent.services.platform_settings import (
 )
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+
+
+async def _pippit_provider_status(
+    provider: VideoProvider,
+    settings: Settings,
+) -> dict[str, object]:
+    candidate = (
+        provider
+        if isinstance(provider, PippitVideoProvider)
+        else PippitVideoProvider(
+            command=settings.pippit_cli_command,
+            model=settings.pippit_video_model,
+            resolution=settings.pippit_video_resolution,
+            access_key=settings.pippit_access_key,
+            timeout_seconds=settings.pippit_timeout_seconds,
+        )
+    )
+    try:
+        status = await candidate.account_status()
+        connected = status.get("logged_in") is True
+        credits = await candidate.get_credit_balance() if connected else None
+        return {
+            "provider": "pippit",
+            "connected": connected,
+            "credits": credits,
+        }
+    except (PippitCLIError, NotImplementedError):
+        return {
+            "provider": "pippit",
+            "connected": False,
+            "credits": None,
+            "error": "Pippit status is unavailable.",
+        }
+
+
+async def _kling_provider_status(settings: Settings) -> dict[str, object]:
+    if settings.kling_backend.lower() != "cli":
+        return {
+            "provider": "kling",
+            "connected": None,
+            "credits": None,
+            "error": "Kling CLI is not the configured backend.",
+        }
+    candidate = KlingCLIVideoProvider(
+        command=settings.kling_cli_command,
+        timeout_seconds=settings.kling_cli_timeout_seconds,
+    )
+    try:
+        status = await candidate.account_status()
+        actual_user_id = str(status.get("userId") or "")
+        expected_user_id = settings.kling_expected_user_id
+        connected = bool(actual_user_id) and (
+            not expected_user_id or actual_user_id == expected_user_id
+        )
+        credits = await candidate.credits() if connected else None
+        return {
+            "provider": "kling",
+            "connected": connected,
+            "credits": credits,
+            "userId": actual_user_id or None,
+            "expectedUserId": expected_user_id,
+        }
+    except (KlingCLIError, NotImplementedError):
+        return {
+            "provider": "kling",
+            "connected": False,
+            "credits": None,
+            "error": "Kling CLI status is unavailable.",
+        }
 
 
 @router.get("/me", response_model=AdminIdentityRead)
@@ -316,38 +386,12 @@ async def provider_status(
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> dict[str, object]:
     del user
-    if isinstance(provider, PippitVideoProvider):
-        try:
-            status = await provider.account_status()
-            return {
-                "provider": provider.name,
-                "connected": status.get("logged_in") is True,
-            }
-        except (PippitCLIError, NotImplementedError):
-            return {
-                "provider": provider.name,
-                "connected": False,
-                "error": "Provider status is unavailable in this runtime.",
-            }
-    if isinstance(provider, KlingCLIVideoProvider):
-        try:
-            status = await provider.account_status()
-            actual_user_id = str(status.get("userId") or "")
-            expected_user_id = settings.kling_expected_user_id
-            return {
-                "provider": provider.name,
-                "connected": bool(actual_user_id)
-                and (not expected_user_id or actual_user_id == expected_user_id),
-                "userId": actual_user_id or None,
-                "expectedUserId": expected_user_id,
-            }
-        except (KlingCLIError, NotImplementedError):
-            return {
-                "provider": provider.name,
-                "connected": False,
-                "error": "Kling CLI status is unavailable.",
-            }
+    pippit, kling = await asyncio.gather(
+        _pippit_provider_status(provider, settings),
+        _kling_provider_status(settings),
+    )
     return {
         "provider": provider.name,
-        "connected": None,
+        "pippit": pippit,
+        "kling": kling,
     }
