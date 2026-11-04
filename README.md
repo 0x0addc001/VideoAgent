@@ -185,6 +185,22 @@ If `VIDEOAGENT_VIDEO_PROVIDER=mock`, generation uses the mock provider. Use
 `pippit` for the server-owned CLI integration. Provider credentials and Pippit
 login files are never committed.
 
+### DeepSeek Agent planner
+
+DeepSeek uses the existing OpenAI-compatible planner. Add the private API key
+to `services/api/.env`:
+
+```env
+VIDEOAGENT_LLM_BASE_URL=https://api.deepseek.com/v1
+VIDEOAGENT_LLM_API_KEY=sk-your-private-key
+VIDEOAGENT_LLM_MODEL=deepseek-chat
+```
+
+Restart the API after changing the file. `deepseek-chat` is recommended for
+structured storyboard output; `deepseek-reasoner` can be selected for deeper
+reasoning but is slower and should be validated against structured output
+before production use.
+
 ## Repository structure
 
 ```text
