@@ -94,6 +94,76 @@ async def test_replacing_storyboard_increments_version_and_removes_old_shots(cli
 
 
 @pytest.mark.api
+async def test_reordering_storyboard_preserves_shot_ids(client):
+    assert (await register(client)).status_code == 201
+    project = await create_project(client)
+    created = await client.put(
+        f"/api/v1/projects/{project['id']}/storyboard",
+        json={
+            "shots": [
+                {
+                    "description": "First",
+                    "prompt_en": "First shot",
+                    "duration_seconds": 5,
+                    "aspect_ratio": "16:9",
+                    "generation_mode": "text_to_video",
+                },
+                {
+                    "description": "Second",
+                    "prompt_en": "Second shot",
+                    "duration_seconds": 5,
+                    "aspect_ratio": "16:9",
+                    "generation_mode": "text_to_video",
+                },
+            ]
+        },
+    )
+    assert created.status_code == 200
+    original = created.json()
+    original_ids = [shot["id"] for shot in original["shots"]]
+
+    reordered = await client.patch(
+        f"/api/v1/projects/{project['id']}/storyboard/order",
+        json={"shot_ids": list(reversed(original_ids))},
+    )
+
+    assert reordered.status_code == 200
+    payload = reordered.json()
+    assert [shot["id"] for shot in payload["shots"]] == list(reversed(original_ids))
+    assert [shot["index"] for shot in payload["shots"]] == [0, 1]
+    assert payload["version"] == original["version"] + 1
+
+
+@pytest.mark.api
+async def test_reordering_storyboard_rejects_partial_shot_set(client):
+    assert (await register(client)).status_code == 201
+    project = await create_project(client)
+    created = await client.put(
+        f"/api/v1/projects/{project['id']}/storyboard",
+        json={
+            "shots": [
+                {
+                    "description": "Only",
+                    "prompt_en": "Only shot",
+                    "duration_seconds": 5,
+                    "aspect_ratio": "16:9",
+                    "generation_mode": "text_to_video",
+                }
+            ]
+        },
+    )
+    assert created.status_code == 200
+
+    shot_id = created.json()["shots"][0]["id"]
+    reordered = await client.patch(
+        f"/api/v1/projects/{project['id']}/storyboard/order",
+        json={"shot_ids": [shot_id, shot_id]},
+    )
+
+    assert reordered.status_code == 422
+
+
+@pytest.mark.api
 async def test_storyboard_rejects_invalid_generation_mode(client):
     assert (await register(client)).status_code == 201
     project = await create_project(client)

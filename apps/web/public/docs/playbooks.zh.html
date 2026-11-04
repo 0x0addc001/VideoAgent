@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="VideoAgent Playbook" />
+    <title>Playbook · VideoAgent</title>
+    <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
+    <link rel="stylesheet" href="../docs.css?v=27" />
+  </head>
+  <body data-document="playbooks.zh.html">
+    <main class="document-shell" id="document-shell">
+      <aside class="document-toc" id="document-toc">
+        <button
+          class="toc-toggle"
+          id="toc-toggle"
+          type="button"
+          aria-controls="toc-panel"
+          aria-expanded="true"
+          aria-label="目录"
+        >
+          <span class="toc-toggle-icon" aria-hidden="true">☰</span>
+          <span class="toc-toggle-label">目录</span>
+          <span class="toc-toggle-chevron" aria-hidden="true">‹</span>
+        </button>
+        <nav class="toc-panel" id="toc-panel" aria-label="目录">
+          <p class="toc-kicker">目录</p>
+          <a class="toc-link toc-level-1" href="#videoagent-playbook">VideoAgent Playbook</a>
+<a class="toc-link toc-level-2" href="#1-通用结构">1. 通用结构</a>
+<a class="toc-link toc-level-2" href="#2-product-ad">2. Product Ad</a>
+<a class="toc-link toc-level-2" href="#3-creator-vlog">3. Creator Vlog</a>
+<a class="toc-link toc-level-2" href="#4-micro-drama">4. Micro Drama</a>
+<a class="toc-link toc-level-2" href="#5-music-video">5. Music Video</a>
+<a class="toc-link toc-level-2" href="#6-localize">6. Localize</a>
+<a class="toc-link toc-level-2" href="#7-batch-test">7. Batch Test</a>
+<a class="toc-link toc-level-2" href="#8-运营规则">8. 运营规则</a>
+        </nav>
+      </aside>
+      <article class="document"><h1 id="videoagent-playbook">VideoAgent Playbook</h1>
+<div class="table-wrap"><table><thead><tr>
+<th>属性</th>
+<th>内容</th>
+</tr></thead><tbody>
+<tr>
+<td>文档版本</td>
+<td>v1.0</td>
+</tr>
+<tr>
+<td>更新日期</td>
+<td>2026-11-04</td>
+</tr>
+</tbody></table></div>
+<p>Playbook 是可复用的创作方案。它把业务场景、叙事结构、默认制作参数和审核要求 组合成一个可直接进入创作的项目起点。</p>
+<h2 id="1-通用结构">1. 通用结构</h2>
+<p>每个 Playbook 包含：</p>
+<ul>
+<li>场景名称与目标用户</li>
+<li>业务目标与核心信息</li>
+<li>默认 Skill、Hook、风格、画幅、时长和审核模式</li>
+<li>输入要求与可选参考素材</li>
+<li>推荐叙事节拍</li>
+<li>输出与交付形式</li>
+<li>积分和模型能力约束</li>
+<li>审核标准与降级策略</li>
+</ul>
+<h2 id="2-product-ad">2. Product Ad</h2>
+<p>适用于新品发布、卖点验证和效果广告。</p>
+<p>默认编排：</p>
+<ul>
+<li>Hook：效果实证</li>
+<li>结构：Hook → 使用场景 → 价值证明 → 产品主视觉</li>
+<li>画幅：9:16</li>
+<li>时长：10 秒</li>
+<li>Skill：<code>video_agent/product_film</code></li>
+<li>审核：生成前确认</li>
+</ul>
+<h2 id="3-creator-vlog">3. Creator Vlog</h2>
+<p>适用于个人叙事、生活方式和品牌幕后内容。</p>
+<p>默认编排：</p>
+<ul>
+<li>Hook：视觉氛围</li>
+<li>结构：进入情境 → 日常推进 → 情绪转折 → 个人收束</li>
+<li>画幅：9:16</li>
+<li>时长：10 秒</li>
+<li>Skill：<code>video_agent/creator_vlog</code></li>
+<li>审核：自动</li>
+</ul>
+<h2 id="4-micro-drama">4. Micro Drama</h2>
+<p>适用于短剧片段、剧情广告和社交平台悬念内容。</p>
+<p>默认编排：</p>
+<ul>
+<li>Hook：叙事反转</li>
+<li>结构：建立人物 → 激化冲突 → 悬念或反转</li>
+<li>画幅：9:16</li>
+<li>时长：10 秒</li>
+<li>Skill：<code>video_agent/short_drama</code></li>
+<li>审核：生成前确认</li>
+</ul>
+<h2 id="5-music-video">5. Music Video</h2>
+<p>适用于音乐宣发、艺人视觉和节奏型品牌内容。</p>
+<p>默认编排：</p>
+<ul>
+<li>Hook：声音开场</li>
+<li>结构：视觉母题 → 表演 → 节奏升级 → 回到母题</li>
+<li>画幅：16:9</li>
+<li>时长：10 秒</li>
+<li>Skill：<code>video_agent/music_video</code></li>
+<li>审核：生成前确认</li>
+</ul>
+<h2 id="6-localize">6. Localize</h2>
+<p>适用于已有成片的跨市场改编。</p>
+<p>默认编排：</p>
+<ul>
+<li>保留原剪辑、节奏和产品事实</li>
+<li>适配语言、声音、字幕和人物形象</li>
+<li>Skill：<code>video_agent/video_localization</code></li>
+<li>审核：生成前确认</li>
+</ul>
+<h2 id="7-batch-test">7. Batch Test</h2>
+<p>适用于广告素材矩阵和 Hook 测试。</p>
+<p>默认编排：</p>
+<ul>
+<li>固定产品事实和视觉识别</li>
+<li>变化 Hook、场景和表达方式</li>
+<li>生成带标签的可比较版本</li>
+<li>Skill：<code>video_agent/batch_variants</code></li>
+<li>时长：5 秒</li>
+</ul>
+<h2 id="8-运营规则">8. 运营规则</h2>
+<ul>
+<li>Playbook 必须引用有效 Skill。</li>
+<li>默认参数必须与创作框字段一致。</li>
+<li>模型能力不足时先降级或要求用户调整，不静默切换。</li>
+<li>版本变化需要同步 PRD、Arch 和 Test。</li>
+</ul></article>
+    </main>
+    <script src="../docs.js?v=27"></script>
+  </body>
+</html>

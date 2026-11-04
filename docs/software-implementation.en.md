@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.7 |
+| Document version | v1.8 |
 | Updated | 2026-11-04 |
 | Backend framework | Python + FastAPI |
 | Frontend framework | Next.js + TypeScript |
@@ -27,7 +27,7 @@ boundaries, runtime flow, provider adapters, and engineering conventions.
 - Searchable Assets waterfall with internal Video/Skill tabs, permission, and
   `yyyy-mm-dd` edit date; videos preview on hover, Skill cards have no cover,
   and cards do not repeat type labels.
-- Searchable bilingual Docs with eight documents, a collapsible table of contents,
+- Searchable bilingual Docs with nine documents, a collapsible table of contents,
   and full-text lookup across languages.
 - Registration, login, logout, server-side sessions, and user isolation.
 - Project create, list, read, rename, and archive.
@@ -37,8 +37,15 @@ boundaries, runtime flow, provider adapters, and engineering conventions.
 - Cost estimate and explicit generation approval.
 - Pippit CLI, Kling MCP, and Mock Provider adapters.
 - Celery polling with Redis.
+- Per-user credit reservations and idempotent refunds.
+- Image, video, and audio uploads with MIME, signature, and size validation.
+- FFmpeg composition with landscape, vertical, and square deliveries, captions,
+  soundtrack, and cover generation.
+- Private asset downloads plus time-limited, revocable share links.
+- Same-origin write validation and separate auth, generation, and upload limits.
 - Instant storyboard review.
 - CI, security scanning, documentation generation, and release builds.
+- Playwright and Mock Provider end-to-end acceptance without paid generation.
 
 ## 3. Repository Layout
 
@@ -153,6 +160,11 @@ status
 | `api.generation` | Estimate, submit, job status |
 | `api.evaluation` | Storyboard review |
 | `api.providers` | Pippit status and credits |
+| `api.assets` | Uploads, downloads, exports, sharing, and revocation |
+| `api.credits` | Per-user VideoAgent balance |
+| `middleware` | Same-origin write checks and request limits |
+| `services.media` | Validation, result materialization, FFmpeg, covers, and sharing |
+| `services.credits` | Credit accounts, reservations, and refunds |
 | `providers.pippit` | CLI process and JSON adaptation |
 | `providers.kling` | Kling MCP tool adapter and task mapping |
 | `providers.mock` | Deterministic local generation |
@@ -220,8 +232,8 @@ English: product-requirements.html
 Chinese: product-requirements.zh.html
 ```
 
-The same pattern applies to all eight documents in this order: PRD, Design,
-Interface, Impl, Test, Ops, FAQ, and TODO. Docs search uses
+The same pattern applies to all nine documents in this order: PRD, Playbook,
+Arch, API, Dev, Test, Ops, FAQ, and TODO. Docs search uses
 `docs-search.json` across both languages. Docs language follows application
 locale state.
 
@@ -239,6 +251,10 @@ locale state.
 | `generation_jobs` | Provider task and idempotency |
 | `provider_connections` | Legacy OAuth storage |
 | `oauth_flows` | Legacy OAuth state |
+| `credit_accounts` | Per-user VideoAgent balance |
+| `credit_entries` | Idempotent reservation and refund ledger |
+| `assets` | Uploads, generated clips, deliveries, covers, and permissions |
+| `share_links` | Hashed tokens, expiry, revocation, and access count |
 
 ## 11. API List
 
@@ -253,12 +269,21 @@ locale state.
 | `GET/PATCH/DELETE` | `/projects/{id}` |
 | `GET/POST` | `/projects/{id}/messages` |
 | `GET/PUT` | `/projects/{id}/storyboard` |
+| `PATCH` | `/projects/{id}/storyboard/order` |
 | `POST` | `/projects/{id}/evaluate` |
 | `POST` | `/shots/{id}/estimate` |
 | `POST` | `/shots/{id}/generate` |
 | `GET` | `/jobs/{id}` |
 | `GET` | `/providers/pippit` |
 | `GET` | `/providers/pippit/credits` |
+| `GET` | `/credits` |
+| `GET` | `/assets` |
+| `GET/POST` | `/projects/{id}/assets` |
+| `GET` | `/assets/{id}/content` |
+| `POST` | `/projects/{id}/exports` |
+| `POST` | `/assets/{id}/share` |
+| `DELETE` | `/shares/{id}` |
+| `GET` | `/shares/{token}/content` |
 
 ## 12. Security
 
@@ -270,6 +295,10 @@ locale state.
 - Kling OAuth state remains inside the MCP connector boundary.
 - CLI calls use argument arrays and timeouts.
 - Secret and dependency scanning run in CI.
+- Unsafe methods validate `Origin` and `Sec-Fetch-Site`.
+- Uploads enforce byte limits and validate declared MIME plus file signatures.
+- Share tokens are stored as hashes and become unavailable after expiry or
+  revocation.
 
 ## 13. Local Development
 
@@ -305,5 +334,11 @@ cd ..\..
 pnpm --dir apps/web test
 pnpm --dir apps/web typecheck
 pnpm --dir apps/web build
+pnpm test:e2e
 python scripts\build_pages.py
 ```
+
+Backend coverage currently consists of 43 tests, frontend coverage consists of
+24 Vitest tests, and Playwright contains two no-fee browser flows. Playwright
+uses the Mock Provider for generation and therefore never consumes real
+Provider credits.

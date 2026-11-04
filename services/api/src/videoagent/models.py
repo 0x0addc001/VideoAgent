@@ -66,6 +66,39 @@ class Session(Base):
     user: Mapped[User] = relationship(back_populates="sessions")
 
 
+class CreditAccount(Base):
+    __tablename__ = "credit_accounts"
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        unique=True,
+        index=True,
+    )
+    balance: Mapped[int] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+
+class CreditEntry(Base):
+    __tablename__ = "credit_entries"
+    __table_args__ = (UniqueConstraint("reason", "reference_id"),)
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+    )
+    amount: Mapped[int] = mapped_column(Integer)
+    reason: Mapped[str] = mapped_column(String(64), index=True)
+    reference_id: Mapped[str] = mapped_column(String(256), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
 class Project(Base):
     __tablename__ = "projects"
 
@@ -173,6 +206,72 @@ class GenerationJob(Base):
         default=utcnow,
         onupdate=utcnow,
     )
+
+
+class Asset(Base):
+    __tablename__ = "assets"
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    owner_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+    )
+    project_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("projects.id", ondelete="CASCADE"),
+        nullable=True,
+        index=True,
+    )
+    shot_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("shots.id", ondelete="CASCADE"),
+        nullable=True,
+        index=True,
+    )
+    generation_job_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("generation_jobs.id", ondelete="SET NULL"),
+        nullable=True,
+        unique=True,
+        index=True,
+    )
+    kind: Mapped[str] = mapped_column(String(32), index=True)
+    filename: Mapped[str] = mapped_column(String(256))
+    content_type: Mapped[str] = mapped_column(String(128))
+    storage_key: Mapped[str] = mapped_column(String(512), unique=True)
+    byte_size: Mapped[int] = mapped_column(Integer)
+    checksum: Mapped[str] = mapped_column(String(64))
+    permission: Mapped[str] = mapped_column(String(16), default="private", index=True)
+    deleted_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+        index=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+
+class ShareLink(Base):
+    __tablename__ = "share_links"
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    asset_id: Mapped[UUID] = mapped_column(
+        ForeignKey("assets.id", ondelete="CASCADE"),
+        index=True,
+    )
+    owner_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+    )
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    revoked_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    access_count: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
 class Conversation(Base):

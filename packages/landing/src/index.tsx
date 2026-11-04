@@ -103,7 +103,7 @@ const HERO_LINE_TWO: HeroPart[] = [
   { text: "Director", accent: true },
 ];
 
-const DOCS_ASSET_VERSION = "26";
+const DOCS_ASSET_VERSION = "27";
 
 function heroPartsLength(parts: readonly HeroPart[]) {
   return parts.reduce((total, part) => total + Array.from(part.text).length, 0);
@@ -574,7 +574,7 @@ export function LandingPage({
 
     async function loadCredits() {
       try {
-        const creditResponse = await fetch(`${accountApiBase}/providers/pippit/credits`, {
+        const creditResponse = await fetch(`${accountApiBase}/credits`, {
           credentials: "include",
         });
         if (!active) return;

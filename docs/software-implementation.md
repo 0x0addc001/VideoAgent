@@ -2,7 +2,7 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v1.7 |
+| 文档版本 | v1.8 |
 | 更新日期 | 2026-11-04 |
 | 后端框架 | Python + FastAPI |
 | 前端框架 | Next.js + TypeScript |
@@ -23,7 +23,7 @@
 - Skills 使用单一可搜索目录，显示 `user_id/skill_id`；原厂商能力使用厂商命名空间（如 `kling`），跨 Provider 工作流使用 `video_agent`。
 - Hots 支持搜索、循环视频、作者、喜欢数、发布，以及带 Skill 的场景复用。
 - Assets 使用瀑布流，并通过 Video/Skill 内部分页区分类型；Video 卡片悬浮静音播放，Skill 卡片无封面并展示 private/public 和 `yyyy-mm-dd` 编辑时间。
-- 八份中英文文档、全文搜索、统一深色阅读主题、左侧可折叠目录和章节高亮。
+- 九份中英文文档、全文搜索、统一深色阅读主题、左侧可折叠目录和章节高亮。
 - 注册、登录、登出和服务端会话。
 - 用户级项目创建、列表、读取、重命名和归档。
 - 用户数据所有权隔离。
@@ -33,6 +33,11 @@
 - 配置 OpenAI-compatible 模型后的结构化故事板规划器。
 - 积分估算和显式生成审批。
 - 生成任务持久化及 `Idempotency-Key` 防重复提交。
+- 用户级积分账户、生成预扣与幂等退款。
+- 图片、视频和音频上传，MIME、文件头和大小校验。
+- FFmpeg 成片合成、字幕、音轨、横竖方版本和封面。
+- 私有资产下载、限时分享、撤销和访问计数。
+- 同源写请求校验与认证、生成、上传分层限流。
 - Mock Provider。
 - Pippit CLI 视频提交、任务查询和余额读取。
 - Kling MCP 文本生成视频、图生视频、动作控制和多模态参考。
@@ -41,6 +46,7 @@
 - 故事板即时评估与前端审核弹窗。
 - Docker Compose 基础设施配置。
 - GitHub Actions CI 配置。
+- Playwright + Mock Provider 无费用端到端验收。
 - Markdown 文档构建。
 
 ## 3. 仓库结构
@@ -219,9 +225,14 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 | `api/generation.py` | 积分估算、生成提交和任务查询 |
 | `api/evaluation.py` | 项目故事板即时评估 |
 | `api/providers.py` | Pippit 服务端状态和积分余额 |
+| `api/assets.py` | 上传、下载、导出、分享与撤销 |
+| `api/credits.py` | 用户独立积分余额 |
+| `middleware.py` | 同源写请求校验与请求限流 |
 | `services/storyboards.py` | 故事板领域操作 |
 | `services/generation_jobs.py` | Job 刷新和 Shot 状态联动 |
 | `services/evaluation.py` | 一致性、覆盖、清晰度和节奏指标计算 |
+| `services/media.py` | 文件校验、结果落地、FFmpeg 合成、封面与分享 |
+| `services/credits.py` | 积分账户、预扣与幂等退款 |
 | `providers/pippit.py` | Pippit CLI 子进程、JSON 契约和任务映射 |
 | `providers/kling.py` | Kling MCP 工具适配和任务映射 |
 | `agent/graph.py` | LangGraph 编译和执行 |
@@ -293,6 +304,10 @@ ORM 表：
 | `generation_jobs` | Provider 任务、幂等键和结果 |
 | `provider_connections` | Provider 授权信息 |
 | `oauth_flows` | OAuth 事务状态 |
+| `credit_accounts` | 用户独立积分余额 |
+| `credit_entries` | 可审计且幂等的预扣、退款流水 |
+| `assets` | 上传、生成、导出版本、封面和权限 |
+| `share_links` | Token 哈希、过期、撤销和访问计数 |
 
 关键约束：
 
@@ -304,6 +319,8 @@ ORM 表：
 - `(GenerationJob.shot_id, GenerationJob.idempotency_key)` 唯一。
 - `(ProviderConnection.user_id, ProviderConnection.provider)` 唯一。
 - `OAuthFlow.state_hash` 具有唯一约束。
+- `(CreditEntry.reason, CreditEntry.reference_id)` 唯一，防止重复预扣或退款。
+- `(GenerationJob.shot_id, GenerationJob.idempotency_key)` 唯一。
 
 ## 10. Pippit CLI Provider
 
@@ -375,12 +392,21 @@ task reference    → query-result   → JobStatus + result URL
 | POST | `/projects/{id}/messages` | Agent 生成故事板并保存对话 |
 | GET | `/projects/{id}/storyboard` | 获取故事板 |
 | PUT | `/projects/{id}/storyboard` | 整体替换故事板 |
+| PATCH | `/projects/{id}/storyboard/order` | 调整镜头顺序并保留 Shot ID 与资产 |
 | POST | `/shots/{id}/estimate` | 查询积分估算 |
 | POST | `/shots/{id}/generate` | 提交生成任务 |
 | GET | `/jobs/{id}` | 查询并刷新任务状态 |
 | POST | `/projects/{id}/evaluate` | 即时评估当前故事板 |
 | GET | `/providers/pippit` | 服务端 Pippit 登录状态 |
 | GET | `/providers/pippit/credits` | Pippit 积分余额 |
+| GET | `/credits` | 当前用户 VideoAgent 积分余额 |
+| GET | `/assets` | 当前用户资产列表 |
+| GET/POST | `/projects/{id}/assets` | 项目资产列表与上传 |
+| GET | `/assets/{id}/content` | 读取私有资产 |
+| POST | `/projects/{id}/exports` | 合成与交付版本导出 |
+| POST | `/assets/{id}/share` | 创建限时分享 |
+| DELETE | `/shares/{id}` | 撤销分享 |
+| GET | `/shares/{token}/content` | 读取有效分享内容 |
 
 生成接口必须携带：
 
@@ -412,6 +438,9 @@ Idempotency-Key: <unique-client-generated-key>
 - 跨用户资源访问统一返回 404。
 - 日志和 API 响应不返回 Provider Token。
 - 敏感环境变量不得提交到 Git。
+- 不安全方法校验 `Origin` 与 `Sec-Fetch-Site`。
+- 上传读取有字节上限，并校验声明的 MIME 与文件签名。
+- 分享 Token 只保存 SHA-256 哈希，过期或撤销后返回 404。
 
 ## 13. 本地开发
 
@@ -491,6 +520,14 @@ docker compose -f deploy/docker-compose.yml up -d
 | `VIDEOAGENT_LLM_BASE_URL` | 空 | OpenAI-compatible Endpoint |
 | `VIDEOAGENT_LLM_API_KEY` | 空 | 模型密钥 |
 | `VIDEOAGENT_LLM_MODEL` | 空 | 模型名称 |
+| `VIDEOAGENT_MEDIA_DIR` | `.data/media` | 本地媒体目录 |
+| `VIDEOAGENT_MAX_UPLOAD_BYTES` | `100 MiB` | 单文件大小上限 |
+| `VIDEOAGENT_FFMPEG_COMMAND` | `ffmpeg` | FFmpeg 命令或路径 |
+| `VIDEOAGENT_FFPROBE_COMMAND` | `ffprobe` | FFprobe 命令或路径 |
+| `VIDEOAGENT_STARTING_USER_CREDITS` | `100` | 新用户初始配额 |
+| `VIDEOAGENT_AUTH_RATE_LIMIT_PER_MINUTE` | `20` | 认证写请求限流 |
+| `VIDEOAGENT_GENERATION_RATE_LIMIT_PER_MINUTE` | `30` | 生成与导出限流 |
+| `VIDEOAGENT_UPLOAD_RATE_LIMIT_PER_MINUTE` | `20` | 上传限流 |
 | `NEXT_PUBLIC_API_BASE_URL` | `http://localhost:8000/api/v1` | 浏览器 API 地址 |
 
 `VIDEOAGENT_PIPPIT_ACCESS_KEY` 只适用于服务端或 CI。本地和生产主机优先使用
@@ -518,12 +555,14 @@ pnpm --dir apps/web build
 
 测试组成：
 
-- 后端 35 个测试。
+- 后端 43 个测试。
 - 前端 24 个测试。
+- Playwright 2 个端到端测试。
 - 后端测试使用临时 SQLite 文件。
 - Pippit 测试使用本地 Fake CLI，不访问真实生成网络。
 - Kling Provider 测试使用 Fake MCP client，不触发付费生成。
 - 前端测试覆盖共享首页、导航、文档加载、自定义下拉、Hots 发布、创作提交和轮播行为。
+- Playwright 使用 Mock Provider 验证提交、轮询/落地、导出、下载和分享，不访问付费 Provider。
 - 普通 CI 不执行付费生成。
 
 新增功能必须遵循：

@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Ops" />
     <title>Ops · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=26" />
+    <link rel="stylesheet" href="../docs.css?v=27" />
   </head>
   <body data-document="operations.html">
     <main class="document-shell" id="document-shell">
@@ -45,7 +45,7 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v2.0</td>
+<td>v2.1</td>
 </tr>
 <tr>
 <td>Updated</td>
@@ -68,10 +68,15 @@
 <ul>
 <li>Complete authentication and credit-usage acceptance.</li>
 <li>Verify Pippit CLI authorization and Kling MCP OAuth.</li>
-<li>Publish PRD, Design, Interface, Impl, Test, Ops, FAQ, and TODO.</li>
+<li>Publish PRD, Playbook, Arch, API, Dev, Test, Ops, FAQ, and TODO.</li>
 <li>Verify English and Chinese Docs switching.</li>
 <li>Verify project creation, storyboard planning, generation approval, and job</li>
 <p>polling with the configured provider.</p>
+<li>Verify upload, generated-result materialization, FFmpeg delivery, download,</li>
+<p>and share revocation.</p>
+<li>Verify per-user credit reservation, failure refunds, and Provider-account</li>
+<p>reconciliation.</p>
+<li>Run Playwright with the Mock Provider as a no-fee end-to-end release gate.</li>
 <li>Confirm provider credentials never appear in browser bundles, logs, or API</li>
 <p>responses.</p>
 </ul>
@@ -81,7 +86,7 @@
 <p>cross-provider workflows use <code>video_agent</code>.</p>
 <li>Skill IDs are stable, lowercase, and underscore-separated.</li>
 <li>Every Skill states its input, output, provider dependency, and credit impact.</li>
-<li>Skill changes update PRD, Design, and Test.</li>
+<li>Skill changes update PRD, Playbook, Arch, and Test.</li>
 <li>Deprecated Skills remain listed for one release with a migration note.</li>
 <li>Scenario playbooks reference current Skills and stay aligned with composer</li>
 <p>fields.</p>
@@ -94,6 +99,9 @@
 <li>Edit dates use <code>yyyy-mm-dd</code>.</li>
 <li>Video assets preview on hover; Skill assets have no cover.</li>
 <li>Video and Skill use internal tabs rather than repeated type labels.</li>
+<li>Uploaded and delivered assets are user-scoped. Share links are time-limited</li>
+<p>by default and can be revoked.</p>
+<li>Check Asset, share-link, and project references before deleting media.</li>
 </ul>
 <h2 id="5-provider-and-cost-operations">5. Provider and Cost Operations</h2>
 <ul>
@@ -101,13 +109,18 @@
 <li>Billable generation requires explicit user approval.</li>
 <li>Provider submission uses database idempotency keys.</li>
 <li>Credits and provider status are read server-side.</li>
+<li>The product displays each user's VideoAgent quota instead of the shared</li>
+<p>Provider account pool.</p>
+<li>Generation reserves user credits before submission and refunds them</li>
+<p>idempotently after submit failure, job failure, or cancellation.</p>
 <li>Monitor provider errors, timeout rate, uncertain submissions, and duplicate</li>
 <p>protection.</p>
 <li>Preserve provider task references for reconciliation.</li>
 </ul>
 <h2 id="6-release-procedure">6. Release Procedure</h2>
 <ol>
-<li>Run backend tests, frontend tests, type checks, builds, and Docs generation.</li>
+<li>Run backend tests, frontend tests, Playwright E2E, type checks, builds, and</li>
+<p>Docs generation.</p>
 <li>Check secret scanning and dependency security results.</li>
 <li>Confirm provider status and credit balance without spending credits.</li>
 <li>Validate English and Chinese Docs, search, navigation, and responsive layout.</li>
@@ -122,6 +135,8 @@
 <li>Provider success, failure, timeout, and uncertain-submit rate.</li>
 <li>Duplicate generation prevented by idempotency.</li>
 <li>Credit consumption per project.</li>
+<li>Reservations, refunds, and unresolved credit holds.</li>
+<li>Upload rejection rate, export latency, and share access or revocation counts.</li>
 <li>Docs search usage and broken document links.</li>
 </ul>
 <h2 id="8-support">8. Support</h2>
@@ -142,6 +157,7 @@
 <li>Roll back the web release independently from provider credentials.</li>
 <li>Publish a status note with affected areas and mitigation.</li>
 <li>Review billing, duplicate jobs, cross-user access, and audit evidence.</li>
+<li>Revoke exposed share tokens immediately and inspect anomalous access counts.</li>
 </ul>
 <h2 id="10-success-metrics">10. Success Metrics</h2>
 <ul>
@@ -154,6 +170,6 @@
 <li>Documentation: search success and zero broken bilingual links.</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=26"></script>
+    <script src="../docs.js?v=27"></script>
   </body>
 </html>

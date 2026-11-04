@@ -79,6 +79,8 @@ class KlingVideoProvider:
             "duration": request.duration_seconds,
             "aspectRatio": request.aspect_ratio,
         }
+        if request.model:
+            arguments["model"] = request.model
         raw = await self._client.call_tool(tool_name, arguments)
         task = _unwrap(raw)
         task_id = _first(task, "taskId", "task_id", "id")

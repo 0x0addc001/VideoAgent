@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="VideoAgent Design" />
-    <title>Design · VideoAgent</title>
+    <meta name="description" content="VideoAgent Arch" />
+    <title>Arch · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=26" />
+    <link rel="stylesheet" href="../docs.css?v=27" />
   </head>
   <body data-document="software-design.zh.html">
     <main class="document-shell" id="document-shell">
@@ -64,7 +64,7 @@
 <a class="toc-link toc-level-2" href="#18-可靠性设计">18. 可靠性设计</a>
 <a class="toc-link toc-level-2" href="#19-可观测性">19. 可观测性</a>
 <a class="toc-link toc-level-2" href="#20-测试策略">20. 测试策略</a>
-<a class="toc-link toc-level-2" href="#22-配置项">22. 配置项</a>
+<a class="toc-link toc-level-2" href="#21-配置项">21. 配置项</a>
 <a class="toc-link toc-level-2" href="#22-部署设计">22. 部署设计</a>
 <a class="toc-link toc-level-2" href="#23-验收标准">23. 验收标准</a>
 <a class="toc-link toc-level-2" href="#24-主要风险">24. 主要风险</a>
@@ -77,7 +77,7 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v1.7</td>
+<td>v1.8</td>
 </tr>
 <tr>
 <td>更新日期</td>
@@ -107,7 +107,7 @@
 <li><strong>Skills：</strong> 单一可搜索 Skill 目录，使用 <code>user_id/skill_id</code> 标识，并支持用户发布。</li>
 <li><strong>Hots：</strong> 可搜索社区作品流，展示作者、喜欢数并支持发布。</li>
 <li><strong>Assets：</strong> 用户成品与半成品作品库，按 Video/Skill 分页；视频悬浮预览，Skill 不显示封面。</li>
-<li><strong>Docs：</strong> 八份中英文文档、全文搜索、统一深色阅读主题和左侧可折叠目录。</li>
+<li><strong>Docs：</strong> 九份中英文文档、全文搜索、统一深色阅读主题和左侧可折叠目录。</li>
 </ul>
 <p>创作范式结合对话式生成、模板化制作和多模型工作台组织方式。生成能力通过统一 Provider 契约接入，使项目、故事板、镜头和任务状态不依赖单一模型服务。</p>
 <h2 id="3-产品目标与范围">3. 产品目标与范围</h2>
@@ -122,6 +122,10 @@
 <li>支持 Agent 生成创意方案和多镜头故事板。</li>
 <li>支持镜头参数编辑和积分成本估算。</li>
 <li>支持故事板即时评估，计算一致性、覆盖度、提示清晰度和节奏。</li>
+<li>支持项目级图片、视频和音频素材上传，并校验 MIME、文件头和大小。</li>
+<li>支持 FFmpeg 合成、16:9/9:16/1:1 交付版本、封面、字幕和音轨。</li>
+<li>支持限时分享链接、公开/私有权限、过期和撤销。</li>
+<li>支持用户独立积分账户与预扣、退款流水，隔离共享 Provider 账户的计费风险。</li>
 <li>支持服务端统一授权的 Pippit CLI。</li>
 <li>支持 Pippit 文本生成视频、任务查询和积分余额读取。</li>
 <li>支持 Kling MCP 的文本生成视频、图生视频、动作控制和多模态参考能力。</li>
@@ -157,7 +161,8 @@
                           │ HTTPS / JSON / polling
 ┌─────────────────────────▼───────────────────────────────┐
 │ FastAPI /api/v1                                         │
-│ Auth / Projects / Storyboards / Agent / Jobs / Eval     │
+│ Auth / Projects / Agent / Jobs / Assets / Delivery      │
+│ Credits / Evaluation / Provider                         │
 └──────────┬──────────────────┬───────────────────────────┘
            │                  │
 ┌──────────▼─────────┐  ┌─────▼────────────────────────────┐
@@ -166,8 +171,8 @@
 └──────────┬─────────┘  └──────────────────────────────────┘
            │
 ┌──────────▼───────────────────────────────────────────────┐
-│ Celery + Redis + Pippit CLI / Kling MCP                 │
-│ 任务提交 / 轮询 / 状态更新                               │
+│ Celery + Redis + Pippit CLI / Kling MCP / FFmpeg        │
+│ 任务提交 / 轮询 / 状态更新 / 媒体合成                    │
 └──────────────────────────────────────────────────────────┘</code></pre>
 <p>正式产品使用 Next.js Route Handler 将浏览器 <code>/api/account/*</code> 请求代理到 FastAPI，避免浏览器直接依赖后端域名。任务状态同步采用前端轮询：</p>
 <pre><code class="language-text">GET /jobs/{job_id} → FastAPI 查询 Provider → 更新数据库 → 返回最新状态</code></pre>
@@ -245,6 +250,14 @@
 <td>Redis</td>
 </tr>
 <tr>
+<td>媒体处理</td>
+<td>FFmpeg / FFprobe</td>
+</tr>
+<tr>
+<td>媒体存储</td>
+<td>本地文件系统（开发基线）</td>
+</tr>
+<tr>
 <td>实时事件</td>
 <td>任务状态轮询</td>
 </tr>
@@ -267,6 +280,10 @@
 <tr>
 <td>前端测试</td>
 <td>Vitest、Testing Library、jsdom</td>
+</tr>
+<tr>
+<td>端到端测试</td>
+<td>Playwright + Mock Provider</td>
 </tr>
 <tr>
 <td>Python 环境</td>
@@ -349,8 +366,20 @@
 <td>Pippit 服务端状态和积分余额</td>
 </tr>
 <tr>
+<td><code>api.assets</code></td>
+<td>上传、下载、导出与分享</td>
+</tr>
+<tr>
+<td><code>api.credits</code></td>
+<td>用户独立积分余额</td>
+</tr>
+<tr>
 <td><code>api.health</code></td>
 <td>API 与数据库健康检查</td>
+</tr>
+<tr>
+<td><code>middleware</code></td>
+<td>同源写请求校验与认证/生成/上传限流</td>
 </tr>
 <tr>
 <td><code>agent.graph</code></td>
@@ -387,6 +416,14 @@
 <tr>
 <td><code>services.evaluation</code></td>
 <td>一致性、覆盖度、清晰度和节奏计算</td>
+</tr>
+<tr>
+<td><code>services.media</code></td>
+<td>媒体校验、结果落地、FFmpeg 合成、封面与分享 Token</td>
+</tr>
+<tr>
+<td><code>services.credits</code></td>
+<td>用户积分账户、预扣与幂等退款</td>
 </tr>
 <tr>
 <td><code>workers.tasks</code></td>
@@ -523,6 +560,26 @@ pippit-tool-cli query-result</code></pre>
 <td><code>id</code>, <code>shot_id</code>, <code>idempotency_key</code>, <code>provider_task_id</code>, <code>status</code></td>
 <td>生成任务与 Provider 原始响应</td>
 </tr>
+<tr>
+<td><code>credit_accounts</code></td>
+<td><code>user_id</code>, <code>balance</code></td>
+<td>用户独立积分余额</td>
+</tr>
+<tr>
+<td><code>credit_entries</code></td>
+<td><code>user_id</code>, <code>amount</code>, <code>reason</code>, <code>reference_id</code></td>
+<td>可审计的预扣与退款流水</td>
+</tr>
+<tr>
+<td><code>assets</code></td>
+<td><code>owner_id</code>, <code>project_id</code>, <code>shot_id</code>, <code>kind</code>, <code>storage_key</code>, <code>permission</code></td>
+<td>上传、生成、交付与封面资产</td>
+</tr>
+<tr>
+<td><code>share_links</code></td>
+<td><code>asset_id</code>, <code>token_hash</code>, <code>expires_at</code>, <code>revoked_at</code>, <code>access_count</code></td>
+<td>限时分享与访问计数</td>
+</tr>
 </tbody></table></div>
 <p>统一使用 UUID 主键、UTC 时间戳和数据库外键。数据库使用通用 <code>JSON</code> 字段保存 Provider 原始响应。</p>
 <h2 id="13-核心状态定义">13. 核心状态定义</h2>
@@ -635,6 +692,11 @@ cancelled</code></pre>
 <td>整体替换故事板</td>
 </tr>
 <tr>
+<td>PATCH</td>
+<td><code>/projects/{id}/storyboard/order</code></td>
+<td>调整镜头顺序并保留 Shot ID</td>
+</tr>
+<tr>
 <td>POST</td>
 <td><code>/projects/{id}/evaluate</code></td>
 <td>故事板即时评估</td>
@@ -664,6 +726,41 @@ cancelled</code></pre>
 <td><code>/providers/pippit/credits</code></td>
 <td>Pippit 积分余额</td>
 </tr>
+<tr>
+<td>GET</td>
+<td><code>/credits</code></td>
+<td>当前用户积分余额</td>
+</tr>
+<tr>
+<td>GET/POST</td>
+<td><code>/projects/{id}/assets</code></td>
+<td>项目资产列表与上传</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/assets/{id}/content</code></td>
+<td>读取私有资产</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/projects/{id}/exports</code></td>
+<td>合成并导出成片</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/assets/{id}/share</code></td>
+<td>创建限时分享</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/shares/{id}</code></td>
+<td>撤销分享</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/shares/{token}/content</code></td>
+<td>读取分享资产</td>
+</tr>
 </tbody></table></div>
 <h2 id="15-前端设计">15. 前端设计</h2>
 <h3 id="15-1-信息架构">15.1 信息架构</h3>
@@ -675,7 +772,7 @@ cancelled</code></pre>
 <li>Skills 目录还覆盖视频本地化、批量变体、剧本助手、智能预演、运镜设计、音乐 MV、参考复刻和外部 Agent 接力。</li>
 <li><code>Hots</code>：可搜索社区瀑布流，视频自动播放，展示标题、作者、喜欢数，并支持发布。</li>
 <li><code>Assets</code>：通过 Video 与 Skill 两个内部分页切换，支持搜索；Video 卡片悬浮静音播放，Skill 卡片不显示封面；卡片只展示权限和 <code>yyyy-mm-dd</code> 编辑时间。</li>
-<li><code>Docs</code>：按 PRD、Design、Interface、Impl、Test、Ops、FAQ、TODO 展示中英文文档，支持全文搜索。</li>
+<li><code>Docs</code>：按 PRD、Playbook、Arch、API、Dev、Test、Ops、FAQ、TODO 展示中英文文档，支持全文搜索。</li>
 <li>项目工作区：对话、Canvas、镜头检查器、生成和审核弹窗。</li>
 <li>品牌与浏览器标签页图标统一使用蓝色播放键；激活导航图标采用填充/线框反转。</li>
 </ul>
@@ -693,6 +790,8 @@ cancelled</code></pre>
 <li>Provider 模型参数。</li>
 <li>积分估算。</li>
 <li>生成与错误提示。</li>
+<li>图片、视频和音频引用素材上传。</li>
+<li>成片导出、交付版本下载、封面与分享链接。</li>
 </ul>
 <h3 id="15-3-前端状态">15.3 前端状态</h3>
 <ul>
@@ -700,6 +799,7 @@ cancelled</code></pre>
 <li>Agent 消息使用普通 JSON 请求；流式输出使用前端分段动画呈现。</li>
 <li>项目事件使用轮询。</li>
 <li>不将 Provider 凭据、Access Key 或敏感任务内容写入 localStorage。</li>
+<li>私有媒体通过受鉴权的内容路由读取，分享内容通过随机 Token 读取。</li>
 </ul>
 <h2 id="16-国际化策略">16. 国际化策略</h2>
 <p>产品使用 next-intl 路由、消息资源和后端 <code>locale</code> 字段管理 <code>en</code> 与 <code>zh-CN</code>。文档提供两套同构内容。</p>
@@ -718,6 +818,10 @@ cancelled</code></pre>
 <li><code>VIDEOAGENT_PIPPIT_ACCESS_KEY</code> 只保存在秘密管理系统或服务环境变量中。</li>
 <li>不使用 Agent 生成的内容拼接 Shell 命令。</li>
 <li>日志不记录密码、Cookie、Token、Authorization Header。</li>
+<li>Cookie 写接口校验 <code>Origin</code> 与 <code>Sec-Fetch-Site</code>，拒绝跨站提交。</li>
+<li>认证、生成和上传分别执行分钟级限流；分布式部署需将计数迁移到 Redis。</li>
+<li>上传同时校验声明的 MIME、文件签名和大小。</li>
+<li>分享链接只保存 Token 哈希，并支持过期、撤销和访问计数。</li>
 </ul>
 <h2 id="18-可靠性设计">18. 可靠性设计</h2>
 <ul>
@@ -740,7 +844,7 @@ cancelled</code></pre>
 <li>Pippit 状态和余额只读 Smoke Test 使用受控服务账户。</li>
 <li>真实生成测试必须人工触发并显式限制次数和积分预算。</li>
 </ul>
-<h2 id="22-配置项">22. 配置项</h2>
+<h2 id="21-配置项">21. 配置项</h2>
 <p>后端使用 <code>VIDEOAGENT_</code> 前缀的环境变量：</p>
 <pre><code class="language-text">VIDEOAGENT_DATABASE_URL
 VIDEOAGENT_SESSION_SECRET
@@ -756,6 +860,14 @@ VIDEOAGENT_CELERY_RESULT_BACKEND
 VIDEOAGENT_LLM_BASE_URL
 VIDEOAGENT_LLM_API_KEY
 VIDEOAGENT_LLM_MODEL
+VIDEOAGENT_MEDIA_DIR
+VIDEOAGENT_MAX_UPLOAD_BYTES
+VIDEOAGENT_FFMPEG_COMMAND
+VIDEOAGENT_FFPROBE_COMMAND
+VIDEOAGENT_STARTING_USER_CREDITS
+VIDEOAGENT_AUTH_RATE_LIMIT_PER_MINUTE
+VIDEOAGENT_GENERATION_RATE_LIMIT_PER_MINUTE
+VIDEOAGENT_UPLOAD_RATE_LIMIT_PER_MINUTE
 NEXT_PUBLIC_API_BASE_URL</code></pre>
 <p>所有敏感值通过环境变量或密钥管理服务提供，不提交到 Git。</p>
 <h2 id="22-部署设计">22. 部署设计</h2>
@@ -787,6 +899,9 @@ Celery + Redis</code></pre>
 <li>即时评估返回一致性、覆盖度、清晰度和节奏得分。</li>
 <li>Hots 的作者、喜欢数、发布入口和预览可用。</li>
 <li>Mock Provider、Pippit Fake CLI 和 Kling Provider 契约测试全部通过。</li>
+<li>Playwright 使用 Mock Provider 完成注册、创作、上传、生成、导出、下载和分享。</li>
+<li>生成预扣积分，失败或取消时幂等退款。</li>
+<li>分享链接可撤销，私有资产不能由其他用户通过内容路由读取。</li>
 </ol>
 <h2 id="24-主要风险">24. 主要风险</h2>
 <div class="table-wrap"><table><thead><tr>
@@ -827,6 +942,6 @@ Celery + Redis</code></pre>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=26"></script>
+    <script src="../docs.js?v=27"></script>
   </body>
 </html>

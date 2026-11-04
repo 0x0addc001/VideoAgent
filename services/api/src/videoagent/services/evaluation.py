@@ -69,13 +69,9 @@ def evaluate_storyboard(shots: Sequence[Shot]) -> EvaluationRead:
     if scores["coverage"] < 80:
         suggestions.append(EvaluationSuggestion(code="ADD_SHOTS", severity="high"))
     if scores["consistency"] < 80:
-        suggestions.append(
-            EvaluationSuggestion(code="UNIFY_ASPECT_RATIO", severity="high")
-        )
+        suggestions.append(EvaluationSuggestion(code="UNIFY_ASPECT_RATIO", severity="high"))
     if scores["clarity"] < 85:
-        suggestions.append(
-            EvaluationSuggestion(code="IMPROVE_PROMPTS", severity="medium")
-        )
+        suggestions.append(EvaluationSuggestion(code="IMPROVE_PROMPTS", severity="medium"))
     if scores["pacing"] < 85:
         suggestions.append(EvaluationSuggestion(code="BALANCE_PACING", severity="medium"))
     if not suggestions:
@@ -89,9 +85,6 @@ def evaluate_storyboard(shots: Sequence[Shot]) -> EvaluationRead:
     )
     return EvaluationRead(
         overall_score=overall,
-        metrics=[
-            EvaluationMetric(key=key, score=score)
-            for key, score in scores.items()
-        ],
+        metrics=[EvaluationMetric(key=key, score=score) for key, score in scores.items()],
         suggestions=suggestions,
     )

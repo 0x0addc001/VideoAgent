@@ -2,9 +2,9 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v2.1 |
+| Document version | v2.2 |
 | Updated | 2026-11-04 |
-| Frameworks | pytest, Vitest, Testing Library |
+| Frameworks | pytest, Vitest, Testing Library, Playwright |
 
 ## 1. Purpose
 
@@ -27,7 +27,7 @@ user-visible outcomes rather than private implementation details.
 Unit and component tests
   → Provider and API contract tests
   → SQLite integration tests
-  → browser component tests
+  → Playwright and Mock Provider browser E2E
 ```
 
 External paid generation is never part of normal CI.
@@ -45,6 +45,10 @@ Backend:
 - Provider status and credits.
 - Health endpoint.
 - Instant storyboard evaluation.
+- Media MIME, signature, size, and ownership validation.
+- FFmpeg composition, delivery, cover generation, sharing, expiry, and revocation.
+- User credit reservation, failure refunds, and idempotent ledger entries.
+- Same-origin write validation and authentication rate limiting.
 
 Frontend:
 
@@ -57,6 +61,7 @@ Frontend:
 - Hots author, likes, playback, and publishing.
 - English-to-Chinese Docs switching.
 - Project list, authentication form, and project workspace.
+- Project uploads, film export, MP4 download, and share-link creation.
 
 ## 5. Provider Contract Tests
 
@@ -85,6 +90,7 @@ Required assertions:
 - Explicit generation approval.
 - Idempotency behavior.
 - Storyboard replacement ordering.
+- Shot IDs, generated assets, and history remain intact after reordering.
 - Agent message persistence.
 - Evaluation result shape.
 - No provider credentials in responses.
@@ -109,7 +115,7 @@ Component tests cover:
   while the prompt contains non-whitespace text.
 - The Model selector includes every available Kling and Pippit video model in
   `Provider/Model` format.
-- Docs labels are `PRD`, `Design`, `Interface`, `Impl`, `Test`, `Ops`, `FAQ`,
+- Docs labels are `PRD`, `Playbook`, `Arch`, `API`, `Dev`, `Test`, `Ops`, `FAQ`,
   and `TODO`.
 - Globe control changes Docs source and language.
 - Skills, Hots, Assets, and Docs search controls stay pinned while content
@@ -120,8 +126,18 @@ Component tests cover:
 - Search, language, notifications, credits, and avatar controls use
   translucent surfaces.
 - Avatar opens login and registration when signed out and sign-out when signed in.
-- Interface starts with its metadata table.
+- API starts with its metadata table.
 - FAQ and TODO have paired English and Chinese documents.
+
+Playwright uses the real Next.js UI, FastAPI service, SQLite, and Mock Provider
+to verify:
+
+```text
+register → home prompt → create project → Agent storyboard → upload
+→ estimate → generate → poll/materialize → export → download → share
+```
+
+This flow never calls a paid Provider and is a required Pull Request gate.
 
 ## 8. Responsive and Accessibility Checks
 
@@ -144,6 +160,7 @@ Vitest
 TypeScript check
 Next.js production build
 Docs and static artifact build
+Playwright with Mock Provider E2E
 secret and dependency scans
 ```
 

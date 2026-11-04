@@ -2,9 +2,9 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v2.1 |
+| 文档版本 | v2.2 |
 | 更新日期 | 2026-11-04 |
-| 测试框架 | pytest、Vitest、Testing Library |
+| 测试框架 | pytest、Vitest、Testing Library、Playwright |
 
 ## 1. 目的
 
@@ -25,7 +25,7 @@
 单元与组件测试
   → Provider 与 API 契约测试
   → SQLite 集成测试
-  → 浏览器组件测试
+  → Playwright + Mock Provider 浏览器 E2E
 ```
 
 真实付费生成不进入普通 CI。
@@ -43,6 +43,10 @@
 - Provider 状态与积分。
 - 健康检查。
 - 故事板即时评估。
+- 媒体 MIME、文件头、大小校验和用户所有权。
+- FFmpeg 合成、导出、封面生成、分享、过期和撤销。
+- 用户积分预扣、失败退款与幂等流水。
+- 同源写请求校验及认证限流。
 
 前端：
 
@@ -55,6 +59,7 @@
 - Hots 作者、喜欢数、播放和发布。
 - Docs 中英文切换。
 - 项目列表、认证表单与项目工作区。
+- 项目素材上传、成片导出、MP4 下载和分享链接。
 
 ## 5. Provider 契约测试
 
@@ -82,6 +87,7 @@ Pippit 测试使用本地 Fake CLI，覆盖状态、积分、提交、查询、�
 - 显式生成审批。
 - 幂等行为。
 - 故事板替换后的镜头顺序。
+- 镜头排序后 Shot ID、生成资产和历史保持不变。
 - Agent 消息持久化。
 - 评估结果结构。
 - 响应不包含 Provider 凭据。
@@ -102,7 +108,7 @@ Pippit 测试使用本地 Fake CLI，覆盖状态、积分、提交、查询、�
 - Hots 场景卡片进入 Agents 时选中对应 Skill 和提示词。
 - 输入框随多行内容增高，输入非空时隐藏示例灵感。
 - Model 目录包含全部 Kling 与 Pippit 视频模型，并显示为 `服务商/模型`。
-- Docs 标签为 `PRD`、`Design`、`Interface`、`Impl`、`Test`、`Ops`、`FAQ`、`TODO`。
+- Docs 标签为 `PRD`、`Playbook`、`Arch`、`API`、`Dev`、`Test`、`Ops`、`FAQ`、`TODO`。
 - Globe 控件切换 Docs 语言。
 - Skills、Hots、Assets、Docs 搜索框保持固定。
 - Assets 通过 Video/Skill 分页切换，不重复类型标签。
@@ -110,8 +116,17 @@ Pippit 测试使用本地 Fake CLI，覆盖状态、积分、提交、查询、�
 - 创作框菜单不超出视口。
 - 搜索、语言、通知、积分和头像使用半透明表面。
 - 头像在未登录时提供登录与注册，登录后提供退出。
-- Interface 开头展示属性表。
+- API 文档开头展示属性表。
 - FAQ 与 TODO 均有中英文版本。
+
+Playwright 使用真实 Next.js 页面、FastAPI、SQLite 和 Mock Provider，验证：
+
+```text
+注册 → 首页创意 → 创建项目 → Agent 故事板 → 上传素材
+→ 积分估算 → 生成 → 轮询/落地 → 合成导出 → 下载 → 分享
+```
+
+该链路不调用真实付费 Provider，应作为每个 Pull Request 的必过门禁。
 
 ## 8. 响应式与可访问性
 
@@ -134,6 +149,7 @@ Vitest
 TypeScript 检查
 Next.js 生产构建
 Docs 与静态产物构建
+Playwright + Mock Provider E2E
 敏感信息和依赖扫描
 ```
 

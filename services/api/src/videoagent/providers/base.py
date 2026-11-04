@@ -21,6 +21,7 @@ class GenerationRequest(BaseModel):
     duration_seconds: int
     aspect_ratio: str
     generation_mode: str
+    model: str | None = None
 
 
 class CostEstimate(BaseModel):

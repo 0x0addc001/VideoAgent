@@ -1,6 +1,7 @@
 import pytest
 
 from tests.conftest import register
+from videoagent.api.generation import selected_model
 from videoagent.providers.base import (
     CostEstimate,
     GenerationRequest,
@@ -99,13 +100,26 @@ async def test_generation_submits_mock_provider_and_persists_job(client):
     assert job["project_id"] == project["id"]
     assert job["shot_id"] == shot["id"]
     assert job["provider"] == "mock"
-    assert job["status"] == "succeeded"
+    assert job["status"] == "submitted"
     assert job["provider_task_id"].startswith("mock-")
-    assert job["result_url"].endswith(".mp4")
+    assert job["result_url"] is None
 
     fetched = await client.get(f"/api/v1/jobs/{job['id']}")
     assert fetched.status_code == 200
-    assert fetched.json()["id"] == job["id"]
+    assert fetched.json()["status"] == "succeeded"
+    assert fetched.json()["result_url"].startswith("/api/v1/assets/")
+
+    assets = await client.get(f"/api/v1/projects/{project['id']}/assets")
+    assert assets.status_code == 200
+    generated = [item for item in assets.json()["items"] if item["kind"] == "generated"]
+    assert len(generated) == 1
+    assert generated[0]["shot_id"] == shot["id"]
+    content = await client.get(generated[0]["content_url"])
+    assert content.status_code == 200
+    assert content.headers["content-type"].startswith("video/mp4")
+
+    credits = await client.get("/api/v1/credits")
+    assert credits.json()["credits"] == 95
 
 
 @pytest.mark.api
@@ -142,6 +156,17 @@ async def test_generation_estimate_returns_provider_cost(client):
         "credits": 5,
         "duration_seconds": 5,
     }
+
+
+@pytest.mark.unit
+def test_pippit_model_label_maps_to_cli_model_id():
+    project = type(
+        "Project",
+        (),
+        {"brief": "Production settings: · Pippit/Seedance 2.5 · 9:16"},
+    )()
+
+    assert selected_model(project) == ("pippit", "Seedance_2.5")
 
 
 @pytest.mark.api

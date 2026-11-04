@@ -1,14 +1,16 @@
-# VideoAgent Interface 接口文档
+# VideoAgent API 接口文档
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v1.2 |
+| 文档版本 | v1.3 |
 | 更新日期 | 2026-11-04 |
 | 基础路径 | `/api/v1` |
 | 认证方式 | HttpOnly Session Cookie |
 | 请求格式 | JSON，并设置 `credentials: "include"` |
 | API 风格 | REST + 任务轮询 |
 | 计费生成 | 显式审批 + `Idempotency-Key` |
+| 写接口保护 | 同源 `Origin` / `Sec-Fetch-Site` 校验 |
+| 用户积分 | 用户独立配额与可审计流水 |
 | OpenAPI | `/docs` 与 `/openapi.json` |
 
 本地 OpenAPI 文档：
@@ -129,6 +131,22 @@ http://localhost:8000/openapi.json
 }
 ```
 
+### 镜头排序
+
+`PATCH /projects/{project_id}/storyboard/order`
+
+请求必须且只能包含当前全部 Shot 一次。排序会保留 Shot ID、生成资产、生成历史和项目
+连续性。
+
+```json
+{
+  "shot_ids": [
+    "00000000-0000-0000-0000-000000000002",
+    "00000000-0000-0000-0000-000000000001"
+  ]
+}
+```
+
 ## Agent 对话
 
 ### 消息历史
@@ -221,6 +239,71 @@ cancelled
 
 前端每 5 秒轮询任务状态。Celery Worker 同时轮询任务状态。
 
+每次成功提交生成时，系统按估算值预留当前用户的 VideoAgent 积分。提交立即失败，
+或任务后续进入失败、取消状态时，系统通过幂等退款流水返还预留积分。
+
+## 用户积分
+
+`GET /credits`
+
+返回当前用户独立的 VideoAgent 配额。该余额与服务端 Provider 账户积分池分离。
+
+```json
+{
+  "provider": "video_agent",
+  "connected": true,
+  "credits": 95
+}
+```
+
+## 资产与媒体
+
+媒体接口均校验当前用户所有权。不支持的类型、文件头不匹配或超过大小限制的文件
+会在创建 Asset 记录前被拒绝。
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| `GET` | `/assets` | 当前用户资产列表 |
+| `GET` | `/projects/{project_id}/assets` | 项目资产列表 |
+| `POST` | `/projects/{project_id}/assets` | 上传图片、视频或音频素材 |
+| `GET` | `/assets/{asset_id}/content` | 读取私有资产内容 |
+| `POST` | `/projects/{project_id}/exports` | 合成并导出当前成片 |
+| `POST` | `/assets/{asset_id}/share` | 创建限时分享链接 |
+| `DELETE` | `/shares/{share_id}` | 撤销分享链接 |
+| `GET` | `/shares/{token}/content` | 通过有效分享链接读取资产 |
+
+上传请求：
+
+```text
+POST /projects/{project_id}/assets
+Content-Type: multipart/form-data
+file=<图片、视频或音频>
+```
+
+导出请求：
+
+```json
+{
+  "aspect_ratios": ["16:9", "9:16", "1:1"],
+  "soundtrack_asset_id": null,
+  "captions": "一段产品故事",
+  "permission": "private"
+}
+```
+
+导出响应包含交付版本 Asset 与自动生成的封面。当前实现使用 FFmpeg 合成可用镜头，
+统一交付比例，在镜头间添加短交叉淡化，并可加入字幕和上传的音轨。
+
+分享请求：
+
+```json
+{
+  "expires_in_hours": 24
+}
+```
+
+分享 Token 随机生成且只保存哈希；链接支持过期与撤销，访问时累计审计计数。
+
 ## Pippit Provider
 
 | 方法 | 路径 | 说明 |
@@ -229,7 +312,8 @@ cancelled
 | `GET` | `/providers/pippit/credits` | 查询 Pippit 积分余额 |
 
 Pippit 授权由服务端统一持有。浏览器不会收到 Access Key 或 CLI 登录文件。
-VideoAgent 用户共享服务端配置的 Pippit 账户和积分池。
+Provider 计费使用服务端配置的账户，产品用户通过 `/credits` 消费各自独立的
+VideoAgent 配额。
 
 状态响应：
 
@@ -269,9 +353,12 @@ VideoAgent 用户共享服务端配置的 Pippit 账户和积分池。
 | 状态码 | 含义 |
 | --- | --- |
 | `401` | 未登录或 Session 过期 |
+| `402` | 当前用户 VideoAgent 积分不足 |
 | `403` | 缺少显式生成审批 |
 | `404` | 资源不存在或不属于当前用户 |
 | `409` | Provider 未就绪 |
+| `413` | 上传文件超过配置限制 |
 | `422` | 请求校验失败 |
+| `429` | 触发认证、生成或上传限流 |
 | `502` | 上游 Provider 请求失败 |
 | `503` | Provider CLI 不可用 |

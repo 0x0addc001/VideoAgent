@@ -39,9 +39,7 @@ async def test_pippit_submits_video_and_returns_recoverable_task_reference():
         "thread_id": "thread-test-1",
         "run_id": "run-test-1",
     }
-    assert json.loads(task_reference("thread-test-1", "run-test-1")) == json.loads(
-        job.task_id
-    )
+    assert json.loads(task_reference("thread-test-1", "run-test-1")) == json.loads(job.task_id)
 
 
 @pytest.mark.unit
@@ -70,3 +68,34 @@ async def test_pippit_rejects_non_text_generation():
 
     with pytest.raises(ValueError, match="text-to-video"):
         await provider().submit(image_request)
+
+
+@pytest.mark.unit
+async def test_pippit_request_model_overrides_provider_default(monkeypatch):
+    client = provider()
+    calls: list[tuple[str, ...]] = []
+
+    async def capture(*args: str) -> dict[str, str]:
+        calls.append(args)
+        return {"thread_id": "thread-test-1", "run_id": "run-test-1"}
+
+    monkeypatch.setattr(client, "_run_json", capture)
+    await client.submit(request().model_copy(update={"model": "Seedance_2.5"}))
+
+    assert calls == [
+        (
+            "generate-video",
+            "--prompt",
+            "A creator filming a quiet vlog in a studio",
+            "--duration",
+            "5",
+            "--ratio",
+            "9:16",
+            "--source",
+            "videoagent",
+            "--model",
+            "Seedance_2.5",
+            "--resolution",
+            "720p",
+        )
+    ]

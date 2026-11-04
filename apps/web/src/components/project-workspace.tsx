@@ -2,14 +2,18 @@
 
 import {
   ArrowLeft,
+  ArrowRight,
   ArrowUp,
   Check,
+  Download,
   Film,
   MessageCircleMore,
   PanelRight,
   Plus,
   ScanSearch,
+  Share2,
   Sparkles,
+  Upload,
   Video,
   WandSparkles,
   X,
@@ -82,6 +86,36 @@ type GenerationJob = {
   result_url: string | null;
 };
 
+type Asset = {
+  id: string;
+  project_id: string | null;
+  shot_id: string | null;
+  kind: "upload" | "generated" | "export" | "cover" | "subtitle";
+  filename: string;
+  content_type: string;
+  byte_size: number;
+  checksum: string;
+  permission: "private" | "public";
+  content_url: string;
+  created_at: string;
+  updated_at: string;
+};
+
+type ExportResponse = {
+  items: Asset[];
+  cover: Asset | null;
+};
+
+type ShareLink = {
+  id: string;
+  asset_id: string;
+  token: string;
+  share_url: string;
+  expires_at: string;
+  revoked_at: string | null;
+  created_at: string;
+};
+
 type EvaluationMetric = {
   key: "consistency" | "coverage" | "clarity" | "pacing";
   score: number;
@@ -123,6 +157,13 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [isReviewing, setIsReviewing] = useState(false);
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [exportedAssets, setExportedAssets] = useState<Asset[]>([]);
+  const [exportCover, setExportCover] = useState<Asset | null>(null);
+  const [shareLink, setShareLink] = useState<ShareLink | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+  const [isSharing, setIsSharing] = useState(false);
+  const [isReordering, setIsReordering] = useState(false);
   const [mobilePanel, setMobilePanel] = useState<"agent" | "canvas" | "inspector">("canvas");
 
   useEffect(() => {
@@ -130,12 +171,15 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
 
     async function load() {
       try {
-        const [projectResponse, storyboardResponse, messagesResponse] = await Promise.all([
+        const [projectResponse, storyboardResponse, messagesResponse, assetsResponse] = await Promise.all([
           fetch(`${API_BASE_URL}/projects/${projectId}`, { credentials: "include" }),
           fetch(`${API_BASE_URL}/projects/${projectId}/storyboard`, {
             credentials: "include",
           }),
           fetch(`${API_BASE_URL}/projects/${projectId}/messages`, {
+            credentials: "include",
+          }),
+          fetch(`${API_BASE_URL}/projects/${projectId}/assets`, {
             credentials: "include",
           }),
         ]);
@@ -158,6 +202,9 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
         if (messagesResponse.ok) {
           nextMessages = ((await messagesResponse.json()) as { items: Message[] }).items;
           setMessages(nextMessages);
+        }
+        if (assetsResponse.ok) {
+          setAssets(((await assetsResponse.json()) as { items: Asset[] }).items);
         }
         const shouldStart =
           new URLSearchParams(window.location.search).get("start") === "1" &&
@@ -238,6 +285,9 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
   const selectedShot = useMemo(
     () => storyboard?.shots.find((shot) => shot.id === selectedShotId) ?? null,
     [selectedShotId, storyboard],
+  );
+  const canExport = Boolean(
+    storyboard?.shots.some((shot) => shot.status === "completed"),
   );
 
   async function createStarterStoryboard() {
@@ -321,6 +371,39 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
     }
   }
 
+  async function moveSelectedShot(direction: -1 | 1) {
+    if (!project || !storyboard || !selectedShot || isReordering) return;
+    const currentIndex = storyboard.shots.findIndex((shot) => shot.id === selectedShot.id);
+    const targetIndex = currentIndex + direction;
+    if (targetIndex < 0 || targetIndex >= storyboard.shots.length) return;
+    const reordered = [...storyboard.shots];
+    [reordered[currentIndex], reordered[targetIndex]] = [
+      reordered[targetIndex],
+      reordered[currentIndex],
+    ];
+
+    setIsReordering(true);
+    setActionError(null);
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/projects/${project.id}/storyboard/order`,
+        {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ shot_ids: reordered.map((shot) => shot.id) }),
+        },
+      );
+      if (!response.ok) throw new Error("reorder-failed");
+      setStoryboard((await response.json()) as Storyboard);
+      setSelectedShotId(selectedShot.id);
+    } catch {
+      setActionError(t("reorderError"));
+    } finally {
+      setIsReordering(false);
+    }
+  }
+
   async function generateShot() {
     if (!selectedShot) return;
     setIsWorking(true);
@@ -380,6 +463,82 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
       setReviewOpen(false);
     } finally {
       setIsReviewing(false);
+    }
+  }
+
+  function mediaUrl(path: string) {
+    return new URL(path, API_BASE_URL).toString();
+  }
+
+  async function uploadReference(file: File) {
+    if (!project || isWorking) return;
+    setIsWorking(true);
+    setActionError(null);
+    const body = new FormData();
+    body.append("file", file);
+    try {
+      const response = await fetch(`${API_BASE_URL}/projects/${project.id}/assets`, {
+        method: "POST",
+        credentials: "include",
+        body,
+      });
+      if (!response.ok) throw new Error("upload-failed");
+      const asset = (await response.json()) as Asset;
+      setAssets((current) => [asset, ...current]);
+    } catch {
+      setActionError(t("uploadError"));
+    } finally {
+      setIsWorking(false);
+    }
+  }
+
+  async function exportProject() {
+    if (!project || isExporting) return;
+    setIsExporting(true);
+    setActionError(null);
+    try {
+      const response = await fetch(`${API_BASE_URL}/projects/${project.id}/exports`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          aspect_ratios: ["16:9", "9:16", "1:1"],
+          permission: "private",
+        }),
+      });
+      if (!response.ok) throw new Error("export-failed");
+      const payload = (await response.json()) as ExportResponse;
+      setExportedAssets(payload.items);
+      setExportCover(payload.cover);
+      setAssets((current) => [
+        ...(payload.cover ? [payload.cover] : []),
+        ...payload.items,
+        ...current,
+      ]);
+    } catch {
+      setActionError(t("exportError"));
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
+  async function shareExport(asset: Asset) {
+    if (isSharing) return;
+    setIsSharing(true);
+    setActionError(null);
+    try {
+      const response = await fetch(`${API_BASE_URL}/assets/${asset.id}/share`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ expires_in_hours: 24 }),
+      });
+      if (!response.ok) throw new Error("share-failed");
+      setShareLink((await response.json()) as ShareLink);
+    } catch {
+      setActionError(t("shareError"));
+    } finally {
+      setIsSharing(false);
     }
   }
 
@@ -505,15 +664,26 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
         >
           <div className="flex h-14 items-center justify-between border-b border-white/8 px-5">
             <span className="text-sm font-medium">{t("canvas")}</span>
-            <button
-              className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3.5 py-2 text-xs text-white/65 transition hover:border-white/20 hover:text-white disabled:opacity-40"
-              disabled={!storyboard || isReviewing}
-              onClick={() => void evaluateProject()}
-              type="button"
-            >
-              <ScanSearch className="h-4 w-4" />
-              {t("review")}
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3.5 py-2 text-xs text-white/65 transition hover:border-white/20 hover:text-white disabled:opacity-40"
+                disabled={!storyboard || isReviewing}
+                onClick={() => void evaluateProject()}
+                type="button"
+              >
+                <ScanSearch className="h-4 w-4" />
+                {t("review")}
+              </button>
+              <button
+                className="inline-flex items-center gap-2 rounded-full bg-[#1677ff] px-3.5 py-2 text-xs font-semibold text-white transition hover:bg-[#2b86ff] disabled:opacity-40"
+                disabled={!canExport || isExporting}
+                onClick={() => void exportProject()}
+                type="button"
+              >
+                <Download className="h-4 w-4" />
+                {isExporting ? t("exporting") : t("export")}
+              </button>
+            </div>
           </div>
           <div className="flex-1 overflow-auto p-5 sm:p-8">
             {storyboard ? (
@@ -591,6 +761,58 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
                 {actionError}
               </p>
             ) : null}
+            {exportedAssets.length > 0 ? (
+              <section className="mx-auto mt-6 max-w-5xl rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.04] p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <h2 className="text-sm font-semibold">{t("exportReady")}</h2>
+                    <p className="mt-1 text-xs text-white/40">
+                      {exportedAssets.length} {t("exportVariants")}
+                    </p>
+                  </div>
+                  {exportCover ? (
+                    <img
+                      alt={t("exportCover")}
+                      className="h-16 w-24 rounded-lg object-cover"
+                      src={mediaUrl(exportCover.content_url)}
+                    />
+                  ) : null}
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {exportedAssets.map((asset) => (
+                    <div className="flex items-center gap-1" key={asset.id}>
+                      <a
+                        className="inline-flex items-center gap-2 rounded-full border border-white/10 px-3 py-2 text-xs text-white/70 hover:border-white/20 hover:text-white"
+                        download={asset.filename}
+                        href={mediaUrl(asset.content_url)}
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        {asset.filename}
+                      </a>
+                      <button
+                        aria-label={`${t("share")} ${asset.filename}`}
+                        className="grid size-8 place-items-center rounded-full border border-white/10 text-white/55 hover:text-white disabled:opacity-40"
+                        disabled={isSharing}
+                        onClick={() => void shareExport(asset)}
+                        type="button"
+                      >
+                        <Share2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                {shareLink ? (
+                  <label className="mt-4 block text-xs text-white/45">
+                    <span>{t("shareReady")}</span>
+                    <input
+                      className="mt-2 w-full rounded-xl border border-white/10 bg-black/20 px-3 py-2 text-white/75"
+                      readOnly
+                      value={mediaUrl(shareLink.share_url)}
+                    />
+                  </label>
+                ) : null}
+              </section>
+            ) : null}
           </div>
         </section>
 
@@ -607,6 +829,34 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
           <div className="flex-1 overflow-y-auto p-5">
             {selectedShot ? (
               <div className="space-y-6">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-xs uppercase tracking-[0.15em] text-white/30">
+                    {selectedShot.index + 1} / {storyboard?.shots.length ?? 0}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      aria-label={t("moveEarlier")}
+                      className="grid size-8 place-items-center rounded-lg border border-white/8 text-white/45 transition hover:border-white/18 hover:text-white disabled:opacity-20"
+                      disabled={isReordering || selectedShot.index === 0}
+                      onClick={() => void moveSelectedShot(-1)}
+                      type="button"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                    </button>
+                    <button
+                      aria-label={t("moveLater")}
+                      className="grid size-8 place-items-center rounded-lg border border-white/8 text-white/45 transition hover:border-white/18 hover:text-white disabled:opacity-20"
+                      disabled={
+                        isReordering ||
+                        selectedShot.index === (storyboard?.shots.length ?? 1) - 1
+                      }
+                      onClick={() => void moveSelectedShot(1)}
+                      type="button"
+                    >
+                      <ArrowRight className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
                 <div>
                   <p className="text-xs uppercase tracking-[0.15em] text-white/30">
                     Prompt
@@ -672,6 +922,30 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
                         ? t("completed")
                         : t("generate")}
                   </button>
+                </div>
+                <div className="border-t border-white/8 pt-5">
+                  <p className="text-xs uppercase tracking-[0.15em] text-white/30">
+                    {t("references")}
+                  </p>
+                  <p className="mt-2 text-xs leading-5 text-white/35">
+                    {assets.filter((asset) => asset.kind === "upload").length}{" "}
+                    {t("referenceCount")}
+                  </p>
+                  <label className="mt-3 flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-dashed border-white/12 px-4 py-3 text-sm text-white/55 transition hover:border-[#1677ff]/40 hover:text-white">
+                    <Upload className="h-4 w-4" />
+                    {isWorking ? t("uploading") : t("uploadReference")}
+                    <input
+                      accept="image/*,video/*,audio/*"
+                      className="sr-only"
+                      disabled={isWorking}
+                      onChange={(event) => {
+                        const file = event.target.files?.[0];
+                        event.currentTarget.value = "";
+                        if (file) void uploadReference(file);
+                      }}
+                      type="file"
+                    />
+                  </label>
                 </div>
               </div>
             ) : (

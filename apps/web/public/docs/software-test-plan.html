@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Test" />
     <title>Test · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=26" />
+    <link rel="stylesheet" href="../docs.css?v=27" />
   </head>
   <body data-document="software-test-plan.html">
     <main class="document-shell" id="document-shell">
@@ -48,7 +48,7 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v2.1</td>
+<td>v2.2</td>
 </tr>
 <tr>
 <td>Updated</td>
@@ -56,7 +56,7 @@
 </tr>
 <tr>
 <td>Frameworks</td>
-<td>pytest, Vitest, Testing Library</td>
+<td>pytest, Vitest, Testing Library, Playwright</td>
 </tr>
 </tbody></table></div>
 <h2 id="1-purpose">1. Purpose</h2>
@@ -73,7 +73,7 @@
 <pre><code class="language-text">Unit and component tests
   → Provider and API contract tests
   → SQLite integration tests
-  → browser component tests</code></pre>
+  → Playwright and Mock Provider browser E2E</code></pre>
 <p>External paid generation is never part of normal CI.</p>
 <h2 id="4-coverage">4. Coverage</h2>
 <p>Backend:</p>
@@ -87,6 +87,10 @@
 <li>Provider status and credits.</li>
 <li>Health endpoint.</li>
 <li>Instant storyboard evaluation.</li>
+<li>Media MIME, signature, size, and ownership validation.</li>
+<li>FFmpeg composition, delivery, cover generation, sharing, expiry, and revocation.</li>
+<li>User credit reservation, failure refunds, and idempotent ledger entries.</li>
+<li>Same-origin write validation and authentication rate limiting.</li>
 </ul>
 <p>Frontend:</p>
 <ul>
@@ -99,6 +103,7 @@
 <li>Hots author, likes, playback, and publishing.</li>
 <li>English-to-Chinese Docs switching.</li>
 <li>Project list, authentication form, and project workspace.</li>
+<li>Project uploads, film export, MP4 download, and share-link creation.</li>
 </ul>
 <h2 id="5-provider-contract-tests">5. Provider Contract Tests</h2>
 <p>Every <code>VideoProvider</code> verifies:</p>
@@ -121,6 +126,7 @@
 <li>Explicit generation approval.</li>
 <li>Idempotency behavior.</li>
 <li>Storyboard replacement ordering.</li>
+<li>Shot IDs, generated assets, and history remain intact after reordering.</li>
 <li>Agent message persistence.</li>
 <li>Evaluation result shape.</li>
 <li>No provider credentials in responses.</li>
@@ -144,7 +150,7 @@
 <p>while the prompt contains non-whitespace text.</p>
 <li>The Model selector includes every available Kling and Pippit video model in</li>
 <p><code>Provider/Model</code> format.</p>
-<li>Docs labels are <code>PRD</code>, <code>Design</code>, <code>Interface</code>, <code>Impl</code>, <code>Test</code>, <code>Ops</code>, <code>FAQ</code>,</li>
+<li>Docs labels are <code>PRD</code>, <code>Playbook</code>, <code>Arch</code>, <code>API</code>, <code>Dev</code>, <code>Test</code>, <code>Ops</code>, <code>FAQ</code>,</li>
 <p>and <code>TODO</code>.</p>
 <li>Globe control changes Docs source and language.</li>
 <li>Skills, Hots, Assets, and Docs search controls stay pinned while content</li>
@@ -155,9 +161,13 @@
 <li>Search, language, notifications, credits, and avatar controls use</li>
 <p>translucent surfaces.</p>
 <li>Avatar opens login and registration when signed out and sign-out when signed in.</li>
-<li>Interface starts with its metadata table.</li>
+<li>API starts with its metadata table.</li>
 <li>FAQ and TODO have paired English and Chinese documents.</li>
 </ul>
+<p>Playwright uses the real Next.js UI, FastAPI service, SQLite, and Mock Provider to verify:</p>
+<pre><code class="language-text">register → home prompt → create project → Agent storyboard → upload
+→ estimate → generate → poll/materialize → export → download → share</code></pre>
+<p>This flow never calls a paid Provider and is a required Pull Request gate.</p>
 <h2 id="8-responsive-and-accessibility-checks">8. Responsive and Accessibility Checks</h2>
 <ul>
 <li>Keyboard access for navigation, dropdowns, Docs, and dialogs.</li>
@@ -176,6 +186,7 @@ Vitest
 TypeScript check
 Next.js production build
 Docs and static artifact build
+Playwright with Mock Provider E2E
 secret and dependency scans</code></pre>
 <h2 id="10-provider-verification">10. Provider Verification</h2>
 <h3 id="read-only">Read-only</h3>
@@ -207,6 +218,6 @@ secret and dependency scans</code></pre>
 <li>Paid Provider tests remain opt-in.</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=26"></script>
+    <script src="../docs.js?v=27"></script>
   </body>
 </html>

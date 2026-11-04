@@ -2,7 +2,7 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v2.0 |
+| 文档版本 | v2.1 |
 | 更新日期 | 2026-11-04 |
 | 范围 | Skills、Hots、Assets、Provider、支持、指标 |
 
@@ -19,9 +19,12 @@ VideoAgent 按三层内容运营：
 
 - 完成认证和积分消耗验收。
 - 确认 Pippit CLI 授权与 Kling MCP OAuth。
-- 发布 PRD、Design、Interface、Impl、Test、Ops、FAQ、TODO 八份文档。
+- 发布 PRD、Playbook、Arch、API、Dev、Test、Ops、FAQ、TODO 九份文档。
 - 验证中英文文档切换。
 - 验证项目创建、故事板规划、生成审批和任务轮询。
+- 验证上传、生成结果落地、FFmpeg 合成、下载与分享撤销。
+- 验证用户积分预扣、失败退款和 Provider 账户对账。
+- 执行 Playwright + Mock Provider 无费用 E2E。
 - 确认浏览器包、日志和 API 响应中不存在 Provider 凭据。
 
 ## 3. 官方 Skill 运营
@@ -29,7 +32,7 @@ VideoAgent 按三层内容运营：
 - 原厂商能力使用厂商 user_id（如 `kling`）；跨 Provider 工作流使用 `video_agent`。
 - Skill ID 稳定、小写，并使用下划线分隔。
 - 每个 Skill 说明输入、输出、Provider 依赖和积分影响。
-- Skill 变更同步更新 PRD、Design 和 Test。
+- Skill 变更同步更新 PRD、Playbook、Arch 和 Test。
 - 废弃 Skill 至少保留一个版本并给出迁移说明。
 - 场景 Playbook 引用有效 Skill，并与创作框字段保持一致。
 - 外部 Agent 接力使用明确的 MCP 或 CLI 契约。
@@ -41,6 +44,8 @@ VideoAgent 按三层内容运营：
 - 编辑日期统一使用 `yyyy-mm-dd`。
 - Video 卡片悬浮预览，Skill 卡片不显示封面。
 - Video 与 Skill 通过内部分页区分，不在卡片上重复类型标签。
+- 上传和导出资产按用户隔离；分享链接默认限时 24 小时，支持主动撤销。
+- 清理媒体前先检查 Asset、分享链接和项目引用，避免不可恢复的断链。
 
 ## 5. Provider 与成本运营
 
@@ -48,12 +53,14 @@ VideoAgent 按三层内容运营：
 - 计费生成必须获得用户明确批准。
 - Provider 提交使用数据库幂等键。
 - 积分和 Provider 状态由服务端读取。
+- 产品界面展示用户独立 VideoAgent 配额，不直接暴露共享 Provider 积分池。
+- 生成成功前预扣用户配额；提交失败、生成失败或取消时执行幂等退款。
 - 监控 Provider 错误率、超时率、不确定提交和重复提交拦截。
 - 保留 Provider Task Reference 以支持对账。
 
 ## 6. 发布流程
 
-1. 运行后端测试、前端测试、类型检查、构建和文档生成。
+1. 运行后端测试、前端测试、Playwright E2E、类型检查、构建和文档生成。
 2. 检查敏感信息和依赖安全扫描。
 3. 只读检查 Provider 状态和积分。
 4. 验证中英文 Docs、搜索、导航和响应式布局。
@@ -68,6 +75,8 @@ VideoAgent 按三层内容运营：
 - Provider 成功、失败、超时和不确定提交比例。
 - 幂等键拦截的重复任务数。
 - 单项目积分消耗。
+- 用户预扣、退款和未完成预留数量。
+- 上传拒绝率、导出耗时、分享链接访问与撤销次数。
 - 文档搜索使用量和失效链接。
 
 ## 8. 用户支持
@@ -90,6 +99,7 @@ VideoAgent 按三层内容运营：
 - Web 发布可独立回滚，不覆盖 Provider 凭据。
 - 发布状态说明，明确受影响能力与缓解措施。
 - 复盘重复扣费、跨用户访问和审计证据缺失。
+- 分享 Token 泄露时立即撤销链接，并检查异常访问计数。
 
 ## 10. 成功指标
 

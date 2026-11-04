@@ -7,8 +7,12 @@
     "pages:build": "pnpm --dir apps/landing build",
     "build": "pnpm --dir apps/web build",
     "test": "pnpm --dir apps/web test",
+    "test:e2e": "playwright test",
+    "test:e2e:install": "playwright install chromium",
     "typecheck": "pnpm --dir apps/web typecheck",
     "check": "pnpm --dir apps/web check"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1"
   }
 }
-

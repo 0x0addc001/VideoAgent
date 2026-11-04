@@ -38,3 +38,23 @@ jobs:
       - run: pnpm --dir apps/web typecheck
       - run: pnpm --dir apps/web build
 
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.25.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: pnpm
+      - run: sudo apt-get update && sudo apt-get install --yes ffmpeg
+      - run: pnpm install --frozen-lockfile
+      - run: uv sync --dev --directory services/api
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:e2e
+

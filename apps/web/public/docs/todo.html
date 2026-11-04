@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent TODO" />
     <title>TODO · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=26" />
+    <link rel="stylesheet" href="../docs.css?v=27" />
   </head>
   <body data-document="todo.html">
     <main class="document-shell" id="document-shell">
@@ -43,7 +43,7 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v1.0</td>
+<td>v1.1</td>
 </tr>
 <tr>
 <td>Updated</td>
@@ -51,7 +51,7 @@
 </tr>
 <tr>
 <td>Policy</td>
-<td>Undelivered capabilities, new requirements, and follow-up enhancements are tracked here</td>
+<td>Track undelivered capabilities, new requirements, and follow-up enhancements; remove completed items</td>
 </tr>
 </tbody></table></div>
 <h2 id="1-product-and-frontend">1. Product and Frontend</h2>
@@ -59,26 +59,31 @@
 <th>ID</th>
 <th>TODO</th>
 <th>Acceptance</th>
+<th>Priority</th>
 </tr></thead><tbody>
 <tr>
 <td>TODO-UI-001</td>
 <td>Add bilingual controls to the product UI</td>
 <td>Navigation, composer, workspace, and feedback are fully localized</td>
+<td>P1</td>
 </tr>
 <tr>
 <td>TODO-UI-002</td>
 <td>Expand production playbooks by industry</td>
 <td>Each template defines prompt, Skill, Hook, frame, duration, and review</td>
+<td>P1</td>
 </tr>
 <tr>
 <td>TODO-UI-003</td>
-<td>Shot ordering and multimodal references</td>
-<td>Users can reorder shots and attach reference images or videos</td>
+<td>Generation reference wiring</td>
+<td>Pass uploaded image, video, and audio references into the matching Provider generation request</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-UI-004</td>
 <td>Project asset and reference panel</td>
 <td>Characters, scenes, props, and styles are reusable across shots</td>
+<td>P1</td>
 </tr>
 </tbody></table></div>
 <h2 id="2-agent-and-directing-workflow">2. Agent and Directing Workflow</h2>
@@ -86,41 +91,49 @@
 <th>ID</th>
 <th>TODO</th>
 <th>Acceptance</th>
+<th>Priority</th>
 </tr></thead><tbody>
 <tr>
 <td>TODO-AGENT-001</td>
 <td>Intent routing</td>
 <td>Create, revise, review, regenerate, and localize requests use distinct paths</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-AGENT-002</td>
 <td>Partial shot patches</td>
 <td>Editing one shot preserves other shots, versions, and approval state</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-AGENT-003</td>
 <td>Scene / sequence / beat data</td>
 <td>Scene goals, conflict, and entry/exit state are persisted</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-AGENT-004</td>
 <td>Cinematic shot schema</td>
 <td>Shot size, angle, lens, movement, performance, gaze, sound, and transitions are structured</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-AGENT-005</td>
 <td>Style bible and continuity graph</td>
 <td>Characters, costume, locations, props, and screen direction are checked and reused</td>
+<td>P1</td>
 </tr>
 <tr>
 <td>TODO-AGENT-006</td>
 <td>Animatic and timeline previz</td>
 <td>Users approve rhythm before final shot generation</td>
+<td>P1</td>
 </tr>
 <tr>
 <td>TODO-AGENT-007</td>
 <td>Multi-node LangGraph with recovery</td>
 <td>Story, budget, shot, and cut gates can pause, resume, and remain auditable</td>
+<td>P0</td>
 </tr>
 </tbody></table></div>
 <h2 id="3-providers-and-generation">3. Providers and Generation</h2>
@@ -128,31 +141,37 @@
 <th>ID</th>
 <th>TODO</th>
 <th>Acceptance</th>
+<th>Priority</th>
 </tr></thead><tbody>
 <tr>
 <td>TODO-PROVIDER-001</td>
 <td>Route Kling generation through the backend</td>
 <td>A web project can select Pippit or Kling from model metadata</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-PROVIDER-002</td>
 <td>Provider capability discovery</td>
 <td>Duration, aspect, audio, reference inputs, and output capabilities are server-discovered</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-PROVIDER-003</td>
 <td>Provider cancellation and unified errors</td>
 <td>Both providers support cancel, timeout, throttling, and retry classification</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-PROVIDER-004</td>
 <td>Automatic routing and fallback</td>
 <td>Tasks select models by task, budget, and availability while respecting explicit choice</td>
+<td>P1</td>
 </tr>
 <tr>
 <td>TODO-PROVIDER-005</td>
 <td>Take management</td>
 <td>Each shot stores alternate takes, scores, and selection history</td>
+<td>P1</td>
 </tr>
 </tbody></table></div>
 <h2 id="4-media-and-delivery">4. Media and Delivery</h2>
@@ -160,26 +179,13 @@
 <th>ID</th>
 <th>TODO</th>
 <th>Acceptance</th>
+<th>Priority</th>
 </tr></thead><tbody>
 <tr>
 <td>TODO-MEDIA-001</td>
-<td>Asset upload and object storage</td>
-<td>Images, video, and audio receive validation, signed access, and lifecycle rules</td>
-</tr>
-<tr>
-<td>TODO-MEDIA-002</td>
-<td>FFmpeg composition</td>
-<td>Timeline, transitions, captions, sound, and grade produce a final MP4</td>
-</tr>
-<tr>
-<td>TODO-MEDIA-003</td>
-<td>Delivery variants</td>
-<td>Landscape, vertical, square, cover, and subtitle files are exported</td>
-</tr>
-<tr>
-<td>TODO-MEDIA-004</td>
-<td>Sharing and permissions</td>
-<td>Expiry, revocation, and access auditing are supported</td>
+<td>MinIO/S3 object storage</td>
+<td>Move media storage to object storage with lifecycle and signed-access policies</td>
+<td>P0</td>
 </tr>
 </tbody></table></div>
 <h2 id="5-realtime-and-reliability">5. Realtime and Reliability</h2>
@@ -187,26 +193,31 @@
 <th>ID</th>
 <th>TODO</th>
 <th>Acceptance</th>
+<th>Priority</th>
 </tr></thead><tbody>
 <tr>
 <td>TODO-REL-001</td>
 <td>SSE project events</td>
 <td>Conversation, shot, and job updates reconnect and reconcile state</td>
+<td>P1</td>
 </tr>
 <tr>
 <td>TODO-REL-002</td>
 <td>Production Celery deployment</td>
 <td>Redis broker, retries, dead-letter queue, reconciliation, and worker recovery</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-REL-003</td>
 <td>LangGraph checkpoints</td>
 <td>A process restart resumes from the last valid node</td>
+<td>P1</td>
 </tr>
 <tr>
 <td>TODO-REL-004</td>
 <td>Unified observability</td>
 <td>Traces, structured logs, provider latency, and success metrics</td>
+<td>P0</td>
 </tr>
 </tbody></table></div>
 <h2 id="6-community-and-operations">6. Community and Operations</h2>
@@ -214,26 +225,31 @@
 <th>ID</th>
 <th>TODO</th>
 <th>Acceptance</th>
+<th>Priority</th>
 </tr></thead><tbody>
 <tr>
 <td>TODO-COMMUNITY-001</td>
 <td>Persist Hots</td>
 <td>Publish, author, likes, permissions, and edit time live in the database</td>
+<td>P1</td>
 </tr>
 <tr>
 <td>TODO-COMMUNITY-002</td>
 <td>Community moderation</td>
 <td>Report, hide, restore, appeal, and audit flows</td>
+<td>P1</td>
 </tr>
 <tr>
 <td>TODO-COMMUNITY-003</td>
 <td>Persist and version Skills</td>
 <td>User Skills can be published, updated, deprecated, and migrated</td>
+<td>P1</td>
 </tr>
 <tr>
 <td>TODO-COMMUNITY-004</td>
 <td>Data retention</td>
 <td>Define soft delete, recovery window, and media lifecycle</td>
+<td>P2</td>
 </tr>
 </tbody></table></div>
 <h2 id="7-security-and-data">7. Security and Data</h2>
@@ -241,31 +257,31 @@
 <th>ID</th>
 <th>TODO</th>
 <th>Acceptance</th>
+<th>Priority</th>
 </tr></thead><tbody>
-<tr>
-<td>TODO-SEC-001</td>
-<td>CSRF protection</td>
-<td>Cookie-writing endpoints use a token or equivalent same-origin defense</td>
-</tr>
 <tr>
 <td>TODO-SEC-002</td>
 <td>Layered rate limits</td>
 <td>User, IP, provider, and generation quotas are independent</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-SEC-003</td>
-<td>Upload security</td>
-<td>File header, size, MIME, decode, and malicious-content checks</td>
+<td>Media decoding and malware checks</td>
+<td>Add decode validation and malware scanning on top of file signature, size, and MIME checks</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-SEC-004</td>
 <td>Production data services</td>
 <td>PostgreSQL, Redis, MinIO, migrations, and integration tests are complete</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-SEC-005</td>
 <td>Generated OpenAPI client</td>
 <td>Frontend types are generated from OpenAPI and checked in CI</td>
+<td>P1</td>
 </tr>
 </tbody></table></div>
 <h2 id="8-testing-and-release">8. Testing and Release</h2>
@@ -273,29 +289,28 @@
 <th>ID</th>
 <th>TODO</th>
 <th>Acceptance</th>
+<th>Priority</th>
 </tr></thead><tbody>
-<tr>
-<td>TODO-QA-001</td>
-<td>Playwright E2E</td>
-<td>Cover English product flow, Docs switching, and the core workspace</td>
-</tr>
 <tr>
 <td>TODO-QA-002</td>
 <td>Provider contract matrix</td>
 <td>Cover unified behavior across Pippit, Kling, and Mock</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-QA-003</td>
 <td>Paid generation acceptance</td>
 <td>Complete one end-to-end generation with an explicit budget and approval</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-QA-004</td>
 <td>Failure exercises</td>
 <td>Cover worker interruption, duplicate delivery, SSE reconnect, and download failure</td>
+<td>P1</td>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=26"></script>
+    <script src="../docs.js?v=27"></script>
   </body>
 </html>

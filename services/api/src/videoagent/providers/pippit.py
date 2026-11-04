@@ -161,8 +161,9 @@ class PippitVideoProvider:
             "--source",
             "videoagent",
         ]
-        if self._model:
-            args.extend(["--model", self._model])
+        model = request.model or self._model
+        if model:
+            args.extend(["--model", model])
         if self._resolution:
             args.extend(["--resolution", self._resolution])
         payload = await self._run_json(*args)

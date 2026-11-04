@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v2.0 |
+| Document version | v2.1 |
 | Updated | 2026-11-04 |
 | Scope | Skills, Hots, Assets, providers, support, metrics |
 
@@ -19,10 +19,15 @@ VideoAgent operates three content layers:
 
 - Complete authentication and credit-usage acceptance.
 - Verify Pippit CLI authorization and Kling MCP OAuth.
-- Publish PRD, Design, Interface, Impl, Test, Ops, FAQ, and TODO.
+- Publish PRD, Playbook, Arch, API, Dev, Test, Ops, FAQ, and TODO.
 - Verify English and Chinese Docs switching.
 - Verify project creation, storyboard planning, generation approval, and job
   polling with the configured provider.
+- Verify upload, generated-result materialization, FFmpeg delivery, download,
+  and share revocation.
+- Verify per-user credit reservation, failure refunds, and Provider-account
+  reconciliation.
+- Run Playwright with the Mock Provider as a no-fee end-to-end release gate.
 - Confirm provider credentials never appear in browser bundles, logs, or API
   responses.
 
@@ -32,7 +37,7 @@ VideoAgent operates three content layers:
   cross-provider workflows use `video_agent`.
 - Skill IDs are stable, lowercase, and underscore-separated.
 - Every Skill states its input, output, provider dependency, and credit impact.
-- Skill changes update PRD, Design, and Test.
+- Skill changes update PRD, Playbook, Arch, and Test.
 - Deprecated Skills remain listed for one release with a migration note.
 - Scenario playbooks reference current Skills and stay aligned with composer
   fields.
@@ -45,6 +50,9 @@ VideoAgent operates three content layers:
 - Edit dates use `yyyy-mm-dd`.
 - Video assets preview on hover; Skill assets have no cover.
 - Video and Skill use internal tabs rather than repeated type labels.
+- Uploaded and delivered assets are user-scoped. Share links are time-limited
+  by default and can be revoked.
+- Check Asset, share-link, and project references before deleting media.
 
 ## 5. Provider and Cost Operations
 
@@ -52,13 +60,18 @@ VideoAgent operates three content layers:
 - Billable generation requires explicit user approval.
 - Provider submission uses database idempotency keys.
 - Credits and provider status are read server-side.
+- The product displays each user's VideoAgent quota instead of the shared
+  Provider account pool.
+- Generation reserves user credits before submission and refunds them
+  idempotently after submit failure, job failure, or cancellation.
 - Monitor provider errors, timeout rate, uncertain submissions, and duplicate
   protection.
 - Preserve provider task references for reconciliation.
 
 ## 6. Release Procedure
 
-1. Run backend tests, frontend tests, type checks, builds, and Docs generation.
+1. Run backend tests, frontend tests, Playwright E2E, type checks, builds, and
+   Docs generation.
 2. Check secret scanning and dependency security results.
 3. Confirm provider status and credit balance without spending credits.
 4. Validate English and Chinese Docs, search, navigation, and responsive layout.
@@ -73,6 +86,8 @@ VideoAgent operates three content layers:
 - Provider success, failure, timeout, and uncertain-submit rate.
 - Duplicate generation prevented by idempotency.
 - Credit consumption per project.
+- Reservations, refunds, and unresolved credit holds.
+- Upload rejection rate, export latency, and share access or revocation counts.
 - Docs search usage and broken document links.
 
 ## 8. Support
@@ -95,6 +110,7 @@ Support never asks users for access keys, cookies, or CLI session files.
 - Roll back the web release independently from provider credentials.
 - Publish a status note with affected areas and mitigation.
 - Review billing, duplicate jobs, cross-user access, and audit evidence.
+- Revoke exposed share tokens immediately and inspect anomalous access counts.
 
 ## 10. Success Metrics
 

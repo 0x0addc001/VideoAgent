@@ -50,12 +50,21 @@ class Settings(BaseSettings):
     celery_broker_url: str = "redis://localhost:6379/0"
     celery_result_backend: str = "redis://localhost:6379/1"
     celery_poll_interval_seconds: int = 5
+    media_dir: str = "./.data/media"
+    max_upload_bytes: int = Field(default=100 * 1024 * 1024, ge=1024)
+    ffmpeg_command: str = "ffmpeg"
+    ffprobe_command: str = "ffprobe"
+    auth_rate_limit_per_minute: int = Field(default=20, ge=1)
+    generation_rate_limit_per_minute: int = Field(default=30, ge=1)
+    upload_rate_limit_per_minute: int = Field(default=20, ge=1)
+    starting_user_credits: int = Field(default=100, ge=0)
 
     @property
     def is_sqlite(self) -> bool:
         return self.database_url.startswith("sqlite")
 
     def ensure_runtime_paths(self) -> None:
+        Path(self.media_dir).expanduser().resolve().mkdir(parents=True, exist_ok=True)
         if not self.is_sqlite:
             return
         database_path = self.database_url.removeprefix("sqlite+aiosqlite:///")

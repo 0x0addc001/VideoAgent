@@ -5,6 +5,7 @@ const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000/api/v1";
 const ALLOWED_GET_PATHS = new Set([
   "auth/me",
+  "credits",
   "providers/pippit/credits",
 ]);
 const ALLOWED_POST_PATHS = new Set(["projects"]);

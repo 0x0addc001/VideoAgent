@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.4 |
+| Document version | v1.5 |
 | Updated | 2026-11-04 |
 
 ## 1. Product Goal
@@ -149,15 +149,30 @@ Assets contains the current user's finished and in-progress work.
 - Video cards play a muted loop on hover and pause when hover ends. Skill cards
   have no cover image.
 
+### 7.1 Project Workspace and Delivery
+
+- A project accepts image, video, and audio uploads and shows the reference count.
+- Uploads must pass content-type, file-signature, and size validation.
+- Users can inspect estimated credits and explicitly approve generation.
+- Generated shots can be composed into a film with 16:9, 9:16, and 1:1 deliveries.
+- Users can reorder shots without replacing Shot IDs, generated assets, or
+  generation history.
+- Export supports captions, an uploaded soundtrack, an automatic cover, and
+  private or public permission.
+- Each delivery can be downloaded; share links expire and can be revoked.
+- Assets lists only uploads, generated clips, and deliveries available to the
+  current user.
+
 ## 8. Docs
 
 Document order:
 
 ```text
 PRD
-Design
-Interface
-Impl
+Playbook
+Arch
+API
+Dev
 Test
 Ops
 FAQ
@@ -169,9 +184,10 @@ English labels and Chinese short labels:
 | English | Chinese |
 | --- | --- |
 | PRD | 产品 |
-| Design | 设计 |
-| Interface | 接口 |
-| Impl | 实现 |
+| Playbook | 玩法 |
+| Arch | 架构 |
+| API | 接口 |
+| Dev | 开发 |
 | Test | 测试 |
 | Ops | 运营 |
 | FAQ | 客服 |
@@ -192,8 +208,11 @@ Docs requirements:
 - Users authenticate with email and password.
 - Credentials are stored only as cryptographic hashes.
 - Sessions use HttpOnly cookies.
-- The upper-right credit count reflects the active server provider.
+- The upper-right credit count reflects the current user's VideoAgent balance
+  without exposing the shared Provider account pool.
 - Generation requires explicit approval before a billable provider call.
+- Credits are reserved before submission and refunded idempotently after submit,
+  generation, or cancellation failures.
 
 ## 10. Non-Functional Requirements
 
@@ -216,7 +235,7 @@ Docs requirements:
 9. Assets uses internal Video and Skill tabs and shows permission and
     `yyyy-mm-dd` edit time.
 10. Assets uses a waterfall layout; videos preview on hover and Skill cards have no cover.
-11. Docs includes PRD, Design, Interface, Impl, Test, Ops, FAQ, and TODO in order.
+11. Docs includes PRD, Playbook, Arch, API, Dev, Test, Ops, FAQ, and TODO in order.
 12. Docs search and bilingual switching work.
 13. Avatar provides login, registration, or sign-out based on session state.
 14. Production playbooks fill the prompt and recommended production settings.
@@ -225,3 +244,7 @@ Docs requirements:
     while typing.
 17. Re-clicking the active playbook cancels selection and restores the previous draft.
 18. The Model selector exposes all available video models.
+19. Users can upload references, compose a film, download a delivery, and
+    create a share link.
+20. User credit reservations, refunds, and Provider-account reconciliation agree.
+21. Reordering shots does not delete or recreate existing Shots.

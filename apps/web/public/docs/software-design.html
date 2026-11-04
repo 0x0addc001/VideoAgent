@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="VideoAgent Design" />
-    <title>Design · VideoAgent</title>
+    <meta name="description" content="VideoAgent Arch" />
+    <title>Arch · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=26" />
+    <link rel="stylesheet" href="../docs.css?v=27" />
   </head>
   <body data-document="software-design.html">
     <main class="document-shell" id="document-shell">
@@ -54,7 +54,7 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v1.7</td>
+<td>v1.8</td>
 </tr>
 <tr>
 <td>Updated</td>
@@ -105,6 +105,10 @@
 <li>Instant storyboard review for consistency, coverage, clarity, and pacing.</li>
 <li>Hots feed playback, author, likes, and publishing.</li>
 <li>English and Chinese documentation generated from paired Markdown sources.</li>
+<li>Project-level image, video, and audio uploads with MIME, signature, and size validation.</li>
+<li>FFmpeg composition with 16:9, 9:16, and 1:1 deliveries, covers, captions, and soundtracks.</li>
+<li>Time-limited share links with private/public permissions, expiry, revocation, and access counts.</li>
+<li>Per-user VideoAgent credit accounts with reservation and idempotent refunds.</li>
 </ul>
 <h2 id="4-core-user-flow">4. Core User Flow</h2>
 <pre><code class="language-text">Sign in
@@ -127,8 +131,10 @@ Next.js Route Handler /api/account/*
   → FastAPI /api/v1
       ├── Auth / Projects / Storyboards
       ├── Agent / Generation / Evaluation / Providers
+      ├── Assets / Delivery / Credits
       ├── SQLAlchemy Async
       ├── LangGraph
+      ├── FFmpeg
       ├── Pippit CLI
       └── Kling MCP
 
@@ -176,8 +182,12 @@ Celery Worker + Redis
 <td>Pippit CLI, Kling MCP, Mock Provider</td>
 </tr>
 <tr>
+<td>Media</td>
+<td>FFmpeg, local filesystem storage</td>
+</tr>
+<tr>
 <td>Testing</td>
-<td>pytest, Vitest, Testing Library</td>
+<td>pytest, Vitest, Testing Library, Playwright</td>
 </tr>
 <tr>
 <td>Quality</td>
@@ -217,7 +227,7 @@ GET /jobs/{id}
 get-credit-balance
 generate-video
 query-result</code></pre>
-<p>The server owns CLI authorization. All product users share the configured Pippit account and credit pool. Access keys and CLI session files never reach the browser.</p>
+<p>The server owns CLI authorization. Provider billing uses the configured server account, while each product user consumes an independent VideoAgent credit balance through <code>/credits</code>. Access keys and CLI session files never reach the browser.</p>
 <h3 id="8-2-kling-mcp">8.2 Kling MCP</h3>
 <p>Kling MCP exposes text-to-video, image-to-video, first/last-frame, motion control, and Omni-Ref tools. OAuth is managed by the connector. The provider adapter maps task state, errors, and result URLs into the shared <code>VideoProvider</code> contract so the project workflow does not depend on protocol or vendor details.</p>
 <h2 id="9-skills-catalogue">9. Skills Catalogue</h2>
@@ -364,6 +374,22 @@ query-result</code></pre>
 <td><code>oauth_flows</code></td>
 <td>OAuth transaction state</td>
 </tr>
+<tr>
+<td><code>credit_accounts</code></td>
+<td>Per-user VideoAgent balance</td>
+</tr>
+<tr>
+<td><code>credit_entries</code></td>
+<td>Idempotent reservation and refund ledger</td>
+</tr>
+<tr>
+<td><code>assets</code></td>
+<td>Uploads, generated clips, deliveries, covers, and ownership</td>
+</tr>
+<tr>
+<td><code>share_links</code></td>
+<td>Hashed tokens, expiry, revocation, and access count</td>
+</tr>
 </tbody></table></div>
 <h2 id="11-api-surface">11. API Surface</h2>
 <p>Base path: <code>/api/v1</code></p>
@@ -388,6 +414,10 @@ query-result</code></pre>
 <td><code>GET</code> and <code>PUT /projects/{id}/storyboard</code></td>
 </tr>
 <tr>
+<td>Storyboard order</td>
+<td><code>PATCH /projects/{id}/storyboard/order</code></td>
+</tr>
+<tr>
 <td>Agent</td>
 <td>Get messages, send a message</td>
 </tr>
@@ -402,6 +432,18 @@ query-result</code></pre>
 <tr>
 <td>Providers</td>
 <td>Pippit status and credits</td>
+</tr>
+<tr>
+<td>Credits</td>
+<td><code>GET /credits</code></td>
+</tr>
+<tr>
+<td>Assets</td>
+<td>List, upload, and content download</td>
+</tr>
+<tr>
+<td>Delivery</td>
+<td>Export, share, revoke, and public share content</td>
 </tr>
 </tbody></table></div>
 <p>Agent responses and job status use regular JSON with polling.</p>
@@ -421,13 +463,15 @@ query-result</code></pre>
 <li>Viewport-aware composer menus that flip above the trigger when needed, plus</li>
 <p>downward-opening language, notification, account, and search menus.</p>
 <li>Avatar account actions for login, registration, and sign-out.</li>
+<li>Reference uploads, delivery downloads, cover preview, and share-link creation</li>
+<p>in the project workspace.</p>
 </ul>
 <h2 id="13-documentation-language">13. Documentation Language</h2>
 <ul>
 <li>The globe button beside notifications controls documentation language.</li>
 <li>English documents are generated as <code>*.html</code>.</li>
 <li>Chinese documents are generated as <code>*.zh.html</code>.</li>
-<li>Document tabs are <code>PRD</code>, <code>Design</code>, <code>Interface</code>, <code>Impl</code>, <code>Test</code>, <code>Ops</code>, <code>FAQ</code>,</li>
+<li>Document tabs are <code>PRD</code>, <code>Playbook</code>, <code>Arch</code>, <code>API</code>, <code>Dev</code>, <code>Test</code>, <code>Ops</code>, <code>FAQ</code>,</li>
 <p>and <code>TODO</code>.</p>
 </ul>
 <h2 id="14-security-and-reliability">14. Security and Reliability</h2>
@@ -437,6 +481,11 @@ query-result</code></pre>
 <li>Provider commands use argument arrays and timeouts.</li>
 <li>Generation submissions use database idempotency keys.</li>
 <li>The database is the source of truth for project, shot, and job state.</li>
+<li>Same-origin validation protects cookie-authenticated writes.</li>
+<li>Auth, generation, and upload requests use separate rate-limit buckets.</li>
+<li>Uploaded media is validated by declared MIME, signature, and size.</li>
+<li>Share tokens are stored as hashes and support expiry, revocation, and access</li>
+<p>accounting.</p>
 </ul>
 <h2 id="15-deployment">15. Deployment</h2>
 <p>Local development:</p>
@@ -456,13 +505,17 @@ Celery + Redis</code></pre>
 <li>Skills is a flat searchable catalogue using <code>user_id/skill_id</code>, with</li>
 <p>workflows and Review presented as normal skill cards.</p>
 <li>Documentation switches between English and Chinese and follows the complete</li>
-<p>eight-document order.</p>
+<p>nine-document order.</p>
 <li>Production playbooks and Skill-backed Hots scenarios provide editable,</li>
 <p>reusable starting points.</p>
 <li>The prompt editor grows with stacked or wrapped content, and empty-state</li>
 <p>suggestions hide as soon as non-whitespace input exists.</p>
+<li>Playwright uses the Mock Provider to complete registration, creation,</li>
+<p>upload, generation, export, download, and sharing without paid credits.</p>
+<li>User credits are reserved before submission and refunded idempotently when</li>
+<p>submission, generation, or cancellation ends without a usable result.</p>
 </ol></article>
     </main>
-    <script src="../docs.js?v=26"></script>
+    <script src="../docs.js?v=27"></script>
   </body>
 </html>

@@ -83,6 +83,10 @@ class StoryboardReplace(BaseModel):
     shots: list[ShotInput] = Field(min_length=1, max_length=50)
 
 
+class StoryboardReorder(BaseModel):
+    shot_ids: list[UUID] = Field(min_length=1, max_length=50)
+
+
 class ShotRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -150,6 +154,63 @@ class GenerationJobRead(BaseModel):
     result_url: str | None
     error_code: str | None
     created_at: datetime
+
+
+AssetKind = Literal["upload", "generated", "export", "cover", "subtitle"]
+AssetPermission = Literal["private", "public"]
+
+
+def _default_aspect_ratios() -> list[AspectRatio]:
+    return ["16:9", "9:16", "1:1"]
+
+
+class AssetRead(BaseModel):
+    id: UUID
+    project_id: UUID | None
+    shot_id: UUID | None
+    kind: AssetKind
+    filename: str
+    content_type: str
+    byte_size: int
+    checksum: str
+    permission: AssetPermission
+    content_url: str
+    created_at: datetime
+    updated_at: datetime
+
+
+class AssetList(BaseModel):
+    items: list[AssetRead]
+
+
+class ShareLinkCreate(BaseModel):
+    expires_in_hours: int = Field(default=24, ge=1, le=24 * 30)
+
+
+class ShareLinkRead(BaseModel):
+    id: UUID
+    asset_id: UUID
+    token: str
+    share_url: str
+    expires_at: datetime
+    revoked_at: datetime | None
+    created_at: datetime
+
+
+class ExportRequest(BaseModel):
+    aspect_ratios: list[AspectRatio] = Field(
+        default_factory=_default_aspect_ratios,
+        min_length=1,
+        max_length=3,
+    )
+    soundtrack_asset_id: UUID | None = None
+    captions: str | None = Field(default=None, max_length=20_000)
+    permission: AssetPermission = "private"
+
+
+class ExportResponse(BaseModel):
+    items: list[AssetRead]
+    cover: AssetRead | None = None
 
 
 class AgentMessageCreate(BaseModel):

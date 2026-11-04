@@ -2,7 +2,7 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.7 |
+| Document version | v1.8 |
 | Updated | 2026-11-04 |
 | Backend framework | Python + FastAPI |
 | Frontend framework | Next.js + TypeScript |
@@ -50,6 +50,10 @@ contains five isolated views:
 - Instant storyboard review for consistency, coverage, clarity, and pacing.
 - Hots feed playback, author, likes, and publishing.
 - English and Chinese documentation generated from paired Markdown sources.
+- Project-level image, video, and audio uploads with MIME, signature, and size validation.
+- FFmpeg composition with 16:9, 9:16, and 1:1 deliveries, covers, captions, and soundtracks.
+- Time-limited share links with private/public permissions, expiry, revocation, and access counts.
+- Per-user VideoAgent credit accounts with reservation and idempotent refunds.
 
 ## 4. Core User Flow
 
@@ -78,8 +82,10 @@ Next.js Route Handler /api/account/*
   → FastAPI /api/v1
       ├── Auth / Projects / Storyboards
       ├── Agent / Generation / Evaluation / Providers
+      ├── Assets / Delivery / Credits
       ├── SQLAlchemy Async
       ├── LangGraph
+      ├── FFmpeg
       ├── Pippit CLI
       └── Kling MCP
 
@@ -100,7 +106,8 @@ Celery Worker + Redis
 | Database | SQLAlchemy 2 Async, SQLite |
 | Jobs | Celery with Redis |
 | Video providers | Pippit CLI, Kling MCP, Mock Provider |
-| Testing | pytest, Vitest, Testing Library |
+| Media | FFmpeg, local filesystem storage |
+| Testing | pytest, Vitest, Testing Library, Playwright |
 | Quality | Ruff, mypy, TypeScript |
 
 ## 7. Agent Design
@@ -158,9 +165,10 @@ generate-video
 query-result
 ```
 
-The server owns CLI authorization. All product users share the configured
-Pippit account and credit pool. Access keys and CLI session files never reach
-the browser.
+The server owns CLI authorization. Provider billing uses the configured server
+account, while each product user consumes an independent VideoAgent credit
+balance through `/credits`. Access keys and CLI session files never reach the
+browser.
 
 ### 8.2 Kling MCP
 
@@ -234,6 +242,10 @@ sound cue, or proof first.
 | `generation_jobs` | Provider task, idempotency key, status, result |
 | `provider_connections` | Provider authorization metadata |
 | `oauth_flows` | OAuth transaction state |
+| `credit_accounts` | Per-user VideoAgent balance |
+| `credit_entries` | Idempotent reservation and refund ledger |
+| `assets` | Uploads, generated clips, deliveries, covers, and ownership |
+| `share_links` | Hashed tokens, expiry, revocation, and access count |
 
 ## 11. API Surface
 
@@ -245,10 +257,14 @@ Base path: `/api/v1`
 | Auth | Register, login, logout, current user |
 | Projects | List, create, read, rename, archive |
 | Storyboards | `GET` and `PUT /projects/{id}/storyboard` |
+| Storyboard order | `PATCH /projects/{id}/storyboard/order` |
 | Agent | Get messages, send a message |
 | Evaluation | `POST /projects/{id}/evaluate` |
 | Generation | Estimate, submit, job status |
 | Providers | Pippit status and credits |
+| Credits | `GET /credits` |
+| Assets | List, upload, and content download |
+| Delivery | Export, share, revoke, and public share content |
 
 Agent responses and job status use regular JSON with polling.
 
@@ -269,13 +285,15 @@ The shared Landing UI owns:
 - Viewport-aware composer menus that flip above the trigger when needed, plus
   downward-opening language, notification, account, and search menus.
 - Avatar account actions for login, registration, and sign-out.
+- Reference uploads, delivery downloads, cover preview, and share-link creation
+  in the project workspace.
 
 ## 13. Documentation Language
 
 - The globe button beside notifications controls documentation language.
 - English documents are generated as `*.html`.
 - Chinese documents are generated as `*.zh.html`.
-- Document tabs are `PRD`, `Design`, `Interface`, `Impl`, `Test`, `Ops`, `FAQ`,
+- Document tabs are `PRD`, `Playbook`, `Arch`, `API`, `Dev`, `Test`, `Ops`, `FAQ`,
   and `TODO`.
 
 ## 14. Security and Reliability
@@ -285,6 +303,11 @@ The shared Landing UI owns:
 - Provider commands use argument arrays and timeouts.
 - Generation submissions use database idempotency keys.
 - The database is the source of truth for project, shot, and job state.
+- Same-origin validation protects cookie-authenticated writes.
+- Auth, generation, and upload requests use separate rate-limit buckets.
+- Uploaded media is validated by declared MIME, signature, and size.
+- Share tokens are stored as hashes and support expiry, revocation, and access
+  accounting.
 
 ## 15. Deployment
 
@@ -309,8 +332,12 @@ Celery + Redis
 7. Skills is a flat searchable catalogue using `user_id/skill_id`, with
    workflows and Review presented as normal skill cards.
 8. Documentation switches between English and Chinese and follows the complete
-   eight-document order.
+   nine-document order.
 9. Production playbooks and Skill-backed Hots scenarios provide editable,
     reusable starting points.
 10. The prompt editor grows with stacked or wrapped content, and empty-state
     suggestions hide as soon as non-whitespace input exists.
+11. Playwright uses the Mock Provider to complete registration, creation,
+    upload, generation, export, download, and sharing without paid credits.
+12. User credits are reserved before submission and refunded idempotently when
+    submission, generation, or cancellation ends without a usable result.

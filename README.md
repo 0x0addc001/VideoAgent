@@ -118,10 +118,15 @@ Frontend:
 pnpm --dir apps/web test
 pnpm --dir apps/web typecheck
 pnpm --dir apps/web build
+pnpm test:e2e
 ```
 
 Tests are the executable specification. New behavior should begin with a failing
 test and end with all quality gates passing.
+
+Playwright runs the full registration, composer, upload, Mock Provider
+generation, FFmpeg export, download, and share flow without consuming paid
+Provider credits.
 
 ## Configuration
 
@@ -146,6 +151,11 @@ VIDEOAGENT_CELERY_RESULT_BACKEND
 VIDEOAGENT_LLM_BASE_URL
 VIDEOAGENT_LLM_API_KEY
 VIDEOAGENT_LLM_MODEL
+VIDEOAGENT_MEDIA_DIR
+VIDEOAGENT_MAX_UPLOAD_BYTES
+VIDEOAGENT_FFMPEG_COMMAND
+VIDEOAGENT_FFPROBE_COMMAND
+VIDEOAGENT_STARTING_USER_CREDITS
 NEXT_PUBLIC_API_BASE_URL
 ```
 
@@ -159,14 +169,20 @@ login files are never committed.
 ```text
 apps/web                 Next.js bilingual application
 services/api             FastAPI, LangGraph, provider adapters, and tests
-docs                     Design and test specifications
+docs                     Product, architecture, API, delivery, and test specifications
 deploy                   Infrastructure and container configuration
 ```
 
 See:
 
 - [GitHub Pages project homepage](https://0x0addc001.github.io/VideoAgent/)
+- [Product requirements](docs/product-requirements.md)
+- [Playbooks](docs/playbooks.md)
 - [Software design](docs/software-design.md)
+- [API reference](docs/api-reference.zh.md)
 - [Software implementation](docs/software-implementation.md)
 - [Software test and TDD specification](docs/software-test-plan.md)
+- [Operations](docs/operations.md)
+- [FAQ](docs/faq.md)
+- [TODO](docs/todo.md)
 

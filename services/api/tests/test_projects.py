@@ -59,9 +59,7 @@ async def test_user_can_delete_own_project(client):
 
     assert deleted.status_code == 204
     assert (await client.get("/api/v1/projects")).json()["items"] == []
-    assert (
-        await client.get(f"/api/v1/projects/{created.json()['id']}")
-    ).status_code == 404
+    assert (await client.get(f"/api/v1/projects/{created.json()['id']}")).status_code == 404
 
 
 @pytest.mark.api

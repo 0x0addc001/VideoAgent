@@ -74,3 +74,38 @@ async def replace_storyboard(
     if saved is None:
         raise RuntimeError("storyboard disappeared after replacement")
     return saved
+
+
+async def reorder_storyboard(
+    session: AsyncSession,
+    project_id: UUID,
+    shot_ids: list[UUID],
+) -> Storyboard:
+    storyboard = await load_storyboard(session, project_id)
+    if storyboard is None:
+        raise AppError(
+            status_code=404,
+            code="STORYBOARD_NOT_FOUND",
+            message="This project does not have a storyboard yet.",
+        )
+
+    shots_by_id = {shot.id: shot for shot in storyboard.shots}
+    if len(shot_ids) != len(set(shot_ids)) or set(shot_ids) != set(shots_by_id):
+        raise AppError(
+            status_code=422,
+            code="INVALID_SHOT_ORDER",
+            message="Shot order must contain every shot exactly once.",
+        )
+
+    for position, shot_id in enumerate(shot_ids):
+        shots_by_id[shot_id].index = -(position + 1)
+    await session.flush()
+    for position, shot_id in enumerate(shot_ids):
+        shots_by_id[shot_id].index = position
+    storyboard.version += 1
+    await session.flush()
+
+    reordered = await load_storyboard(session, project_id)
+    if reordered is None:
+        raise RuntimeError("storyboard disappeared after reordering")
+    return reordered

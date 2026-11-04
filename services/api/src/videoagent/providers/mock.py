@@ -21,11 +21,20 @@ class MockVideoProvider:
         job = ProviderJob(
             provider=self.name,
             task_id=task_id,
-            status="succeeded",
-            result_url=f"https://media.example.com/mock/{request.shot_id}.mp4",
+            status="submitted",
         )
         self._jobs[task_id] = job
         return job
 
     async def status(self, task_id: str) -> ProviderJob:
-        return self._jobs[task_id]
+        current = self._jobs[task_id]
+        if current.status == "submitted":
+            completed = ProviderJob(
+                provider=self.name,
+                task_id=task_id,
+                status="succeeded",
+                result_url=f"mock://generated/{current.task_id}.mp4",
+            )
+            self._jobs[task_id] = completed
+            return completed
+        return current

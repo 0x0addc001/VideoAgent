@@ -1,14 +1,16 @@
-# VideoAgent Interface Reference
+# VideoAgent API Reference
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.2 |
+| Document version | v1.3 |
 | Updated | 2026-11-04 |
 | Base path | `/api/v1` |
 | Authentication | HttpOnly Session Cookie |
 | Request format | JSON with `credentials: "include"` |
 | API style | REST with job polling |
 | Billable generation | Explicit approval plus `Idempotency-Key` |
+| Write protection | Same-origin `Origin` / `Sec-Fetch-Site` validation |
+| User credits | Internal per-user quota with an auditable ledger |
 | OpenAPI | `/docs` and `/openapi.json` |
 
 Base URL:
@@ -139,6 +141,22 @@ Rename request:
 }
 ```
 
+### Reorder Storyboard
+
+`PATCH /projects/{project_id}/storyboard/order`
+
+The request must contain every current Shot exactly once. Reordering preserves
+Shot IDs, generated assets, generation history, and project continuity.
+
+```json
+{
+  "shot_ids": [
+    "00000000-0000-0000-0000-000000000002",
+    "00000000-0000-0000-0000-000000000001"
+  ]
+}
+```
+
 ## VideoAgent Conversation
 
 ### List Messages
@@ -189,6 +207,25 @@ Request:
 Possible statuses include `submitted`, `queued`, `running`, `succeeded`,
 `failed`, and `cancelled`.
 
+Each successful generation reserves the estimated credits from the current
+user's VideoAgent balance. An immediate submission failure or a later failed or
+cancelled job returns the reservation through an idempotent refund entry.
+
+## Credits
+
+`GET /credits`
+
+Returns the authenticated user's internal VideoAgent quota. This balance is
+separate from the server-owned Provider account pool.
+
+```json
+{
+  "provider": "video_agent",
+  "connected": true,
+  "credits": 95
+}
+```
+
 ### Evaluate Storyboard
 
 `POST /projects/{project_id}/evaluate`
@@ -210,6 +247,58 @@ Returns an immediate review of the current storyboard:
 }
 ```
 
+## Assets and Media
+
+Media endpoints are scoped to the authenticated user. Unsupported content
+types, invalid file signatures, and files above the configured size limit are
+rejected before an Asset record is created.
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/assets` | List the current user's assets |
+| `GET` | `/projects/{project_id}/assets` | List assets for one owned project |
+| `POST` | `/projects/{project_id}/assets` | Upload image, video, or audio media |
+| `GET` | `/assets/{asset_id}/content` | Download or preview a private asset |
+| `POST` | `/projects/{project_id}/exports` | Compose and export the current film |
+| `POST` | `/assets/{asset_id}/share` | Create a time-limited share link |
+| `DELETE` | `/shares/{share_id}` | Revoke a share link |
+| `GET` | `/shares/{token}/content` | Read a valid shared asset without a session |
+
+Upload request:
+
+```text
+POST /projects/{project_id}/assets
+Content-Type: multipart/form-data
+file=<image, video, or audio>
+```
+
+Export request:
+
+```json
+{
+  "aspect_ratios": ["16:9", "9:16", "1:1"],
+  "soundtrack_asset_id": null,
+  "captions": "A generated product story",
+  "permission": "private"
+}
+```
+
+The export response contains delivery Assets and a generated cover. The
+current implementation composes available generated shots with FFmpeg,
+normalizes each delivery ratio, applies a short crossfade between shots, and
+optionally includes captions and an uploaded soundtrack.
+
+Share request:
+
+```json
+{
+  "expires_in_hours": 24
+}
+```
+
+Share tokens are random, stored as hashes, expire after the requested period,
+and can be revoked. Access increments an audit counter.
+
 ## Pippit Provider
 
 | Method | Path | Purpose |
@@ -219,9 +308,9 @@ Returns an immediate review of the current storyboard:
 
 Pippit authorization is server-owned. The API invokes the installed
 `pippit-tool-cli` binary; browser clients never receive access keys or CLI
-session files. Every VideoAgent user therefore uses the same configured Pippit
-account and credit pool. Operators should authorize the CLI on the API host
-before enabling live generation.
+session files. Provider billing draws from the configured server account, while
+product users consume independent VideoAgent balances through `/credits`.
+Operators authorize the CLI on the API host before enabling live generation.
 
 `GET /providers/pippit` response:
 
@@ -267,9 +356,12 @@ Important status codes:
 | Status | Meaning |
 | --- | --- |
 | `401` | Authentication required or session expired |
+| `402` | The user's VideoAgent credit balance is insufficient |
 | `403` | Explicit approval required |
 | `404` | Resource not found or not owned by the current user |
 | `409` | Configured provider is not active |
+| `413` | Uploaded media exceeds the configured limit |
 | `422` | Request validation failed |
+| `429` | An auth, generation, or upload rate limit was exceeded |
 | `502` | Upstream provider request failed |
 | `503` | Required provider CLI is unavailable |

@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Test" />
     <title>Test · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=26" />
+    <link rel="stylesheet" href="../docs.css?v=27" />
   </head>
   <body data-document="software-test-plan.zh.html">
     <main class="document-shell" id="document-shell">
@@ -48,7 +48,7 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v2.1</td>
+<td>v2.2</td>
 </tr>
 <tr>
 <td>更新日期</td>
@@ -56,7 +56,7 @@
 </tr>
 <tr>
 <td>测试框架</td>
-<td>pytest、Vitest、Testing Library</td>
+<td>pytest、Vitest、Testing Library、Playwright</td>
 </tr>
 </tbody></table></div>
 <h2 id="1-目的">1. 目的</h2>
@@ -73,7 +73,7 @@
 <pre><code class="language-text">单元与组件测试
   → Provider 与 API 契约测试
   → SQLite 集成测试
-  → 浏览器组件测试</code></pre>
+  → Playwright + Mock Provider 浏览器 E2E</code></pre>
 <p>真实付费生成不进入普通 CI。</p>
 <h2 id="4-覆盖范围">4. 覆盖范围</h2>
 <p>后端：</p>
@@ -87,6 +87,10 @@
 <li>Provider 状态与积分。</li>
 <li>健康检查。</li>
 <li>故事板即时评估。</li>
+<li>媒体 MIME、文件头、大小校验和用户所有权。</li>
+<li>FFmpeg 合成、导出、封面生成、分享、过期和撤销。</li>
+<li>用户积分预扣、失败退款与幂等流水。</li>
+<li>同源写请求校验及认证限流。</li>
 </ul>
 <p>前端：</p>
 <ul>
@@ -99,6 +103,7 @@
 <li>Hots 作者、喜欢数、播放和发布。</li>
 <li>Docs 中英文切换。</li>
 <li>项目列表、认证表单与项目工作区。</li>
+<li>项目素材上传、成片导出、MP4 下载和分享链接。</li>
 </ul>
 <h2 id="5-provider-契约测试">5. Provider 契约测试</h2>
 <p>每个 <code>VideoProvider</code> 验证：</p>
@@ -121,6 +126,7 @@
 <li>显式生成审批。</li>
 <li>幂等行为。</li>
 <li>故事板替换后的镜头顺序。</li>
+<li>镜头排序后 Shot ID、生成资产和历史保持不变。</li>
 <li>Agent 消息持久化。</li>
 <li>评估结果结构。</li>
 <li>响应不包含 Provider 凭据。</li>
@@ -140,7 +146,7 @@
 <li>Hots 场景卡片进入 Agents 时选中对应 Skill 和提示词。</li>
 <li>输入框随多行内容增高，输入非空时隐藏示例灵感。</li>
 <li>Model 目录包含全部 Kling 与 Pippit 视频模型，并显示为 <code>服务商/模型</code>。</li>
-<li>Docs 标签为 <code>PRD</code>、<code>Design</code>、<code>Interface</code>、<code>Impl</code>、<code>Test</code>、<code>Ops</code>、<code>FAQ</code>、<code>TODO</code>。</li>
+<li>Docs 标签为 <code>PRD</code>、<code>Playbook</code>、<code>Arch</code>、<code>API</code>、<code>Dev</code>、<code>Test</code>、<code>Ops</code>、<code>FAQ</code>、<code>TODO</code>。</li>
 <li>Globe 控件切换 Docs 语言。</li>
 <li>Skills、Hots、Assets、Docs 搜索框保持固定。</li>
 <li>Assets 通过 Video/Skill 分页切换，不重复类型标签。</li>
@@ -148,9 +154,13 @@
 <li>创作框菜单不超出视口。</li>
 <li>搜索、语言、通知、积分和头像使用半透明表面。</li>
 <li>头像在未登录时提供登录与注册，登录后提供退出。</li>
-<li>Interface 开头展示属性表。</li>
+<li>API 文档开头展示属性表。</li>
 <li>FAQ 与 TODO 均有中英文版本。</li>
 </ul>
+<p>Playwright 使用真实 Next.js 页面、FastAPI、SQLite 和 Mock Provider，验证：</p>
+<pre><code class="language-text">注册 → 首页创意 → 创建项目 → Agent 故事板 → 上传素材
+→ 积分估算 → 生成 → 轮询/落地 → 合成导出 → 下载 → 分享</code></pre>
+<p>该链路不调用真实付费 Provider，应作为每个 Pull Request 的必过门禁。</p>
 <h2 id="8-响应式与可访问性">8. 响应式与可访问性</h2>
 <ul>
 <li>导航、下拉、Docs 和弹窗可用键盘操作。</li>
@@ -169,6 +179,7 @@ Vitest
 TypeScript 检查
 Next.js 生产构建
 Docs 与静态产物构建
+Playwright + Mock Provider E2E
 敏感信息和依赖扫描</code></pre>
 <h2 id="10-provider-验证">10. Provider 验证</h2>
 <h3 id="只读检查">只读检查</h3>
@@ -199,6 +210,6 @@ Docs 与静态产物构建
 <li>付费 Provider 测试保持人工开启。</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=26"></script>
+    <script src="../docs.js?v=27"></script>
   </body>
 </html>

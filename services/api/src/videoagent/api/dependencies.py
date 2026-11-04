@@ -10,6 +10,7 @@ from videoagent.db import Database
 from videoagent.errors import AppError
 from videoagent.models import User
 from videoagent.providers.base import VideoProvider
+from videoagent.providers.oauth import KlingOAuthGateway
 from videoagent.services.auth import get_user_for_session
 
 
@@ -58,3 +59,7 @@ async def get_video_provider(
     request: Request,
 ) -> VideoProvider:
     return cast(VideoProvider, request.app.state.video_provider)
+
+
+def get_kling_gateway(request: Request) -> KlingOAuthGateway:
+    return cast(KlingOAuthGateway, request.app.state.kling_gateway)

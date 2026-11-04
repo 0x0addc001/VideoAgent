@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="VideoAgent Impl" />
-    <title>Impl · VideoAgent</title>
+    <meta name="description" content="VideoAgent Dev" />
+    <title>Dev · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=26" />
+    <link rel="stylesheet" href="../docs.css?v=27" />
   </head>
   <body data-document="software-implementation.zh.html">
     <main class="document-shell" id="document-shell">
@@ -72,7 +72,7 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v1.7</td>
+<td>v1.8</td>
 </tr>
 <tr>
 <td>更新日期</td>
@@ -104,7 +104,7 @@
 <li>Skills 使用单一可搜索目录，显示 <code>user_id/skill_id</code>；原厂商能力使用厂商命名空间（如 <code>kling</code>），跨 Provider 工作流使用 <code>video_agent</code>。</li>
 <li>Hots 支持搜索、循环视频、作者、喜欢数、发布，以及带 Skill 的场景复用。</li>
 <li>Assets 使用瀑布流，并通过 Video/Skill 内部分页区分类型；Video 卡片悬浮静音播放，Skill 卡片无封面并展示 private/public 和 <code>yyyy-mm-dd</code> 编辑时间。</li>
-<li>八份中英文文档、全文搜索、统一深色阅读主题、左侧可折叠目录和章节高亮。</li>
+<li>九份中英文文档、全文搜索、统一深色阅读主题、左侧可折叠目录和章节高亮。</li>
 <li>注册、登录、登出和服务端会话。</li>
 <li>用户级项目创建、列表、读取、重命名和归档。</li>
 <li>用户数据所有权隔离。</li>
@@ -114,6 +114,11 @@
 <li>配置 OpenAI-compatible 模型后的结构化故事板规划器。</li>
 <li>积分估算和显式生成审批。</li>
 <li>生成任务持久化及 <code>Idempotency-Key</code> 防重复提交。</li>
+<li>用户级积分账户、生成预扣与幂等退款。</li>
+<li>图片、视频和音频上传，MIME、文件头和大小校验。</li>
+<li>FFmpeg 成片合成、字幕、音轨、横竖方版本和封面。</li>
+<li>私有资产下载、限时分享、撤销和访问计数。</li>
+<li>同源写请求校验与认证、生成、上传分层限流。</li>
 <li>Mock Provider。</li>
 <li>Pippit CLI 视频提交、任务查询和余额读取。</li>
 <li>Kling MCP 文本生成视频、图生视频、动作控制和多模态参考。</li>
@@ -122,6 +127,7 @@
 <li>故事板即时评估与前端审核弹窗。</li>
 <li>Docker Compose 基础设施配置。</li>
 <li>GitHub Actions CI 配置。</li>
+<li>Playwright + Mock Provider 无费用端到端验收。</li>
 <li>Markdown 文档构建。</li>
 </ul>
 <h2 id="3-仓库结构">3. 仓库结构</h2>
@@ -299,6 +305,18 @@ https://example.com/api/   → FastAPI</code></pre>
 <td>Pippit 服务端状态和积分余额</td>
 </tr>
 <tr>
+<td><code>api/assets.py</code></td>
+<td>上传、下载、导出、分享与撤销</td>
+</tr>
+<tr>
+<td><code>api/credits.py</code></td>
+<td>用户独立积分余额</td>
+</tr>
+<tr>
+<td><code>middleware.py</code></td>
+<td>同源写请求校验与请求限流</td>
+</tr>
+<tr>
 <td><code>services/storyboards.py</code></td>
 <td>故事板领域操作</td>
 </tr>
@@ -309,6 +327,14 @@ https://example.com/api/   → FastAPI</code></pre>
 <tr>
 <td><code>services/evaluation.py</code></td>
 <td>一致性、覆盖、清晰度和节奏指标计算</td>
+</tr>
+<tr>
+<td><code>services/media.py</code></td>
+<td>文件校验、结果落地、FFmpeg 合成、封面与分享</td>
+</tr>
+<tr>
+<td><code>services/credits.py</code></td>
+<td>积分账户、预扣与幂等退款</td>
 </tr>
 <tr>
 <td><code>providers/pippit.py</code></td>
@@ -459,6 +485,22 @@ zh-CN</code></pre>
 <td><code>oauth_flows</code></td>
 <td>OAuth 事务状态</td>
 </tr>
+<tr>
+<td><code>credit_accounts</code></td>
+<td>用户独立积分余额</td>
+</tr>
+<tr>
+<td><code>credit_entries</code></td>
+<td>可审计且幂等的预扣、退款流水</td>
+</tr>
+<tr>
+<td><code>assets</code></td>
+<td>上传、生成、导出版本、封面和权限</td>
+</tr>
+<tr>
+<td><code>share_links</code></td>
+<td>Token 哈希、过期、撤销和访问计数</td>
+</tr>
 </tbody></table></div>
 <p>关键约束：</p>
 <ul>
@@ -470,6 +512,8 @@ zh-CN</code></pre>
 <li><code>(GenerationJob.shot_id, GenerationJob.idempotency_key)</code> 唯一。</li>
 <li><code>(ProviderConnection.user_id, ProviderConnection.provider)</code> 唯一。</li>
 <li><code>OAuthFlow.state_hash</code> 具有唯一约束。</li>
+<li><code>(CreditEntry.reason, CreditEntry.reference_id)</code> 唯一，防止重复预扣或退款。</li>
+<li><code>(GenerationJob.shot_id, GenerationJob.idempotency_key)</code> 唯一。</li>
 </ul>
 <h2 id="10-pippit-cli-provider">10. Pippit CLI Provider</h2>
 <h3 id="10-1-provider-选择">10.1 Provider 选择</h3>
@@ -592,6 +636,11 @@ task reference    → query-result   → JobStatus + result URL</code></pre>
 <td>整体替换故事板</td>
 </tr>
 <tr>
+<td>PATCH</td>
+<td><code>/projects/{id}/storyboard/order</code></td>
+<td>调整镜头顺序并保留 Shot ID 与资产</td>
+</tr>
+<tr>
 <td>POST</td>
 <td><code>/shots/{id}/estimate</code></td>
 <td>查询积分估算</td>
@@ -621,6 +670,46 @@ task reference    → query-result   → JobStatus + result URL</code></pre>
 <td><code>/providers/pippit/credits</code></td>
 <td>Pippit 积分余额</td>
 </tr>
+<tr>
+<td>GET</td>
+<td><code>/credits</code></td>
+<td>当前用户 VideoAgent 积分余额</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/assets</code></td>
+<td>当前用户资产列表</td>
+</tr>
+<tr>
+<td>GET/POST</td>
+<td><code>/projects/{id}/assets</code></td>
+<td>项目资产列表与上传</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/assets/{id}/content</code></td>
+<td>读取私有资产</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/projects/{id}/exports</code></td>
+<td>合成与交付版本导出</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/assets/{id}/share</code></td>
+<td>创建限时分享</td>
+</tr>
+<tr>
+<td>DELETE</td>
+<td><code>/shares/{id}</code></td>
+<td>撤销分享</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/shares/{token}/content</code></td>
+<td>读取有效分享内容</td>
+</tr>
 </tbody></table></div>
 <p>生成接口必须携带：</p>
 <pre><code class="language-text">Idempotency-Key: &lt;unique-client-generated-key&gt;</code></pre>
@@ -644,6 +733,9 @@ task reference    → query-result   → JobStatus + result URL</code></pre>
 <li>跨用户资源访问统一返回 404。</li>
 <li>日志和 API 响应不返回 Provider Token。</li>
 <li>敏感环境变量不得提交到 Git。</li>
+<li>不安全方法校验 <code>Origin</code> 与 <code>Sec-Fetch-Site</code>。</li>
+<li>上传读取有字节上限，并校验声明的 MIME 与文件签名。</li>
+<li>分享 Token 只保存 SHA-256 哈希，过期或撤销后返回 404。</li>
 </ul>
 <h2 id="13-本地开发">13. 本地开发</h2>
 <h3 id="13-1-启动-api">13.1 启动 API</h3>
@@ -757,6 +849,46 @@ VIDEOAGENT_TOKEN_ENCRYPTION_KEY</code></pre>
 <td>模型名称</td>
 </tr>
 <tr>
+<td><code>VIDEOAGENT_MEDIA_DIR</code></td>
+<td><code>.data/media</code></td>
+<td>本地媒体目录</td>
+</tr>
+<tr>
+<td><code>VIDEOAGENT_MAX_UPLOAD_BYTES</code></td>
+<td><code>100 MiB</code></td>
+<td>单文件大小上限</td>
+</tr>
+<tr>
+<td><code>VIDEOAGENT_FFMPEG_COMMAND</code></td>
+<td><code>ffmpeg</code></td>
+<td>FFmpeg 命令或路径</td>
+</tr>
+<tr>
+<td><code>VIDEOAGENT_FFPROBE_COMMAND</code></td>
+<td><code>ffprobe</code></td>
+<td>FFprobe 命令或路径</td>
+</tr>
+<tr>
+<td><code>VIDEOAGENT_STARTING_USER_CREDITS</code></td>
+<td><code>100</code></td>
+<td>新用户初始配额</td>
+</tr>
+<tr>
+<td><code>VIDEOAGENT_AUTH_RATE_LIMIT_PER_MINUTE</code></td>
+<td><code>20</code></td>
+<td>认证写请求限流</td>
+</tr>
+<tr>
+<td><code>VIDEOAGENT_GENERATION_RATE_LIMIT_PER_MINUTE</code></td>
+<td><code>30</code></td>
+<td>生成与导出限流</td>
+</tr>
+<tr>
+<td><code>VIDEOAGENT_UPLOAD_RATE_LIMIT_PER_MINUTE</code></td>
+<td><code>20</code></td>
+<td>上传限流</td>
+</tr>
+<tr>
 <td><code>NEXT_PUBLIC_API_BASE_URL</code></td>
 <td><code>http://localhost:8000/api/v1</code></td>
 <td>浏览器 API 地址</td>
@@ -776,12 +908,14 @@ pnpm --dir apps/web typecheck
 pnpm --dir apps/web build</code></pre>
 <p>测试组成：</p>
 <ul>
-<li>后端 35 个测试。</li>
+<li>后端 43 个测试。</li>
 <li>前端 24 个测试。</li>
+<li>Playwright 2 个端到端测试。</li>
 <li>后端测试使用临时 SQLite 文件。</li>
 <li>Pippit 测试使用本地 Fake CLI，不访问真实生成网络。</li>
 <li>Kling Provider 测试使用 Fake MCP client，不触发付费生成。</li>
 <li>前端测试覆盖共享首页、导航、文档加载、自定义下拉、Hots 发布、创作提交和轮播行为。</li>
+<li>Playwright 使用 Mock Provider 验证提交、轮询/落地、导出、下载和分享，不访问付费 Provider。</li>
 <li>普通 CI 不执行付费生成。</li>
 </ul>
 <p>新增功能必须遵循：</p>
@@ -864,6 +998,6 @@ pnpm --dir apps/web build</code></pre>
 <li>设计或实现边界变化已更新本文档。</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=26"></script>
+    <script src="../docs.js?v=27"></script>
   </body>
 </html>

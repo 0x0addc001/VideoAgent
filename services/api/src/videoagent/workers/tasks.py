@@ -19,7 +19,7 @@ async def _refresh_once(job_id: UUID) -> bool:
             job = await session.get(GenerationJob, job_id)
             if job is None or job.status in {"succeeded", "failed", "cancelled"}:
                 return True
-            return await refresh_generation_job(session, job, provider)
+            return await refresh_generation_job(session, job, provider, settings)
     finally:
         await database.dispose()
 

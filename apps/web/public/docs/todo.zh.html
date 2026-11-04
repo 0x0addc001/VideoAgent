@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent TODO" />
     <title>TODO · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=26" />
+    <link rel="stylesheet" href="../docs.css?v=27" />
   </head>
   <body data-document="todo.zh.html">
     <main class="document-shell" id="document-shell">
@@ -43,7 +43,7 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v1.0</td>
+<td>v1.1</td>
 </tr>
 <tr>
 <td>更新日期</td>
@@ -51,7 +51,7 @@
 </tr>
 <tr>
 <td>管理原则</td>
-<td>未交付能力、新增需求与后续增强统一记录在本文件</td>
+<td>只记录未交付能力、新增需求与后续增强；已完成项从本文件移除</td>
 </tr>
 </tbody></table></div>
 <h2 id="1-产品与前端">1. 产品与前端</h2>
@@ -59,26 +59,31 @@
 <th>ID</th>
 <th>待办</th>
 <th>验收结果</th>
+<th>优先级</th>
 </tr></thead><tbody>
 <tr>
 <td>TODO-UI-001</td>
 <td>开放产品界面的中英文切换</td>
 <td>导航、创作框、项目工作区与提示信息完整双语</td>
+<td>P1</td>
 </tr>
 <tr>
 <td>TODO-UI-002</td>
 <td>创作场景扩展到更多行业模板</td>
 <td>新增模板具备提示词、Skill、Hook、画幅、时长和审核预设</td>
+<td>P1</td>
 </tr>
 <tr>
 <td>TODO-UI-003</td>
-<td>镜头排序、参考图和参考视频控件</td>
-<td>用户可在工作区完成镜头重排和多模态引用</td>
+<td>生成引用贯通</td>
+<td>把已上传的图片、视频和音频作为结构化引用传入对应 Provider 生成请求</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-UI-004</td>
 <td>项目级素材与引用面板</td>
 <td>角色、场景、道具和风格资产可跨镜头复用</td>
+<td>P1</td>
 </tr>
 </tbody></table></div>
 <h2 id="2-agent-与导演工作流">2. Agent 与导演工作流</h2>
@@ -86,41 +91,49 @@
 <th>ID</th>
 <th>待办</th>
 <th>验收结果</th>
+<th>优先级</th>
 </tr></thead><tbody>
 <tr>
 <td>TODO-AGENT-001</td>
 <td>意图路由</td>
 <td>新建、局部修改、只评估、重生成和本地化请求进入不同分支</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-AGENT-002</td>
 <td>局部 Shot Patch</td>
 <td>用户修改单个镜头时保留其他镜头、版本和审批状态</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-AGENT-003</td>
 <td>Scene / Sequence / Beat 数据层</td>
 <td>场景目标、冲突、进入与离开状态可持久化</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-AGENT-004</td>
 <td>电影语言 Shot Schema</td>
 <td>景别、机位、镜头、运镜、表演、视线、声音和转场结构化</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-AGENT-005</td>
 <td>Style Bible 与连续性图谱</td>
 <td>角色、服装、场景、道具和屏幕方向可校验、复用</td>
+<td>P1</td>
 </tr>
 <tr>
 <td>TODO-AGENT-006</td>
 <td>Animatic 与时间线预演</td>
 <td>低成本确认节奏后再进入正式镜头生成</td>
+<td>P1</td>
 </tr>
 <tr>
 <td>TODO-AGENT-007</td>
 <td>多节点 LangGraph 与可恢复审批</td>
 <td>故事、预算、镜头与成片节点可暂停、恢复和审计</td>
+<td>P0</td>
 </tr>
 </tbody></table></div>
 <h2 id="3-provider-与生成">3. Provider 与生成</h2>
@@ -128,31 +141,37 @@
 <th>ID</th>
 <th>待办</th>
 <th>验收结果</th>
+<th>优先级</th>
 </tr></thead><tbody>
 <tr>
 <td>TODO-PROVIDER-001</td>
 <td>Kling 后端生成路由</td>
 <td>Web 项目可按模型元数据选择 Pippit 或 Kling Provider</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-PROVIDER-002</td>
 <td>Provider Capability Discovery</td>
 <td>模型时长、比例、音频、参考输入和输出能力由服务端统一发现</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-PROVIDER-003</td>
 <td>Provider 取消与统一错误模型</td>
 <td>两类 Provider 均支持取消、超时、限流和可重试错误分类</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-PROVIDER-004</td>
 <td>自动模型路由与降级</td>
 <td>按任务、预算和可用性选择模型，并保留用户显式选择</td>
+<td>P1</td>
 </tr>
 <tr>
 <td>TODO-PROVIDER-005</td>
 <td>Take 管理</td>
 <td>一个镜头可保存多个候选版本、评分和选择记录</td>
+<td>P1</td>
 </tr>
 </tbody></table></div>
 <h2 id="4-媒体与交付">4. 媒体与交付</h2>
@@ -160,26 +179,13 @@
 <th>ID</th>
 <th>待办</th>
 <th>验收结果</th>
+<th>优先级</th>
 </tr></thead><tbody>
 <tr>
 <td>TODO-MEDIA-001</td>
-<td>素材上传与对象存储</td>
-<td>图片、视频和音频支持校验、预签名与生命周期管理</td>
-</tr>
-<tr>
-<td>TODO-MEDIA-002</td>
-<td>FFmpeg 合成</td>
-<td>时间线、转场、字幕、声音和调色可合成 MP4</td>
-</tr>
-<tr>
-<td>TODO-MEDIA-003</td>
-<td>导出与交付版本</td>
-<td>支持横版、竖版、方版、封面和字幕文件</td>
-</tr>
-<tr>
-<td>TODO-MEDIA-004</td>
-<td>分享与权限</td>
-<td>支持有效期、撤销和访问审计</td>
+<td>MinIO/S3 对象存储</td>
+<td>媒体存储迁移到对象存储，并具备生命周期与签名访问策略</td>
+<td>P0</td>
 </tr>
 </tbody></table></div>
 <h2 id="5-实时与可靠性">5. 实时与可靠性</h2>
@@ -187,26 +193,31 @@
 <th>ID</th>
 <th>待办</th>
 <th>验收结果</th>
+<th>优先级</th>
 </tr></thead><tbody>
 <tr>
 <td>TODO-REL-001</td>
 <td>SSE 项目事件流</td>
 <td>对话、镜头状态和任务进度支持断线重连与状态校正</td>
+<td>P1</td>
 </tr>
 <tr>
 <td>TODO-REL-002</td>
 <td>Celery 生产部署</td>
 <td>Redis Broker、重试、死信队列、对账和 Worker 恢复</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-REL-003</td>
 <td>LangGraph Checkpoint</td>
 <td>进程重启后从最后一个有效节点继续</td>
+<td>P1</td>
 </tr>
 <tr>
 <td>TODO-REL-004</td>
 <td>统一可观测性</td>
 <td>Trace、结构化日志、Provider 延迟与成功率指标</td>
+<td>P0</td>
 </tr>
 </tbody></table></div>
 <h2 id="6-社区与运营">6. 社区与运营</h2>
@@ -214,26 +225,31 @@
 <th>ID</th>
 <th>待办</th>
 <th>验收结果</th>
+<th>优先级</th>
 </tr></thead><tbody>
 <tr>
 <td>TODO-COMMUNITY-001</td>
 <td>Hots 持久化</td>
 <td>发布、作者、喜欢、权限和编辑时间进入数据库</td>
+<td>P1</td>
 </tr>
 <tr>
 <td>TODO-COMMUNITY-002</td>
 <td>社区审核</td>
 <td>举报、隐藏、恢复、申诉和审计流程</td>
+<td>P1</td>
 </tr>
 <tr>
 <td>TODO-COMMUNITY-003</td>
 <td>Skill 持久化与版本</td>
 <td>用户 Skill 可公开、更新、弃用和迁移</td>
+<td>P1</td>
 </tr>
 <tr>
 <td>TODO-COMMUNITY-004</td>
 <td>数据保留策略</td>
 <td>明确软删除、恢复窗口和媒体生命周期</td>
+<td>P2</td>
 </tr>
 </tbody></table></div>
 <h2 id="7-安全与数据">7. 安全与数据</h2>
@@ -241,31 +257,31 @@
 <th>ID</th>
 <th>待办</th>
 <th>验收结果</th>
+<th>优先级</th>
 </tr></thead><tbody>
-<tr>
-<td>TODO-SEC-001</td>
-<td>CSRF 防护</td>
-<td>Cookie 写接口具备令牌校验或等价同源防护</td>
-</tr>
 <tr>
 <td>TODO-SEC-002</td>
 <td>分层限流</td>
 <td>用户、IP、Provider 和生成接口具备独立配额</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-SEC-003</td>
-<td>上传安全</td>
-<td>文件头、大小、MIME、解码和恶意内容检查</td>
+<td>媒体解码与恶意内容检查</td>
+<td>在文件头、大小和 MIME 校验基础上增加解码验证与病毒扫描</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-SEC-004</td>
 <td>PostgreSQL、Redis 与 MinIO 生产集成</td>
 <td>数据库迁移、对象存储和队列完成集成测试</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-SEC-005</td>
 <td>OpenAPI Client 生成</td>
 <td>前端类型由 OpenAPI 自动生成并进入 CI</td>
+<td>P1</td>
 </tr>
 </tbody></table></div>
 <h2 id="8-测试与发布">8. 测试与发布</h2>
@@ -273,29 +289,28 @@
 <th>ID</th>
 <th>待办</th>
 <th>验收结果</th>
+<th>优先级</th>
 </tr></thead><tbody>
-<tr>
-<td>TODO-QA-001</td>
-<td>Playwright E2E</td>
-<td>覆盖英文流程、文档切换和核心项目工作流</td>
-</tr>
 <tr>
 <td>TODO-QA-002</td>
 <td>Provider Contract Matrix</td>
 <td>覆盖 Pippit、Kling 和 Mock 的统一行为</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-QA-003</td>
 <td>付费生成验收</td>
 <td>在明确预算和用户批准下完成一次端到端生成</td>
+<td>P0</td>
 </tr>
 <tr>
 <td>TODO-QA-004</td>
 <td>故障演练</td>
 <td>覆盖 Worker 中断、重复投递、SSE 重连和下载失败</td>
+<td>P1</td>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=26"></script>
+    <script src="../docs.js?v=27"></script>
   </body>
 </html>

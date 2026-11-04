@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent PRD" />
     <title>PRD · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=26" />
+    <link rel="stylesheet" href="../docs.css?v=27" />
   </head>
   <body data-document="product-requirements.html">
     <main class="document-shell" id="document-shell">
@@ -35,6 +35,7 @@
 <a class="toc-link toc-level-3" href="#5-2-search-and-publishing">5.2 Search and Publishing</a>
 <a class="toc-link toc-level-2" href="#6-hots">6. Hots</a>
 <a class="toc-link toc-level-2" href="#7-assets">7. Assets</a>
+<a class="toc-link toc-level-3" href="#7-1-project-workspace-and-delivery">7.1 Project Workspace and Delivery</a>
 <a class="toc-link toc-level-2" href="#8-docs">8. Docs</a>
 <a class="toc-link toc-level-2" href="#9-authentication-and-credits">9. Authentication and Credits</a>
 <a class="toc-link toc-level-2" href="#10-non-functional-requirements">10. Non-Functional Requirements</a>
@@ -48,7 +49,7 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v1.4</td>
+<td>v1.5</td>
 </tr>
 <tr>
 <td>Updated</td>
@@ -165,12 +166,27 @@ video_agent/agent_handoff</code></pre>
 <li>Video cards play a muted loop on hover and pause when hover ends. Skill cards</li>
 <p>have no cover image.</p>
 </ul>
+<h3 id="7-1-project-workspace-and-delivery">7.1 Project Workspace and Delivery</h3>
+<ul>
+<li>A project accepts image, video, and audio uploads and shows the reference count.</li>
+<li>Uploads must pass content-type, file-signature, and size validation.</li>
+<li>Users can inspect estimated credits and explicitly approve generation.</li>
+<li>Generated shots can be composed into a film with 16:9, 9:16, and 1:1 deliveries.</li>
+<li>Users can reorder shots without replacing Shot IDs, generated assets, or</li>
+<p>generation history.</p>
+<li>Export supports captions, an uploaded soundtrack, an automatic cover, and</li>
+<p>private or public permission.</p>
+<li>Each delivery can be downloaded; share links expire and can be revoked.</li>
+<li>Assets lists only uploads, generated clips, and deliveries available to the</li>
+<p>current user.</p>
+</ul>
 <h2 id="8-docs">8. Docs</h2>
 <p>Document order:</p>
 <pre><code class="language-text">PRD
-Design
-Interface
-Impl
+Playbook
+Arch
+API
+Dev
 Test
 Ops
 FAQ
@@ -185,16 +201,20 @@ TODO</code></pre>
 <td>产品</td>
 </tr>
 <tr>
-<td>Design</td>
-<td>设计</td>
+<td>Playbook</td>
+<td>玩法</td>
 </tr>
 <tr>
-<td>Interface</td>
+<td>Arch</td>
+<td>架构</td>
+</tr>
+<tr>
+<td>API</td>
 <td>接口</td>
 </tr>
 <tr>
-<td>Impl</td>
-<td>实现</td>
+<td>Dev</td>
+<td>开发</td>
 </tr>
 <tr>
 <td>Test</td>
@@ -228,8 +248,11 @@ TODO</code></pre>
 <li>Users authenticate with email and password.</li>
 <li>Credentials are stored only as cryptographic hashes.</li>
 <li>Sessions use HttpOnly cookies.</li>
-<li>The upper-right credit count reflects the active server provider.</li>
+<li>The upper-right credit count reflects the current user's VideoAgent balance</li>
+<p>without exposing the shared Provider account pool.</p>
 <li>Generation requires explicit approval before a billable provider call.</li>
+<li>Credits are reserved before submission and refunded idempotently after submit,</li>
+<p>generation, or cancellation failures.</p>
 </ul>
 <h2 id="10-non-functional-requirements">10. Non-Functional Requirements</h2>
 <ul>
@@ -252,7 +275,7 @@ TODO</code></pre>
 <li>Assets uses internal Video and Skill tabs and shows permission and</li>
 <p><code>yyyy-mm-dd</code> edit time.</p>
 <li>Assets uses a waterfall layout; videos preview on hover and Skill cards have no cover.</li>
-<li>Docs includes PRD, Design, Interface, Impl, Test, Ops, FAQ, and TODO in order.</li>
+<li>Docs includes PRD, Playbook, Arch, API, Dev, Test, Ops, FAQ, and TODO in order.</li>
 <li>Docs search and bilingual switching work.</li>
 <li>Avatar provides login, registration, or sign-out based on session state.</li>
 <li>Production playbooks fill the prompt and recommended production settings.</li>
@@ -261,8 +284,12 @@ TODO</code></pre>
 <p>while typing.</p>
 <li>Re-clicking the active playbook cancels selection and restores the previous draft.</li>
 <li>The Model selector exposes all available video models.</li>
+<li>Users can upload references, compose a film, download a delivery, and</li>
+<p>create a share link.</p>
+<li>User credit reservations, refunds, and Provider-account reconciliation agree.</li>
+<li>Reordering shots does not delete or recreate existing Shots.</li>
 </ol></article>
     </main>
-    <script src="../docs.js?v=26"></script>
+    <script src="../docs.js?v=27"></script>
   </body>
 </html>

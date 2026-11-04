@@ -11,7 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OUTPUT = ROOT / ".pages-build"
 WEB_PUBLIC = ROOT / "apps" / "web" / "public"
 DOCS = ROOT / "docs"
-DOCS_ASSET_VERSION = "26"
+DOCS_ASSET_VERSION = "27"
 
 DOCUMENTS = {
     "product-requirements": {
@@ -19,18 +19,23 @@ DOCUMENTS = {
         "en": "product-requirements.en.md",
         "zh-CN": "product-requirements.md",
     },
+    "playbooks": {
+        "title": "Playbook",
+        "en": "playbooks.en.md",
+        "zh-CN": "playbooks.md",
+    },
     "software-design": {
-        "title": "Design",
+        "title": "Arch",
         "en": "software-design.en.md",
         "zh-CN": "software-design.md",
     },
     "interface-reference": {
-        "title": "Interface",
+        "title": "API",
         "en": "api-reference.md",
         "zh-CN": "api-reference.zh.md",
     },
     "software-implementation": {
-        "title": "Impl",
+        "title": "Dev",
         "en": "software-implementation.en.md",
         "zh-CN": "software-implementation.md",
     },

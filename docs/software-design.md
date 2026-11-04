@@ -2,7 +2,7 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v1.7 |
+| 文档版本 | v1.8 |
 | 更新日期 | 2026-11-04 |
 | 后端框架 | Python + FastAPI |
 | 前端框架 | Next.js + TypeScript |
@@ -24,7 +24,7 @@ VideoAgent 是一个面向内容创作者、营销人员和普通用户的 AI �
 - **Skills：** 单一可搜索 Skill 目录，使用 `user_id/skill_id` 标识，并支持用户发布。
 - **Hots：** 可搜索社区作品流，展示作者、喜欢数并支持发布。
 - **Assets：** 用户成品与半成品作品库，按 Video/Skill 分页；视频悬浮预览，Skill 不显示封面。
-- **Docs：** 八份中英文文档、全文搜索、统一深色阅读主题和左侧可折叠目录。
+- **Docs：** 九份中英文文档、全文搜索、统一深色阅读主题和左侧可折叠目录。
 
 创作范式结合对话式生成、模板化制作和多模型工作台组织方式。生成能力通过统一 Provider 契约接入，使项目、故事板、镜头和任务状态不依赖单一模型服务。
 
@@ -41,6 +41,10 @@ VideoAgent 是一个面向内容创作者、营销人员和普通用户的 AI �
 - 支持 Agent 生成创意方案和多镜头故事板。
 - 支持镜头参数编辑和积分成本估算。
 - 支持故事板即时评估，计算一致性、覆盖度、提示清晰度和节奏。
+- 支持项目级图片、视频和音频素材上传，并校验 MIME、文件头和大小。
+- 支持 FFmpeg 合成、16:9/9:16/1:1 交付版本、封面、字幕和音轨。
+- 支持限时分享链接、公开/私有权限、过期和撤销。
+- 支持用户独立积分账户与预扣、退款流水，隔离共享 Provider 账户的计费风险。
 - 支持服务端统一授权的 Pippit CLI。
 - 支持 Pippit 文本生成视频、任务查询和积分余额读取。
 - 支持 Kling MCP 的文本生成视频、图生视频、动作控制和多模态参考能力。
@@ -84,7 +88,8 @@ VideoAgent 是一个面向内容创作者、营销人员和普通用户的 AI �
                           │ HTTPS / JSON / polling
 ┌─────────────────────────▼───────────────────────────────┐
 │ FastAPI /api/v1                                         │
-│ Auth / Projects / Storyboards / Agent / Jobs / Eval     │
+│ Auth / Projects / Agent / Jobs / Assets / Delivery      │
+│ Credits / Evaluation / Provider                         │
 └──────────┬──────────────────┬───────────────────────────┘
            │                  │
 ┌──────────▼─────────┐  ┌─────▼────────────────────────────┐
@@ -93,8 +98,8 @@ VideoAgent 是一个面向内容创作者、营销人员和普通用户的 AI �
 └──────────┬─────────┘  └──────────────────────────────────┘
            │
 ┌──────────▼───────────────────────────────────────────────┐
-│ Celery + Redis + Pippit CLI / Kling MCP                 │
-│ 任务提交 / 轮询 / 状态更新                               │
+│ Celery + Redis + Pippit CLI / Kling MCP / FFmpeg        │
+│ 任务提交 / 轮询 / 状态更新 / 媒体合成                    │
 └──────────────────────────────────────────────────────────┘
 ```
 
@@ -126,12 +131,15 @@ GET /jobs/{job_id} → FastAPI 查询 Provider → 更新数据库 → 返回最
 | 迁移 | 启动时 `create_all` |
 | 任务队列 | Celery |
 | Broker | Redis |
+| 媒体处理 | FFmpeg / FFprobe |
+| 媒体存储 | 本地文件系统（开发基线） |
 | 实时事件 | 任务状态轮询 |
 | 用户认证 | 自研 Session、Argon2、HttpOnly Cookie |
 | 凭据加密 | cryptography AES-256-GCM |
 | 日志 | structlog |
 | 单元测试 | pytest、pytest-asyncio |
 | 前端测试 | Vitest、Testing Library、jsdom |
+| 端到端测试 | Playwright + Mock Provider |
 | Python 环境 | uv、pyproject.toml |
 | 代码质量 | Ruff、mypy |
 | 本地环境 | PowerShell 脚本；Docker Compose 为可选基础设施 |
@@ -187,7 +195,10 @@ VideoAgent/
 | `api.generation` | 积分估算、生成提交和任务状态刷新 |
 | `api.evaluation` | 故事板即时评估 |
 | `api.providers` | Pippit 服务端状态和积分余额 |
+| `api.assets` | 上传、下载、导出与分享 |
+| `api.credits` | 用户独立积分余额 |
 | `api.health` | API 与数据库健康检查 |
+| `middleware` | 同源写请求校验与认证/生成/上传限流 |
 | `agent.graph` | 单节点 LangGraph：`plan_storyboard` |
 | `agent.planner` | 本地确定性规划器和 OpenAI-compatible 规划器 |
 | `providers.base` | Provider 抽象接口 |
@@ -197,6 +208,8 @@ VideoAgent/
 | `services.storyboards` | 故事板领域操作 |
 | `services.generation_jobs` | Provider 状态与 Shot 状态联动 |
 | `services.evaluation` | 一致性、覆盖度、清晰度和节奏计算 |
+| `services.media` | 媒体校验、结果落地、FFmpeg 合成、封面与分享 Token |
+| `services.credits` | 用户积分账户、预扣与幂等退款 |
 | `workers.tasks` | Celery 任务轮询 |
 
 ## 9. Agent 设计
@@ -318,6 +331,10 @@ Kling 的任务状态、错误和结果映射到与 Pippit 相同的 `VideoProvi
 | `provider_connections` | `id`, `user_id`, `provider`, `encrypted_tokens` | Provider 授权信息 |
 | `oauth_flows` | `id`, `state_hash`, `provider`, `expires_at` | OAuth 事务状态 |
 | `generation_jobs` | `id`, `shot_id`, `idempotency_key`, `provider_task_id`, `status` | 生成任务与 Provider 原始响应 |
+| `credit_accounts` | `user_id`, `balance` | 用户独立积分余额 |
+| `credit_entries` | `user_id`, `amount`, `reason`, `reference_id` | 可审计的预扣与退款流水 |
+| `assets` | `owner_id`, `project_id`, `shot_id`, `kind`, `storage_key`, `permission` | 上传、生成、交付与封面资产 |
+| `share_links` | `asset_id`, `token_hash`, `expires_at`, `revoked_at`, `access_count` | 限时分享与访问计数 |
 
 统一使用 UUID 主键、UTC 时间戳和数据库外键。数据库使用通用 `JSON`
 字段保存 Provider 原始响应。
@@ -403,12 +420,20 @@ cancelled
 | GET/POST | `/projects/{id}/messages` | 读取历史或发送 Agent 消息 |
 | GET | `/projects/{id}/storyboard` | 获取故事板 |
 | PUT | `/projects/{id}/storyboard` | 整体替换故事板 |
+| PATCH | `/projects/{id}/storyboard/order` | 调整镜头顺序并保留 Shot ID |
 | POST | `/projects/{id}/evaluate` | 故事板即时评估 |
 | POST | `/shots/{id}/estimate` | 积分估算 |
 | POST | `/shots/{id}/generate` | 创建生成任务 |
 | GET | `/jobs/{id}` | 查询任务 |
 | GET | `/providers/pippit` | 服务端 Pippit 状态 |
 | GET | `/providers/pippit/credits` | Pippit 积分余额 |
+| GET | `/credits` | 当前用户积分余额 |
+| GET/POST | `/projects/{id}/assets` | 项目资产列表与上传 |
+| GET | `/assets/{id}/content` | 读取私有资产 |
+| POST | `/projects/{id}/exports` | 合成并导出成片 |
+| POST | `/assets/{id}/share` | 创建限时分享 |
+| DELETE | `/shares/{id}` | 撤销分享 |
+| GET | `/shares/{token}/content` | 读取分享资产 |
 
 ## 15. 前端设计
 
@@ -421,7 +446,7 @@ cancelled
 - Skills 目录还覆盖视频本地化、批量变体、剧本助手、智能预演、运镜设计、音乐 MV、参考复刻和外部 Agent 接力。
 - `Hots`：可搜索社区瀑布流，视频自动播放，展示标题、作者、喜欢数，并支持发布。
 - `Assets`：通过 Video 与 Skill 两个内部分页切换，支持搜索；Video 卡片悬浮静音播放，Skill 卡片不显示封面；卡片只展示权限和 `yyyy-mm-dd` 编辑时间。
-- `Docs`：按 PRD、Design、Interface、Impl、Test、Ops、FAQ、TODO 展示中英文文档，支持全文搜索。
+- `Docs`：按 PRD、Playbook、Arch、API、Dev、Test、Ops、FAQ、TODO 展示中英文文档，支持全文搜索。
 - 项目工作区：对话、Canvas、镜头检查器、生成和审核弹窗。
 - 品牌与浏览器标签页图标统一使用蓝色播放键；激活导航图标采用填充/线框反转。
 
@@ -448,6 +473,8 @@ Agent | Canvas | Inspector
 - Provider 模型参数。
 - 积分估算。
 - 生成与错误提示。
+- 图片、视频和音频引用素材上传。
+- 成片导出、交付版本下载、封面与分享链接。
 
 ### 15.3 前端状态
 
@@ -455,6 +482,7 @@ Agent | Canvas | Inspector
 - Agent 消息使用普通 JSON 请求；流式输出使用前端分段动画呈现。
 - 项目事件使用轮询。
 - 不将 Provider 凭据、Access Key 或敏感任务内容写入 localStorage。
+- 私有媒体通过受鉴权的内容路由读取，分享内容通过随机 Token 读取。
 
 ## 16. 国际化策略
 
@@ -478,6 +506,10 @@ Agent 输出支持三种 Prompt 模式：
 - `VIDEOAGENT_PIPPIT_ACCESS_KEY` 只保存在秘密管理系统或服务环境变量中。
 - 不使用 Agent 生成的内容拼接 Shell 命令。
 - 日志不记录密码、Cookie、Token、Authorization Header。
+- Cookie 写接口校验 `Origin` 与 `Sec-Fetch-Site`，拒绝跨站提交。
+- 认证、生成和上传分别执行分钟级限流；分布式部署需将计数迁移到 Redis。
+- 上传同时校验声明的 MIME、文件签名和大小。
+- 分享链接只保存 Token 哈希，并支持过期、撤销和访问计数。
 
 ## 18. 可靠性设计
 
@@ -505,7 +537,7 @@ Agent 输出支持三种 Prompt 模式：
 - Pippit 状态和余额只读 Smoke Test 使用受控服务账户。
 - 真实生成测试必须人工触发并显式限制次数和积分预算。
 
-## 22. 配置项
+## 21. 配置项
 
 后端使用 `VIDEOAGENT_` 前缀的环境变量：
 
@@ -524,6 +556,14 @@ VIDEOAGENT_CELERY_RESULT_BACKEND
 VIDEOAGENT_LLM_BASE_URL
 VIDEOAGENT_LLM_API_KEY
 VIDEOAGENT_LLM_MODEL
+VIDEOAGENT_MEDIA_DIR
+VIDEOAGENT_MAX_UPLOAD_BYTES
+VIDEOAGENT_FFMPEG_COMMAND
+VIDEOAGENT_FFPROBE_COMMAND
+VIDEOAGENT_STARTING_USER_CREDITS
+VIDEOAGENT_AUTH_RATE_LIMIT_PER_MINUTE
+VIDEOAGENT_GENERATION_RATE_LIMIT_PER_MINUTE
+VIDEOAGENT_UPLOAD_RATE_LIMIT_PER_MINUTE
 NEXT_PUBLIC_API_BASE_URL
 ```
 
@@ -564,6 +604,9 @@ Markdown 文档在构建时生成 HTML，并复制到 `public/docs`。
 7. 即时评估返回一致性、覆盖度、清晰度和节奏得分。
 8. Hots 的作者、喜欢数、发布入口和预览可用。
 9. Mock Provider、Pippit Fake CLI 和 Kling Provider 契约测试全部通过。
+10. Playwright 使用 Mock Provider 完成注册、创作、上传、生成、导出、下载和分享。
+11. 生成预扣积分，失败或取消时幂等退款。
+12. 分享链接可撤销，私有资产不能由其他用户通过内容路由读取。
 
 ## 24. 主要风险
 

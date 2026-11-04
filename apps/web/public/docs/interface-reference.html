@@ -3,10 +3,10 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="VideoAgent Interface" />
-    <title>Interface · VideoAgent</title>
+    <meta name="description" content="VideoAgent API" />
+    <title>API · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=26" />
+    <link rel="stylesheet" href="../docs.css?v=27" />
   </head>
   <body data-document="interface-reference.html">
     <main class="document-shell" id="document-shell">
@@ -25,7 +25,7 @@
         </button>
         <nav class="toc-panel" id="toc-panel" aria-label="Contents">
           <p class="toc-kicker">CONTENTS</p>
-          <a class="toc-link toc-level-1" href="#videoagent-interface-reference">VideoAgent Interface Reference</a>
+          <a class="toc-link toc-level-1" href="#videoagent-api-reference">VideoAgent API Reference</a>
 <a class="toc-link toc-level-2" href="#authentication">Authentication</a>
 <a class="toc-link toc-level-3" href="#register">Register</a>
 <a class="toc-link toc-level-3" href="#login">Login</a>
@@ -37,6 +37,7 @@
 <a class="toc-link toc-level-2" href="#storyboards">Storyboards</a>
 <a class="toc-link toc-level-3" href="#read-storyboard">Read Storyboard</a>
 <a class="toc-link toc-level-3" href="#replace-storyboard">Replace Storyboard</a>
+<a class="toc-link toc-level-3" href="#reorder-storyboard">Reorder Storyboard</a>
 <a class="toc-link toc-level-2" href="#videoagent-conversation">VideoAgent Conversation</a>
 <a class="toc-link toc-level-3" href="#list-messages">List Messages</a>
 <a class="toc-link toc-level-3" href="#send-message">Send Message</a>
@@ -44,19 +45,21 @@
 <a class="toc-link toc-level-3" href="#estimate-cost">Estimate Cost</a>
 <a class="toc-link toc-level-3" href="#generate-shot">Generate Shot</a>
 <a class="toc-link toc-level-3" href="#job-status">Job Status</a>
+<a class="toc-link toc-level-2" href="#credits">Credits</a>
 <a class="toc-link toc-level-3" href="#evaluate-storyboard">Evaluate Storyboard</a>
+<a class="toc-link toc-level-2" href="#assets-and-media">Assets and Media</a>
 <a class="toc-link toc-level-2" href="#pippit-provider">Pippit Provider</a>
 <a class="toc-link toc-level-2" href="#errors">Errors</a>
         </nav>
       </aside>
-      <article class="document"><h1 id="videoagent-interface-reference">VideoAgent Interface Reference</h1>
+      <article class="document"><h1 id="videoagent-api-reference">VideoAgent API Reference</h1>
 <div class="table-wrap"><table><thead><tr>
 <th>Attribute</th>
 <th>Value</th>
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v1.2</td>
+<td>v1.3</td>
 </tr>
 <tr>
 <td>Updated</td>
@@ -81,6 +84,14 @@
 <tr>
 <td>Billable generation</td>
 <td>Explicit approval plus <code>Idempotency-Key</code></td>
+</tr>
+<tr>
+<td>Write protection</td>
+<td>Same-origin <code>Origin</code> / <code>Sec-Fetch-Site</code> validation</td>
+</tr>
+<tr>
+<td>User credits</td>
+<td>Internal per-user quota with an auditable ledger</td>
 </tr>
 <tr>
 <td>OpenAPI</td>
@@ -181,6 +192,15 @@ http://localhost:8000/openapi.json</code></pre>
     }
   ]
 }</code></pre>
+<h3 id="reorder-storyboard">Reorder Storyboard</h3>
+<p><code>PATCH /projects/{project_id}/storyboard/order</code></p>
+<p>The request must contain every current Shot exactly once. Reordering preserves Shot IDs, generated assets, generation history, and project continuity.</p>
+<pre><code class="language-json">{
+  &quot;shot_ids&quot;: [
+    &quot;00000000-0000-0000-0000-000000000002&quot;,
+    &quot;00000000-0000-0000-0000-000000000001&quot;
+  ]
+}</code></pre>
 <h2 id="videoagent-conversation">VideoAgent Conversation</h2>
 <h3 id="list-messages">List Messages</h3>
 <p><code>GET /projects/{project_id}/messages</code></p>
@@ -204,6 +224,15 @@ http://localhost:8000/openapi.json</code></pre>
 <h3 id="job-status">Job Status</h3>
 <p><code>GET /jobs/{job_id}</code></p>
 <p>Possible statuses include <code>submitted</code>, <code>queued</code>, <code>running</code>, <code>succeeded</code>, <code>failed</code>, and <code>cancelled</code>.</p>
+<p>Each successful generation reserves the estimated credits from the current user's VideoAgent balance. An immediate submission failure or a later failed or cancelled job returns the reservation through an idempotent refund entry.</p>
+<h2 id="credits">Credits</h2>
+<p><code>GET /credits</code></p>
+<p>Returns the authenticated user's internal VideoAgent quota. This balance is separate from the server-owned Provider account pool.</p>
+<pre><code class="language-json">{
+  &quot;provider&quot;: &quot;video_agent&quot;,
+  &quot;connected&quot;: true,
+  &quot;credits&quot;: 95
+}</code></pre>
 <h3 id="evaluate-storyboard">Evaluate Storyboard</h3>
 <p><code>POST /projects/{project_id}/evaluate</code></p>
 <p>Returns an immediate review of the current storyboard:</p>
@@ -219,6 +248,71 @@ http://localhost:8000/openapi.json</code></pre>
     { &quot;code&quot;: &quot;IMPROVE_PROMPTS&quot;, &quot;severity&quot;: &quot;medium&quot; }
   ]
 }</code></pre>
+<h2 id="assets-and-media">Assets and Media</h2>
+<p>Media endpoints are scoped to the authenticated user. Unsupported content types, invalid file signatures, and files above the configured size limit are rejected before an Asset record is created.</p>
+<div class="table-wrap"><table><thead><tr>
+<th>Method</th>
+<th>Path</th>
+<th>Purpose</th>
+</tr></thead><tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/assets</code></td>
+<td>List the current user's assets</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/projects/{project_id}/assets</code></td>
+<td>List assets for one owned project</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/projects/{project_id}/assets</code></td>
+<td>Upload image, video, or audio media</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/assets/{asset_id}/content</code></td>
+<td>Download or preview a private asset</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/projects/{project_id}/exports</code></td>
+<td>Compose and export the current film</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/assets/{asset_id}/share</code></td>
+<td>Create a time-limited share link</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/shares/{share_id}</code></td>
+<td>Revoke a share link</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/shares/{token}/content</code></td>
+<td>Read a valid shared asset without a session</td>
+</tr>
+</tbody></table></div>
+<p>Upload request:</p>
+<pre><code class="language-text">POST /projects/{project_id}/assets
+Content-Type: multipart/form-data
+file=&lt;image, video, or audio&gt;</code></pre>
+<p>Export request:</p>
+<pre><code class="language-json">{
+  &quot;aspect_ratios&quot;: [&quot;16:9&quot;, &quot;9:16&quot;, &quot;1:1&quot;],
+  &quot;soundtrack_asset_id&quot;: null,
+  &quot;captions&quot;: &quot;A generated product story&quot;,
+  &quot;permission&quot;: &quot;private&quot;
+}</code></pre>
+<p>The export response contains delivery Assets and a generated cover. The current implementation composes available generated shots with FFmpeg, normalizes each delivery ratio, applies a short crossfade between shots, and optionally includes captions and an uploaded soundtrack.</p>
+<p>Share request:</p>
+<pre><code class="language-json">{
+  &quot;expires_in_hours&quot;: 24
+}</code></pre>
+<p>Share tokens are random, stored as hashes, expire after the requested period, and can be revoked. Access increments an audit counter.</p>
 <h2 id="pippit-provider">Pippit Provider</h2>
 <div class="table-wrap"><table><thead><tr>
 <th>Method</th>
@@ -236,7 +330,7 @@ http://localhost:8000/openapi.json</code></pre>
 <td>Read the active Pippit credit balance</td>
 </tr>
 </tbody></table></div>
-<p>Pippit authorization is server-owned. The API invokes the installed <code>pippit-tool-cli</code> binary; browser clients never receive access keys or CLI session files. Every VideoAgent user therefore uses the same configured Pippit account and credit pool. Operators should authorize the CLI on the API host before enabling live generation.</p>
+<p>Pippit authorization is server-owned. The API invokes the installed <code>pippit-tool-cli</code> binary; browser clients never receive access keys or CLI session files. Provider billing draws from the configured server account, while product users consume independent VideoAgent balances through <code>/credits</code>. Operators authorize the CLI on the API host before enabling live generation.</p>
 <p><code>GET /providers/pippit</code> response:</p>
 <pre><code class="language-json">{
   &quot;provider&quot;: &quot;pippit&quot;,
@@ -270,6 +364,10 @@ http://localhost:8000/openapi.json</code></pre>
 <td>Authentication required or session expired</td>
 </tr>
 <tr>
+<td><code>402</code></td>
+<td>The user's VideoAgent credit balance is insufficient</td>
+</tr>
+<tr>
 <td><code>403</code></td>
 <td>Explicit approval required</td>
 </tr>
@@ -282,8 +380,16 @@ http://localhost:8000/openapi.json</code></pre>
 <td>Configured provider is not active</td>
 </tr>
 <tr>
+<td><code>413</code></td>
+<td>Uploaded media exceeds the configured limit</td>
+</tr>
+<tr>
 <td><code>422</code></td>
 <td>Request validation failed</td>
+</tr>
+<tr>
+<td><code>429</code></td>
+<td>An auth, generation, or upload rate limit was exceeded</td>
 </tr>
 <tr>
 <td><code>502</code></td>
@@ -295,6 +401,6 @@ http://localhost:8000/openapi.json</code></pre>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=26"></script>
+    <script src="../docs.js?v=27"></script>
   </body>
 </html>

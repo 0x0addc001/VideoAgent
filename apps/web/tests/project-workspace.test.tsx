@@ -48,6 +48,9 @@ describe("ProjectWorkspace", () => {
       if (url.endsWith("/projects/project-1/messages") && !init?.method) {
         return Promise.resolve(Response.json({ items: [] }));
       }
+      if (url.endsWith("/projects/project-1/assets") && !init?.method) {
+        return Promise.resolve(Response.json({ items: [] }));
+      }
       if (url.endsWith("/projects/project-1/messages") && init?.method === "POST") {
         return Promise.resolve(
           Response.json({
@@ -79,8 +82,55 @@ describe("ProjectWorkspace", () => {
                   generation_mode: "text_to_video",
                   status: "draft",
                 },
+                {
+                  id: "shot-2",
+                  index: 1,
+                  description: "Light moves across the canal",
+                  prompt_en: "Light moves across the canal",
+                  prompt_zh: null,
+                  duration_seconds: 5,
+                  aspect_ratio: "16:9",
+                  generation_mode: "text_to_video",
+                  status: "draft",
+                },
               ],
             },
+          }),
+        );
+      }
+      if (
+        url.endsWith("/projects/project-1/storyboard/order") &&
+        init?.method === "PATCH"
+      ) {
+        return Promise.resolve(
+          Response.json({
+            id: "storyboard-1",
+            project_id: "project-1",
+            version: 2,
+            shots: [
+              {
+                id: "shot-2",
+                index: 0,
+                description: "Light moves across the canal",
+                prompt_en: "Light moves across the canal",
+                prompt_zh: null,
+                duration_seconds: 5,
+                aspect_ratio: "16:9",
+                generation_mode: "text_to_video",
+                status: "draft",
+              },
+              {
+                id: "shot-1",
+                index: 1,
+                description: "A quiet Copenhagen morning",
+                prompt_en: "A quiet Copenhagen morning",
+                prompt_zh: null,
+                duration_seconds: 5,
+                aspect_ratio: "16:9",
+                generation_mode: "text_to_video",
+                status: "draft",
+              },
+            ],
           }),
         );
       }
@@ -123,6 +173,17 @@ describe("ProjectWorkspace", () => {
       await screen.findByLabelText("I shaped this into a first treatment."),
     ).toBeVisible();
     expect(screen.getAllByText("A quiet Copenhagen morning")).not.toHaveLength(0);
+
+    fireEvent.click(screen.getByRole("button", { name: "Move shot later" }));
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        "http://localhost:8000/api/v1/projects/project-1/storyboard/order",
+        expect.objectContaining({
+          method: "PATCH",
+          body: JSON.stringify({ shot_ids: ["shot-2", "shot-1"] }),
+        }),
+      ),
+    );
 
     fireEvent.click(screen.getByRole("button", { name: "Review" }));
 
