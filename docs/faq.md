@@ -364,3 +364,81 @@ Redis（内存数据结构存储）只承担缓存、队列和
 依次考虑数据安全、费用一致性、结果可用性、质量和延迟。降级必须可观测、可
 解释、可撤销，并受用户预算和内容策略约束。
 
+## Q17. 这里的 Agent Loop 是什么？
+
+**答案**
+
+当前是受控的单次规划 Run，不是无限自主的 ReAct 循环。FastAPI 接收用户消息后，
+依次保存 `run_id`、构建有界 Context、读取 Memory 和当前项目资源、解析可选 Skill，
+再执行 LangGraph 的单个 `plan_storyboard` 节点。Planner 输出
+`StoryboardPlan`，经 Pydantic 校验后写入工作流、Message、Character 和 Shot 状态，
+最后生成导演回复。
+
+**追问：** 为什么还能在等待界面看到很多步骤？
+
+**答案**
+
+每一步都会写入 `agent_activities`，前端按 `run_id` 轮询并显示
+`context → memory → skill → planning → validation → state → reply` 的真实事件。
+它不是用假动画模拟工具执行；没有发生的 MCP 或 Skill 调用不会显示为已完成。
+
+**扩展：** 什么时候才需要真正的多轮 Loop？
+
+**答案**
+
+当 Agent 需要根据工具结果决定下一步，例如自动读取素材、调用视觉评估、根据失败原因
+重试或请求用户补充信息时，才需要把单节点图扩展为有预算、有终止条件、有审批门和
+可恢复 Checkpoint 的多节点循环。
+
+## Q18. Context 和 Memory 怎么设计和管理？
+
+**答案**
+
+Context 是单次规划调用的有界输入，包含项目标题、Brief、当前请求、Locale、
+工作流阶段/状态、当前 Character/Shot 摘要、最近对话和可选 Skill 指令。短期 Memory
+只读取最近 8 条历史消息，每条截断到 600 字符，并排除当前请求；故事板上下文最多
+读取 20 个 Shot。
+
+**追问：** 长期 Memory 存在哪里？
+
+**答案**
+
+关系数据库是唯一事实来源，保存 Project、Conversation、Message、
+ProjectWorkflow、Storyboard、Character、Shot、Asset 和 GenerationJob。当前没有
+向量数据库、跨项目用户记忆或自动长期摘要。
+
+**扩展：** 以后增加向量 Memory 要注意什么？
+
+**答案**
+
+必须有用户和项目级隔离、写入去重、TTL、删除传播、权限校验和可解释召回；召回内容
+只能作为有界 Context 的一部分，不能取代数据库状态或审批记录。
+
+## Q19. Skill、MCP、SubAgent 是怎么调用的？
+
+**答案**
+
+Skill 当前不是工具执行。Composer 把 Skill ID 写入项目 `Production settings`；
+Context Builder 会在当前用户已发布的 Skill 中查找它，并把持久化的 instructions
+和 starter prompt 加入 Planner Context。内置 Skill 没有数据库指令时，只传入
+Skill ID 作为创作约束。
+
+**追问：** Storyboard Agent 会直接调用 MCP 吗？
+
+**答案**
+
+不会。MCP 位于付费生成 Provider 边界之后。用户明确批准生成后，Generation API
+才解析 Provider；当 Kling 使用 MCP Backend 时，Provider Resolver 使用当前用户的
+OAuth Token 创建 `StreamableHTTPToolClient`，再由 `KlingVideoProvider` 调用
+`text_to_video`、`image_to_video` 或 `query_tasks`。默认国内版路径使用受控 CLI
+子进程。这样可以阻止规划 Agent 自行产生计费副作用。
+
+**扩展：** 现在有 SubAgent 吗？
+
+**答案**
+
+没有。当前只有 LangGraph 的单个 `plan_storyboard` 节点，没有独立 SubAgent
+运行时、委派协议或并行子图。只有在剧本、视觉、评估或制片任务具备独立工具、
+上下文、验收标准和扩缩容需求时才应拆分；拆分后每个 SubAgent 仍需共享可追踪
+`run_id`、预算和审批边界。
+

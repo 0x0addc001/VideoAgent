@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent FAQ" />
     <title>FAQ · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=31" />
+    <link rel="stylesheet" href="../docs.css?v=32" />
   </head>
   <body data-document="faq.html">
     <main class="document-shell" id="document-shell">
@@ -42,6 +42,9 @@
 <a class="toc-link toc-level-2" href="#q14-how-should-a-video-generation-system-support-high-concurrency">Q14. How should a video generation system support high concurrency?</a>
 <a class="toc-link toc-level-2" href="#q15-how-should-a-video-agent-achieve-high-availability">Q15. How should a video Agent achieve high availability?</a>
 <a class="toc-link toc-level-2" href="#q16-how-should-fallback-be-designed-for-the-video-generation-pipeline">Q16. How should fallback be designed for the video generation pipeline?</a>
+<a class="toc-link toc-level-2" href="#q17-what-is-the-agent-loop-here">Q17. What is the Agent Loop here?</a>
+<a class="toc-link toc-level-2" href="#q18-how-are-context-and-memory-designed-and-managed">Q18. How are Context and Memory designed and managed?</a>
+<a class="toc-link toc-level-2" href="#q19-how-are-skills-mcp-and-subagents-invoked">Q19. How are Skills, MCP, and SubAgents invoked?</a>
         </nav>
       </aside>
       <article class="document"><h1 id="videoagent-faq">VideoAgent FAQ</h1>
@@ -201,8 +204,35 @@
 <p>First check the idempotency key and task reference to determine whether the request was accepted. Stop billable retries when the outcome is uncertain and switch providers only after proving non-acceptance and respecting user policy.</p>
 <p><strong>Extension:</strong> How should fallback priority be determined?</p>
 <p><strong>Answer</strong></p>
-<p>Prioritize data safety, billing consistency, result availability, quality, and latency in that order. Fallbacks must be observable, explainable, reversible, and constrained by user budget and content policy.</p></article>
+<p>Prioritize data safety, billing consistency, result availability, quality, and latency in that order. Fallbacks must be observable, explainable, reversible, and constrained by user budget and content policy.</p>
+<h2 id="q17-what-is-the-agent-loop-here">Q17. What is the Agent Loop here?</h2>
+<p><strong>Answer</strong></p>
+<p>It is currently a bounded planning run, not an unrestricted ReAct loop. FastAPI accepts the user message, stores a <code>run_id</code>, assembles bounded Context, loads Memory and current project resources, resolves an optional Skill, and executes the single LangGraph <code>plan_storyboard</code> node. The planner returns a <code>StoryboardPlan</code>; Pydantic validates it before workflow, Message, Character, and Shot state are persisted. The director reply is then stored and returned.</p>
+<p><strong>Follow-up:</strong> Why does the waiting UI show many steps?</p>
+<p><strong>Answer</strong></p>
+<p>Each step is persisted in <code>agent_activities</code>, and the client polls by <code>run_id</code> to display real <code>context → memory → skill → planning → validation → state → reply</code> events. It does not simulate tool execution; a Skill or MCP call that did not occur is never shown as completed.</p>
+<p><strong>Extension:</strong> When is a true multi-turn Loop needed?</p>
+<p><strong>Answer</strong></p>
+<p>A multi-node loop is needed when the Agent must choose its next action from tool results, such as reading assets, invoking visual review, retrying from a typed failure, or asking for missing input. That loop requires budgets, stopping conditions, approval gates, and recoverable checkpoints.</p>
+<h2 id="q18-how-are-context-and-memory-designed-and-managed">Q18. How are Context and Memory designed and managed?</h2>
+<p><strong>Answer</strong></p>
+<p>Context is the bounded input for one planning call: project title, brief, current request, locale, workflow stage/status, current Character/Shot summaries, recent conversation, and optional Skill instructions. Short-term Memory reads the eight most recent historical messages, clips each to 600 characters, excludes the current request, and caps Storyboard context at 20 Shots.</p>
+<p><strong>Follow-up:</strong> Where does long-term Memory live?</p>
+<p><strong>Answer</strong></p>
+<p>The relational database is the source of truth. It stores Project, Conversation, Message, ProjectWorkflow, Storyboard, Character, Shot, Asset, and GenerationJob state. Vector memory, cross-project user memory, and automatic long-term summaries are not enabled.</p>
+<p><strong>Extension:</strong> What is required before adding vector Memory?</p>
+<p><strong>Answer</strong></p>
+<p>Add user/project isolation, deduplication, TTL, deletion propagation, permission checks, and inspectable retrieval. Retrieved text is still a bounded Context input; it never replaces authoritative database state or approval records.</p>
+<h2 id="q19-how-are-skills-mcp-and-subagents-invoked">Q19. How are Skills, MCP, and SubAgents invoked?</h2>
+<p><strong>Answer</strong></p>
+<p>A Skill is not currently a tool execution. The composer writes its ID into project <code>Production settings</code>. The Context Builder looks up a Skill published by the current user and attaches persisted instructions and the starter prompt to Planner Context. A built-in Skill without database instructions contributes only its ID as a directing constraint.</p>
+<p><strong>Follow-up:</strong> Does the Storyboard Agent call MCP directly?</p>
+<p><strong>Answer</strong></p>
+<p>No. MCP is behind the billable provider boundary. After explicit generation approval, the Generation API resolves a provider. With the Kling MCP backend, the Provider Resolver creates a <code>StreamableHTTPToolClient</code> with the current user's OAuth token, then <code>KlingVideoProvider</code> invokes <code>text_to_video</code>, <code>image_to_video</code>, or <code>query_tasks</code>. The default China-region path uses a controlled CLI subprocess. This prevents the planning Agent from creating unreviewed billable side effects.</p>
+<p><strong>Extension:</strong> Are there SubAgents today?</p>
+<p><strong>Answer</strong></p>
+<p>No. There is currently one LangGraph <code>plan_storyboard</code> node and no SubAgent runtime, delegation protocol, or parallel subgraph. Split responsibilities only when writing, visual, review, or production work has independent tools, context, acceptance criteria, and scaling needs. Every SubAgent would still share the traceable <code>run_id</code>, budget, and approval boundary.</p></article>
     </main>
-    <script src="../docs.js?v=31"></script>
+    <script src="../docs.js?v=32"></script>
   </body>
 </html>

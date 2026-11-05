@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent FAQ" />
     <title>FAQ · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=31" />
+    <link rel="stylesheet" href="../docs.css?v=32" />
   </head>
   <body data-document="faq.zh.html">
     <main class="document-shell" id="document-shell">
@@ -42,6 +42,9 @@
 <a class="toc-link toc-level-2" href="#q14-视频生成系统如何支撑高并发">Q14. 视频生成系统如何支撑高并发？</a>
 <a class="toc-link toc-level-2" href="#q15-videoagent-如何设计高可用">Q15. VideoAgent 如何设计高可用？</a>
 <a class="toc-link toc-level-2" href="#q16-视频生成链路应怎样设计兜底策略">Q16. 视频生成链路应怎样设计兜底策略？</a>
+<a class="toc-link toc-level-2" href="#q17-这里的-agent-loop-是什么">Q17. 这里的 Agent Loop 是什么？</a>
+<a class="toc-link toc-level-2" href="#q18-context-和-memory-怎么设计和管理">Q18. Context 和 Memory 怎么设计和管理？</a>
+<a class="toc-link toc-level-2" href="#q19-skill-mcp-subagent-是怎么调用的">Q19. Skill、MCP、SubAgent 是怎么调用的？</a>
         </nav>
       </aside>
       <article class="document"><h1 id="videoagent-客服-faq">VideoAgent 客服 FAQ</h1>
@@ -201,8 +204,35 @@
 <p>先通过幂等键和任务引用确认是否已受理。无法确认时停止计费重试；确认未受理且 用户策略允许后，才可切换到备用 Provider。</p>
 <p><strong>扩展：</strong> 兜底策略的优先级如何确定？</p>
 <p><strong>答案</strong></p>
-<p>依次考虑数据安全、费用一致性、结果可用性、质量和延迟。降级必须可观测、可 解释、可撤销，并受用户预算和内容策略约束。</p></article>
+<p>依次考虑数据安全、费用一致性、结果可用性、质量和延迟。降级必须可观测、可 解释、可撤销，并受用户预算和内容策略约束。</p>
+<h2 id="q17-这里的-agent-loop-是什么">Q17. 这里的 Agent Loop 是什么？</h2>
+<p><strong>答案</strong></p>
+<p>当前是受控的单次规划 Run，不是无限自主的 ReAct 循环。FastAPI 接收用户消息后， 依次保存 <code>run_id</code>、构建有界 Context、读取 Memory 和当前项目资源、解析可选 Skill， 再执行 LangGraph 的单个 <code>plan_storyboard</code> 节点。Planner 输出 <code>StoryboardPlan</code>，经 Pydantic 校验后写入工作流、Message、Character 和 Shot 状态， 最后生成导演回复。</p>
+<p><strong>追问：</strong> 为什么还能在等待界面看到很多步骤？</p>
+<p><strong>答案</strong></p>
+<p>每一步都会写入 <code>agent_activities</code>，前端按 <code>run_id</code> 轮询并显示 <code>context → memory → skill → planning → validation → state → reply</code> 的真实事件。 它不是用假动画模拟工具执行；没有发生的 MCP 或 Skill 调用不会显示为已完成。</p>
+<p><strong>扩展：</strong> 什么时候才需要真正的多轮 Loop？</p>
+<p><strong>答案</strong></p>
+<p>当 Agent 需要根据工具结果决定下一步，例如自动读取素材、调用视觉评估、根据失败原因 重试或请求用户补充信息时，才需要把单节点图扩展为有预算、有终止条件、有审批门和 可恢复 Checkpoint 的多节点循环。</p>
+<h2 id="q18-context-和-memory-怎么设计和管理">Q18. Context 和 Memory 怎么设计和管理？</h2>
+<p><strong>答案</strong></p>
+<p>Context 是单次规划调用的有界输入，包含项目标题、Brief、当前请求、Locale、 工作流阶段/状态、当前 Character/Shot 摘要、最近对话和可选 Skill 指令。短期 Memory 只读取最近 8 条历史消息，每条截断到 600 字符，并排除当前请求；故事板上下文最多 读取 20 个 Shot。</p>
+<p><strong>追问：</strong> 长期 Memory 存在哪里？</p>
+<p><strong>答案</strong></p>
+<p>关系数据库是唯一事实来源，保存 Project、Conversation、Message、 ProjectWorkflow、Storyboard、Character、Shot、Asset 和 GenerationJob。当前没有 向量数据库、跨项目用户记忆或自动长期摘要。</p>
+<p><strong>扩展：</strong> 以后增加向量 Memory 要注意什么？</p>
+<p><strong>答案</strong></p>
+<p>必须有用户和项目级隔离、写入去重、TTL、删除传播、权限校验和可解释召回；召回内容 只能作为有界 Context 的一部分，不能取代数据库状态或审批记录。</p>
+<h2 id="q19-skill-mcp-subagent-是怎么调用的">Q19. Skill、MCP、SubAgent 是怎么调用的？</h2>
+<p><strong>答案</strong></p>
+<p>Skill 当前不是工具执行。Composer 把 Skill ID 写入项目 <code>Production settings</code>； Context Builder 会在当前用户已发布的 Skill 中查找它，并把持久化的 instructions 和 starter prompt 加入 Planner Context。内置 Skill 没有数据库指令时，只传入 Skill ID 作为创作约束。</p>
+<p><strong>追问：</strong> Storyboard Agent 会直接调用 MCP 吗？</p>
+<p><strong>答案</strong></p>
+<p>不会。MCP 位于付费生成 Provider 边界之后。用户明确批准生成后，Generation API 才解析 Provider；当 Kling 使用 MCP Backend 时，Provider Resolver 使用当前用户的 OAuth Token 创建 <code>StreamableHTTPToolClient</code>，再由 <code>KlingVideoProvider</code> 调用 <code>text_to_video</code>、<code>image_to_video</code> 或 <code>query_tasks</code>。默认国内版路径使用受控 CLI 子进程。这样可以阻止规划 Agent 自行产生计费副作用。</p>
+<p><strong>扩展：</strong> 现在有 SubAgent 吗？</p>
+<p><strong>答案</strong></p>
+<p>没有。当前只有 LangGraph 的单个 <code>plan_storyboard</code> 节点，没有独立 SubAgent 运行时、委派协议或并行子图。只有在剧本、视觉、评估或制片任务具备独立工具、 上下文、验收标准和扩缩容需求时才应拆分；拆分后每个 SubAgent 仍需共享可追踪 <code>run_id</code>、预算和审批边界。</p></article>
     </main>
-    <script src="../docs.js?v=31"></script>
+    <script src="../docs.js?v=32"></script>
   </body>
 </html>

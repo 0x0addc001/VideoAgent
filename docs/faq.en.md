@@ -391,3 +391,93 @@ Prioritize data safety, billing consistency, result availability, quality, and
 latency in that order. Fallbacks must be observable, explainable, reversible,
 and constrained by user budget and content policy.
 
+## Q17. What is the Agent Loop here?
+
+**Answer**
+
+It is currently a bounded planning run, not an unrestricted ReAct loop. FastAPI
+accepts the user message, stores a `run_id`, assembles bounded Context, loads
+Memory and current project resources, resolves an optional Skill, and executes
+the single LangGraph `plan_storyboard` node. The planner returns a
+`StoryboardPlan`; Pydantic validates it before workflow, Message, Character,
+and Shot state are persisted. The director reply is then stored and returned.
+
+**Follow-up:** Why does the waiting UI show many steps?
+
+**Answer**
+
+Each step is persisted in `agent_activities`, and the client polls by `run_id`
+to display real `context → memory → skill → planning → validation → state →
+reply` events. It does not simulate tool execution; a Skill or MCP call that did
+not occur is never shown as completed.
+
+**Extension:** When is a true multi-turn Loop needed?
+
+**Answer**
+
+A multi-node loop is needed when the Agent must choose its next action from tool
+results, such as reading assets, invoking visual review, retrying from a typed
+failure, or asking for missing input. That loop requires budgets, stopping
+conditions, approval gates, and recoverable checkpoints.
+
+## Q18. How are Context and Memory designed and managed?
+
+**Answer**
+
+Context is the bounded input for one planning call: project title, brief,
+current request, locale, workflow stage/status, current Character/Shot
+summaries, recent conversation, and optional Skill instructions. Short-term
+Memory reads the eight most recent historical messages, clips each to 600
+characters, excludes the current request, and caps Storyboard context at 20
+Shots.
+
+**Follow-up:** Where does long-term Memory live?
+
+**Answer**
+
+The relational database is the source of truth. It stores Project,
+Conversation, Message, ProjectWorkflow, Storyboard, Character, Shot, Asset, and
+GenerationJob state. Vector memory, cross-project user memory, and automatic
+long-term summaries are not enabled.
+
+**Extension:** What is required before adding vector Memory?
+
+**Answer**
+
+Add user/project isolation, deduplication, TTL, deletion propagation,
+permission checks, and inspectable retrieval. Retrieved text is still a bounded
+Context input; it never replaces authoritative database state or approval
+records.
+
+## Q19. How are Skills, MCP, and SubAgents invoked?
+
+**Answer**
+
+A Skill is not currently a tool execution. The composer writes its ID into
+project `Production settings`. The Context Builder looks up a Skill published
+by the current user and attaches persisted instructions and the starter prompt
+to Planner Context. A built-in Skill without database instructions contributes
+only its ID as a directing constraint.
+
+**Follow-up:** Does the Storyboard Agent call MCP directly?
+
+**Answer**
+
+No. MCP is behind the billable provider boundary. After explicit generation
+approval, the Generation API resolves a provider. With the Kling MCP backend,
+the Provider Resolver creates a `StreamableHTTPToolClient` with the current
+user's OAuth token, then `KlingVideoProvider` invokes `text_to_video`,
+`image_to_video`, or `query_tasks`. The default China-region path uses a
+controlled CLI subprocess. This prevents the planning Agent from creating
+unreviewed billable side effects.
+
+**Extension:** Are there SubAgents today?
+
+**Answer**
+
+No. There is currently one LangGraph `plan_storyboard` node and no SubAgent
+runtime, delegation protocol, or parallel subgraph. Split responsibilities only
+when writing, visual, review, or production work has independent tools,
+context, acceptance criteria, and scaling needs. Every SubAgent would still
+share the traceable `run_id`, budget, and approval boundary.
+
