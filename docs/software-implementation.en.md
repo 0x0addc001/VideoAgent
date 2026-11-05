@@ -45,7 +45,7 @@ boundaries, runtime flow, provider adapters, and engineering conventions.
 - Same-origin write validation and separate auth, generation, and upload limits.
 - An environment-allowlisted administration console for accounts, credits,
   jobs, invites, runtime switches, and audit logs.
-- Instant storyboard review.
+- Live production progress and Final Cut visual evaluation.
 - CI, security scanning, documentation generation, and release builds.
 - Playwright and Mock Provider end-to-end acceptance without paid generation.
 
@@ -126,12 +126,21 @@ credits, and persists the downloaded image as a project asset.
 ```text
 POST /projects/{project_id}/messages
   → persist user message
+  → assemble bounded Context and short-term Memory
+  → record context / memory / Skill activity
+  → resolve persisted Skill instructions when available
   → execute LangGraph plan_storyboard
   → validate StoryboardPlan
+  → record planning / validation activity
   → replace storyboard
+  → record state activity
   → persist assistant message
+  → record reply activity
   → return both messages and current storyboard
 ```
+
+The workspace polls `GET /projects/{project_id}/agent-activity/{run_id}` at
+350ms and renders the durable event stream as its live Agent trace.
 
 ### 5.4 Generation
 
@@ -164,9 +173,10 @@ status
 | `api.projects` | Project lifecycle and ownership |
 | `api.storyboards` | Storyboard read/replace |
 | `api.agent` | Message history and planning |
+| `api.agent_activity` | Observe one Agent run |
 | `api.workspace` | Conversation history, project folders, filing, and staged approval |
 | `api.generation` | Estimate, submit, job status |
-| `api.evaluation` | Storyboard review |
+| `api.evaluation` | Production progress and Final Cut visual review |
 | `api.providers` | Pippit status and credits |
 | `api.assets` | Uploads, downloads, exports, sharing, and revocation |
 | `api.skills` | Skill listing, persistence, and AI optimization |
@@ -175,6 +185,8 @@ status
 | `api.admin` | Overview, users, credits, jobs, invites, settings, audit |
 | `middleware` | Same-origin write checks and request limits |
 | `services.media` | Validation, result materialization, FFmpeg, covers, and sharing |
+| `services.agent_context` | Bounded conversation, Storyboard, and Skill Context |
+| `services.agent_activity` | Durable Agent run event recording |
 | `services.credits` | Credit accounts, reservations, and refunds |
 | `services.workflow` | Concept, outline, script, and ready state transitions |
 | `services.skill_optimizer` | Structured Skill planning and contract generation |
@@ -268,6 +280,7 @@ locale state.
 | `shots` | Prompt, frame, duration, status |
 | `conversations` | One per project |
 | `messages` | User/assistant content |
+| `agent_activities` | Durable ordered events for one Agent run |
 | `workspace_folders` | Project folders for conversation organization |
 | `workspace_folder_items` | One-to-one conversation filing |
 | `project_workflows` | Concept, outline, script, and generation approval state |
@@ -296,6 +309,7 @@ locale state.
 | `GET/POST` | `/projects` |
 | `GET/PATCH/DELETE` | `/projects/{id}` |
 | `GET/POST` | `/projects/{id}/messages` |
+| `GET` | `/projects/{id}/agent-activity/{run_id}` |
 | `GET` | `/workspace` |
 | `POST/PATCH/DELETE` | `/workspace/folders` |
 | `PUT` | `/workspace/threads/{id}/folder` |
@@ -307,7 +321,8 @@ locale state.
 | `GET` | `/hots/{id}/video` |
 | `GET/PUT` | `/projects/{id}/storyboard` |
 | `PATCH` | `/projects/{id}/storyboard/order` |
-| `POST` | `/projects/{id}/evaluate` |
+| `GET` | `/projects/{id}/progress` |
+| `GET/POST` | `/projects/{id}/visual-review/models`, `/visual-review` |
 | `POST` | `/shots/{id}/estimate` |
 | `POST` | `/shots/{id}/generate` |
 | `GET` | `/jobs/{id}` |
@@ -388,7 +403,7 @@ pnpm test:e2e
 python scripts\build_pages.py
 ```
 
-Backend coverage currently consists of 67 tests, frontend coverage consists of
+Backend coverage currently consists of 69 tests, frontend coverage consists of
 30 Vitest tests, and Playwright contains seven no-fee browser flows. Playwright
 uses the Mock Provider for generation and therefore never consumes real
 Provider credits.

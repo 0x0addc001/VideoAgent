@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent PRD" />
     <title>PRD · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=30" />
+    <link rel="stylesheet" href="../docs.css?v=31" />
   </head>
   <body data-document="product-requirements.zh.html">
     <main class="document-shell" id="document-shell">
@@ -163,7 +163,15 @@ video_agent/agent_handoff</code></pre>
 <li>资源树在 <code>Direction</code> 下组织 <code>Settings</code>、<code>Outlines</code> 和 <code>Scripts</code>，在 <code>Vision</code></li>
 <p>下组织 <code>Characters</code>、<code>Shots</code> 和 <code>Final Cut</code>。</p>
 <li>Settings 将制作属性与 Agent-导演问答合并为同一张属性表；空目录保持安静，不显示等待文案。</li>
-<li>Agent 为每个持续出现的角色和镜头建立资源目录，每个目录包含描述页和生成页。</li>
+<li>Agent 为每个持续出现的角色和镜头建立资源目录；角色保留描述页与生成页，</li>
+<p>每个 Shot 直接打开一个合并了描述与生成的页面。</p>
+<li>Agent 规划期间，对话等待区显示真实执行步骤：Context 构建、Memory 读取、</li>
+<p>Skill 解析、规划、结构校验、项目状态更新和回复组织。</p>
+<li>执行轨迹只展示已经发生或正在发生的行为，不得把未实际调用的 Skill 或 MCP 工具显示为已执行。</li>
+<li>编辑区顶部显示依据工作流阶段和已完成 Shots 计算的实时制作进度条，每 3 秒轮询；</li>
+<p>该进度表示 readiness，不是视觉质量评分。</p>
+<li>Final Cut 提供可选的发布前视觉评估。用户选择已配置的视觉模型和指标，例如人物一致性、</li>
+<p>风格一致性、提示词匹配和时序稳定性。</p>
 <li>角色与镜头的生成页支持上传图片、参考图生成或直接文字生成，具体模式取决于所选模型能力；生成内容可下载。</li>
 <li>上传文件必须通过类型、文件头与大小校验。</li>
 <li>用户可在生成前查看预计积分并明确批准生成。</li>
@@ -286,12 +294,13 @@ TODO</code></pre>
 <li>模型下拉框展示全部可用视频模型。</li>
 <li>用户可上传引用素材，完成成片合成、交付下载和分享。</li>
 <li>用户积分预扣、退款与 Provider 账户对账一致。</li>
-<li>Agent 会持久化每个持续出现的 Character 和 Shot 资源，并提供描述页与生成页。</li>
+<li>Agent 会持久化每个持续出现的 Character 和 Shot；角色提供描述页与生成页，</li>
+<p>每个 Shot 打开一个合并页面。</p>
 <li>调整镜头顺序不会删除或重建已有 Shot。</li>
 <li>非管理员无法访问管理接口或管理页面。</li>
 <li>管理员可管理积分、账号、邀请码和生成开关，且操作进入审计日志。</li>
 </ol></article>
     </main>
-    <script src="../docs.js?v=30"></script>
+    <script src="../docs.js?v=31"></script>
   </body>
 </html>

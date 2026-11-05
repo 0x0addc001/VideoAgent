@@ -133,7 +133,7 @@ Support never asks users for access keys, cookies, or CLI session files.
 
 - Activation: first project created within the first session.
 - Creation: successful storyboard within five minutes.
-- Review: percentage of storyboards with at least one evaluation.
+- Final Cut review: percentage of exported films with a completed visual evaluation.
 - Reliability: generation jobs reaching a terminal state.
 - Cost: credit usage per completed project.
 - Content: official Skill reuse and community publication rate.

@@ -21,6 +21,16 @@ test("runs a complete mock video workflow without paid generation", async ({
   await expect(page).toHaveURL(/\/en#conversation\/[^/?]+/);
 
   await expect(page.getByText("Cinematic establishing shot").first()).toBeVisible();
+  await expect(page.getByTestId("agent-activity")).toContainText(
+    "Load project context",
+  );
+  await expect(page.getByTestId("agent-activity")).toContainText(
+    "Read project memory",
+  );
+  await expect(
+    page.getByRole("progressbar", { name: "Production progress" }),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Review" })).toHaveCount(0);
   for (let stage = 0; stage < 3; stage += 1) {
     const decisionResponse = page.waitForResponse(
       (response) =>
@@ -68,12 +78,7 @@ test("runs a complete mock video workflow without paid generation", async ({
     .toBe(true);
   await expect(characterPreview).toBeVisible();
 
-  const shotFolder = page.locator("summary").filter({ hasText: "Shot 1" }).first();
-  await shotFolder.click();
-  await shotFolder
-    .locator("..")
-    .getByRole("button", { name: "Generation" })
-    .click();
+  await page.getByRole("button", { name: "Shot 1" }).click();
 
   const pollResponsePromise = page.waitForResponse(
     (response) =>

@@ -42,7 +42,7 @@
 - 积分估算、审批、幂等和任务状态。
 - Provider 状态与积分。
 - 健康检查。
-- 故事板即时评估。
+- 制作进度与 Final Cut 视觉评估。
 - 媒体 MIME、文件头、大小校验和用户所有权。
 - FFmpeg 合成、导出、封面生成、分享、过期和撤销。
 - 用户积分预扣、失败退款与幂等流水。
@@ -129,13 +129,21 @@ Kling 国内版另使用依赖注入测试覆盖 `text_to_video`、`query_tasks`
 - 工作区资源树包含 `Direction > Settings / Outlines / Scripts` 与
   `Vision > Characters / Shots / Final Cut`，不再显示 Storyboard、Media、Exports。
   Projects、Recents 及其对话项保持纯文本。
-- Agent 创建的每个 Character 和 Shot 都提供描述页与生成页；空目录不显示等待文案。
+- Character 提供描述页与生成页；每个 Shot 直接打开合并页面，目录行不使用容器框。
+  空目录不显示等待文案。
 - Settings 以“问题-答案”属性行展示 Q&A，不显示旧版底部分阶段卡片。
 - Assets 与 Agents 可独立折叠，并通过带标签的窄轨恢复。
-- 非空故事板自动加载 Review 分数，提供刷新按钮；详情弹窗标题为 Review，并移除已废弃的提示词建议和冗余 VideoAgent 标签。
-- Review 与刷新共用同一个边框，镜头生成在工作流批准前显示明确提示。
+- 编辑区顶部显示每 3 秒轮询的制作进度条，不再显示故事板 Review 分数按钮。
+- Final Cut 视觉评估只对导出资产开放，用户可选择已配置的视觉模型和一致性指标；未配置模型时明确不可用。
+- 镜头生成在工作流批准前显示明确提示。
 - 历史 Agent 消息静态渲染；仅新返回的回复执行一次流式显示，Agents 折叠后重新展开不会重复播放。
-- Agent 请求等待回复时显示旋转的 `Thinking` 状态。
+- Agent 请求等待回复时显示实时执行轨迹；事件到达前的短暂空档保留紧凑的
+  `Thinking` 加载状态。
+- Agent 请求按客户端 `run_id` 持久化 `context`、`memory`、`skill`、`planning`、
+  `validation`、`state` 和 `reply` 有序事件。
+- Agents 面板将事件显示为实时执行轨迹；未发生的 Skill 或 MCP 调用不得显示为已执行。
+- Context Builder 最多读取 8 条历史消息，每条截断至 600 字符，排除当前请求，
+  故事板上下文最多包含 20 个 Shot。
 - Agent 逐层展示整体设定、分集/分镜大纲和逐场剧本审批选项，自定义意见保持当前阶段。
 - 只有剧本批准后才允许估算和生成镜头。
 - 角色生成页支持上传、参考图生图和文字生图；生成图片持久化为可下载的项目资产。

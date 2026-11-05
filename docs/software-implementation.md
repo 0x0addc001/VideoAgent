@@ -46,7 +46,7 @@
 - Kling 国内版 CLI 文本生成视频、任务查询、动作控制和多模态参考。
 - 任务状态 API 刷新。
 - Celery 后台轮询。
-- 故事板即时评估与前端审核弹窗。
+- 实时制作进度轮询与 Final Cut 视觉模型评估。
 - Docker Compose 基础设施配置。
 - GitHub Actions CI 配置。
 - Playwright + Mock Provider 无费用端到端验收。
@@ -160,11 +160,18 @@ https://example.com/api/   → FastAPI
 
 ```text
 POST /projects/{project_id}/messages
+  → 校验 run_id
+  → 构建有界 Context 与短时 Memory
+  → 记录 context/memory/skill 活动
+  → 解析当前用户 Skill 指令（如存在）
   → 保存 user Message
   → LangGraph 调用 StoryboardPlanner
   → 输出 StoryboardPlan
+  → 记录 planning/validation 活动
   → 保存或替换 Storyboard
+  → 记录 state 活动
   → 保存 assistant Message
+  → 记录 reply 活动
   → 返回两条 Message 和最新 Storyboard
 ```
 
@@ -173,6 +180,11 @@ Agent 图只有一个节点：
 ```text
 START → plan_storyboard → END
 ```
+
+前端以 350ms 轮询
+`GET /projects/{project_id}/agent-activity/{run_id}`，把真实 Agent step 渲染为
+等待时间线。Context Builder 位于 `services/agent_context.py`，活动持久化位于
+`services/agent_activity.py`。
 
 ### 5.4 生成任务
 
@@ -229,9 +241,10 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 | `api/projects.py` | 项目列表、创建和读取 |
 | `api/storyboards.py` | 故事板读取和替换 |
 | `api/agent.py` | 对话和消息持久化 |
+| `api/agent_activity.py` | 查询单次 Agent run 的可观测步骤 |
 | `api/workspace.py` | 历史对话、项目目录、拖拽归档和逐层审批 |
 | `api/generation.py` | 积分估算、生成提交和任务查询 |
-| `api/evaluation.py` | 项目故事板即时评估 |
+| `api/evaluation.py` | 制作进度与 Final Cut 视觉评估 |
 | `api/providers.py` | Pippit 服务端状态和积分余额 |
 | `api/assets.py` | 上传、下载、导出、分享与撤销 |
 | `api/skills.py` | Skill 读取、持久化和 AI 优化 |
@@ -240,10 +253,13 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 | `api/admin.py` | 管理总览、用户、积分、任务、邀请码、设置、审计 |
 | `middleware.py` | 同源写请求校验与请求限流 |
 | `services/storyboards.py` | 故事板领域操作 |
+| `services/agent_context.py` | 有界对话、故事板与 Skill Context 构建 |
+| `services/agent_activity.py` | Agent run 活动事件持久化 |
 | `services/workflow.py` | Concept、Outline、Script、Ready 状态迁移 |
 | `services/skill_optimizer.py` | 将粗略想法整理为结构化 Skill 契约 |
 | `services/generation_jobs.py` | Job 刷新和 Shot 状态联动 |
-| `services/evaluation.py` | 一致性、覆盖、清晰度和节奏指标计算 |
+| `services/progress.py` | 工作流阶段与 Shot 完成度进度计算 |
+| `services/visual_review.py` | 提取 Final Cut 帧并调用视觉评估模型 |
 | `services/media.py` | 文件校验、结果落地、FFmpeg 合成、封面与分享 |
 | `services/credits.py` | 积分账户、预扣与幂等退款 |
 | `services/admin.py` | 管理查询、账号停用、任务列表与审计 |
@@ -320,6 +336,7 @@ ORM 表：
 | `shots` | 镜头 Prompt、比例、时长和状态 |
 | `conversations` | 每个项目唯一的对话 |
 | `messages` | User/Assistant 消息 |
+| `agent_activities` | 单次 run 的 Context、Memory、Skill、规划、校验、状态与回复步骤 |
 | `workspace_folders` | 历史对话的项目目录 |
 | `workspace_folder_items` | 对话与项目目录的收纳关系 |
 | `project_workflows` | 整体设定、分集/分镜大纲、逐场剧本与生成审批状态 |
@@ -419,6 +436,7 @@ task reference    → query-result   → JobStatus + result URL
 | DELETE | `/projects/{id}` | 归档项目 |
 | GET | `/projects/{id}/messages` | 对话历史 |
 | POST | `/projects/{id}/messages` | Agent 生成故事板并保存对话 |
+| GET | `/projects/{id}/agent-activity/{run_id}` | 查询 Agent 实际执行步骤 |
 | GET | `/workspace` | 项目目录与全部历史对话 |
 | POST/PATCH/DELETE | `/workspace/folders` | 管理项目目录 |
 | PUT | `/workspace/threads/{id}/folder` | 收纳或移出历史对话 |
@@ -434,7 +452,8 @@ task reference    → query-result   → JobStatus + result URL
 | POST | `/shots/{id}/estimate` | 查询积分估算 |
 | POST | `/shots/{id}/generate` | 提交生成任务 |
 | GET | `/jobs/{id}` | 查询并刷新任务状态 |
-| POST | `/projects/{id}/evaluate` | 即时评估当前故事板 |
+| GET | `/projects/{id}/progress` | 轮询制作进度 |
+| GET/POST | `/projects/{id}/visual-review/models`、`/visual-review` | Final Cut 视觉评估 |
 | GET | `/providers/pippit` | 服务端 Pippit 登录状态 |
 | GET | `/providers/pippit/credits` | Pippit 积分余额 |
 | GET | `/credits` | 当前用户 VideoAgent 积分余额 |

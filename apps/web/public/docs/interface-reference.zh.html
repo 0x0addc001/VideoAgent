@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent API" />
     <title>API · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=30" />
+    <link rel="stylesheet" href="../docs.css?v=31" />
   </head>
   <body data-document="interface-reference.zh.html">
     <main class="document-shell" id="document-shell">
@@ -42,9 +42,11 @@
 <a class="toc-link toc-level-2" href="#agent-对话">Agent 对话</a>
 <a class="toc-link toc-level-3" href="#消息历史">消息历史</a>
 <a class="toc-link toc-level-3" href="#发送消息">发送消息</a>
+<a class="toc-link toc-level-3" href="#观测-agent-执行">观测 Agent 执行</a>
 <a class="toc-link toc-level-3" href="#读取工作流">读取工作流</a>
 <a class="toc-link toc-level-3" href="#提交审批">提交审批</a>
-<a class="toc-link toc-level-2" href="#故事板即时评估">故事板即时评估</a>
+<a class="toc-link toc-level-2" href="#制作进度">制作进度</a>
+<a class="toc-link toc-level-2" href="#final-cut-视觉评估">Final Cut 视觉评估</a>
 <a class="toc-link toc-level-2" href="#视频生成">视频生成</a>
 <a class="toc-link toc-level-3" href="#积分估算">积分估算</a>
 <a class="toc-link toc-level-3" href="#提交生成">提交生成</a>
@@ -253,9 +255,28 @@ http://localhost:8000/openapi.json</code></pre>
 <h3 id="发送消息">发送消息</h3>
 <p><code>POST /projects/{project_id}/messages</code></p>
 <pre><code class="language-json">{
-  &quot;content&quot;: &quot;把需求整理成三个镜头的发布视频&quot;
+  &quot;content&quot;: &quot;把需求整理成三个镜头的发布视频&quot;,
+  &quot;run_id&quot;: &quot;00000000-0000-0000-0000-000000000020&quot;
 }</code></pre>
 <p>响应包含用户消息、Assistant 回复、最新故事板和当前审批阶段。</p>
+<h3 id="观测-agent-执行">观测 Agent 执行</h3>
+<p><code>GET /projects/{project_id}/agent-activity/{run_id}</code></p>
+<p>返回该 run 的有序步骤：</p>
+<pre><code class="language-json">{
+  &quot;items&quot;: [
+    {
+      &quot;id&quot;: &quot;00000000-0000-0000-0000-000000000021&quot;,
+      &quot;run_id&quot;: &quot;00000000-0000-0000-0000-000000000020&quot;,
+      &quot;sequence&quot;: 1,
+      &quot;kind&quot;: &quot;context&quot;,
+      &quot;label&quot;: &quot;Assembled working context&quot;,
+      &quot;detail&quot;: &quot;locale=zh-CN · workflow=concept/awaiting_approval&quot;,
+      &quot;status&quot;: &quot;completed&quot;,
+      &quot;created_at&quot;: &quot;2026-11-05T08:00:00Z&quot;
+    }
+  ]
+}</code></pre>
+<p>活动类型为 <code>context</code>、<code>memory</code>、<code>skill</code>、<code>planning</code>、<code>validation</code>、 <code>state</code> 和 <code>reply</code>。工作区在等待回复时轮询该接口，展示真实执行步骤。</p>
 <h3 id="读取工作流">读取工作流</h3>
 <p><code>GET /projects/{project_id}/workflow</code></p>
 <p>工作流依次经过 <code>concept</code>、<code>outline</code>、<code>script</code> 和 <code>ready</code>。<code>concept</code> 确认整体 设定，<code>outline</code> 确认分集与分镜大纲，<code>script</code> 确认逐场剧本。只有剧本获批且状态 进入 <code>ready</code> 后才允许生成。</p>
@@ -263,32 +284,28 @@ http://localhost:8000/openapi.json</code></pre>
 <p><code>POST /projects/{project_id}/workflow/decision</code></p>
 <pre><code class="language-json">{
   &quot;choice&quot;: &quot;approve&quot;,
-  &quot;instruction&quot;: null
+  &quot;instruction&quot;: null,
+  &quot;run_id&quot;: &quot;00000000-0000-0000-0000-000000000020&quot;
 }</code></pre>
 <p><code>choice</code> 为 <code>approve</code>、<code>refine</code> 或 <code>custom</code>。调整和自定义意见保持当前阶段； 批准会进入下一层细化。</p>
-<h2 id="故事板即时评估">故事板即时评估</h2>
-<p><code>POST /projects/{project_id}/evaluate</code></p>
-<p>返回：</p>
-<ul>
-<li>一致性</li>
-<li>覆盖度</li>
-<li>提示清晰度</li>
-<li>节奏</li>
-<li>综合分和修改建议</li>
-</ul>
-<p>示例：</p>
+<h2 id="制作进度">制作进度</h2>
+<p><code>GET /projects/{project_id}/progress</code></p>
+<p>返回用于工作区进度条的实时制作百分比，依据工作流阶段和已完成 Shots 计算。 该值表示 readiness，不是视觉质量评分。</p>
+<h2 id="final-cut-视觉评估">Final Cut 视觉评估</h2>
+<p><code>GET /projects/{project_id}/visual-review/models</code></p>
+<p>返回已配置的视觉评估模型。</p>
+<p><code>POST /projects/{project_id}/visual-review</code></p>
 <pre><code class="language-json">{
-  &quot;overall_score&quot;: 88,
+  &quot;asset_id&quot;: &quot;00000000-0000-0000-0000-000000000030&quot;,
+  &quot;model&quot;: &quot;vision-model&quot;,
   &quot;metrics&quot;: [
-    { &quot;key&quot;: &quot;consistency&quot;, &quot;score&quot;: 92 },
-    { &quot;key&quot;: &quot;coverage&quot;, &quot;score&quot;: 100 },
-    { &quot;key&quot;: &quot;clarity&quot;, &quot;score&quot;: 84 },
-    { &quot;key&quot;: &quot;pacing&quot;, &quot;score&quot;: 80 }
-  ],
-  &quot;suggestions&quot;: [
-    { &quot;code&quot;: &quot;IMPROVE_PROMPTS&quot;, &quot;severity&quot;: &quot;medium&quot; }
+    &quot;character_consistency&quot;,
+    &quot;style_consistency&quot;,
+    &quot;prompt_alignment&quot;,
+    &quot;temporal_stability&quot;
   ]
 }</code></pre>
+<p>接口只接受导出的 Final Cut，提取代表性帧并调用所选视觉模型，返回带证据的 论文型或训练模型评估指标。未配置评估模型时返回 <code>503 VISUAL_REVIEW_UNAVAILABLE</code>， 不会生成伪造分数。</p>
 <h2 id="视频生成">视频生成</h2>
 <h3 id="积分估算">积分估算</h3>
 <p><code>POST /shots/{shot_id}/estimate</code></p>
@@ -631,6 +648,6 @@ file=&lt;图片、视频或音频&gt;</code></pre>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=30"></script>
+    <script src="../docs.js?v=31"></script>
   </body>
 </html>

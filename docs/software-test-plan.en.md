@@ -98,7 +98,7 @@ Required assertions:
 - Storyboard replacement ordering.
 - Shot IDs, generated assets, and history remain intact after reordering.
 - Agent message persistence.
-- Evaluation result shape.
+- Production progress percentage and Final Cut visual-review response shape.
 - No provider credentials in responses.
 
 ## 7. Frontend Tests
@@ -139,19 +139,29 @@ Component tests cover:
   `Vision > Characters / Shots / Final Cut`; legacy Storyboard, Media, and Exports
   groups are absent. Projects, Recents, and their conversation items remain
   text-only.
-- Every Agent-created Character and Shot exposes Description and Generation
-  pages. Empty directories do not render waiting copy.
+- Characters expose Description and Generation pages; each Shot opens one
+  combined page. Shot rows have no container box. Empty directories do not
+  render waiting copy.
 - Settings renders Q&A as question-answer attribute rows without the retired
   lower stage cards.
 - Assets and Agents collapse independently and restore from their labeled rails.
-- Review auto-loads a score for a non-empty storyboard, exposes a refresh action,
-  opens a dialog titled `Review`, and omits the retired prompt suggestion and
-  redundant VideoAgent label.
-- Review and refresh render inside one shared border, and shot generation displays
-  an approval requirement until the story workflow reaches the approved state.
+- The editor header shows a readiness progress bar that polls every three
+  seconds; no storyboard “Review” score button is rendered.
+- Final Cut review is available only for exported assets, lets the user choose a
+  configured vision evaluator and consistency metrics, and is unavailable when
+  no evaluator is configured.
+- Shot generation displays an approval requirement until the story workflow
+  reaches the approved state.
 - Persisted Agent messages render statically; only a newly returned reply uses
   the type-on effect and does not replay after the Agents rail is reopened.
-- Agent requests show a spinning `Thinking` indicator while waiting for a reply.
+- Agent requests show a live execution trace, with the compact `Thinking`
+  spinner retained as the initial fallback before events arrive.
+- Agent requests persist ordered `context`, `memory`, `skill`, `planning`,
+  `validation`, `state`, and `reply` events under the client-provided run ID.
+- The Agents panel renders those events as a live execution trace and remains
+  accurate when a Skill or MCP tool was not called.
+- Context Builder uses at most eight prior messages, clips each to 600
+  characters, excludes the current request, and caps Storyboard context at 20 Shots.
 - Stage approval options cover overall direction, episode and shot outline, and
   scene script; custom instructions keep the current stage.
 - Shot estimation and generation remain disabled until the script is approved.

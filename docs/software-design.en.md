@@ -48,7 +48,7 @@ contains five isolated views:
 - Kling China-region CLI text-to-video, motion control, and multimodal
   reference capabilities.
 - Mock Provider and Celery polling.
-- Instant storyboard review for consistency, coverage, clarity, and pacing.
+- Live readiness progress plus Final Cut visual evaluation.
 - Hots feed playback, author, likes, and publishing.
 - English and Chinese documentation generated from paired Markdown sources.
 - Project-level image, video, and audio uploads with MIME, signature, and size validation.
@@ -121,9 +121,10 @@ The directing workflow uses an explicit LangGraph state machine:
 START → plan_storyboard → END
 ```
 
-`plan_storyboard` receives locale, project title, project brief, and the latest
-user message. It returns an assistant message and a validated three-shot
-storyboard.
+`plan_storyboard` receives locale, project title, brief, current request,
+workflow stage/status, bounded conversation memory, current Character/Shot
+state, and optional Skill instructions. It returns an assistant message and a
+validated Character/Shot plan.
 
 The planner is:
 
@@ -134,6 +135,39 @@ The planner is:
 Project, conversation, storyboard, Character, Shot, and GenerationJob state live in the
 database. Approval, generation, review, and polling boundaries are coordinated
 through FastAPI, Celery, and the workspace client.
+
+### 7.1 Context and Memory
+
+- Context is bounded to the project title, brief, current request, locale,
+  workflow state, current Character/Shot summaries, recent conversation, and
+  optional Skill instructions.
+- Short-term memory uses the eight most recent historical messages, clipped to
+  600 characters each and excludes the current request. Storyboard context is
+  capped at 20 Shots.
+- Long-term memory is the relational source of truth: Project, Conversation,
+  Message, Workflow, Storyboard, Character, Shot, Asset, and GenerationJob.
+- No vector database is used yet. Project summaries and retrieval, if added,
+  require user isolation, TTL, and deletion policy.
+
+### 7.2 Skill and MCP Boundary
+
+The composer stores the selected Skill in `Production settings`. The Context
+Builder resolves an owner-owned UserSkill and attaches persisted instructions
+when available; built-in Skills otherwise contribute only their Skill ID.
+
+The Storyboard Agent does not hold MCP tools. MCP remains in the Provider layer
+so planning cannot create billable side effects. With
+`VIDEOAGENT_KLING_BACKEND=mcp`, the Provider Resolver constructs a
+`StreamableHTTPToolClient` using the user's OAuth token and the Kling Provider
+invokes `text_to_video`, `image_to_video`, or `query_tasks`. The CLI path uses
+controlled subprocesses. Generation occurs only after explicit approval.
+
+### 7.3 Observable Agent Run
+
+Each client-supplied run ID records `context → memory → skill → planning →
+validation → state → reply` events in `agent_activities`. The workspace polls
+at 350ms and renders only actions that actually occurred; unimplemented Skill
+or MCP calls are never shown as executed.
 
 ## 8. Generation and Provider Boundary
 
@@ -203,7 +237,7 @@ product-level Skills use `video_agent`.
 | `video_agent/product_film` | A composed product-video workflow |
 | `video_agent/creator_vlog` | A composed creator-vlog workflow |
 | `video_agent/short_drama` | A composed short-drama workflow |
-| `video_agent/review` | Score consistency, coverage, clarity, and pacing |
+| `video_agent/review` | Score Final Cut visual consistency with a configured evaluator |
 | `video_agent/video_localization` | Adapt edit, copy, voice, and presenter details for a target market |
 | `video_agent/batch_variants` | Generate a controlled matrix of hooks, scenes, and messaging variants |
 | `video_agent/script_assistant` | Develop premises into editable scripts with characters, beats, and hooks |
@@ -243,6 +277,7 @@ sound cue, or proof first.
 | `shots` | Ordered prompts, duration, frame, mode, and status |
 | `conversations` | One conversation per project |
 | `messages` | User and assistant messages |
+| `agent_activities` | Ordered observable events for one Agent run |
 | `workspace_folders` | Project folders for conversation organization |
 | `workspace_folder_items` | Conversation-to-folder filing |
 | `project_workflows` | Concept, outline, script, and generation approval state |
@@ -271,12 +306,13 @@ Base path: `/api/v1`
 | Storyboards | `GET` and `PUT /projects/{id}/storyboard` |
 | Storyboard order | `PATCH /projects/{id}/storyboard/order` |
 | Character image | `POST /characters/{id}/estimate`, `/assets`, and `/generate` |
-| Agent | Get messages, send a message |
+| Agent | Get messages, send a message, and observe a run |
+| Agent activity | `GET /projects/{id}/agent-activity/{run_id}` |
 | Workspace | Folders, recent conversations, and drag-to-file conversation organization |
 | Workflow | Read and decide concept, outline, and script approval stages |
 | Skills | List and persist user Skills; optimize rough ideas into structured drafts |
 | Hots | Upload MP4 posts, list community videos, and stream public content |
-| Evaluation | `POST /projects/{id}/evaluate` |
+| Evaluation | Progress polling plus Final Cut visual-review endpoints |
 | Generation | Estimate, submit, job status |
 | Providers | Pippit status and credits |
 | Credits | `GET /credits` |
@@ -320,9 +356,9 @@ The shared Landing UI owns:
 - The Assets and Agents side panels can collapse to labeled rails. Their widths
   use responsive clamped proportions so they remain usable across desktop sizes.
 - `Direction` contains `Settings`, `Outlines`, and `Scripts`. `Vision` contains
-  `Characters`, `Shots`, and `Final Cut`. Every persisted Character and Shot owns
-  a Description page and a Generation page; empty directories render no waiting
-  copy.
+  `Characters`, `Shots`, and `Final Cut`. Characters retain separate Description
+  and Generation pages; each Shot opens one combined page. Empty directories
+  render no waiting copy.
 - Skill Studio persists reusable Skills with a stable namespace, instructions,
   quality gates, prompt template, and input/output contracts. `AI optimize`
   turns an early idea into that structure.
@@ -339,12 +375,11 @@ The shared Landing UI owns:
 - Hots publishing requires an MP4 upload and persists the video as a public
   asset. The author's Assets view lists real Hots videos and Skills, and every
   card opens a detail dialog.
-- The editor pane uses its own compact header. Review and Share are aligned at
-  its far right; no page-level project title bar is rendered. Review shows the
-  overall score directly after evaluation.
-- Review is evaluated automatically when the storyboard changes. The current
-  score remains visible, with a separate refresh control that re-runs evaluation
-  without opening the detail dialog. Review and refresh share one framed control.
+- The editor pane uses its own compact header. A live readiness progress bar and
+  Share are aligned at its far right; the progress bar polls every three seconds.
+- Final Cut review is separate from readiness. Users choose a configured vision
+  evaluator and metrics for character consistency, style consistency, prompt
+  alignment, or temporal stability.
 - Only a newly returned Agent reply uses type-on presentation. Persisted history
   and completed replies render as static text, including after a panel is
   collapsed and reopened.
@@ -410,7 +445,7 @@ Celery + Redis
 3. Cost and approval are visible before generation.
 4. Jobs and storyboards survive a page refresh or API restart.
 5. Provider credentials never reach the browser.
-6. Review returns consistency, coverage, clarity, and pacing.
+6. Readiness polls the workflow and completed Shots; visual review runs only on Final Cut.
 7. Skills is a flat searchable catalogue using `user_id/skill_id`, with
    workflows and Review presented as normal skill cards.
 8. Documentation switches between English and Chinese and follows the complete

@@ -156,13 +156,14 @@ Evaluate by stage. Script: desire, conflict, turn, and ending. Board: coverage,
 continuity, and feasibility. Shot: identity, prompt alignment, and defects.
 Cut: rhythm, sound, and retention.
 
-**Follow-up:** Are consistency, coverage, clarity, and pacing scores enough?
+**Follow-up:** Should the storyboard phase show visual quality scores?
 
 **Answer**
 
-They are useful low-cost baselines, but rules such as “three shots equals full
-coverage” are easy to game. Combine deterministic metrics with VLM review and
-human preference data.
+No. Storyboard progress represents workflow and Shot completion only. Visual
+metrics such as character and style consistency belong to Final Cut, where a
+selected configured evaluator scores extracted frames against an explicit
+rubric. The product must not fabricate scores when no evaluator is available.
 
 **Extension:** How can judge bias be reduced?
 

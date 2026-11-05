@@ -3,11 +3,13 @@
 import {
   ArrowLeft,
   ArrowUp,
+  BrainCircuit,
   Check,
   ChevronDown,
   ChevronRight,
   Clapperboard,
   Download,
+  FileCheck2,
   FileText,
   Film,
   Flame,
@@ -19,13 +21,13 @@ import {
   Layers3,
   MessageCircleMore,
   MessageSquareText,
+  Database,
   PanelLeftClose,
   PanelLeftOpen,
   PanelRightClose,
   PanelRightOpen,
   Pencil,
   Plus,
-  RefreshCw,
   ScanSearch,
   Share2,
   Sparkles,
@@ -33,6 +35,7 @@ import {
   Upload,
   Video,
   WandSparkles,
+  Wrench,
   X,
 } from "lucide-react";
 import { StreamingText } from "@videoagent/landing";
@@ -101,6 +104,24 @@ type Message = {
   created_at: string;
 };
 
+type AgentActivity = {
+  id: string;
+  run_id: string;
+  sequence: number;
+  kind:
+    | "context"
+    | "memory"
+    | "skill"
+    | "planning"
+    | "validation"
+    | "state"
+    | "reply";
+  label: string;
+  detail: string | null;
+  status: "running" | "completed" | "failed";
+  created_at: string;
+};
+
 type AgentTurn = {
   user_message: Message;
   assistant_message: Message;
@@ -152,7 +173,7 @@ type WorkspaceData = {
 type CanvasSelection =
   | { kind: "settings" }
   | { kind: "document"; document: "outline" | "script" }
-  | { kind: "shot"; shotId: string; section: "description" | "generation" }
+  | { kind: "shot"; shotId: string }
   | {
       kind: "character";
       characterId: string;
@@ -209,25 +230,38 @@ type ShareLink = {
   created_at: string;
 };
 
-type EvaluationMetric = {
-  key: "consistency" | "coverage" | "clarity" | "pacing";
-  score: number;
+type ProjectProgress = {
+  percent: number;
+  workflow_stage: WorkflowStage;
+  workflow_status: "awaiting_approval" | "approved";
+  total_shots: number;
+  completed_shots: number;
+  updated_at: string;
 };
 
-type EvaluationSuggestion = {
-  code:
-    | "ADD_SHOTS"
-    | "UNIFY_ASPECT_RATIO"
-    | "IMPROVE_PROMPTS"
-    | "BALANCE_PACING"
-    | "READY";
-  severity: "high" | "medium" | "low";
+type VisualReviewMetricKey =
+  | "character_consistency"
+  | "style_consistency"
+  | "prompt_alignment"
+  | "temporal_stability";
+
+type VisualReviewModel = {
+  id: string;
+  label: string;
 };
 
-type Evaluation = {
+type VisualReview = {
+  asset_id: string;
+  model: string;
   overall_score: number;
-  metrics: EvaluationMetric[];
-  suggestions: EvaluationSuggestion[];
+  metrics: {
+    key: VisualReviewMetricKey;
+    score: number;
+    rationale: string;
+  }[];
+  summary: string;
+  frame_count: number;
+  updated_at: string;
 };
 
 const API_BASE_URL = resolveApiBaseUrl();
@@ -259,6 +293,123 @@ function productionSettingPairs(brief: string) {
       label: labels[index] ?? `Setting ${index + 1}`,
       value: value.replace(/^(Hook|Audio|Review)\s+/i, ""),
     }));
+}
+
+function AgentActivityTrace({
+  activities,
+  isWorking,
+  locale,
+}: {
+  activities: AgentActivity[];
+  isWorking: boolean;
+  locale: string;
+}) {
+  const chinese = locale.startsWith("zh");
+  const labels: Record<AgentActivity["kind"], string> = {
+    context: chinese ? "载入项目上下文" : "Load project context",
+    memory: chinese ? "读取项目记忆" : "Read project memory",
+    skill: chinese ? "检查 Skill 指令" : "Resolve Skill instructions",
+    planning: chinese ? "规划故事板" : "Plan the storyboard",
+    validation: chinese ? "校验结构结果" : "Validate structured result",
+    state: chinese ? "更新项目状态" : "Update project state",
+    reply: chinese ? "组织导演回复" : "Compose director reply",
+  };
+  const active = activities.some((activity) => activity.status === "running");
+  const failed = activities.some((activity) => activity.status === "failed");
+  const completed = activities.filter(
+    (activity) => activity.status === "completed",
+  ).length;
+
+  function ActivityIcon({ kind }: { kind: AgentActivity["kind"] }) {
+    const className = "h-3.5 w-3.5";
+    if (kind === "memory") return <Database className={className} />;
+    if (kind === "skill") return <Wrench className={className} />;
+    if (kind === "validation") return <FileCheck2 className={className} />;
+    if (kind === "planning") return <BrainCircuit className={className} />;
+    if (kind === "state") return <Layers3 className={className} />;
+    if (kind === "reply") return <MessageSquareText className={className} />;
+    return <Sparkles className={className} />;
+  }
+
+  return (
+    <section
+      aria-label={chinese ? "Agent 执行过程" : "Agent activity"}
+      className="mr-3 overflow-hidden rounded-2xl border border-[#1677ff]/20 bg-[#07101d]/[0.72]"
+      data-testid="agent-activity"
+    >
+      <div className="flex items-center gap-2.5 border-b border-white/[0.06] px-4 py-3">
+        <span
+          className={cn(
+            "grid size-6 shrink-0 place-items-center rounded-lg",
+            failed
+              ? "bg-red-400/10 text-red-300"
+              : active || isWorking
+                ? "bg-[#1677ff]/15 text-[#77c8ff]"
+                : "bg-emerald-400/10 text-emerald-300",
+          )}
+        >
+          {active || isWorking ? (
+            <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+          ) : failed ? (
+            <X className="h-3.5 w-3.5" />
+          ) : (
+            <Check className="h-3.5 w-3.5" />
+          )}
+        </span>
+        <span className="min-w-0 flex-1 text-[13px] font-medium text-white/78">
+          {active || isWorking
+            ? chinese
+              ? "VideoAgent 正在执行"
+              : "VideoAgent is working"
+            : failed
+              ? chinese
+                ? "Agent 执行失败"
+                : "Agent run failed"
+              : chinese
+                ? "Agent 执行完成"
+                : "Agent run complete"}
+        </span>
+        <span className="rounded-md bg-white/[0.045] px-2 py-1 text-[12px] text-white/38">
+          {completed} {chinese ? "步" : completed === 1 ? "step" : "steps"}
+        </span>
+      </div>
+      <ol className="space-y-0.5 px-3 py-2">
+        {activities.map((activity) => (
+          <li
+            className="grid grid-cols-[18px_minmax(0,1fr)] gap-2 rounded-lg px-1.5 py-1.5"
+            key={activity.id}
+          >
+            <span
+              className={cn(
+                "mt-0.5 grid size-[18px] place-items-center",
+                activity.status === "failed"
+                  ? "text-red-300"
+                  : activity.status === "running"
+                    ? "text-[#77c8ff]"
+                    : "text-emerald-300/80",
+              )}
+            >
+              {activity.status === "running" ? (
+                <LoaderCircle className="h-3.5 w-3.5 animate-spin" />
+              ) : (
+                <ActivityIcon kind={activity.kind} />
+              )}
+            </span>
+            <div className="min-w-0">
+              <p className="text-[12px] font-medium leading-5 text-white/66">
+                {labels[activity.kind] ?? activity.label}
+              </p>
+              {activity.detail ? (
+                <p className="mt-0.5 break-words text-[11px] leading-5 text-white/32">
+                  {activity.detail}
+                </p>
+              ) : null}
+            </div>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
 }
 
 function workspaceCopy(locale: string) {
@@ -295,7 +446,6 @@ function workspaceCopy(locale: string) {
         directorInput: "导演输入",
         character: "角色集",
         finalCut: "终版",
-        visionReferenceHint: "参考素材由 Agents 向你询问，或从 Vision 中获取。",
         thinking: "思考中",
         noAssets: "当前对话还没有资产。",
         brief: "方向",
@@ -324,7 +474,6 @@ function workspaceCopy(locale: string) {
         folderError: "项目目录更新失败。",
         chatPlaceholder: "描述下一步，或向 VideoAgent 提问……",
         send: "发送",
-        review: "即时评估",
         export: "导出",
         sharing: "分享中……",
         exportReady: "成片已就绪",
@@ -386,8 +535,6 @@ function workspaceCopy(locale: string) {
         directorInput: "Director input",
         character: "Characters",
         finalCut: "Final Cut",
-        visionReferenceHint:
-          "Reference assets come from Vision or are requested by Agents.",
         thinking: "Thinking",
         noAssets: "No assets in this conversation yet.",
         brief: "Direction",
@@ -417,7 +564,6 @@ function workspaceCopy(locale: string) {
         folderError: "The project folder could not be updated.",
         chatPlaceholder: "Describe the next move or ask VideoAgent…",
         send: "Send",
-        review: "Review",
         export: "Export",
         sharing: "Sharing…",
         exportReady: "Export ready",
@@ -867,7 +1013,6 @@ type AssetsTreeProps = {
   storyboard: Storyboard | null;
   onSelect: (selection: CanvasSelection) => void;
   onToggleCollapsed: () => void;
-  onUpload: (file: File) => void;
 };
 
 function AssetsTree({
@@ -878,7 +1023,6 @@ function AssetsTree({
   storyboard,
   onSelect,
   onToggleCollapsed,
-  onUpload,
 }: AssetsTreeProps) {
   const [sections, setSections] = useState({
     direction: true,
@@ -1087,85 +1231,77 @@ function AssetsTree({
               {sections.shots ? (
                 <div className="space-y-1 pl-7">
                   {storyboard?.shots.map((shot) => (
-                    <details
-                      className="rounded-lg border border-white/[0.055] bg-black/10"
-                      key={shot.id}
-                    >
-                      <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2 text-[12px] text-white/58">
-                        <ChevronRight className="tree-chevron h-3.5 w-3.5 text-[#4facff]" />
+                    <div className="space-y-0.5" key={shot.id}>
+                      <button
+                        className={cn(
+                          "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[12px] transition",
+                          selected.kind === "shot" &&
+                            selected.shotId === shot.id
+                            ? "bg-[#1677ff]/[0.08] text-white"
+                            : "text-white/58 hover:bg-white/[0.03] hover:text-white/78",
+                        )}
+                        onClick={() =>
+                          onSelect({ kind: "shot", shotId: shot.id })
+                        }
+                        type="button"
+                      >
                         <Folder className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
-                        <strong className="text-[#6eb8ff]">
+                        <span className="truncate font-medium">
                           {copy.shot} {shot.index + 1}
-                        </strong>
-                      </summary>
-                      <div className="space-y-1 px-2 pb-2 pl-6">
+                        </span>
+                      </button>
+                      {shotAssets
+                        .filter((asset) => asset.shot_id === shot.id)
+                        .map((asset) => (
                         <button
                           className={cn(
-                            "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
-                            selected.kind === "shot" &&
-                              selected.shotId === shot.id &&
-                              selected.section === "description"
-                              ? selectedClass
-                              : idleClass,
+                            "flex w-full items-center gap-2 rounded-lg py-1.5 pl-8 pr-3 text-left text-[12px] transition",
+                            selected.kind === "asset" &&
+                              selected.assetId === asset.id
+                              ? "bg-[#1677ff]/[0.07] text-white/82"
+                              : "text-white/40 hover:bg-white/[0.025] hover:text-white/70",
                           )}
                           onClick={() =>
                             onSelect({
-                              kind: "shot",
-                              shotId: shot.id,
-                              section: "description",
-                            })
-                          }
-                          type="button"
-                        >
-                          <FileText className="h-3.5 w-3.5 text-[#4facff]" />
-                          {copy.description}
-                        </button>
-                        <button
-                          className={cn(
-                            "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
-                            selected.kind === "shot" &&
-                              selected.shotId === shot.id &&
-                              selected.section === "generation"
-                              ? selectedClass
-                              : idleClass,
-                          )}
-                          onClick={() =>
-                            onSelect({
-                              kind: "shot",
-                              shotId: shot.id,
+                              kind: "asset",
+                              assetId: asset.id,
                               section: "generation",
                             })
                           }
+                          key={asset.id}
                           type="button"
                         >
-                          <Clapperboard className="h-3.5 w-3.5 text-[#4facff]" />
-                          {copy.generation}
+                          <Video className="h-3.5 w-3.5 text-[#4facff]" />
+                          <span className="truncate">{asset.filename}</span>
                         </button>
-                      </div>
-                    </details>
+                        ))}
+                    </div>
                   ))}
-                  {shotAssets.map((asset) => (
-                    <button
-                      className={cn(
-                        "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
-                        selected.kind === "asset" && selected.assetId === asset.id
-                          ? selectedClass
-                          : idleClass,
-                      )}
-                      key={asset.id}
-                      onClick={() =>
-                        onSelect({
-                          kind: "asset",
-                          assetId: asset.id,
-                          section: "generation",
-                        })
-                      }
-                      type="button"
-                    >
-                      <Video className="h-3.5 w-3.5 text-[#4facff]" />
-                      <span className="truncate">{asset.filename}</span>
-                    </button>
-                  ))}
+                  {shotAssets
+                    .filter((asset) => asset.shot_id === null)
+                    .map((asset) => (
+                        <button
+                          className={cn(
+                            "flex w-full items-center gap-2 rounded-lg px-3 py-1.5 text-left text-[12px] transition",
+                            selected.kind === "asset" &&
+                              selected.assetId === asset.id
+                              ? "bg-[#1677ff]/[0.07] text-white/82"
+                              : "text-white/40 hover:bg-white/[0.025] hover:text-white/70",
+                          )}
+                          onClick={() =>
+                            onSelect({
+                              kind: "asset",
+                              assetId: asset.id,
+                              section: "generation",
+                            })
+                          }
+                          key={asset.id}
+                          type="button"
+                        >
+                          <Video className="h-3.5 w-3.5 text-[#4facff]" />
+                          <span className="truncate">{asset.filename}</span>
+                        </button>
+                    ))}
                 </div>
               ) : null}
 
@@ -1190,21 +1326,6 @@ function AssetsTree({
                   ))}
                 </div>
               ) : null}
-              <label className="ml-7 flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-[#1677ff]/25 px-3 py-2 text-[12px] text-white/45 hover:border-[#1677ff]/50 hover:text-white">
-                <Upload className="h-3.5 w-3.5 text-[#4facff]" />
-                {copy.upload}
-                <input
-                  accept="image/*,video/*"
-                  aria-label={copy.upload}
-                  className="sr-only"
-                  onChange={(event) => {
-                    const file = event.target.files?.[0];
-                    event.currentTarget.value = "";
-                    if (file) onUpload(file);
-                  }}
-                  type="file"
-                />
-              </label>
             </div>
           ) : null}
         </div>
@@ -1225,6 +1346,10 @@ export function ProjectWorkspace({
   const [project, setProject] = useState<Project | null>(null);
   const [storyboard, setStoryboard] = useState<Storyboard | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [agentActivities, setAgentActivities] = useState<AgentActivity[]>([]);
+  const [agentActivityRunId, setAgentActivityRunId] = useState<string | null>(
+    null,
+  );
   const [streamingMessageIds, setStreamingMessageIds] = useState<Set<string>>(
     () => new Set(),
   );
@@ -1252,8 +1377,23 @@ export function ProjectWorkspace({
     null,
   );
   const [activeJob, setActiveJob] = useState<GenerationJob | null>(null);
-  const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
-  const [reviewOpen, setReviewOpen] = useState(false);
+  const [projectProgress, setProjectProgress] = useState<ProjectProgress | null>(
+    null,
+  );
+  const [visualReviewModels, setVisualReviewModels] = useState<
+    VisualReviewModel[]
+  >([]);
+  const [visualReviewModel, setVisualReviewModel] = useState("");
+  const [visualReviewMetrics, setVisualReviewMetrics] = useState<
+    VisualReviewMetricKey[]
+  >([
+    "character_consistency",
+    "style_consistency",
+    "prompt_alignment",
+    "temporal_stability",
+  ]);
+  const [visualReview, setVisualReview] = useState<VisualReview | null>(null);
+  const [visualReviewError, setVisualReviewError] = useState<string | null>(null);
   const [isReviewing, setIsReviewing] = useState(false);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [exportedAssets, setExportedAssets] = useState<Asset[]>([]);
@@ -1370,13 +1510,17 @@ export function ProjectWorkspace({
           nextMessages.length === 0 &&
           Boolean(creativeBrief(nextProject.brief));
         if (shouldStart) {
+          const runId = crypto.randomUUID();
           const turnResponse = await fetch(
             `${API_BASE_URL}/projects/${projectId}/messages`,
             {
               method: "POST",
               credentials: "include",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ content: creativeBrief(nextProject.brief) }),
+              body: JSON.stringify({
+                content: creativeBrief(nextProject.brief),
+                run_id: runId,
+              }),
             },
           );
           if (turnResponse.ok) {
@@ -1387,6 +1531,17 @@ export function ProjectWorkspace({
             setSelectedShotId(turn.storyboard.shots[0]?.id ?? null);
             setSelectedCanvas({ kind: "document", document: "outline" });
             if (turn.workflow) setWorkflow(turn.workflow);
+            setAgentActivityRunId(runId);
+            const activityResponse = await fetch(
+              `${API_BASE_URL}/projects/${projectId}/agent-activity/${runId}`,
+              { credentials: "include" },
+            ).catch(() => null);
+            if (activityResponse?.ok) {
+              const activityPayload = (await activityResponse.json()) as {
+                items: AgentActivity[];
+              };
+              setAgentActivities(activityPayload.items);
+            }
             window.history.replaceState(
               null,
               "",
@@ -1407,40 +1562,56 @@ export function ProjectWorkspace({
   }, [projectId]);
 
   useEffect(() => {
-    if (!project || !storyboard || storyboard.shots.length === 0) {
-      setEvaluation(null);
-      return;
+    if (!project) return;
+    let active = true;
+    let timer: number | undefined;
+
+    async function refreshProgress() {
+      const response = await fetch(
+        `${API_BASE_URL}/projects/${project?.id}/progress`,
+        { credentials: "include" },
+      ).catch(() => null);
+      if (!active) return;
+      if (response?.ok) {
+        setProjectProgress((await response.json()) as ProjectProgress);
+      }
+      timer = window.setTimeout(() => void refreshProgress(), 3_000);
     }
 
-    let active = true;
-    const controller = new AbortController();
-    setIsReviewing(true);
-    fetch(`${API_BASE_URL}/projects/${project.id}/evaluate`, {
-      method: "POST",
-      credentials: "include",
-      signal: controller.signal,
-    })
-      .then(async (response) => {
-        if (!response.ok) throw new Error("evaluation-failed");
-        return (await response.json()) as Evaluation;
-      })
-      .then((nextEvaluation) => {
-        if (active) setEvaluation(nextEvaluation);
-      })
-      .catch((error: unknown) => {
-        if (active && !(error instanceof DOMException && error.name === "AbortError")) {
-          setActionError(t("reviewError"));
-        }
-      })
-      .finally(() => {
-        if (active) setIsReviewing(false);
-      });
+    void refreshProgress();
 
     return () => {
       active = false;
-      controller.abort();
+      if (timer !== undefined) window.clearTimeout(timer);
     };
-  }, [project, storyboard?.id, storyboard?.version, t]);
+  }, [project]);
+
+  useEffect(() => {
+    if (!project || selectedCanvas.kind !== "asset") return;
+    const asset = assets.find((item) => item.id === selectedCanvas.assetId);
+    if (!asset || asset.kind !== "export") return;
+    let active = true;
+    fetch(`${API_BASE_URL}/projects/${project.id}/visual-review/models`, {
+      credentials: "include",
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("visual-models-unavailable");
+        return (await response.json()) as { items: VisualReviewModel[] };
+      })
+      .then((payload) => {
+        if (!active) return;
+        setVisualReviewModels(payload.items);
+        setVisualReviewModel((current) => current || payload.items[0]?.id || "");
+      })
+      .catch(() => {
+        if (active) setVisualReviewModels([]);
+      });
+    setVisualReview(null);
+    setVisualReviewError(null);
+    return () => {
+      active = false;
+    };
+  }, [assets, project, selectedCanvas]);
 
   useEffect(() => {
     setHistoryCollapsed(
@@ -1457,7 +1628,32 @@ export function ProjectWorkspace({
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView?.({ block: "end" });
-  }, [messages]);
+  }, [agentActivities, messages]);
+
+  useEffect(() => {
+    if (!project || !agentActivityRunId || !isWorking) return;
+    let active = true;
+    let timer: number | undefined;
+
+    async function poll() {
+      const response = await fetch(
+        `${API_BASE_URL}/projects/${project?.id}/agent-activity/${agentActivityRunId}`,
+        { credentials: "include" },
+      ).catch(() => null);
+      if (!active) return;
+      if (response?.ok) {
+        const payload = (await response.json()) as { items: AgentActivity[] };
+        setAgentActivities(payload.items);
+      }
+      timer = window.setTimeout(() => void poll(), 350);
+    }
+
+    void poll();
+    return () => {
+      active = false;
+      if (timer !== undefined) window.clearTimeout(timer);
+    };
+  }, [agentActivityRunId, isWorking, project]);
 
   useEffect(() => {
     if (!activeJob) return;
@@ -1550,6 +1746,24 @@ export function ProjectWorkspace({
     }
   }
 
+  function beginAgentRun() {
+    const runId = crypto.randomUUID();
+    setAgentActivities([]);
+    setAgentActivityRunId(runId);
+    return runId;
+  }
+
+  async function settleAgentRun(runId: string) {
+    if (!project) return;
+    const response = await fetch(
+      `${API_BASE_URL}/projects/${project.id}/agent-activity/${runId}`,
+      { credentials: "include" },
+    ).catch(() => null);
+    if (!response?.ok) return;
+    const payload = (await response.json()) as { items: AgentActivity[] };
+    setAgentActivities(payload.items);
+  }
+
   async function saveFolder(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const name = folderName.trim();
@@ -1632,6 +1846,7 @@ export function ProjectWorkspace({
   ) {
     if (!project || isWorking) return;
     if (choice === "custom" && !instruction?.trim()) return;
+    const runId = beginAgentRun();
     setIsWorking(true);
     setPendingDecision(
       locale.startsWith("zh")
@@ -1646,7 +1861,7 @@ export function ProjectWorkspace({
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ choice, instruction }),
+          body: JSON.stringify({ choice, instruction, run_id: runId }),
         },
       );
       if (!response.ok) throw new Error("workflow-decision-failed");
@@ -1663,6 +1878,7 @@ export function ProjectWorkspace({
       setSelectedCanvas({ kind: "document", document: "outline" });
       setCustomDecision("");
       setCustomDecisionOpen(false);
+      await settleAgentRun(runId);
       await refreshWorkspace();
     } catch {
       setActionError(t("decisionError"));
@@ -1711,6 +1927,7 @@ export function ProjectWorkspace({
   async function sendMessage() {
     const content = messageDraft.trim();
     if (!project || !content || isWorking) return;
+    const runId = beginAgentRun();
     setIsWorking(true);
     setPendingDecision(copy.thinking);
     setActionError(null);
@@ -1719,7 +1936,7 @@ export function ProjectWorkspace({
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({ content, run_id: runId }),
       });
       if (!response.ok) throw new Error("agent-message-failed");
       const turn = (await response.json()) as AgentTurn;
@@ -1732,6 +1949,7 @@ export function ProjectWorkspace({
       setEstimate(null);
       setMessageDraft("");
       setMobilePanel("canvas");
+      await settleAgentRun(runId);
       await refreshWorkspace();
     } catch {
       setActionError(t("agentIntro"));
@@ -1885,20 +2103,48 @@ export function ProjectWorkspace({
     }
   }
 
-  async function evaluateProject(openDialog = true) {
-    if (openDialog) setReviewOpen(true);
-    if (!project || isReviewing) return;
+  async function runVisualReview() {
+    if (
+      !project ||
+      !selectedAsset ||
+      selectedAsset.kind !== "export" ||
+      !visualReviewModel ||
+      visualReviewMetrics.length === 0 ||
+      isReviewing
+    ) {
+      return;
+    }
     setIsReviewing(true);
-    setActionError(null);
+    setVisualReviewError(null);
     try {
-      const response = await fetch(`${API_BASE_URL}/projects/${project.id}/evaluate`, {
-        method: "POST",
-        credentials: "include",
-      });
-      if (!response.ok) throw new Error("evaluation-failed");
-      setEvaluation((await response.json()) as Evaluation);
-    } catch {
-      setActionError(t("reviewError"));
+      const response = await fetch(
+        `${API_BASE_URL}/projects/${project.id}/visual-review`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            asset_id: selectedAsset.id,
+            model: visualReviewModel,
+            metrics: visualReviewMetrics,
+          }),
+        },
+      );
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as
+          | { error?: { message?: string } }
+          | null;
+        throw new Error(
+          payload?.error?.message || "Visual review could not be completed.",
+        );
+      }
+      setVisualReview((await response.json()) as VisualReview);
+    } catch (error) {
+      setVisualReviewError(
+        error instanceof Error
+          ? error.message
+          : "Visual review could not be completed.",
+      );
     } finally {
       setIsReviewing(false);
     }
@@ -2097,19 +2343,15 @@ export function ProjectWorkspace({
     }
   }
 
-  const metricLabels = {
-    consistency: t("metricConsistency"),
-    coverage: t("metricCoverage"),
-    clarity: t("metricClarity"),
-    pacing: t("metricPacing"),
-  };
-
-  const suggestionLabels = {
-    ADD_SHOTS: t("suggestionAddShots"),
-    UNIFY_ASPECT_RATIO: t("suggestionUnifyRatio"),
-    IMPROVE_PROMPTS: t("suggestionImprovePrompts"),
-    BALANCE_PACING: t("suggestionBalancePacing"),
-    READY: t("suggestionReady"),
+  const visualMetricLabels: Record<VisualReviewMetricKey, string> = {
+    character_consistency:
+      locale.startsWith("zh") ? "人物一致性" : "Character consistency",
+    style_consistency:
+      locale.startsWith("zh") ? "风格一致性" : "Style consistency",
+    prompt_alignment:
+      locale.startsWith("zh") ? "提示词匹配" : "Prompt alignment",
+    temporal_stability:
+      locale.startsWith("zh") ? "时序稳定性" : "Temporal stability",
   };
 
   if (status === "loading") {
@@ -2145,8 +2387,6 @@ export function ProjectWorkspace({
             : selectedAsset?.filename ?? copy.vision;
   const activeDocumentMode =
     selectedCanvas.kind === "document" ? selectedCanvas.document : null;
-  const shotCanvasSection =
-    selectedCanvas.kind === "shot" ? selectedCanvas.section : null;
   const characterCanvasSection =
     selectedCanvas.kind === "character" ? selectedCanvas.section : null;
   const settingPairs = project ? productionSettingPairs(project.brief) : [];
@@ -2162,12 +2402,9 @@ export function ProjectWorkspace({
         copy.directorInput,
     }));
 
-  function selectShot(
-    shot: Shot,
-    section: "description" | "generation" = "generation",
-  ) {
+  function selectShot(shot: Shot) {
     setSelectedShotId(shot.id);
-    setSelectedCanvas({ kind: "shot", shotId: shot.id, section });
+    setSelectedCanvas({ kind: "shot", shotId: shot.id });
     setEstimate(null);
     setShotGenerationMode("direct");
     setReferenceAssetId(referenceAssets[0]?.id ?? null);
@@ -2248,7 +2485,6 @@ export function ProjectWorkspace({
               onToggleCollapsed={() =>
                 setAssetsPanelCollapsed((current) => !current)
               }
-              onUpload={(file) => void uploadVisionAsset(file)}
               selected={selectedCanvas}
               storyboard={storyboard}
             />
@@ -2277,40 +2513,37 @@ export function ProjectWorkspace({
                 <span className="truncate">{canvasTitle}</span>
               </span>
               <div className="flex shrink-0 items-center gap-2">
-                <div className="hidden shrink-0 items-center rounded-lg border border-white/[0.09] sm:flex">
-                  <button
-                    aria-label={copy.review}
-                    className="flex items-center gap-1.5 px-3 py-2 text-[12px] text-white/58 hover:text-white disabled:opacity-35"
-                    disabled={!storyboard || storyboard.shots.length === 0}
-                    onClick={() => {
-                      setReviewOpen(true);
-                      if (!evaluation && !isReviewing) {
-                        void evaluateProject(false);
-                      }
-                    }}
-                    type="button"
-                  >
-                    <ScanSearch className="h-4 w-4 text-[#4facff]" />
-                    {copy.review}
-                    <span className="rounded-md bg-[#1677ff]/15 px-1.5 py-0.5 text-[#8fdcff]">
-                      {evaluation?.overall_score ?? "—"}
+                <div
+                  className="hidden w-48 shrink-0 sm:block"
+                  title={
+                    projectProgress
+                      ? `${projectProgress.completed_shots}/${projectProgress.total_shots} Shots complete`
+                      : undefined
+                  }
+                >
+                  <div className="flex items-center justify-between text-[12px]">
+                    <span className="text-white/42">
+                      {locale.startsWith("zh") ? "制作进度" : "Production progress"}
                     </span>
-                  </button>
-                  <button
-                    aria-label={t("refreshReview")}
-                    className="grid size-9 place-items-center border-l border-white/[0.08] text-[#4facff] hover:bg-[#1677ff]/10 hover:text-[#8fdcff] disabled:opacity-35"
-                    disabled={
-                      !storyboard ||
-                      storyboard.shots.length === 0 ||
-                      isReviewing
+                    <span className="text-[#8fdcff]">
+                      {projectProgress?.percent ?? 0}%
+                    </span>
+                  </div>
+                  <div
+                    aria-label={
+                      locale.startsWith("zh") ? "制作进度" : "Production progress"
                     }
-                    onClick={() => void evaluateProject(false)}
-                    type="button"
+                    aria-valuemax={100}
+                    aria-valuemin={0}
+                    aria-valuenow={projectProgress?.percent ?? 0}
+                    className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[0.07]"
+                    role="progressbar"
                   >
-                    <RefreshCw
-                      className={cn("h-4 w-4", isReviewing && "animate-spin")}
+                    <div
+                      className="h-full rounded-full bg-[#1677ff] transition-[width] duration-500"
+                      style={{ width: `${projectProgress?.percent ?? 0}%` }}
                     />
-                  </button>
+                  </div>
                 </div>
                 <button
                   className="flex items-center gap-1.5 rounded-lg bg-[#1677ff] px-3 py-2 text-[12px] font-semibold text-white disabled:opacity-35"
@@ -2655,14 +2888,26 @@ export function ProjectWorkspace({
                     </div>
                   </div>
 
-                  <div
-                    className={cn(
-                      "mt-5 grid gap-5",
-                      shotCanvasSection === "generation" &&
-                        "2xl:grid-cols-[minmax(0,1fr)_300px]",
-                    )}
-                  >
-                    <div className="rounded-2xl border border-white/[0.07] p-5">
+                  <div className="mt-5 rounded-2xl border border-white/[0.07] p-5">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-[12px] font-semibold text-[#6eb8ff]">
+                          {copy.description}
+                        </p>
+                        <p className="mt-3 whitespace-pre-wrap text-[16px] leading-8 text-white/72">
+                          {canvasShot.description}
+                        </p>
+                      </div>
+                      <div className="flex shrink-0 gap-2">
+                        <span className="rounded-md border border-white/[0.08] px-2.5 py-1 text-[12px] text-white/40">
+                          {canvasShot.duration_seconds}s
+                        </span>
+                        <span className="rounded-md border border-white/[0.08] px-2.5 py-1 text-[12px] text-white/40">
+                          {canvasShot.aspect_ratio}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="mt-5 border-t border-white/[0.06] pt-5">
                       <p className="text-[12px] font-semibold text-white/28">
                         Prompt
                       </p>
@@ -2672,8 +2917,7 @@ export function ProjectWorkspace({
                           : canvasShot.prompt_en}
                       </p>
                     </div>
-                    {shotCanvasSection === "generation" ? (
-                    <div className="space-y-3">
+                    <div className="mt-5 space-y-3 border-t border-white/[0.06] pt-5">
                       <div className="grid grid-cols-3 gap-2">
                         <label className="flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-white/[0.09] px-2 py-2 text-center text-[12px] text-white/55 hover:border-[#1677ff]/35 hover:text-white">
                           <Upload className="h-3.5 w-3.5 text-[#4facff]" />
@@ -2811,13 +3055,8 @@ export function ProjectWorkspace({
                               : copy.generateDirect}
                       </button>
                     </div>
-                    ) : null}
                   </div>
-                  {shotCanvasSection === "generation" ? (
-                    <p className="mt-5 rounded-xl border border-[#1677ff]/15 bg-[#1677ff]/[0.045] px-4 py-3 text-[13px] leading-6 text-white/46">
-                      {copy.visionReferenceHint}
-                    </p>
-                  ) : generatedShotAsset ? (
+                  {generatedShotAsset ? (
                     <a
                       className="mt-5 flex w-fit items-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.055] px-4 py-2.5 text-[13px] text-emerald-200/78"
                       download={generatedShotAsset.filename}
@@ -2873,6 +3112,150 @@ export function ProjectWorkspace({
                       {copy.download}
                     </a>
                   </div>
+                  {selectedAsset.kind === "export" ? (
+                    <section className="mt-5 rounded-2xl border border-white/[0.07] bg-white/[0.018] p-5">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="text-[12px] font-semibold text-[#6eb8ff]">
+                            {locale.startsWith("zh")
+                              ? "终版视觉评估"
+                              : "Final Cut review"}
+                          </p>
+                          <p className="mt-2 max-w-2xl text-[13px] leading-6 text-white/40">
+                            {locale.startsWith("zh")
+                              ? "选择视觉评估模型与指标，在发布前检查最终成片。"
+                              : "Choose a visual evaluator and quality metrics before publishing."}
+                          </p>
+                        </div>
+                        <ScanSearch className="h-5 w-5 shrink-0 text-[#4facff]" />
+                      </div>
+                      {visualReviewModels.length === 0 ? (
+                        <p className="mt-4 rounded-xl border border-white/[0.07] px-3 py-3 text-[13px] text-white/38">
+                          {locale.startsWith("zh")
+                            ? "尚未配置视觉评估模型。"
+                            : "No visual evaluator is configured."}
+                        </p>
+                      ) : (
+                        <>
+                          <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+                            <label className="text-[12px] text-white/38">
+                              <span>{locale.startsWith("zh") ? "评估模型" : "Evaluator"}</span>
+                              <select
+                                className="mt-2 w-full rounded-xl border border-white/[0.09] bg-[#11100d] px-3 py-2 text-[13px] text-white/72 outline-none"
+                                onChange={(event) =>
+                                  setVisualReviewModel(event.target.value)
+                                }
+                                value={visualReviewModel}
+                              >
+                                {visualReviewModels.map((model) => (
+                                  <option key={model.id} value={model.id}>
+                                    {model.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </label>
+                            <button
+                              className="flex items-center justify-center gap-2 rounded-xl bg-[#1677ff] px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-35"
+                              disabled={
+                                isReviewing ||
+                                !visualReviewModel ||
+                                visualReviewMetrics.length === 0
+                              }
+                              onClick={() => void runVisualReview()}
+                              type="button"
+                            >
+                              {isReviewing ? (
+                                <LoaderCircle className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <ScanSearch className="h-4 w-4" />
+                              )}
+                              {isReviewing
+                                ? locale.startsWith("zh")
+                                  ? "评估中"
+                                  : "Reviewing"
+                                : locale.startsWith("zh")
+                                  ? "开始评估"
+                                  : "Run review"}
+                            </button>
+                          </div>
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            {(
+                              Object.keys(
+                                visualMetricLabels,
+                              ) as VisualReviewMetricKey[]
+                            ).map((metric) => {
+                              const selected =
+                                visualReviewMetrics.includes(metric);
+                              return (
+                                <button
+                                  aria-pressed={selected}
+                                  className={cn(
+                                    "rounded-lg border px-3 py-2 text-[12px] transition",
+                                    selected
+                                      ? "border-[#1677ff]/30 bg-[#1677ff]/[0.08] text-[#9bdcff]"
+                                      : "border-white/[0.08] text-white/38 hover:text-white/68",
+                                  )}
+                                  key={metric}
+                                  onClick={() =>
+                                    setVisualReviewMetrics((current) =>
+                                      current.includes(metric)
+                                        ? current.filter(
+                                            (value) => value !== metric,
+                                          )
+                                        : [...current, metric],
+                                    )
+                                  }
+                                  type="button"
+                                >
+                                  {visualMetricLabels[metric]}
+                                </button>
+                              );
+                            })}
+                          </div>
+                          {visualReviewError ? (
+                            <p className="mt-4 rounded-xl border border-red-400/15 bg-red-400/[0.045] px-3 py-2 text-[12px] text-red-200/75">
+                              {visualReviewError}
+                            </p>
+                          ) : null}
+                          {visualReview ? (
+                            <div className="mt-4 rounded-xl border border-white/[0.07] p-4">
+                              <div className="flex items-end gap-3">
+                                <strong className="font-display text-4xl leading-none text-white/88">
+                                  {visualReview.overall_score}
+                                </strong>
+                                <span className="pb-1 text-[12px] text-white/35">
+                                  {locale.startsWith("zh")
+                                    ? "视觉综合分"
+                                    : "Visual score"}
+                                </span>
+                              </div>
+                              <div className="mt-4 grid gap-2 sm:grid-cols-2">
+                                {visualReview.metrics.map((metric) => (
+                                  <div
+                                    className="rounded-xl border border-white/[0.07] p-3"
+                                    key={metric.key}
+                                  >
+                                    <div className="flex items-center justify-between gap-3 text-[12px]">
+                                      <span>{visualMetricLabels[metric.key]}</span>
+                                      <span className="text-[#8fdcff]">
+                                        {metric.score}
+                                      </span>
+                                    </div>
+                                    <p className="mt-2 text-[12px] leading-5 text-white/36">
+                                      {metric.rationale}
+                                    </p>
+                                  </div>
+                                ))}
+                              </div>
+                              <p className="mt-3 text-[13px] leading-6 text-white/48">
+                                {visualReview.summary}
+                              </p>
+                            </div>
+                          ) : null}
+                        </>
+                      )}
+                    </section>
+                  ) : null}
                 </article>
               ) : null}
 
@@ -3027,7 +3410,13 @@ export function ProjectWorkspace({
                   {copy.readyMessage}
                 </div>
               ) : null}
-              {pendingDecision ? (
+              {agentActivities.length > 0 ? (
+                <AgentActivityTrace
+                  activities={agentActivities}
+                  isWorking={isWorking}
+                  locale={locale}
+                />
+              ) : pendingDecision ? (
                 <div className="mr-3 flex items-center gap-2 rounded-2xl border border-white/[0.07] bg-white/[0.02] px-4 py-3 text-[15px] leading-7 text-white/52">
                   <LoaderCircle className="h-4 w-4 shrink-0 animate-spin text-[#4facff]" />
                   {pendingDecision}
@@ -3236,84 +3625,6 @@ export function ProjectWorkspace({
         </div>
       ) : null}
 
-      {reviewOpen ? (
-        <div
-          className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-5 backdrop-blur-sm"
-          onPointerDown={(event) => {
-            if (event.target === event.currentTarget) setReviewOpen(false);
-          }}
-        >
-          <section
-            aria-labelledby="review-title"
-            aria-modal="true"
-            className="w-full max-w-xl rounded-2xl border border-white/[0.12] bg-[#15120e] p-6"
-            role="dialog"
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <h2 id="review-title" className="text-xl font-semibold">
-                  {t("reviewTitle")}
-                </h2>
-              </div>
-              <button
-                aria-label={t("close")}
-                className="grid size-8 place-items-center rounded-lg bg-white/[0.04] text-white/45 hover:text-white"
-                onClick={() => setReviewOpen(false)}
-                type="button"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            {isReviewing || !evaluation ? (
-              <p className="py-16 text-center text-[12px] text-white/40">{t("reviewing")}</p>
-            ) : (
-              <div className="mt-5">
-                <div className="flex items-end gap-3">
-                  <strong className="font-display text-5xl font-medium leading-none">
-                    {evaluation.overall_score}
-                  </strong>
-                  <span className="pb-1 text-[12px] text-white/35">
-                    {t("overallScore")}
-                  </span>
-                </div>
-                <div className="mt-5 grid gap-2 sm:grid-cols-2">
-                  {evaluation.metrics.map((metric) => (
-                    <div
-                      className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-3"
-                      key={metric.key}
-                    >
-                      <div className="flex items-center justify-between text-[12px]">
-                        <span>{metricLabels[metric.key]}</span>
-                        <span className="text-white/35">{metric.score}</span>
-                      </div>
-                      <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/[0.06]">
-                        <div
-                          className="h-full rounded-full bg-[#1677ff]"
-                          style={{ width: `${metric.score}%` }}
-                        />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="mt-5 space-y-2">
-                  {evaluation.suggestions
-                    .filter(
-                      (suggestion) => suggestion.code !== "IMPROVE_PROMPTS",
-                    )
-                    .map((suggestion) => (
-                    <p
-                      className="rounded-xl border border-white/[0.07] px-3 py-2.5 text-[12px] text-white/52"
-                      key={suggestion.code}
-                    >
-                      {suggestionLabels[suggestion.code]}
-                    </p>
-                    ))}
-                </div>
-              </div>
-            )}
-          </section>
-        </div>
-      ) : null}
     </main>
   );
 }

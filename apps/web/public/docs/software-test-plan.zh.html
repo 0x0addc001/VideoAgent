@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Test" />
     <title>Test · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=30" />
+    <link rel="stylesheet" href="../docs.css?v=31" />
   </head>
   <body data-document="software-test-plan.zh.html">
     <main class="document-shell" id="document-shell">
@@ -86,7 +86,7 @@
 <li>积分估算、审批、幂等和任务状态。</li>
 <li>Provider 状态与积分。</li>
 <li>健康检查。</li>
-<li>故事板即时评估。</li>
+<li>制作进度与 Final Cut 视觉评估。</li>
 <li>媒体 MIME、文件头、大小校验和用户所有权。</li>
 <li>FFmpeg 合成、导出、封面生成、分享、过期和撤销。</li>
 <li>用户积分预扣、失败退款与幂等流水。</li>
@@ -164,13 +164,21 @@
 <li>点击历史对话只更新 URL 哈希并复用已挂载的应用外壳，不触发页面级导航。</li>
 <li>工作区资源树包含 <code>Direction &gt; Settings / Outlines / Scripts</code> 与</li>
 <p><code>Vision &gt; Characters / Shots / Final Cut</code>，不再显示 Storyboard、Media、Exports。 Projects、Recents 及其对话项保持纯文本。</p>
-<li>Agent 创建的每个 Character 和 Shot 都提供描述页与生成页；空目录不显示等待文案。</li>
+<li>Character 提供描述页与生成页；每个 Shot 直接打开合并页面，目录行不使用容器框。</li>
+<p>空目录不显示等待文案。</p>
 <li>Settings 以“问题-答案”属性行展示 Q&amp;A，不显示旧版底部分阶段卡片。</li>
 <li>Assets 与 Agents 可独立折叠，并通过带标签的窄轨恢复。</li>
-<li>非空故事板自动加载 Review 分数，提供刷新按钮；详情弹窗标题为 Review，并移除已废弃的提示词建议和冗余 VideoAgent 标签。</li>
-<li>Review 与刷新共用同一个边框，镜头生成在工作流批准前显示明确提示。</li>
+<li>编辑区顶部显示每 3 秒轮询的制作进度条，不再显示故事板 Review 分数按钮。</li>
+<li>Final Cut 视觉评估只对导出资产开放，用户可选择已配置的视觉模型和一致性指标；未配置模型时明确不可用。</li>
+<li>镜头生成在工作流批准前显示明确提示。</li>
 <li>历史 Agent 消息静态渲染；仅新返回的回复执行一次流式显示，Agents 折叠后重新展开不会重复播放。</li>
-<li>Agent 请求等待回复时显示旋转的 <code>Thinking</code> 状态。</li>
+<li>Agent 请求等待回复时显示实时执行轨迹；事件到达前的短暂空档保留紧凑的</li>
+<p><code>Thinking</code> 加载状态。</p>
+<li>Agent 请求按客户端 <code>run_id</code> 持久化 <code>context</code>、<code>memory</code>、<code>skill</code>、<code>planning</code>、</li>
+<p><code>validation</code>、<code>state</code> 和 <code>reply</code> 有序事件。</p>
+<li>Agents 面板将事件显示为实时执行轨迹；未发生的 Skill 或 MCP 调用不得显示为已执行。</li>
+<li>Context Builder 最多读取 8 条历史消息，每条截断至 600 字符，排除当前请求，</li>
+<p>故事板上下文最多包含 20 个 Shot。</p>
 <li>Agent 逐层展示整体设定、分集/分镜大纲和逐场剧本审批选项，自定义意见保持当前阶段。</li>
 <li>只有剧本批准后才允许估算和生成镜头。</li>
 <li>角色生成页支持上传、参考图生图和文字生图；生成图片持久化为可下载的项目资产。</li>
@@ -249,6 +257,6 @@ Playwright + Mock Provider E2E
 <li>付费 Provider 测试保持人工开启。</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=30"></script>
+    <script src="../docs.js?v=31"></script>
   </body>
 </html>

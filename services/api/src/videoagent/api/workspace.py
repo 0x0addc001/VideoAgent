@@ -1,5 +1,5 @@
-from typing import Annotated, cast
-from uuid import UUID
+from typing import Annotated, Literal, cast
+from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, status
 from sqlalchemy import delete, select
@@ -36,6 +36,8 @@ from videoagent.schemas import (
     WorkspaceThreadMove,
     WorkspaceThreadRead,
 )
+from videoagent.services.agent_activity import AgentActivityRecorder
+from videoagent.services.agent_context import build_agent_context
 from videoagent.services.language import detect_locale
 from videoagent.services.storyboards import (
     load_storyboard,
@@ -267,6 +269,12 @@ async def decide_workflow(
 ) -> WorkflowDecisionRead:
     project = await owned_project_or_404(session, project_id, user.id)
     workflow = await get_or_create_workflow(session, project_id=project.id)
+    run_id = payload.run_id or uuid4()
+    reporter = AgentActivityRecorder(
+        session,
+        project_id=project.id,
+        run_id=run_id,
+    )
     if workflow.stage == "ready" and payload.choice == "approve":
         raise AppError(
             status_code=409,
@@ -308,6 +316,33 @@ async def decide_workflow(
     await session.flush()
 
     storyboard = await load_storyboard(session, project.id)
+    context = await build_agent_context(
+        session,
+        project_id=project.id,
+        owner_id=user.id,
+        project_brief=project.brief,
+        exclude_message_id=user_message.id,
+    )
+    await reporter.emit(
+        "context",
+        "Assembled workflow context",
+        f"locale={locale} · stage={workflow.stage}/{workflow.status} · decision={payload.choice}",
+    )
+    await reporter.emit(
+        "memory",
+        "Loaded project memory",
+        f"{context.recent_message_count} recent messages · current Characters and Shots",
+    )
+    if context.selected_skill:
+        await reporter.emit(
+            "skill",
+            "Loaded Skill selection",
+            (
+                f"{context.selected_skill} · persisted instructions attached"
+                if context.skill_instructions
+                else f"{context.selected_skill} · built-in or selection-only Skill"
+            ),
+        )
     target_stage = workflow.stage
     if payload.choice == "approve":
         target_stage = next_workflow_stage(workflow.stage)
@@ -326,6 +361,12 @@ async def decide_workflow(
                 "The script is approved and the storyboard is locked for generation. "
                 "You can still refine individual shots on the canvas."
             )
+        )
+        await reporter.emit(
+            "state",
+            "Locking the approved storyboard",
+            "Marking the workflow ready for controlled generation.",
+            "running",
         )
         workflow.stage = "ready"
         workflow.status = "approved"
@@ -365,6 +406,12 @@ async def decide_workflow(
                     "approving generation."
                 )
             )
+        await reporter.emit(
+            "state",
+            "Advancing the directing stage",
+            f"{workflow.stage} → {target_stage}",
+            "running",
+        )
         workflow.stage = target_stage
         workflow.status = "awaiting_approval"
     else:
@@ -372,12 +419,36 @@ async def decide_workflow(
             f"Revise the current {workflow.stage} without advancing. "
             f"User direction: {payload.instruction}"
         )
-        plan = await agent.plan(
-            locale=locale,
-            project_title=project.title,
-            project_brief=project.brief,
-            user_message=stage_request,
-            workflow_stage=cast(WorkflowStage, target_stage),
+        try:
+            plan = await agent.plan(
+                locale=locale,
+                project_title=project.title,
+                project_brief=project.brief,
+                user_message=stage_request,
+                workflow_stage=cast(WorkflowStage, target_stage),
+                workflow_status=cast(
+                    "Literal['awaiting_approval', 'approved']",
+                    workflow.status,
+                ),
+                conversation_context=context.conversation_context,
+                storyboard_context=context.storyboard_context,
+                selected_skill=context.selected_skill,
+                skill_instructions=context.skill_instructions,
+                activity=reporter.emit,
+            )
+        except Exception:
+            await reporter.emit(
+                "planning",
+                "Planning failed",
+                "The refinement did not produce a valid StoryboardPlan.",
+                "failed",
+            )
+            raise
+        await reporter.emit(
+            "state",
+            "Updating revised resources",
+            "Applying the refined Characters and Shots.",
+            "running",
         )
         storyboard = await replace_storyboard(
             session,
@@ -389,6 +460,11 @@ async def decide_workflow(
         workflow.stage = target_stage
         workflow.status = "awaiting_approval"
 
+    await reporter.emit(
+        "state",
+        "Workflow state updated",
+        f"stage={workflow.stage} · status={workflow.status}",
+    )
     assistant_message = Message(
         conversation_id=conversation.id,
         role="assistant",
@@ -401,7 +477,12 @@ async def decide_workflow(
     )
     session.add(assistant_message)
     session.add(workflow)
-    await session.commit()
+    await session.flush()
+    await reporter.emit(
+        "reply",
+        "Workflow reply ready",
+        "The stage response is ready to stream into the conversation.",
+    )
     await session.refresh(user_message)
     await session.refresh(assistant_message)
     await session.refresh(workflow)

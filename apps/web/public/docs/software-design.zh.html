@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Arch" />
     <title>Arch · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=30" />
+    <link rel="stylesheet" href="../docs.css?v=31" />
   </head>
   <body data-document="software-design.zh.html">
     <main class="document-shell" id="document-shell">
@@ -40,6 +40,10 @@
 <a class="toc-link toc-level-2" href="#8-模块划分">8. 模块划分</a>
 <a class="toc-link toc-level-2" href="#9-agent-设计">9. Agent 设计</a>
 <a class="toc-link toc-level-3" href="#9-1-基本策略">9.1 基本策略</a>
+<a class="toc-link toc-level-3" href="#9-2-context-与-memory">9.2 Context 与 Memory</a>
+<a class="toc-link toc-level-3" href="#9-3-skill-调用">9.3 Skill 调用</a>
+<a class="toc-link toc-level-3" href="#9-4-mcp-调用边界">9.4 MCP 调用边界</a>
+<a class="toc-link toc-level-3" href="#9-5-agent-行为可观测性">9.5 Agent 行为可观测性</a>
 <a class="toc-link toc-level-2" href="#10-langgraph-与-celery">10. LangGraph 与 Celery</a>
 <a class="toc-link toc-level-2" href="#11-provider-集成">11. Provider 集成</a>
 <a class="toc-link toc-level-3" href="#11-1-pippit-cli">11.1 Pippit CLI</a>
@@ -121,7 +125,7 @@
 <li>支持项目创建、编辑、恢复和删除。</li>
 <li>支持 Agent 生成创意方案和多镜头故事板。</li>
 <li>支持镜头参数编辑和积分成本估算。</li>
-<li>支持故事板即时评估，计算一致性、覆盖度、提示清晰度和节奏。</li>
+<li>支持基于真实制作状态的实时进度条，以及 Final Cut 发布前的视觉模型评估。</li>
 <li>支持项目级图片、视频和音频素材上传，并校验 MIME、文件头和大小。</li>
 <li>支持 FFmpeg 合成、16:9/9:16/1:1 交付版本、封面、字幕和音轨。</li>
 <li>支持限时分享链接、公开/私有权限、过期和撤销。</li>
@@ -360,7 +364,7 @@
 </tr>
 <tr>
 <td><code>api.evaluation</code></td>
-<td>故事板即时评估</td>
+<td>制作进度查询、Final Cut 视觉评估</td>
 </tr>
 <tr>
 <td><code>api.providers</code></td>
@@ -423,8 +427,12 @@
 <td>Provider 状态与 Shot 状态联动</td>
 </tr>
 <tr>
-<td><code>services.evaluation</code></td>
-<td>一致性、覆盖度、清晰度和节奏计算</td>
+<td><code>services.progress</code></td>
+<td>基于工作流与 Shot 完成度的制作进度</td>
+</tr>
+<tr>
+<td><code>services.visual_review</code></td>
+<td>提取成片帧并调用配置的视觉评估模型</td>
 </tr>
 <tr>
 <td><code>services.media</code></td>
@@ -453,7 +461,27 @@
 <pre><code class="language-text">START
   → plan_storyboard
   → END</code></pre>
-<p><code>plan_storyboard</code> 接收项目标题、Brief、用户消息和 Locale，输出 <code>assistant_message</code> 与三镜头故事板，并同步持久化消息和故事板。</p>
+<p><code>plan_storyboard</code> 接收项目标题、Brief、用户消息、Locale、工作流阶段与状态， 输出 <code>assistant_message</code> 和经 Pydantic 校验的 Character/Shot 计划，并同步持久化消息和故事板。</p>
+<h3 id="9-2-context-与-memory">9.2 Context 与 Memory</h3>
+<ul>
+<li>Context 是单次规划调用的有界输入：项目标题、Brief、当前用户请求、Locale、</li>
+<p>工作流阶段/状态、当前 Character/Shot 摘要、最近对话和可选 Skill 指令。</p>
+<li>短期 Memory 从关系数据库读取最近 8 条历史消息，每条最多保留 600 字符；</li>
+<p>当前请求不重复放入历史。故事板上下文最多读取前 20 个 Shot。</p>
+<li>长期 Memory 是数据库事实：Project、Conversation/Message、ProjectWorkflow、</li>
+<p>Storyboard、Character、Shot、Asset 和 GenerationJob。任何写操作都以数据库为唯一事实来源。</p>
+<li>当前不引入向量数据库，也不把 Provider 原始上下文写入 Prompt。后续可增加</li>
+<p>项目摘要与向量检索，但必须有 TTL、用户隔离和删除策略。</p>
+</ul>
+<h3 id="9-3-skill-调用">9.3 Skill 调用</h3>
+<p>Composer 选择的 Skill 先写入项目 Brief 的 <code>Production settings</code>。规划前， Context Builder 解析 Skill ID；如果当前用户发布过同名 UserSkill，则加载其 instructions 和 starter prompt 并加入规划 Context。内置 Skill 没有数据库指令时， 只把 Skill ID 作为创作约束传入。</p>
+<p>Skill 不是 HTTP 工具调用，也不会在规划阶段直接生成视频。计费 Provider 只在用户 明确批准后，由 Generation API 调用。</p>
+<h3 id="9-4-mcp-调用边界">9.4 MCP 调用边界</h3>
+<p>Storyboard Agent 当前不直接持有 MCP 工具，避免模型在规划阶段自行产生付费副作用。 Kling MCP 位于 Provider 层：选择 Kling 且 <code>VIDEOAGENT_KLING_BACKEND=mcp</code> 时， Provider Resolver 使用当前用户的 OAuth Token 创建 <code>StreamableHTTPToolClient</code>； <code>KlingVideoProvider</code> 再调用 <code>text_to_video</code>、<code>image_to_video</code> 或 <code>query_tasks</code>。 默认国内版 CLI 路径由受控子进程完成同类调用。角色图片当前通过 Kling CLI 的文生图/ 参考图生图执行。</p>
+<h3 id="9-5-agent-行为可观测性">9.5 Agent 行为可观测性</h3>
+<p>每次 Agent run 使用客户端提供的 <code>run_id</code> 记录：</p>
+<pre><code class="language-text">context → memory → skill → planning → validation → state → reply</code></pre>
+<p>事件写入 <code>agent_activities</code> 表，前端以 350ms 间隔轮询该 run 的事件，并在 Agents 等待区显示实时步骤。事件只描述真实发生的上下文装载、规划、校验和 状态写入，不把未调用的 MCP 或 Skill 工具显示为已执行。</p>
 <h2 id="10-langgraph-与-celery">10. LangGraph 与 Celery</h2>
 <p>职责边界：</p>
 <ul>
@@ -543,6 +571,11 @@ pippit-tool-cli query-result</code></pre>
 <td><code>messages</code></td>
 <td><code>id</code>, <code>role</code>, <code>content</code>, <code>metadata</code></td>
 <td>对话消息</td>
+</tr>
+<tr>
+<td><code>agent_activities</code></td>
+<td><code>project_id</code>, <code>run_id</code>, <code>sequence</code>, <code>kind</code>, <code>status</code></td>
+<td>可观测的 Agent run 步骤</td>
 </tr>
 <tr>
 <td><code>workspace_folders</code></td>
@@ -737,6 +770,11 @@ cancelled</code></pre>
 </tr>
 <tr>
 <td>GET</td>
+<td><code>/projects/{id}/agent-activity/{run_id}</code></td>
+<td>读取单次 Agent run 的可观测步骤</td>
+</tr>
+<tr>
+<td>GET</td>
 <td><code>/workspace</code></td>
 <td>项目目录和最近对话</td>
 </tr>
@@ -801,9 +839,14 @@ cancelled</code></pre>
 <td>角色图片估算、上传与生成</td>
 </tr>
 <tr>
-<td>POST</td>
-<td><code>/projects/{id}/evaluate</code></td>
-<td>故事板即时评估</td>
+<td>GET</td>
+<td><code>/projects/{id}/progress</code></td>
+<td>实时制作进度</td>
+</tr>
+<tr>
+<td>GET/POST</td>
+<td><code>/projects/{id}/visual-review/models</code>、<code>/visual-review</code></td>
+<td>Final Cut 视觉评估</td>
 </tr>
 <tr>
 <td>POST</td>
@@ -932,7 +975,7 @@ cancelled</code></pre>
 <li><code>Docs</code>：按 PRD、Playbook、Arch、API、Dev、Test、Ops、FAQ、TODO 展示中英文文档，支持全文搜索。</li>
 <li>项目工作区采用 IDE 式布局：可压缩历史导航、<code>Direction</code> / <code>Vision</code> 资源树、中央编辑画布和右侧审批式 Agents。</li>
 <li>Assets 与 Agents 侧栏可折叠为带标签的窄轨；展开宽度使用响应式比例，适配不同桌面尺寸。</li>
-<li><code>Direction</code> 包含 <code>Settings</code>、<code>Outlines</code>、<code>Scripts</code>；<code>Vision</code> 包含 <code>Characters</code>、<code>Shots</code>、<code>Final Cut</code>。每个持久化角色与镜头都包含描述页和生成页；空目录不显示等待文案。</li>
+<li><code>Direction</code> 包含 <code>Settings</code>、<code>Outlines</code>、<code>Scripts</code>；<code>Vision</code> 包含 <code>Characters</code>、<code>Shots</code>、<code>Final Cut</code>。角色保留描述页与生成页，每个 Shot 使用一个合并页面；空目录不显示等待文案。</li>
 <li>项目目录将展开按钮放在蓝色目录图标左侧；被收纳的对话从 Recents 移入对应目录，并以缩进子项显示。</li>
 <li>品牌与浏览器标签页图标统一使用蓝色播放键；激活导航图标采用填充/线框反转。</li>
 <li>管理后台使用独立控制台布局，与用户创作界面隔离。</li>
@@ -947,12 +990,11 @@ cancelled</code></pre>
 <pre><code class="language-text">History | Assets | Canvas | Agent</code></pre>
 <p>历史导航支持压缩，Recent 对话可拖入项目目录，也可拖回全部对话列表。Agent 按“整体设定 → 分集/分镜大纲 → 逐场剧本 → 可生成”推进；每一步都必须由用户 批准，调整与自定义意见不会跳过当前阶段。</p>
 <p>镜头生成在“可生成”审批完成前保持禁用，镜头检查器会直接提示需要先在 Agents 中批准。</p>
-<p>中央编辑区使用自己的紧凑面板栏，不设置页面级项目标题栏；Review 与 Share 固定在编辑区面板栏最右侧。</p>
-<p>故事板变化时自动执行 Review，综合分始终显示在编辑区面板栏；Review 与刷新按钮共用一个边框容器，刷新不会重复打开详情弹窗。</p>
+<p>中央编辑区使用自己的紧凑面板栏，不设置页面级项目标题栏；实时制作进度条与 Share 固定在编辑区面板栏最右侧。进度条每 3 秒轮询。</p>
 <p>只有本次新返回的 Agent 回复执行一次流式显示；历史消息和已完成回复直接静态展示，折叠再展开不会重新播放。</p>
 <p>Assets、中央编辑区和 Agents 的滚动条与 Projects、Recents 使用同一套细蓝色样式。</p>
 <p>Docs 使用导航栏右侧的完整内容区域，不与固定导航重叠；内嵌文档沿用全局视频背景。</p>
-<p>Review 按钮在完成评估后直接显示综合分，不再展示四段进度条。工作区所有文本的最小字号不低于按钮字号。 导航与 Assets 图标的激活态采用描边/填充反转：未激活为透明填充加蓝色描边，激活后为蓝色填充加透明描边。</p>
+<p>Final Cut 页面提供视觉评估模型和指标选择。Review 只在导出的成片中运行， 不会用故事板完整性或 Prompt 词数冒充视觉质量。工作区所有文本的最小字号不低于按钮字号。 导航与 Assets 图标的激活态采用描边/填充反转：未激活为透明填充加蓝色描边，激活后为蓝色填充加透明描边。</p>
 <p>导航、Projects、Recents、目录和对话 item 使用统一字号。Projects、Recents 及其对话 item 不显示图标；日期、数量和空状态提示不显示。</p>
 <ul>
 <li>首页与对话页历史列表使用细蓝色滚动条，轨道透明。</li>
@@ -1075,7 +1117,7 @@ Celery + Redis</code></pre>
 <li>刷新页面或重启服务后故事板和任务状态不会丢失。</li>
 <li>Pippit Access Key、CLI 登录文件和 Kling 凭据不出现在浏览器、日志或公开接口中。</li>
 <li>生成任务不会因自动重试造成重复扣费。</li>
-<li>即时评估返回一致性、覆盖度、清晰度和节奏得分。</li>
+<li>制作进度条根据工作流和 Shot 完成状态实时轮询；视觉评估只作用于 Final Cut。</li>
 <li>Hots 的作者、喜欢数、发布入口和预览可用。</li>
 <li>Mock Provider、Pippit Fake CLI 和 Kling Provider 契约测试全部通过。</li>
 <li>Playwright 使用 Mock Provider 完成注册、创作、上传、生成、导出、下载和分享。</li>
@@ -1122,6 +1164,6 @@ Celery + Redis</code></pre>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=30"></script>
+    <script src="../docs.js?v=31"></script>
   </body>
 </html>

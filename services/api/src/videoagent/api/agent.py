@@ -1,5 +1,5 @@
-from typing import Annotated, cast
-from uuid import UUID
+from typing import Annotated, Literal, cast
+from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import select
@@ -18,6 +18,8 @@ from videoagent.schemas import (
     WorkflowStage,
     WorkflowStateRead,
 )
+from videoagent.services.agent_activity import AgentActivityRecorder
+from videoagent.services.agent_context import build_agent_context
 from videoagent.services.language import detect_locale
 from videoagent.services.storyboards import (
     owned_project_or_404,
@@ -71,6 +73,17 @@ async def create_agent_message(
     project = await owned_project_or_404(session, project_id, user.id)
     conversation = await get_conversation(session, project.id)
     workflow = await get_or_create_workflow(session, project_id=project.id)
+    run_id = payload.run_id or uuid4()
+    reporter = AgentActivityRecorder(
+        session,
+        project_id=project.id,
+        run_id=run_id,
+    )
+    locale = detect_locale(
+        project.brief,
+        payload.content,
+        fallback=user.locale,
+    )
 
     user_message = Message(
         conversation_id=conversation.id,
@@ -81,22 +94,79 @@ async def create_agent_message(
     session.add(user_message)
     await session.flush()
 
-    plan = await agent.plan(
-        locale=detect_locale(
-            project.brief,
-            payload.content,
-            fallback=user.locale,
-        ),
-        project_title=project.title,
+    context = await build_agent_context(
+        session,
+        project_id=project.id,
+        owner_id=user.id,
         project_brief=project.brief,
-        user_message=payload.content,
-        workflow_stage=cast(WorkflowStage, workflow.stage),
+        exclude_message_id=user_message.id,
+    )
+    await reporter.emit(
+        "context",
+        "Assembled working context",
+        f"locale={locale} · workflow={workflow.stage}/{workflow.status} · "
+        "project title, brief, and current request",
+    )
+    await reporter.emit(
+        "memory",
+        "Loaded project memory",
+        f"{context.recent_message_count} recent messages · current Characters and Shots · "
+        "8-message rolling window with 600 characters per message",
+    )
+    if context.selected_skill:
+        await reporter.emit(
+            "skill",
+            "Loaded Skill selection",
+            (
+                f"{context.selected_skill} · persisted instructions attached"
+                if context.skill_instructions
+                else f"{context.selected_skill} · built-in or selection-only Skill"
+            ),
+        )
+
+    try:
+        plan = await agent.plan(
+            locale=locale,
+            project_title=project.title,
+            project_brief=project.brief,
+            user_message=payload.content,
+            workflow_stage=cast(WorkflowStage, workflow.stage),
+            workflow_status=cast(
+                "Literal['awaiting_approval', 'approved']",
+                workflow.status,
+            ),
+            conversation_context=context.conversation_context,
+            storyboard_context=context.storyboard_context,
+            selected_skill=context.selected_skill,
+            skill_instructions=context.skill_instructions,
+            activity=reporter.emit,
+        )
+    except Exception:
+        await reporter.emit(
+            "planning",
+            "Planning failed",
+            "The planner did not produce a valid StoryboardPlan.",
+            "failed",
+        )
+        raise
+
+    await reporter.emit(
+        "state",
+        "Updating Direction and Vision",
+        "Replacing Characters and Shots with the validated plan.",
+        "running",
     )
     storyboard = await replace_storyboard(
         session,
         project.id,
         plan.storyboard.shots,
         plan.storyboard.characters,
+    )
+    await reporter.emit(
+        "state",
+        "Project state updated",
+        f"Storyboard v{storyboard.version} · {len(storyboard.characters)} Characters · "
+        f"{len(storyboard.shots)} Shots",
     )
     assistant_message = Message(
         conversation_id=conversation.id,
@@ -108,7 +178,12 @@ async def create_agent_message(
         },
     )
     session.add(assistant_message)
-    await session.commit()
+    await session.flush()
+    await reporter.emit(
+        "reply",
+        "Director response ready",
+        "The assistant message is ready to stream into the conversation.",
+    )
     await session.refresh(user_message)
     await session.refresh(assistant_message)
 

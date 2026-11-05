@@ -180,11 +180,38 @@ http://localhost:8000/openapi.json
 
 ```json
 {
-  "content": "把需求整理成三个镜头的发布视频"
+  "content": "把需求整理成三个镜头的发布视频",
+  "run_id": "00000000-0000-0000-0000-000000000020"
 }
 ```
 
 响应包含用户消息、Assistant 回复、最新故事板和当前审批阶段。
+
+### 观测 Agent 执行
+
+`GET /projects/{project_id}/agent-activity/{run_id}`
+
+返回该 run 的有序步骤：
+
+```json
+{
+  "items": [
+    {
+      "id": "00000000-0000-0000-0000-000000000021",
+      "run_id": "00000000-0000-0000-0000-000000000020",
+      "sequence": 1,
+      "kind": "context",
+      "label": "Assembled working context",
+      "detail": "locale=zh-CN · workflow=concept/awaiting_approval",
+      "status": "completed",
+      "created_at": "2026-11-05T08:00:00Z"
+    }
+  ]
+}
+```
+
+活动类型为 `context`、`memory`、`skill`、`planning`、`validation`、
+`state` 和 `reply`。工作区在等待回复时轮询该接口，展示真实执行步骤。
 
 ### 读取工作流
 
@@ -201,41 +228,45 @@ http://localhost:8000/openapi.json
 ```json
 {
   "choice": "approve",
-  "instruction": null
+  "instruction": null,
+  "run_id": "00000000-0000-0000-0000-000000000020"
 }
 ```
 
 `choice` 为 `approve`、`refine` 或 `custom`。调整和自定义意见保持当前阶段；
 批准会进入下一层细化。
 
-## 故事板即时评估
+## 制作进度
 
-`POST /projects/{project_id}/evaluate`
+`GET /projects/{project_id}/progress`
 
-返回：
+返回用于工作区进度条的实时制作百分比，依据工作流阶段和已完成 Shots 计算。
+该值表示 readiness，不是视觉质量评分。
 
-- 一致性
-- 覆盖度
-- 提示清晰度
-- 节奏
-- 综合分和修改建议
+## Final Cut 视觉评估
 
-示例：
+`GET /projects/{project_id}/visual-review/models`
+
+返回已配置的视觉评估模型。
+
+`POST /projects/{project_id}/visual-review`
 
 ```json
 {
-  "overall_score": 88,
+  "asset_id": "00000000-0000-0000-0000-000000000030",
+  "model": "vision-model",
   "metrics": [
-    { "key": "consistency", "score": 92 },
-    { "key": "coverage", "score": 100 },
-    { "key": "clarity", "score": 84 },
-    { "key": "pacing", "score": 80 }
-  ],
-  "suggestions": [
-    { "code": "IMPROVE_PROMPTS", "severity": "medium" }
+    "character_consistency",
+    "style_consistency",
+    "prompt_alignment",
+    "temporal_stability"
   ]
 }
 ```
+
+接口只接受导出的 Final Cut，提取代表性帧并调用所选视觉模型，返回带证据的
+论文型或训练模型评估指标。未配置评估模型时返回 `503 VISUAL_REVIEW_UNAVAILABLE`，
+不会生成伪造分数。
 
 ## 视频生成
 

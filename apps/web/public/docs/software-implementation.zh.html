@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Dev" />
     <title>Dev · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=30" />
+    <link rel="stylesheet" href="../docs.css?v=31" />
   </head>
   <body data-document="software-implementation.zh.html">
     <main class="document-shell" id="document-shell">
@@ -127,7 +127,7 @@
 <li>Kling 国内版 CLI 文本生成视频、任务查询、动作控制和多模态参考。</li>
 <li>任务状态 API 刷新。</li>
 <li>Celery 后台轮询。</li>
-<li>故事板即时评估与前端审核弹窗。</li>
+<li>实时制作进度轮询与 Final Cut 视觉模型评估。</li>
 <li>Docker Compose 基础设施配置。</li>
 <li>GitHub Actions CI 配置。</li>
 <li>Playwright + Mock Provider 无费用端到端验收。</li>
@@ -214,14 +214,22 @@ https://example.com/api/   → FastAPI</code></pre>
 </ol>
 <h3 id="5-3-agent-对话">5.3 Agent 对话</h3>
 <pre><code class="language-text">POST /projects/{project_id}/messages
+  → 校验 run_id
+  → 构建有界 Context 与短时 Memory
+  → 记录 context/memory/skill 活动
+  → 解析当前用户 Skill 指令（如存在）
   → 保存 user Message
   → LangGraph 调用 StoryboardPlanner
   → 输出 StoryboardPlan
+  → 记录 planning/validation 活动
   → 保存或替换 Storyboard
+  → 记录 state 活动
   → 保存 assistant Message
+  → 记录 reply 活动
   → 返回两条 Message 和最新 Storyboard</code></pre>
 <p>Agent 图只有一个节点：</p>
 <pre><code class="language-text">START → plan_storyboard → END</code></pre>
+<p>前端以 350ms 轮询 <code>GET /projects/{project_id}/agent-activity/{run_id}</code>，把真实 Agent step 渲染为 等待时间线。Context Builder 位于 <code>services/agent_context.py</code>，活动持久化位于 <code>services/agent_activity.py</code>。</p>
 <h3 id="5-4-生成任务">5.4 生成任务</h3>
 <pre><code class="language-text">用户点击估算
   → POST /shots/{shot_id}/estimate
@@ -297,6 +305,10 @@ https://example.com/api/   → FastAPI</code></pre>
 <td>对话和消息持久化</td>
 </tr>
 <tr>
+<td><code>api/agent_activity.py</code></td>
+<td>查询单次 Agent run 的可观测步骤</td>
+</tr>
+<tr>
 <td><code>api/workspace.py</code></td>
 <td>历史对话、项目目录、拖拽归档和逐层审批</td>
 </tr>
@@ -306,7 +318,7 @@ https://example.com/api/   → FastAPI</code></pre>
 </tr>
 <tr>
 <td><code>api/evaluation.py</code></td>
-<td>项目故事板即时评估</td>
+<td>制作进度与 Final Cut 视觉评估</td>
 </tr>
 <tr>
 <td><code>api/providers.py</code></td>
@@ -341,6 +353,14 @@ https://example.com/api/   → FastAPI</code></pre>
 <td>故事板领域操作</td>
 </tr>
 <tr>
+<td><code>services/agent_context.py</code></td>
+<td>有界对话、故事板与 Skill Context 构建</td>
+</tr>
+<tr>
+<td><code>services/agent_activity.py</code></td>
+<td>Agent run 活动事件持久化</td>
+</tr>
+<tr>
 <td><code>services/workflow.py</code></td>
 <td>Concept、Outline、Script、Ready 状态迁移</td>
 </tr>
@@ -353,8 +373,12 @@ https://example.com/api/   → FastAPI</code></pre>
 <td>Job 刷新和 Shot 状态联动</td>
 </tr>
 <tr>
-<td><code>services/evaluation.py</code></td>
-<td>一致性、覆盖、清晰度和节奏指标计算</td>
+<td><code>services/progress.py</code></td>
+<td>工作流阶段与 Shot 完成度进度计算</td>
+</tr>
+<tr>
+<td><code>services/visual_review.py</code></td>
+<td>提取 Final Cut 帧并调用视觉评估模型</td>
 </tr>
 <tr>
 <td><code>services/media.py</code></td>
@@ -509,6 +533,10 @@ zh-CN</code></pre>
 <tr>
 <td><code>messages</code></td>
 <td>User/Assistant 消息</td>
+</tr>
+<tr>
+<td><code>agent_activities</code></td>
+<td>单次 run 的 Context、Memory、Skill、规划、校验、状态与回复步骤</td>
 </tr>
 <tr>
 <td><code>workspace_folders</code></td>
@@ -698,6 +726,11 @@ task reference    → query-result   → JobStatus + result URL</code></pre>
 </tr>
 <tr>
 <td>GET</td>
+<td><code>/projects/{id}/agent-activity/{run_id}</code></td>
+<td>查询 Agent 实际执行步骤</td>
+</tr>
+<tr>
+<td>GET</td>
 <td><code>/workspace</code></td>
 <td>项目目录与全部历史对话</td>
 </tr>
@@ -772,9 +805,14 @@ task reference    → query-result   → JobStatus + result URL</code></pre>
 <td>查询并刷新任务状态</td>
 </tr>
 <tr>
-<td>POST</td>
-<td><code>/projects/{id}/evaluate</code></td>
-<td>即时评估当前故事板</td>
+<td>GET</td>
+<td><code>/projects/{id}/progress</code></td>
+<td>轮询制作进度</td>
+</tr>
+<tr>
+<td>GET/POST</td>
+<td><code>/projects/{id}/visual-review/models</code>、<code>/visual-review</code></td>
+<td>Final Cut 视觉评估</td>
 </tr>
 <tr>
 <td>GET</td>
@@ -1202,6 +1240,6 @@ pnpm --dir apps/web build</code></pre>
 <li>设计或实现边界变化已更新本文档。</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=30"></script>
+    <script src="../docs.js?v=31"></script>
   </body>
 </html>

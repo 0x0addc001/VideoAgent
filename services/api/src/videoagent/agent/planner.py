@@ -20,6 +20,11 @@ class PlanningContext(BaseModel):
     project_brief: str
     user_message: str
     workflow_stage: Literal["concept", "outline", "script", "ready"] = "concept"
+    workflow_status: Literal["awaiting_approval", "approved"] = "awaiting_approval"
+    conversation_context: str = ""
+    storyboard_context: str = ""
+    selected_skill: str | None = None
+    skill_instructions: str | None = None
 
 
 class StoryboardPlanner(Protocol):
@@ -28,6 +33,8 @@ class StoryboardPlanner(Protocol):
 
 class LocalStoryboardPlanner:
     """Deterministic planner for local development and automated tests."""
+
+    display_name = "VideoAgent local planner"
 
     async def plan(self, context: PlanningContext) -> StoryboardPlan:
         subject = context.user_message or context.project_brief or context.project_title
@@ -155,6 +162,7 @@ class OpenAIStoryboardPlanner:
             max_tokens=1800,
         )
         self._structured = self._chat.with_structured_output(StoryboardPlan)
+        self.display_name = f"LLM/{settings.llm_model}"
 
     async def plan(self, context: PlanningContext) -> StoryboardPlan:
         stage_instruction = {
@@ -181,7 +189,12 @@ class OpenAIStoryboardPlanner:
             "Each shot must be between 1 and 15 seconds. "
             f"Workflow stage: {context.workflow_stage}. {stage_instruction} "
             f"Locale: {context.locale}. Project: {context.project_title}. "
-            f"Brief: {context.project_brief}. User request: {context.user_message}"
+            f"Brief: {context.project_brief}. User request: {context.user_message}. "
+            f"Workflow status: {context.workflow_status}. "
+            f"Selected skill: {context.selected_skill or 'auto'}. "
+            f"Skill instructions: {context.skill_instructions or 'none'}. "
+            f"Recent conversation memory:\n{context.conversation_context or 'none'}. "
+            f"Current storyboard state:\n{context.storyboard_context or 'none'}."
         )
         try:
             result = await self._structured.ainvoke(prompt)

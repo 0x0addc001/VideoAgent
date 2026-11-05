@@ -32,6 +32,46 @@ describe("ProjectWorkspace", () => {
     window.history.replaceState({}, "", "/en#conversation/project-1?start=1");
     const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
+      if (url.endsWith("/projects/project-1/progress")) {
+        return Promise.resolve(
+          Response.json({
+            percent: 85,
+            workflow_stage: "ready",
+            workflow_status: "approved",
+            total_shots: 2,
+            completed_shots: 1,
+            updated_at: "2026-11-03T00:00:02Z",
+          }),
+        );
+      }
+      if (url.includes("/agent-activity/")) {
+        return Promise.resolve(
+          Response.json({
+            items: [
+              {
+                id: "activity-1",
+                run_id: "run-1",
+                sequence: 1,
+                kind: "context",
+                label: "Assembled working context",
+                detail: "locale=en · workflow=ready/approved",
+                status: "completed",
+                created_at: "2026-11-03T00:00:00Z",
+              },
+              {
+                id: "activity-2",
+                run_id: "run-1",
+                sequence: 2,
+                kind: "planning",
+                label: "Storyboard plan ready",
+                detail: "Selected 1 Characters and 2 Shots.",
+                status: "completed",
+                created_at: "2026-11-03T00:00:01Z",
+              },
+            ],
+          }),
+        );
+      }
       if (url.endsWith("/projects/project-1") && !init?.method) {
         return Promise.resolve(
           Response.json({
@@ -51,6 +91,28 @@ describe("ProjectWorkspace", () => {
         return Promise.resolve(Response.json({ items: [] }));
       }
       if (url.endsWith("/projects/project-1/assets") && !init?.method) {
+        return Promise.resolve(
+          Response.json({
+            items: [
+              {
+                id: "final-cut-1",
+                project_id: "project-1",
+                shot_id: null,
+                kind: "export",
+                filename: "final-cut.mp4",
+                content_type: "video/mp4",
+                byte_size: 1024,
+                checksum: "checksum",
+                permission: "private",
+                content_url: "/api/v1/assets/final-cut-1/content",
+                created_at: "2026-11-03T00:00:02Z",
+                updated_at: "2026-11-03T00:00:02Z",
+              },
+            ],
+          }),
+        );
+      }
+      if (url.endsWith("/projects/project-1/visual-review/models")) {
         return Promise.resolve(Response.json({ items: [] }));
       }
       if (url.endsWith("/workspace") && !init?.method) {
@@ -183,20 +245,6 @@ describe("ProjectWorkspace", () => {
           }),
         );
       }
-      if (url.endsWith("/projects/project-1/evaluate") && init?.method === "POST") {
-        return Promise.resolve(
-          Response.json({
-            overall_score: 88,
-            metrics: [
-              { key: "consistency", score: 92 },
-              { key: "coverage", score: 100 },
-              { key: "clarity", score: 84 },
-              { key: "pacing", score: 80 },
-            ],
-            suggestions: [{ code: "IMPROVE_PROMPTS", severity: "medium" }],
-          }),
-        );
-      }
       if (url.endsWith("/shots/shot-1/estimate") && init?.method === "POST") {
         return Promise.resolve(
           Response.json({
@@ -231,20 +279,27 @@ describe("ProjectWorkspace", () => {
       </NextIntlClientProvider>,
     );
 
-    await waitFor(() =>
-      expect(fetchMock).toHaveBeenCalledWith(
-        "http://localhost:8000/api/v1/projects/project-1/messages",
-        expect.objectContaining({
-          method: "POST",
-          body: JSON.stringify({
-            content: "A quiet Copenhagen morning told in one shot",
-          }),
-        }),
-      ),
-    );
+    await waitFor(() => {
+      const call = fetchMock.mock.calls.find(
+        ([input, init]) =>
+          String(input).endsWith("/projects/project-1/messages") &&
+          init?.method === "POST",
+      );
+      expect(call).toBeDefined();
+      expect(JSON.parse(String(call?.[1]?.body))).toMatchObject({
+        content: "A quiet Copenhagen morning told in one shot",
+        run_id: expect.any(String),
+      });
+    });
     expect(
       await screen.findByLabelText("I shaped this into a first treatment."),
     ).toBeVisible();
+    expect(await screen.findByTestId("agent-activity")).toHaveTextContent(
+      "Load project context",
+    );
+    expect(screen.getByTestId("agent-activity")).toHaveTextContent(
+      "Plan the storyboard",
+    );
     expect(screen.getAllByText("A quiet Copenhagen morning")).not.toHaveLength(0);
     expect(
       screen.getAllByRole("heading", { name: "Copenhagen morning" }),
@@ -255,10 +310,12 @@ describe("ProjectWorkspace", () => {
     expect(screen.getByRole("button", { name: "Vision" })).toBeVisible();
     expect(screen.getByRole("button", { name: "Characters" })).toBeVisible();
     expect(screen.getByText("Maya")).toBeVisible();
-    expect(screen.getAllByRole("button", { name: "Description" }).length).toBe(3);
-    expect(screen.getAllByRole("button", { name: "Generation" }).length).toBe(3);
+    expect(screen.getAllByRole("button", { name: "Description" }).length).toBe(1);
+    expect(screen.getAllByRole("button", { name: "Generation" }).length).toBe(1);
     expect(screen.getByRole("button", { name: "Shots" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Shot 1" })).toBeVisible();
     expect(screen.getByRole("button", { name: "Final Cut" })).toBeVisible();
+    expect(screen.queryByLabelText("Upload asset")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Storyboard" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Media" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Exports" })).not.toBeInTheDocument();
@@ -288,40 +345,17 @@ describe("ProjectWorkspace", () => {
     expect(
       document.querySelector('[data-document-mode="script"]'),
     ).toBeInTheDocument();
-    fireEvent.click(
-      screen.getAllByRole("button", { name: "Generation" })[0],
-    );
-    expect(screen.getByRole("button", { name: "Review" })).toBeVisible();
-    const refreshReview = screen.getByRole("button", { name: "Refresh review" });
-    expect(refreshReview).toBeVisible();
-    expect(refreshReview.parentElement).toBe(
-      screen.getByRole("button", { name: "Review" }).parentElement,
-    );
-    await waitFor(() =>
-      expect(
-        screen.getByRole("button", { name: "Refresh review" }),
-      ).toBeEnabled(),
-    );
-    const reviewCallsBeforeRefresh = fetchMock.mock.calls.filter(([input]) =>
-      String(input).endsWith("/projects/project-1/evaluate"),
-    ).length;
-    fireEvent.click(screen.getByRole("button", { name: "Refresh review" }));
-    await waitFor(() =>
-      expect(
-        fetchMock.mock.calls.filter(([input]) =>
-          String(input).endsWith("/projects/project-1/evaluate"),
-        ).length,
-      ).toBeGreaterThan(reviewCallsBeforeRefresh),
-    );
-    fireEvent.click(screen.getByRole("button", { name: "Review" }));
-
-    expect(await screen.findByRole("heading", { name: "Review" })).toBeVisible();
-    expect(screen.getByRole("dialog")).not.toHaveTextContent("VideoAgent");
-    expect(screen.getAllByText("88").length).toBeGreaterThan(0);
-    expect(screen.getByText("Consistency")).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Shot 1" }));
+    expect(screen.getByText("Upload asset")).toBeVisible();
+    expect(screen.getByText("Prompt")).toBeVisible();
     expect(
-      screen.queryByText("Add subject, environment, and action details to prompts."),
+      screen.queryByRole("button", { name: "Review" }),
     ).not.toBeInTheDocument();
+    expect(screen.getByRole("progressbar", { name: "Production progress" }))
+      .toHaveAttribute("aria-valuenow", "85");
+    fireEvent.click(screen.getByRole("button", { name: "final-cut.mp4" }));
+    expect(await screen.findByText("Final Cut review")).toBeVisible();
+    expect(screen.getByText("No visual evaluator is configured.")).toBeVisible();
     },
     30_000,
   );
@@ -332,6 +366,46 @@ describe("ProjectWorkspace", () => {
     window.history.replaceState({}, "", "/en/projects/project-approval");
     const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
+      if (url.endsWith("/projects/project-approval/progress")) {
+        return Promise.resolve(
+          Response.json({
+            percent: 30,
+            workflow_stage: "concept",
+            workflow_status: "awaiting_approval",
+            total_shots: 0,
+            completed_shots: 0,
+            updated_at: "2026-11-03T00:00:00Z",
+          }),
+        );
+      }
+      if (url.includes("/agent-activity/")) {
+        return Promise.resolve(
+          Response.json({
+            items: [
+              {
+                id: "approval-activity-1",
+                run_id: "approval-run",
+                sequence: 1,
+                kind: "context",
+                label: "Assembled workflow context",
+                detail: "stage=concept/awaiting_approval",
+                status: "completed",
+                created_at: "2026-11-03T00:00:00Z",
+              },
+              {
+                id: "approval-activity-2",
+                run_id: "approval-run",
+                sequence: 2,
+                kind: "state",
+                label: "Workflow state updated",
+                detail: "stage=outline · status=awaiting_approval",
+                status: "completed",
+                created_at: "2026-11-03T00:00:01Z",
+              },
+            ],
+          }),
+        );
+      }
       if (url.endsWith("/projects/project-approval") && !init?.method) {
         return Promise.resolve(
           Response.json({
@@ -385,7 +459,10 @@ describe("ProjectWorkspace", () => {
         );
       }
       if (url.endsWith("/workflow/decision") && init?.method === "POST") {
-        expect(init.body).toBe(JSON.stringify({ choice: "approve" }));
+        expect(JSON.parse(String(init.body))).toMatchObject({
+          choice: "approve",
+          run_id: expect.any(String),
+        });
         return Promise.resolve(
           Response.json({
             user_message: {

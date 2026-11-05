@@ -239,6 +239,7 @@ WorkflowDecision = Literal["approve", "refine", "custom"]
 class WorkflowDecisionRequest(BaseModel):
     choice: WorkflowDecision
     instruction: str | None = Field(default=None, max_length=20_000)
+    run_id: UUID | None = None
 
     @field_validator("instruction")
     @classmethod
@@ -328,30 +329,60 @@ class StoryboardRead(BaseModel):
     updated_at: datetime
 
 
-EvaluationMetricKey = Literal["consistency", "coverage", "clarity", "pacing"]
-EvaluationSuggestionCode = Literal[
-    "ADD_SHOTS",
-    "UNIFY_ASPECT_RATIO",
-    "IMPROVE_PROMPTS",
-    "BALANCE_PACING",
-    "READY",
+class ProjectProgressRead(BaseModel):
+    percent: int = Field(ge=0, le=100)
+    workflow_stage: WorkflowStage
+    workflow_status: WorkflowStatus
+    total_shots: int = Field(ge=0)
+    completed_shots: int = Field(ge=0)
+    updated_at: datetime
+
+
+VisualReviewMetricKey = Literal[
+    "character_consistency",
+    "style_consistency",
+    "prompt_alignment",
+    "temporal_stability",
 ]
 
 
-class EvaluationMetric(BaseModel):
-    key: EvaluationMetricKey
+class VisualReviewCommand(BaseModel):
+    asset_id: UUID
+    model: str = Field(min_length=1, max_length=200)
+    metrics: list[VisualReviewMetricKey] = Field(min_length=1, max_length=4)
+
+    @field_validator("metrics")
+    @classmethod
+    def metrics_must_be_unique(
+        cls,
+        value: list[VisualReviewMetricKey],
+    ) -> list[VisualReviewMetricKey]:
+        return list(dict.fromkeys(value))
+
+
+class VisualReviewMetric(BaseModel):
+    key: VisualReviewMetricKey
     score: int = Field(ge=0, le=100)
+    rationale: str = Field(min_length=1, max_length=1200)
 
 
-class EvaluationSuggestion(BaseModel):
-    code: EvaluationSuggestionCode
-    severity: Literal["high", "medium", "low"]
-
-
-class EvaluationRead(BaseModel):
+class VisualReviewRead(BaseModel):
+    asset_id: UUID
+    model: str
     overall_score: int = Field(ge=0, le=100)
-    metrics: list[EvaluationMetric]
-    suggestions: list[EvaluationSuggestion]
+    metrics: list[VisualReviewMetric]
+    summary: str = Field(min_length=1, max_length=2000)
+    frame_count: int = Field(ge=1)
+    updated_at: datetime
+
+
+class VisualReviewModelRead(BaseModel):
+    id: str
+    label: str
+
+
+class VisualReviewModelList(BaseModel):
+    items: list[VisualReviewModelRead]
 
 
 class GenerationApproval(BaseModel):
@@ -508,6 +539,7 @@ class HotsPostList(BaseModel):
 
 class AgentMessageCreate(BaseModel):
     content: str = Field(min_length=1, max_length=20_000)
+    run_id: UUID | None = None
 
     @field_validator("content")
     @classmethod
@@ -544,6 +576,35 @@ class WorkflowDecisionRead(BaseModel):
 
 class MessageList(BaseModel):
     items: list[MessageRead]
+
+
+AgentActivityKind = Literal[
+    "context",
+    "memory",
+    "skill",
+    "planning",
+    "validation",
+    "state",
+    "reply",
+]
+AgentActivityStatus = Literal["running", "completed", "failed"]
+
+
+class AgentActivityRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    run_id: UUID
+    sequence: int
+    kind: AgentActivityKind
+    label: str
+    detail: str | None
+    status: AgentActivityStatus
+    created_at: datetime
+
+
+class AgentActivityList(BaseModel):
+    items: list[AgentActivityRead]
 
 
 class DependencyHealth(BaseModel):

@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent FAQ" />
     <title>FAQ · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=30" />
+    <link rel="stylesheet" href="../docs.css?v=31" />
   </head>
   <body data-document="faq.zh.html">
     <main class="document-shell" id="document-shell">
@@ -115,9 +115,9 @@
 <h2 id="q7-videoagent-的评测应该怎么做">Q7. VideoAgent 的评测应该怎么做？</h2>
 <p><strong>答案</strong></p>
 <p>按阶段评测。剧本看欲望、冲突、转折和结尾；故事板看覆盖、连续性和可生成性； 镜头看人物、Prompt 匹配和技术瑕疵；成片看节奏、声音和观看留存。</p>
-<p><strong>追问：</strong> 现有的一致性、覆盖度、清晰度和节奏分够吗？</p>
+<p><strong>追问：</strong> 故事板阶段需要视觉质量分数吗？</p>
 <p><strong>答案</strong></p>
-<p>足够作为低成本基线，但必须避免“三个镜头等于完整覆盖”之类的捷径。规则指标 应与视觉语言模型和人工偏好数据结合。</p>
+<p>不需要。故事板阶段只显示依据工作流和 Shot 完成度计算的制作进度。人物一致性、 风格一致性等视觉指标应面向 Final Cut，由用户选择已配置的视觉评估模型， 基于成片帧和明确 rubric 计算；评估器不可用时不得生成伪造分数。</p>
 <p><strong>扩展：</strong> 怎样降低 Judge 偏差？</p>
 <p><strong>答案</strong></p>
 <p>固定 rubric、盲化模型来源、pairwise 比较、多人标注校准，并持续监控 inter-rater agreement 和 gaming resistance。</p>
@@ -203,6 +203,6 @@
 <p><strong>答案</strong></p>
 <p>依次考虑数据安全、费用一致性、结果可用性、质量和延迟。降级必须可观测、可 解释、可撤销，并受用户预算和内容策略约束。</p></article>
     </main>
-    <script src="../docs.js?v=30"></script>
+    <script src="../docs.js?v=31"></script>
   </body>
 </html>

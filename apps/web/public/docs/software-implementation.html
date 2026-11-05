@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Dev" />
     <title>Dev · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=30" />
+    <link rel="stylesheet" href="../docs.css?v=31" />
   </head>
   <body data-document="software-implementation.html">
     <main class="document-shell" id="document-shell">
@@ -105,7 +105,7 @@
 <li>Same-origin write validation and separate auth, generation, and upload limits.</li>
 <li>An environment-allowlisted administration console for accounts, credits,</li>
 <p>jobs, invites, runtime switches, and audit logs.</p>
-<li>Instant storyboard review.</li>
+<li>Live production progress and Final Cut visual evaluation.</li>
 <li>CI, security scanning, documentation generation, and release builds.</li>
 <li>Playwright and Mock Provider end-to-end acceptance without paid generation.</li>
 </ul>
@@ -161,11 +161,18 @@ Celery Worker
 <h3 id="5-3-agent">5.3 Agent</h3>
 <pre><code class="language-text">POST /projects/{project_id}/messages
   → persist user message
+  → assemble bounded Context and short-term Memory
+  → record context / memory / Skill activity
+  → resolve persisted Skill instructions when available
   → execute LangGraph plan_storyboard
   → validate StoryboardPlan
+  → record planning / validation activity
   → replace storyboard
+  → record state activity
   → persist assistant message
+  → record reply activity
   → return both messages and current storyboard</code></pre>
+<p>The workspace polls <code>GET /projects/{project_id}/agent-activity/{run_id}</code> at 350ms and renders the durable event stream as its live Agent trace.</p>
 <h3 id="5-4-generation">5.4 Generation</h3>
 <pre><code class="language-text">estimate
   → POST /shots/{id}/estimate
@@ -219,6 +226,10 @@ status
 <td>Message history and planning</td>
 </tr>
 <tr>
+<td><code>api.agent_activity</code></td>
+<td>Observe one Agent run</td>
+</tr>
+<tr>
 <td><code>api.workspace</code></td>
 <td>Conversation history, project folders, filing, and staged approval</td>
 </tr>
@@ -228,7 +239,7 @@ status
 </tr>
 <tr>
 <td><code>api.evaluation</code></td>
-<td>Storyboard review</td>
+<td>Production progress and Final Cut visual review</td>
 </tr>
 <tr>
 <td><code>api.providers</code></td>
@@ -261,6 +272,14 @@ status
 <tr>
 <td><code>services.media</code></td>
 <td>Validation, result materialization, FFmpeg, covers, and sharing</td>
+</tr>
+<tr>
+<td><code>services.agent_context</code></td>
+<td>Bounded conversation, Storyboard, and Skill Context</td>
+</tr>
+<tr>
+<td><code>services.agent_activity</code></td>
+<td>Durable Agent run event recording</td>
 </tr>
 <tr>
 <td><code>services.credits</code></td>
@@ -395,6 +414,10 @@ Chinese: product-requirements.zh.html</code></pre>
 <td>User/assistant content</td>
 </tr>
 <tr>
+<td><code>agent_activities</code></td>
+<td>Durable ordered events for one Agent run</td>
+</tr>
+<tr>
 <td><code>workspace_folders</code></td>
 <td>Project folders for conversation organization</td>
 </tr>
@@ -494,6 +517,10 @@ Chinese: product-requirements.zh.html</code></pre>
 </tr>
 <tr>
 <td><code>GET</code></td>
+<td><code>/projects/{id}/agent-activity/{run_id}</code></td>
+</tr>
+<tr>
+<td><code>GET</code></td>
 <td><code>/workspace</code></td>
 </tr>
 <tr>
@@ -537,8 +564,12 @@ Chinese: product-requirements.zh.html</code></pre>
 <td><code>/projects/{id}/storyboard/order</code></td>
 </tr>
 <tr>
-<td><code>POST</code></td>
-<td><code>/projects/{id}/evaluate</code></td>
+<td><code>GET</code></td>
+<td><code>/projects/{id}/progress</code></td>
+</tr>
+<tr>
+<td><code>GET/POST</code></td>
+<td><code>/projects/{id}/visual-review/models</code>, <code>/visual-review</code></td>
 </tr>
 <tr>
 <td><code>POST</code></td>
@@ -673,8 +704,8 @@ pnpm --dir apps/web typecheck
 pnpm --dir apps/web build
 pnpm test:e2e
 python scripts\build_pages.py</code></pre>
-<p>Backend coverage currently consists of 67 tests, frontend coverage consists of 30 Vitest tests, and Playwright contains seven no-fee browser flows. Playwright uses the Mock Provider for generation and therefore never consumes real Provider credits.</p></article>
+<p>Backend coverage currently consists of 69 tests, frontend coverage consists of 30 Vitest tests, and Playwright contains seven no-fee browser flows. Playwright uses the Mock Provider for generation and therefore never consumes real Provider credits.</p></article>
     </main>
-    <script src="../docs.js?v=30"></script>
+    <script src="../docs.js?v=31"></script>
   </body>
 </html>

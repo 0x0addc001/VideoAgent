@@ -192,12 +192,40 @@ Shot IDs, generated assets, generation history, and project continuity.
 
 ```json
 {
-  "content": "Turn the brief into a three-shot launch film"
+  "content": "Turn the brief into a three-shot launch film",
+  "run_id": "00000000-0000-0000-0000-000000000020"
 }
 ```
 
 The response includes the user message, VideoAgent reply, and updated
 storyboard as JSON. The response also includes the current approval stage.
+
+### Observe Agent Activity
+
+`GET /projects/{project_id}/agent-activity/{run_id}`
+
+Returns ordered activity events for the run:
+
+```json
+{
+  "items": [
+    {
+      "id": "00000000-0000-0000-0000-000000000021",
+      "run_id": "00000000-0000-0000-0000-000000000020",
+      "sequence": 1,
+      "kind": "context",
+      "label": "Assembled working context",
+      "detail": "locale=en · workflow=concept/awaiting_approval",
+      "status": "completed",
+      "created_at": "2026-11-05T08:00:00Z"
+    }
+  ]
+}
+```
+
+Activity kinds are `context`, `memory`, `skill`, `planning`, `validation`,
+`state`, and `reply`. The workspace polls this endpoint while waiting so the
+trace reflects actual execution rather than decorative animation.
 
 ### Read Workflow
 
@@ -215,7 +243,8 @@ only enabled after the script is approved and the state becomes `ready`.
 ```json
 {
   "choice": "approve",
-  "instruction": null
+  "instruction": null,
+  "run_id": "00000000-0000-0000-0000-000000000020"
 }
 ```
 
@@ -331,26 +360,40 @@ scoped to the authenticated account and are loaded back into the Skills view.
 `skill`. The uploaded video asset is public and appears in the authenticated
 author's Assets view.
 
-### Evaluate Storyboard
+### Production Progress
 
-`POST /projects/{project_id}/evaluate`
+`GET /projects/{project_id}/progress`
 
-Returns an immediate review of the current storyboard:
+Returns the live production percentage used by the workspace progress bar. It
+tracks the workflow stage and completed Shots; it is readiness, not a visual
+quality score.
+
+### Final Cut Visual Review
+
+`GET /projects/{project_id}/visual-review/models`
+
+Returns the configured visual evaluator models.
+
+`POST /projects/{project_id}/visual-review`
 
 ```json
 {
-  "overall_score": 88,
+  "asset_id": "00000000-0000-0000-0000-000000000030",
+  "model": "vision-model",
   "metrics": [
-    { "key": "consistency", "score": 92 },
-    { "key": "coverage", "score": 100 },
-    { "key": "clarity", "score": 84 },
-    { "key": "pacing", "score": 80 }
-  ],
-  "suggestions": [
-    { "code": "IMPROVE_PROMPTS", "severity": "medium" }
+    "character_consistency",
+    "style_consistency",
+    "prompt_alignment",
+    "temporal_stability"
   ]
 }
 ```
+
+The endpoint accepts only an exported Final Cut asset, extracts representative
+frames, and sends them to the selected configured vision model. It returns
+paper-style or trained-model consistency metrics with evidence. When no
+evaluator is configured, the API returns `503 VISUAL_REVIEW_UNAVAILABLE`
+instead of fabricating scores.
 
 ## Assets and Media
 

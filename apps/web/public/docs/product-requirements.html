@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent PRD" />
     <title>PRD · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=30" />
+    <link rel="stylesheet" href="../docs.css?v=31" />
   </head>
   <body data-document="product-requirements.html">
     <main class="document-shell" id="document-shell">
@@ -176,8 +176,16 @@ video_agent/agent_handoff</code></pre>
 <p><code>Direction</code>, and <code>Characters</code>, <code>Shots</code>, and <code>Final Cut</code> under <code>Vision</code>.</p>
 <li>Settings combines production attributes and Agent-director Q&amp;A in one</li>
 <p>attribute table. Empty directories remain quiet and do not display waiting copy.</p>
-<li>Agents create a directory for every recurring character and shot. Each child</li>
-<p>directory contains a Description page and a Generation page.</p>
+<li>Agents create a directory for every recurring character and shot. Characters</li>
+<p>expose Description and Generation pages; each Shot opens one combined Description and Generation page.</p>
+<li>While Agents are planning, the conversation shows durable execution steps for</li>
+<p>context assembly, memory loading, Skill resolution, planning, validation, project-state updates, and reply composition.</p>
+<li>The execution trace reflects completed or active work only. It must not</li>
+<p>display a Skill or MCP tool as executed when the Agent has not called it.</p>
+<li>The editor header shows a live production-progress bar derived from workflow</li>
+<p>stage and completed Shots. It polls every three seconds and does not present readiness as visual quality.</p>
+<li>Final Cut provides optional publish-time visual review. Users choose a</li>
+<p>configured vision evaluator and metrics such as character consistency, style consistency, prompt alignment, and temporal stability.</p>
 <li>Character and shot Generation pages support an uploaded image, reference-image</li>
 <p>generation, or direct text generation where the selected model supports the mode. Generated media can be downloaded.</p>
 <li>Uploads must pass content-type, file-signature, and size validation.</li>
@@ -317,14 +325,14 @@ TODO</code></pre>
 <li>Users can upload references, compose a film, download a delivery, and</li>
 <p>create a share link.</p>
 <li>User credit reservations, refunds, and Provider-account reconciliation agree.</li>
-<li>Agents persist every recurring Character and Shot as a resource directory,</li>
-<p>and each resource exposes Description and Generation pages.</p>
+<li>Agents persist every recurring Character and Shot; Characters expose</li>
+<p>Description and Generation, while each Shot opens one combined page.</p>
 <li>Reordering shots does not delete or recreate existing Shots.</li>
 <li>Non-administrators cannot access administration APIs or pages.</li>
 <li>Administrators can manage credits, accounts, invites, and generation state,</li>
 <p>with every action recorded in the audit log.</p>
 </ol></article>
     </main>
-    <script src="../docs.js?v=30"></script>
+    <script src="../docs.js?v=31"></script>
   </body>
 </html>

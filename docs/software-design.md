@@ -40,7 +40,7 @@ VideoAgent 是一个面向内容创作者、营销人员和普通用户的 AI �
 - 支持项目创建、编辑、恢复和删除。
 - 支持 Agent 生成创意方案和多镜头故事板。
 - 支持镜头参数编辑和积分成本估算。
-- 支持故事板即时评估，计算一致性、覆盖度、提示清晰度和节奏。
+- 支持基于真实制作状态的实时进度条，以及 Final Cut 发布前的视觉模型评估。
 - 支持项目级图片、视频和音频素材上传，并校验 MIME、文件头和大小。
 - 支持 FFmpeg 合成、16:9/9:16/1:1 交付版本、封面、字幕和音轨。
 - 支持限时分享链接、公开/私有权限、过期和撤销。
@@ -194,7 +194,7 @@ VideoAgent/
 | `api.storyboards` | 故事板读取和整体替换 |
 | `api.agent` | 消息读取、消息发送和故事板规划 |
 | `api.generation` | 积分估算、生成提交和任务状态刷新 |
-| `api.evaluation` | 故事板即时评估 |
+| `api.evaluation` | 制作进度查询、Final Cut 视觉评估 |
 | `api.providers` | Pippit 服务端状态和积分余额 |
 | `api.assets` | 上传、下载、导出与分享 |
 | `api.credits` | 用户独立积分余额 |
@@ -210,7 +210,8 @@ VideoAgent/
 | `providers.kling`、`providers.mcp_client`、`providers.oauth` | 兼容的 Kling MCP Provider、工具客户端与 OAuth |
 | `services.storyboards` | 故事板领域操作 |
 | `services.generation_jobs` | Provider 状态与 Shot 状态联动 |
-| `services.evaluation` | 一致性、覆盖度、清晰度和节奏计算 |
+| `services.progress` | 基于工作流与 Shot 完成度的制作进度 |
+| `services.visual_review` | 提取成片帧并调用配置的视觉评估模型 |
 | `services.media` | 媒体校验、结果落地、FFmpeg 合成、封面与分享 Token |
 | `services.credits` | 用户积分账户、预扣与幂等退款 |
 | `workers.tasks` | Celery 任务轮询 |
@@ -235,8 +236,50 @@ START
   → END
 ```
 
-`plan_storyboard` 接收项目标题、Brief、用户消息和 Locale，输出
-`assistant_message` 与三镜头故事板，并同步持久化消息和故事板。
+`plan_storyboard` 接收项目标题、Brief、用户消息、Locale、工作流阶段与状态，
+输出 `assistant_message` 和经 Pydantic 校验的 Character/Shot 计划，并同步持久化消息和故事板。
+
+### 9.2 Context 与 Memory
+
+- Context 是单次规划调用的有界输入：项目标题、Brief、当前用户请求、Locale、
+  工作流阶段/状态、当前 Character/Shot 摘要、最近对话和可选 Skill 指令。
+- 短期 Memory 从关系数据库读取最近 8 条历史消息，每条最多保留 600 字符；
+  当前请求不重复放入历史。故事板上下文最多读取前 20 个 Shot。
+- 长期 Memory 是数据库事实：Project、Conversation/Message、ProjectWorkflow、
+  Storyboard、Character、Shot、Asset 和 GenerationJob。任何写操作都以数据库为唯一事实来源。
+- 当前不引入向量数据库，也不把 Provider 原始上下文写入 Prompt。后续可增加
+  项目摘要与向量检索，但必须有 TTL、用户隔离和删除策略。
+
+### 9.3 Skill 调用
+
+Composer 选择的 Skill 先写入项目 Brief 的 `Production settings`。规划前，
+Context Builder 解析 Skill ID；如果当前用户发布过同名 UserSkill，则加载其
+instructions 和 starter prompt 并加入规划 Context。内置 Skill 没有数据库指令时，
+只把 Skill ID 作为创作约束传入。
+
+Skill 不是 HTTP 工具调用，也不会在规划阶段直接生成视频。计费 Provider 只在用户
+明确批准后，由 Generation API 调用。
+
+### 9.4 MCP 调用边界
+
+Storyboard Agent 当前不直接持有 MCP 工具，避免模型在规划阶段自行产生付费副作用。
+Kling MCP 位于 Provider 层：选择 Kling 且 `VIDEOAGENT_KLING_BACKEND=mcp` 时，
+Provider Resolver 使用当前用户的 OAuth Token 创建 `StreamableHTTPToolClient`；
+`KlingVideoProvider` 再调用 `text_to_video`、`image_to_video` 或 `query_tasks`。
+默认国内版 CLI 路径由受控子进程完成同类调用。角色图片当前通过 Kling CLI 的文生图/
+参考图生图执行。
+
+### 9.5 Agent 行为可观测性
+
+每次 Agent run 使用客户端提供的 `run_id` 记录：
+
+```text
+context → memory → skill → planning → validation → state → reply
+```
+
+事件写入 `agent_activities` 表，前端以 350ms 间隔轮询该 run 的事件，并在
+Agents 等待区显示实时步骤。事件只描述真实发生的上下文装载、规划、校验和
+状态写入，不把未调用的 MCP 或 Skill 工具显示为已执行。
 
 ## 10. LangGraph 与 Celery
 
@@ -329,6 +372,7 @@ CLI 负责国内站 OAuth、MCP 传输和工具参数。Provider 适配器将 Kl
 | `projects` | `id`, `owner_id`, `title`, `state`, `brief` | 视频项目 |
 | `conversations` | `id`, `project_id` | 项目对话 |
 | `messages` | `id`, `role`, `content`, `metadata` | 对话消息 |
+| `agent_activities` | `project_id`, `run_id`, `sequence`, `kind`, `status` | 可观测的 Agent run 步骤 |
 | `workspace_folders` | `id`, `owner_id`, `name` | 历史对话的项目目录 |
 | `workspace_folder_items` | `folder_id`, `project_id` | 对话与项目目录的收纳关系 |
 | `project_workflows` | `project_id`, `stage`, `status` | 整体设定、大纲、剧本与生成审批状态 |
@@ -430,6 +474,7 @@ cancelled
 | GET/POST | `/projects` | 项目列表和创建 |
 | GET/PATCH/DELETE | `/projects/{id}` | 读取、重命名和归档项目 |
 | GET/POST | `/projects/{id}/messages` | 读取历史或发送 Agent 消息 |
+| GET | `/projects/{id}/agent-activity/{run_id}` | 读取单次 Agent run 的可观测步骤 |
 | GET | `/workspace` | 项目目录和最近对话 |
 | POST/PATCH/DELETE | `/workspace/folders` | 创建、重命名和删除项目目录 |
 | PUT | `/workspace/threads/{id}/folder` | 收纳或移出历史对话 |
@@ -443,7 +488,8 @@ cancelled
 | PUT | `/projects/{id}/storyboard` | 整体替换故事板 |
 | PATCH | `/projects/{id}/storyboard/order` | 调整镜头顺序并保留 Shot ID |
 | POST | `/characters/{id}/estimate`、`/assets`、`/generate` | 角色图片估算、上传与生成 |
-| POST | `/projects/{id}/evaluate` | 故事板即时评估 |
+| GET | `/projects/{id}/progress` | 实时制作进度 |
+| GET/POST | `/projects/{id}/visual-review/models`、`/visual-review` | Final Cut 视觉评估 |
 | POST | `/shots/{id}/estimate` | 积分估算 |
 | POST | `/shots/{id}/generate` | 创建生成任务 |
 | GET | `/jobs/{id}` | 查询任务 |
@@ -488,7 +534,7 @@ cancelled
 - `Docs`：按 PRD、Playbook、Arch、API、Dev、Test、Ops、FAQ、TODO 展示中英文文档，支持全文搜索。
 - 项目工作区采用 IDE 式布局：可压缩历史导航、`Direction` / `Vision` 资源树、中央编辑画布和右侧审批式 Agents。
 - Assets 与 Agents 侧栏可折叠为带标签的窄轨；展开宽度使用响应式比例，适配不同桌面尺寸。
-- `Direction` 包含 `Settings`、`Outlines`、`Scripts`；`Vision` 包含 `Characters`、`Shots`、`Final Cut`。每个持久化角色与镜头都包含描述页和生成页；空目录不显示等待文案。
+- `Direction` 包含 `Settings`、`Outlines`、`Scripts`；`Vision` 包含 `Characters`、`Shots`、`Final Cut`。角色保留描述页与生成页，每个 Shot 使用一个合并页面；空目录不显示等待文案。
 - 项目目录将展开按钮放在蓝色目录图标左侧；被收纳的对话从 Recents 移入对应目录，并以缩进子项显示。
 - 品牌与浏览器标签页图标统一使用蓝色播放键；激活导航图标采用填充/线框反转。
 - 管理后台使用独立控制台布局，与用户创作界面隔离。
@@ -516,10 +562,8 @@ History | Assets | Canvas | Agent
 
 镜头生成在“可生成”审批完成前保持禁用，镜头检查器会直接提示需要先在 Agents 中批准。
 
-中央编辑区使用自己的紧凑面板栏，不设置页面级项目标题栏；Review 与 Share
-固定在编辑区面板栏最右侧。
-
-故事板变化时自动执行 Review，综合分始终显示在编辑区面板栏；Review 与刷新按钮共用一个边框容器，刷新不会重复打开详情弹窗。
+中央编辑区使用自己的紧凑面板栏，不设置页面级项目标题栏；实时制作进度条与 Share
+固定在编辑区面板栏最右侧。进度条每 3 秒轮询。
 
 只有本次新返回的 Agent 回复执行一次流式显示；历史消息和已完成回复直接静态展示，折叠再展开不会重新播放。
 
@@ -527,7 +571,8 @@ Assets、中央编辑区和 Agents 的滚动条与 Projects、Recents 使用同�
 
 Docs 使用导航栏右侧的完整内容区域，不与固定导航重叠；内嵌文档沿用全局视频背景。
 
-Review 按钮在完成评估后直接显示综合分，不再展示四段进度条。工作区所有文本的最小字号不低于按钮字号。
+Final Cut 页面提供视觉评估模型和指标选择。Review 只在导出的成片中运行，
+不会用故事板完整性或 Prompt 词数冒充视觉质量。工作区所有文本的最小字号不低于按钮字号。
 导航与 Assets 图标的激活态采用描边/填充反转：未激活为透明填充加蓝色描边，激活后为蓝色填充加透明描边。
 
 导航、Projects、Recents、目录和对话 item 使用统一字号。Projects、Recents
@@ -674,7 +719,7 @@ Markdown 文档在构建时生成 HTML，并复制到 `public/docs`。
 4. 刷新页面或重启服务后故事板和任务状态不会丢失。
 5. Pippit Access Key、CLI 登录文件和 Kling 凭据不出现在浏览器、日志或公开接口中。
 6. 生成任务不会因自动重试造成重复扣费。
-7. 即时评估返回一致性、覆盖度、清晰度和节奏得分。
+7. 制作进度条根据工作流和 Shot 完成状态实时轮询；视觉评估只作用于 Final Cut。
 8. Hots 的作者、喜欢数、发布入口和预览可用。
 9. Mock Provider、Pippit Fake CLI 和 Kling Provider 契约测试全部通过。
 10. Playwright 使用 Mock Provider 完成注册、创作、上传、生成、导出、下载和分享。

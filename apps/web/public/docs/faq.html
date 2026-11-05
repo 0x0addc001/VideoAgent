@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent FAQ" />
     <title>FAQ · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=30" />
+    <link rel="stylesheet" href="../docs.css?v=31" />
   </head>
   <body data-document="faq.html">
     <main class="document-shell" id="document-shell">
@@ -115,9 +115,9 @@
 <h2 id="q7-how-should-a-video-agent-be-evaluated">Q7. How should a video Agent be evaluated?</h2>
 <p><strong>Answer</strong></p>
 <p>Evaluate by stage. Script: desire, conflict, turn, and ending. Board: coverage, continuity, and feasibility. Shot: identity, prompt alignment, and defects. Cut: rhythm, sound, and retention.</p>
-<p><strong>Follow-up:</strong> Are consistency, coverage, clarity, and pacing scores enough?</p>
+<p><strong>Follow-up:</strong> Should the storyboard phase show visual quality scores?</p>
 <p><strong>Answer</strong></p>
-<p>They are useful low-cost baselines, but rules such as “three shots equals full coverage” are easy to game. Combine deterministic metrics with VLM review and human preference data.</p>
+<p>No. Storyboard progress represents workflow and Shot completion only. Visual metrics such as character and style consistency belong to Final Cut, where a selected configured evaluator scores extracted frames against an explicit rubric. The product must not fabricate scores when no evaluator is available.</p>
 <p><strong>Extension:</strong> How can judge bias be reduced?</p>
 <p><strong>Answer</strong></p>
 <p>Use fixed rubrics, blinded model identity, pairwise comparisons, multi-rater calibration, and continuous monitoring of inter-rater agreement and gaming resistance.</p>
@@ -203,6 +203,6 @@
 <p><strong>Answer</strong></p>
 <p>Prioritize data safety, billing consistency, result availability, quality, and latency in that order. Fallbacks must be observable, explainable, reversible, and constrained by user budget and content policy.</p></article>
     </main>
-    <script src="../docs.js?v=30"></script>
+    <script src="../docs.js?v=31"></script>
   </body>
 </html>

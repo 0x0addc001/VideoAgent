@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Arch" />
     <title>Arch · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=30" />
+    <link rel="stylesheet" href="../docs.css?v=31" />
   </head>
   <body data-document="software-design.html">
     <main class="document-shell" id="document-shell">
@@ -34,6 +34,9 @@
 <a class="toc-link toc-level-2" href="#5-current-architecture">5. Current Architecture</a>
 <a class="toc-link toc-level-2" href="#6-technology-stack">6. Technology Stack</a>
 <a class="toc-link toc-level-2" href="#7-agent-design">7. Agent Design</a>
+<a class="toc-link toc-level-3" href="#7-1-context-and-memory">7.1 Context and Memory</a>
+<a class="toc-link toc-level-3" href="#7-2-skill-and-mcp-boundary">7.2 Skill and MCP Boundary</a>
+<a class="toc-link toc-level-3" href="#7-3-observable-agent-run">7.3 Observable Agent Run</a>
 <a class="toc-link toc-level-2" href="#8-generation-and-provider-boundary">8. Generation and Provider Boundary</a>
 <a class="toc-link toc-level-3" href="#8-1-pippit-cli">8.1 Pippit CLI</a>
 <a class="toc-link toc-level-3" href="#8-2-kling-china-cli">8.2 Kling China CLI</a>
@@ -102,7 +105,7 @@
 <li>Kling China-region CLI text-to-video, motion control, and multimodal</li>
 <p>reference capabilities.</p>
 <li>Mock Provider and Celery polling.</li>
-<li>Instant storyboard review for consistency, coverage, clarity, and pacing.</li>
+<li>Live readiness progress plus Final Cut visual evaluation.</li>
 <li>Hots feed playback, author, likes, and publishing.</li>
 <li>English and Chinese documentation generated from paired Markdown sources.</li>
 <li>Project-level image, video, and audio uploads with MIME, signature, and size validation.</li>
@@ -199,7 +202,7 @@ Celery Worker + Redis
 <h2 id="7-agent-design">7. Agent Design</h2>
 <p>The directing workflow uses an explicit LangGraph state machine:</p>
 <pre><code class="language-text">START → plan_storyboard → END</code></pre>
-<p><code>plan_storyboard</code> receives locale, project title, project brief, and the latest user message. It returns an assistant message and a validated three-shot storyboard.</p>
+<p><code>plan_storyboard</code> receives locale, project title, brief, current request, workflow stage/status, bounded conversation memory, current Character/Shot state, and optional Skill instructions. It returns an assistant message and a validated Character/Shot plan.</p>
 <p>The planner is:</p>
 <ul>
 <li>OpenAI-compatible when <code>VIDEOAGENT_LLM_API_KEY</code> and</li>
@@ -207,6 +210,22 @@ Celery Worker + Redis
 <li>Deterministic and local otherwise.</li>
 </ul>
 <p>Project, conversation, storyboard, Character, Shot, and GenerationJob state live in the database. Approval, generation, review, and polling boundaries are coordinated through FastAPI, Celery, and the workspace client.</p>
+<h3 id="7-1-context-and-memory">7.1 Context and Memory</h3>
+<ul>
+<li>Context is bounded to the project title, brief, current request, locale,</li>
+<p>workflow state, current Character/Shot summaries, recent conversation, and optional Skill instructions.</p>
+<li>Short-term memory uses the eight most recent historical messages, clipped to</li>
+<p>600 characters each and excludes the current request. Storyboard context is capped at 20 Shots.</p>
+<li>Long-term memory is the relational source of truth: Project, Conversation,</li>
+<p>Message, Workflow, Storyboard, Character, Shot, Asset, and GenerationJob.</p>
+<li>No vector database is used yet. Project summaries and retrieval, if added,</li>
+<p>require user isolation, TTL, and deletion policy.</p>
+</ul>
+<h3 id="7-2-skill-and-mcp-boundary">7.2 Skill and MCP Boundary</h3>
+<p>The composer stores the selected Skill in <code>Production settings</code>. The Context Builder resolves an owner-owned UserSkill and attaches persisted instructions when available; built-in Skills otherwise contribute only their Skill ID.</p>
+<p>The Storyboard Agent does not hold MCP tools. MCP remains in the Provider layer so planning cannot create billable side effects. With <code>VIDEOAGENT_KLING_BACKEND=mcp</code>, the Provider Resolver constructs a <code>StreamableHTTPToolClient</code> using the user's OAuth token and the Kling Provider invokes <code>text_to_video</code>, <code>image_to_video</code>, or <code>query_tasks</code>. The CLI path uses controlled subprocesses. Generation occurs only after explicit approval.</p>
+<h3 id="7-3-observable-agent-run">7.3 Observable Agent Run</h3>
+<p>Each client-supplied run ID records <code>context → memory → skill → planning → validation → state → reply</code> events in <code>agent_activities</code>. The workspace polls at 350ms and renders only actions that actually occurred; unimplemented Skill or MCP calls are never shown as executed.</p>
 <h2 id="8-generation-and-provider-boundary">8. Generation and Provider Boundary</h2>
 <pre><code class="language-text">POST /shots/{id}/estimate
   → VideoProvider.estimate
@@ -292,7 +311,7 @@ query-result</code></pre>
 </tr>
 <tr>
 <td><code>video_agent/review</code></td>
-<td>Score consistency, coverage, clarity, and pacing</td>
+<td>Score Final Cut visual consistency with a configured evaluator</td>
 </tr>
 <tr>
 <td><code>video_agent/video_localization</code></td>
@@ -367,6 +386,10 @@ query-result</code></pre>
 <tr>
 <td><code>messages</code></td>
 <td>User and assistant messages</td>
+</tr>
+<tr>
+<td><code>agent_activities</code></td>
+<td>Ordered observable events for one Agent run</td>
 </tr>
 <tr>
 <td><code>workspace_folders</code></td>
@@ -461,7 +484,11 @@ query-result</code></pre>
 </tr>
 <tr>
 <td>Agent</td>
-<td>Get messages, send a message</td>
+<td>Get messages, send a message, and observe a run</td>
+</tr>
+<tr>
+<td>Agent activity</td>
+<td><code>GET /projects/{id}/agent-activity/{run_id}</code></td>
 </tr>
 <tr>
 <td>Workspace</td>
@@ -481,7 +508,7 @@ query-result</code></pre>
 </tr>
 <tr>
 <td>Evaluation</td>
-<td><code>POST /projects/{id}/evaluate</code></td>
+<td>Progress polling plus Final Cut visual-review endpoints</td>
 </tr>
 <tr>
 <td>Generation</td>
@@ -541,7 +568,7 @@ query-result</code></pre>
 <li>The Assets and Agents side panels can collapse to labeled rails. Their widths</li>
 <p>use responsive clamped proportions so they remain usable across desktop sizes.</p>
 <li><code>Direction</code> contains <code>Settings</code>, <code>Outlines</code>, and <code>Scripts</code>. <code>Vision</code> contains</li>
-<p><code>Characters</code>, <code>Shots</code>, and <code>Final Cut</code>. Every persisted Character and Shot owns a Description page and a Generation page; empty directories render no waiting copy.</p>
+<p><code>Characters</code>, <code>Shots</code>, and <code>Final Cut</code>. Characters retain separate Description and Generation pages; each Shot opens one combined page. Empty directories render no waiting copy.</p>
 <li>Skill Studio persists reusable Skills with a stable namespace, instructions,</li>
 <p>quality gates, prompt template, and input/output contracts. <code>AI optimize</code> turns an early idea into that structure.</p>
 <li>The built-in <code>video_agent/skill_synthesis</code> Skill opens Skill Studio directly</li>
@@ -554,10 +581,10 @@ query-result</code></pre>
 <p>starts a new Agents conversation. Both rows provide disclosure controls.</p>
 <li>Hots publishing requires an MP4 upload and persists the video as a public</li>
 <p>asset. The author's Assets view lists real Hots videos and Skills, and every card opens a detail dialog.</p>
-<li>The editor pane uses its own compact header. Review and Share are aligned at</li>
-<p>its far right; no page-level project title bar is rendered. Review shows the overall score directly after evaluation.</p>
-<li>Review is evaluated automatically when the storyboard changes. The current</li>
-<p>score remains visible, with a separate refresh control that re-runs evaluation without opening the detail dialog. Review and refresh share one framed control.</p>
+<li>The editor pane uses its own compact header. A live readiness progress bar and</li>
+<p>Share are aligned at its far right; the progress bar polls every three seconds.</p>
+<li>Final Cut review is separate from readiness. Users choose a configured vision</li>
+<p>evaluator and metrics for character consistency, style consistency, prompt alignment, or temporal stability.</p>
 <li>Only a newly returned Agent reply uses type-on presentation. Persisted history</li>
 <p>and completed replies render as static text, including after a panel is collapsed and reopened.</p>
 <li>Docs occupies the full content area beside the navigation rail without</li>
@@ -611,7 +638,7 @@ Celery + Redis</code></pre>
 <li>Cost and approval are visible before generation.</li>
 <li>Jobs and storyboards survive a page refresh or API restart.</li>
 <li>Provider credentials never reach the browser.</li>
-<li>Review returns consistency, coverage, clarity, and pacing.</li>
+<li>Readiness polls the workflow and completed Shots; visual review runs only on Final Cut.</li>
 <li>Skills is a flat searchable catalogue using <code>user_id/skill_id</code>, with</li>
 <p>workflows and Review presented as normal skill cards.</p>
 <li>Documentation switches between English and Chinese and follows the complete</li>
@@ -628,6 +655,6 @@ Celery + Redis</code></pre>
 <p>with every mutation recorded in the audit log.</p>
 </ol></article>
     </main>
-    <script src="../docs.js?v=30"></script>
+    <script src="../docs.js?v=31"></script>
   </body>
 </html>

@@ -1,5 +1,6 @@
 import json
 from types import SimpleNamespace
+from uuid import UUID
 
 import pytest
 
@@ -20,9 +21,13 @@ async def test_local_agent_turns_user_brief_into_bilingual_storyboard(client):
     assert project_response.status_code == 201
     project = project_response.json()
 
+    run_id = "00000000-0000-0000-0000-000000000321"
     response = await client.post(
         f"/api/v1/projects/{project['id']}/messages",
-        json={"content": "突出玻璃瓶的光泽，结尾展示品牌名称"},
+        json={
+            "content": "突出玻璃瓶的光泽，结尾展示品牌名称",
+            "run_id": run_id,
+        },
     )
 
     assert response.status_code == 200
@@ -34,6 +39,22 @@ async def test_local_agent_turns_user_brief_into_bilingual_storyboard(client):
     assert len(body["storyboard"]["shots"]) == 3
     assert all(shot["prompt_en"] for shot in body["storyboard"]["shots"])
     assert all(shot["prompt_zh"] for shot in body["storyboard"]["shots"])
+
+    activity = await client.get(f"/api/v1/projects/{project['id']}/agent-activity/{run_id}")
+    assert activity.status_code == 200
+    items = activity.json()["items"]
+    assert [item["kind"] for item in items] == [
+        "context",
+        "memory",
+        "planning",
+        "validation",
+        "state",
+        "reply",
+    ]
+    assert all(item["status"] == "completed" for item in items)
+    assert all(UUID(item["run_id"]) == UUID(run_id) for item in items)
+    assert "Characters" in items[4]["detail"]
+    assert "Shots" in items[4]["detail"]
 
 
 @pytest.mark.api

@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Test" />
     <title>Test · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=30" />
+    <link rel="stylesheet" href="../docs.css?v=31" />
   </head>
   <body data-document="software-test-plan.html">
     <main class="document-shell" id="document-shell">
@@ -134,7 +134,7 @@
 <li>Storyboard replacement ordering.</li>
 <li>Shot IDs, generated assets, and history remain intact after reordering.</li>
 <li>Agent message persistence.</li>
-<li>Evaluation result shape.</li>
+<li>Production progress percentage and Final Cut visual-review response shape.</li>
 <li>No provider credentials in responses.</li>
 </ul>
 <h2 id="7-frontend-tests">7. Frontend Tests</h2>
@@ -172,18 +172,27 @@
 <p>application shell; no document navigation occurs.</p>
 <li>The workspace tree contains <code>Direction &gt; Settings / Outlines / Scripts</code> and</li>
 <p><code>Vision &gt; Characters / Shots / Final Cut</code>; legacy Storyboard, Media, and Exports groups are absent. Projects, Recents, and their conversation items remain text-only.</p>
-<li>Every Agent-created Character and Shot exposes Description and Generation</li>
-<p>pages. Empty directories do not render waiting copy.</p>
+<li>Characters expose Description and Generation pages; each Shot opens one</li>
+<p>combined page. Shot rows have no container box. Empty directories do not render waiting copy.</p>
 <li>Settings renders Q&amp;A as question-answer attribute rows without the retired</li>
 <p>lower stage cards.</p>
 <li>Assets and Agents collapse independently and restore from their labeled rails.</li>
-<li>Review auto-loads a score for a non-empty storyboard, exposes a refresh action,</li>
-<p>opens a dialog titled <code>Review</code>, and omits the retired prompt suggestion and redundant VideoAgent label.</p>
-<li>Review and refresh render inside one shared border, and shot generation displays</li>
-<p>an approval requirement until the story workflow reaches the approved state.</p>
+<li>The editor header shows a readiness progress bar that polls every three</li>
+<p>seconds; no storyboard “Review” score button is rendered.</p>
+<li>Final Cut review is available only for exported assets, lets the user choose a</li>
+<p>configured vision evaluator and consistency metrics, and is unavailable when no evaluator is configured.</p>
+<li>Shot generation displays an approval requirement until the story workflow</li>
+<p>reaches the approved state.</p>
 <li>Persisted Agent messages render statically; only a newly returned reply uses</li>
 <p>the type-on effect and does not replay after the Agents rail is reopened.</p>
-<li>Agent requests show a spinning <code>Thinking</code> indicator while waiting for a reply.</li>
+<li>Agent requests show a live execution trace, with the compact <code>Thinking</code></li>
+<p>spinner retained as the initial fallback before events arrive.</p>
+<li>Agent requests persist ordered <code>context</code>, <code>memory</code>, <code>skill</code>, <code>planning</code>,</li>
+<p><code>validation</code>, <code>state</code>, and <code>reply</code> events under the client-provided run ID.</p>
+<li>The Agents panel renders those events as a live execution trace and remains</li>
+<p>accurate when a Skill or MCP tool was not called.</p>
+<li>Context Builder uses at most eight prior messages, clips each to 600</li>
+<p>characters, excludes the current request, and caps Storyboard context at 20 Shots.</p>
 <li>Stage approval options cover overall direction, episode and shot outline, and</li>
 <p>scene script; custom instructions keep the current stage.</p>
 <li>Shot estimation and generation remain disabled until the script is approved.</li>
@@ -273,6 +282,6 @@ secret and dependency scans</code></pre>
 <li>Paid Provider tests remain opt-in.</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=30"></script>
+    <script src="../docs.js?v=31"></script>
   </body>
 </html>

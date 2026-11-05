@@ -160,8 +160,20 @@ Assets contains the current user's finished and in-progress work.
 - Settings combines production attributes and Agent-director Q&A in one
   attribute table. Empty directories remain quiet and do not display waiting
   copy.
-- Agents create a directory for every recurring character and shot. Each child
-  directory contains a Description page and a Generation page.
+- Agents create a directory for every recurring character and shot. Characters
+  expose Description and Generation pages; each Shot opens one combined
+  Description and Generation page.
+- While Agents are planning, the conversation shows durable execution steps for
+  context assembly, memory loading, Skill resolution, planning, validation,
+  project-state updates, and reply composition.
+- The execution trace reflects completed or active work only. It must not
+  display a Skill or MCP tool as executed when the Agent has not called it.
+- The editor header shows a live production-progress bar derived from workflow
+  stage and completed Shots. It polls every three seconds and does not present
+  readiness as visual quality.
+- Final Cut provides optional publish-time visual review. Users choose a
+  configured vision evaluator and metrics such as character consistency, style
+  consistency, prompt alignment, and temporal stability.
 - Character and shot Generation pages support an uploaded image, reference-image
   generation, or direct text generation where the selected model supports the
   mode. Generated media can be downloaded.
@@ -279,8 +291,8 @@ Docs requirements:
 19. Users can upload references, compose a film, download a delivery, and
     create a share link.
 20. User credit reservations, refunds, and Provider-account reconciliation agree.
-21. Agents persist every recurring Character and Shot as a resource directory,
-    and each resource exposes Description and Generation pages.
+21. Agents persist every recurring Character and Shot; Characters expose
+    Description and Generation, while each Shot opens one combined page.
 22. Reordering shots does not delete or recreate existing Shots.
 23. Non-administrators cannot access administration APIs or pages.
 24. Administrators can manage credits, accounts, invites, and generation state,

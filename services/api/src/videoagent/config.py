@@ -32,6 +32,10 @@ class Settings(BaseSettings):
     llm_base_url: str | None = None
     llm_api_key: str | None = None
     llm_model: str | None = None
+    vision_base_url: str | None = None
+    vision_api_key: str | None = None
+    vision_models: list[str] = []
+    vision_timeout_seconds: int = Field(default=120, ge=10, le=600)
     video_provider: str = "pippit"
     pippit_cli_command: str = "pippit-tool-cli"
     pippit_access_key: str | None = None
