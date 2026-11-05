@@ -20,8 +20,10 @@ const ALLOWED_POST_PATHS = new Set([
   "hots",
   "workspace/folders",
 ]);
-
-function allowed(path: string, method: "GET" | "POST" | "PATCH" | "DELETE") {
+function allowed(
+  path: string,
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
+) {
   if (path === "admin" || path.startsWith("admin/")) return true;
   if (method === "GET") {
     return (
@@ -31,6 +33,15 @@ function allowed(path: string, method: "GET" | "POST" | "PATCH" | "DELETE") {
     );
   }
   if (method === "POST") return ALLOWED_POST_PATHS.has(path);
+  if (method === "PUT") {
+    const segments = path.split("/");
+    return (
+      segments.length === 4 &&
+      segments[0] === "workspace" &&
+      segments[1] === "threads" &&
+      segments[3] === "folder"
+    );
+  }
   return false;
 }
 
@@ -84,7 +95,7 @@ export async function POST(
 async function mutation(
   request: Request,
   params: Promise<{ path: string[] }>,
-  method: "PATCH" | "DELETE",
+  method: "PUT" | "PATCH" | "DELETE",
 ) {
   const path = (await params).path.join("/");
   if (!allowed(path, method)) {
@@ -98,7 +109,7 @@ async function mutation(
       "content-type": request.headers.get("content-type") ?? "application/json",
       origin: request.headers.get("origin") ?? "",
     },
-    body: method === "PATCH" ? await request.text() : undefined,
+    body: method === "PATCH" || method === "PUT" ? await request.text() : undefined,
   });
   return proxyResponse(response);
 }
@@ -110,6 +121,13 @@ export async function PATCH(
   return mutation(request, params, "PATCH");
 }
 
+export async function PUT(
+  request: Request,
+  { params }: { params: Promise<{ path: string[] }> },
+) {
+  return mutation(request, params, "PUT");
+}
+
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ path: string[] }> },
@@ -119,6 +137,9 @@ export async function DELETE(
 
 async function proxyResponse(response: Response) {
   const contentType = response.headers.get("content-type") ?? "application/json";
+  if (response.status === 204) {
+    return new NextResponse(null, { status: 204 });
+  }
   const textual =
     contentType.startsWith("text/") ||
     contentType.includes("json") ||

@@ -247,16 +247,81 @@ select {
 .project-workspace-shell .text-\[11px\],
 .project-workspace-shell .text-\[12px\],
 .project-workspace-shell .text-\[13px\] {
-  font-size: 15px !important;
-  line-height: 1.5;
+  font-size: 16px !important;
+  line-height: 1.55;
 }
 
 .project-workspace-shell .text-\[14px\] {
-  font-size: 16px;
+  font-size: 17px;
 }
 
 .project-workspace-shell .text-\[15px\] {
-  font-size: 17px;
+  font-size: 18px;
+}
+
+.project-workspace-shell button > svg,
+.project-workspace-shell a > svg {
+  color: #4facff;
+}
+
+.project-workspace-shell button[class~="bg-[#1677ff]"] > svg {
+  color: #fff;
+}
+
+.project-workspace-shell button[class*="bg-[#1677ff]/[0.08]"] > svg {
+  fill: currentColor;
+  stroke: transparent;
+}
+
+.workspace-grid {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+@media (min-width: 1280px) {
+  .workspace-grid {
+    --assets-pane-width: 280px;
+    --agent-pane-width: 360px;
+    grid-template-columns:
+      var(--assets-pane-width)
+      minmax(0, 1fr)
+      var(--agent-pane-width);
+  }
+
+  .workspace-grid.assets-collapsed {
+    --assets-pane-width: 58px;
+  }
+
+  .workspace-grid.agent-collapsed {
+    --agent-pane-width: 58px;
+  }
+}
+
+@media (min-width: 1440px) {
+  .workspace-grid {
+    --assets-pane-width: clamp(300px, 24vw, 430px);
+    --agent-pane-width: clamp(400px, 31vw, 520px);
+  }
+}
+
+.project-workspace-shell * {
+  scrollbar-color: rgba(79, 172, 255, 0.38) transparent;
+  scrollbar-width: thin;
+}
+
+.project-workspace-shell *::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.project-workspace-shell *::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.project-workspace-shell *::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: rgba(79, 172, 255, 0.38);
+  background-clip: padding-box;
 }
 
 .conversation-history-scroll {

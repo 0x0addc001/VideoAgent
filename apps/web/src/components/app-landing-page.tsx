@@ -6,7 +6,6 @@ import {
   type LandingProjectDraft,
 } from "@videoagent/landing";
 import "@videoagent/landing/styles.css";
-import { useEffect, useState } from "react";
 import { useRouter } from "@/i18n/navigation";
 import { ProjectWorkspace } from "@/components/project-workspace";
 
@@ -32,21 +31,6 @@ const videos = [
 export function AppLandingPage() {
   const router = useRouter();
   const content = landingContent.en;
-  const [conversationId, setConversationId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const syncConversation = () => {
-      const match = window.location.hash.match(/^#conversation\/([^?]+)/);
-      setConversationId(match?.[1] ?? null);
-    };
-    syncConversation();
-    window.addEventListener("hashchange", syncConversation);
-    window.addEventListener("popstate", syncConversation);
-    return () => {
-      window.removeEventListener("hashchange", syncConversation);
-      window.removeEventListener("popstate", syncConversation);
-    };
-  }, []);
 
   async function createProject(draft: LandingProjectDraft) {
     const title =
@@ -84,30 +68,23 @@ export function AppLandingPage() {
       throw new Error("project-create-failed");
     }
     const project = (await response.json()) as Project;
-    setConversationId(project.id);
-    router.push(`/?start=1#conversation/${project.id}`);
+    window.location.hash = `conversation/${project.id}?start=1`;
   }
 
   return (
     <LandingPage
       accountApiBase="/api/account"
-      activeConversationId={conversationId}
-      conversationContent={
-        conversationId ? (
-          <ProjectWorkspace
-            embedded
-            key={conversationId}
-            projectId={conversationId}
-          />
-        ) : undefined
-      }
       docsBase="/docs/"
       locale="en"
       mode="app"
       onCreateProject={createProject}
-      onViewChange={(view) => {
-        if (view !== "conversation") setConversationId(null);
-      }}
+      renderConversation={(projectId) => (
+        <ProjectWorkspace
+          embedded
+          key={projectId}
+          projectId={projectId}
+        />
+      )}
       videos={videos}
     />
   );

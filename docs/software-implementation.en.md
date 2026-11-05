@@ -191,10 +191,11 @@ status
 | `lib/api.ts` | Host-aware API URL resolution for localhost and 127.0.0.1 development |
 | `scripts/build_pages.py` | bilingual Docs build |
 
-Assets is the unified index for projects and generated media. A project detail
-route opens its workspace.
-The product app opens conversations at `/#conversation/{project_id}` while the
-standalone project route remains for compatibility.
+Assets is the unified index for projects and generated media. The product app
+keeps the landing shell mounted and opens conversations as the hash view
+`/en#conversation/{project_id}`. Project detail pages are not exposed as separate
+routes; creating, selecting, or returning to a conversation does not trigger a
+document navigation.
 
 ## 8. Skills Implementation
 

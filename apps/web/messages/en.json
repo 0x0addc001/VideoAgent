@@ -34,7 +34,7 @@
     "loadError": "Your projects could not be loaded."
   },
   "workspace": {
-    "agent": "VideoAgent",
+    "agent": "Agents",
     "canvas": "Canvas",
     "inspector": "Inspector",
     "emptyCanvas": "Your storyboard will appear here.",
@@ -70,7 +70,8 @@
     "moveLater": "Move shot later",
     "reorderError": "The shot order could not be updated.",
     "review": "Review",
-    "reviewTitle": "Project review",
+    "reviewTitle": "Review",
+    "refreshReview": "Refresh review",
     "reviewing": "Reviewing...",
     "overallScore": "Overall score",
     "metricConsistency": "Consistency",
@@ -83,7 +84,7 @@
     "suggestionBalancePacing": "Adjust shot durations for a more even pace.",
     "suggestionReady": "This storyboard is ready for generation.",
     "reviewError": "Review is temporarily unavailable.",
-    "export": "Export film",
+    "export": "Export",
     "exporting": "Exporting...",
     "exportError": "The film could not be exported.",
     "exportReady": "Export ready",

@@ -34,7 +34,7 @@
     "loadError": "项目列表加载失败。"
   },
   "workspace": {
-    "agent": "VideoAgent",
+    "agent": "Agents",
     "canvas": "画布",
     "inspector": "检查器",
     "emptyCanvas": "故事板将在这里出现。",
@@ -70,7 +70,8 @@
     "moveLater": "镜头后移",
     "reorderError": "镜头顺序更新失败。",
     "review": "即时评估",
-    "reviewTitle": "项目评估",
+    "reviewTitle": "评估",
+    "refreshReview": "刷新评估",
     "reviewing": "评估中……",
     "overallScore": "综合评分",
     "metricConsistency": "一致性",
@@ -83,7 +84,7 @@
     "suggestionBalancePacing": "调整镜头时长，让节奏更均衡。",
     "suggestionReady": "当前故事板可以进入生成阶段。",
     "reviewError": "评估暂时不可用。",
-    "export": "导出成片",
+    "export": "导出",
     "exporting": "正在导出……",
     "exportError": "成片导出失败。",
     "exportReady": "成片已就绪",

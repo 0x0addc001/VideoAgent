@@ -8,6 +8,7 @@ import {
   FileText,
   Film,
   Flame,
+  Folder,
   Gem,
   Globe,
   Heart,
@@ -154,6 +155,7 @@ export type LandingPageProps = {
   onCreateProject?: (draft: LandingProjectDraft) => Promise<void>;
   activeConversationId?: string | null;
   conversationContent?: ReactNode;
+  renderConversation?: (projectId: string) => ReactNode;
   onViewChange?: (view: LandingView) => void;
 };
 
@@ -481,13 +483,22 @@ export function StreamingText({
   text,
   className = "",
   delay = 0,
+  onComplete,
+  animate = true,
 }: {
   text: string;
   className?: string;
   delay?: number;
+  onComplete?: () => void;
+  animate?: boolean;
 }) {
   const [visibleText, setVisibleText] = useState(text);
   const textRef = useRef<HTMLSpanElement>(null);
+  const onCompleteRef = useRef(onComplete);
+
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   useEffect(() => {
     const element = textRef.current;
@@ -495,8 +506,14 @@ export function StreamingText({
       typeof window.matchMedia === "function" &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-    if (!element || reduceMotion || typeof window.IntersectionObserver !== "function") {
+    if (
+      !animate ||
+      !element ||
+      reduceMotion ||
+      typeof window.IntersectionObserver !== "function"
+    ) {
       setVisibleText(text);
+      if (animate) onCompleteRef.current?.();
       return;
     }
 
@@ -506,18 +523,20 @@ export function StreamingText({
     setVisibleText("");
 
     const characters = Array.from(text);
-    const baseDelay = Math.max(8, Math.min(24, 2300 / Math.max(text.length, 1)));
+    const targetDuration = Math.max(900, Math.min(4200, characters.length * 2.4));
+    const baseDelay = Math.max(2, targetDuration / Math.max(characters.length, 1));
 
     function typeNext(index: number) {
       if (cancelled) return;
       if (index >= characters.length) {
         setVisibleText(text);
+        onCompleteRef.current?.();
         return;
       }
 
       const character = characters[index];
       setVisibleText(characters.slice(0, index + 1).join(""));
-      const punctuationPause = /[，。！？；：,.!?;:]/.test(character) ? 4 : 1;
+      const punctuationPause = /[，。！？；：,.!?;:]/.test(character) ? 1.4 : 1;
       timer = window.setTimeout(
         () => typeNext(index + 1),
         baseDelay * punctuationPause,
@@ -531,7 +550,7 @@ export function StreamingText({
         observer.disconnect();
         timer = window.setTimeout(() => typeNext(0), delay);
       },
-      { threshold: 0.16, rootMargin: "0px 0px -5% 0px" },
+      { threshold: 0.01, rootMargin: "0px" },
     );
     observer.observe(element);
 
@@ -540,12 +559,13 @@ export function StreamingText({
       observer.disconnect();
       if (timer !== undefined) window.clearTimeout(timer);
     };
-  }, [delay, text]);
+  }, [animate, delay, text]);
 
   return (
     <span
       aria-label={text}
       className={`streaming-text ${visibleText === text ? "is-typed" : "is-typing"} ${className}`}
+      data-animate={animate ? "true" : "false"}
       ref={textRef}
     >
       <span aria-hidden="true" className="streaming-ghost">
@@ -585,10 +605,14 @@ export function LandingPage({
   onCreateProject,
   activeConversationId = null,
   conversationContent,
+  renderConversation,
   onViewChange,
 }: LandingPageProps) {
   const content = landingContent[locale];
   const [activeView, setActiveView] = useState<LandingView>("agents");
+  const [hashConversationId, setHashConversationId] = useState<string | null>(
+    null,
+  );
   const [navCollapsed, setNavCollapsed] = useState(false);
   const [historyGroupsOpen, setHistoryGroupsOpen] = useState({
     projects: true,
@@ -671,6 +695,7 @@ export function LandingPage({
   const accountRef = useRef<HTMLDivElement>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const playbookSnapshotRef = useRef<ComposerPlaybookSnapshot | null>(null);
+  const currentConversationId = activeConversationId ?? hashConversationId;
 
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -678,7 +703,9 @@ export function LandingPage({
     setDocsLocale(locale);
     function syncHashView() {
       const hash = window.location.hash.slice(1);
-      if (hash.startsWith("conversation/")) {
+      const conversationMatch = hash.match(/^conversation\/([^?]+)/);
+      if (conversationMatch) {
+        setHashConversationId(conversationMatch[1] ?? null);
         setActiveView("conversation");
       } else if (
         hash === "agents" ||
@@ -687,6 +714,7 @@ export function LandingPage({
         hash === "hots" ||
         hash === "docs"
       ) {
+        setHashConversationId(null);
         setActiveView(hash);
       }
     }
@@ -718,12 +746,12 @@ export function LandingPage({
   }, []);
 
   useEffect(() => {
-    if (activeConversationId) {
+    if (currentConversationId) {
       setActiveView("conversation");
     } else if (activeView === "conversation") {
       setActiveView("agents");
     }
-  }, [activeConversationId, activeView]);
+  }, [activeView, currentConversationId]);
 
   useEffect(() => {
     window.localStorage.setItem(
@@ -923,6 +951,49 @@ export function LandingPage({
       active = false;
     };
   }, [accountApiBase, mode]);
+
+  useEffect(() => {
+    if (!accountApiBase || mode !== "app" || !currentConversationId) return;
+    let active = true;
+
+    async function refreshWorkspace() {
+      try {
+        const response = await fetch(`${accountApiBase}/workspace`, {
+          credentials: "include",
+        });
+        if (!active || !response.ok) return;
+        const payload = (await response.json()) as {
+          folders?: Array<{ id: string; name: string }>;
+          recents?: Array<{
+            id: string;
+            title: string;
+            preview: string | null;
+            stage: string;
+            updated_at: string;
+            folder_id: string | null;
+          }>;
+        };
+        setWorkspaceFolders(payload.folders ?? []);
+        setRecentConversations(
+          (payload.recents ?? []).map((item) => ({
+            id: item.id,
+            title: item.title,
+            preview: item.preview,
+            stage: item.stage,
+            updatedAt: item.updated_at,
+            folderId: item.folder_id,
+          })),
+        );
+      } catch {
+        // Keep the current history while a refresh is unavailable.
+      }
+    }
+
+    void refreshWorkspace();
+    return () => {
+      active = false;
+    };
+  }, [accountApiBase, currentConversationId, mode]);
 
   useEffect(() => {
     if (activeView !== "docs" || docsSearchIndex.length > 0) {
@@ -1345,6 +1416,14 @@ export function LandingPage({
     window.history.replaceState(null, "", `#${view}`);
   }
 
+  function openConversation(projectId: string) {
+    setHashConversationId(projectId);
+    setActiveView("conversation");
+    onViewChange?.("conversation");
+    window.history.pushState(null, "", `#conversation/${projectId}`);
+    window.dispatchEvent(new Event("hashchange"));
+  }
+
   async function moveConversation(projectId: string, folderId: string | null) {
     if (!accountApiBase) return;
     const response = await fetch(
@@ -1525,15 +1604,61 @@ export function LandingPage({
       data-view={activeView}
     >
       <div className="page-grain" aria-hidden="true" />
+      <div className="hero-media-wall universal-video-wall" aria-hidden="true">
+        <div className="hero-media-track">
+          {[...videos, ...videos].map((video, index) => (
+            <figure
+              className="hero-video-frame"
+              data-video-index={index % videos.length}
+              key={`${video.src}-${index}`}
+            >
+              <video
+                aria-label={content.hero.videoLabel}
+                autoPlay
+                loop
+                muted
+                playsInline
+                poster={video.poster}
+                preload="metadata"
+              >
+                <source src={video.src} type="video/mp4" />
+              </video>
+            </figure>
+          ))}
+        </div>
+        <div className="hero-media-shade" />
+      </div>
 
       <header className="site-header">
-        <a className="brand" href={mode === "app" ? `/${locale}` : "./"} aria-label="VideoAgent home">
-          <BrandMark />
-          <span className="brand-copy">
-            <strong>Video</strong>
-            <em>Agent</em>
-          </span>
-        </a>
+        <div className="nav-brand-row">
+          <a
+            className="brand"
+            href={mode === "app" ? `/${locale}` : "./"}
+            aria-label="VideoAgent home"
+          >
+            <BrandMark />
+            <span className="brand-copy">
+              <strong>Video</strong>
+              <em>Agent</em>
+            </span>
+          </a>
+          {mode === "app" ? (
+            <button
+              aria-label={
+                navCollapsed ? content.nav.expandNav : content.nav.collapseNav
+              }
+              className="nav-collapse-toggle"
+              onClick={() => setNavCollapsed((current) => !current)}
+              type="button"
+            >
+              {navCollapsed ? (
+                <PanelLeftOpen aria-hidden="true" />
+              ) : (
+                <PanelLeftClose aria-hidden="true" />
+              )}
+            </button>
+          ) : null}
+        </div>
 
         <nav aria-label="Main navigation">
           <button
@@ -1577,7 +1702,7 @@ export function LandingPage({
             <span>{content.nav.docs}</span>
           </button>
         </nav>
-        {mode === "app" && accountEmail ? (
+        {mode === "app" ? (
           <div className="sidebar-history">
             <div className="sidebar-history-section">
               <div className="sidebar-history-heading">
@@ -1632,23 +1757,35 @@ export function LandingPage({
                       open
                     >
                       <summary>
+                        <ChevronRight
+                          aria-hidden="true"
+                          className="project-folder-chevron"
+                        />
+                        <Folder
+                          aria-hidden="true"
+                          className="project-folder-icon"
+                        />
                         <span>{folder.name}</span>
                       </summary>
                       {threads.map((thread) => (
                         <a
                           aria-current={
-                            thread.id === activeConversationId ? "page" : undefined
+                            thread.id === currentConversationId ? "page" : undefined
                           }
                           className="sidebar-thread"
                           draggable
-                          href={`/${locale}/?start=1#conversation/${thread.id}`}
+                          href={`#conversation/${thread.id}`}
                           key={thread.id}
+                          onClick={(event) => {
+                            event.preventDefault();
+                            openConversation(thread.id);
+                          }}
                           onDragStart={(event) => {
                             setDraggingConversationId(thread.id);
                             event.dataTransfer.setData("text/plain", thread.id);
                           }}
                         >
-                          {thread.title}
+                          <span>{thread.title}</span>
                         </a>
                       ))}
                     </details>
@@ -1696,47 +1833,35 @@ export function LandingPage({
               </div>
               {historyGroupsOpen.recents ? (
                 <div className="sidebar-recent-list">
-                {recentConversations.map((thread) => (
+                {recentConversations
+                  .filter((thread) => thread.folderId === null)
+                  .map((thread) => (
                   <a
                     aria-current={
-                      thread.id === activeConversationId ? "page" : undefined
+                      thread.id === currentConversationId ? "page" : undefined
                     }
                     className="sidebar-thread"
                     draggable
-                    href={`/${locale}/?start=1#conversation/${thread.id}`}
+                    href={`#conversation/${thread.id}`}
                     key={thread.id}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      openConversation(thread.id);
+                    }}
                     onDragStart={(event) => {
                       setDraggingConversationId(thread.id);
                       event.dataTransfer.setData("text/plain", thread.id);
                     }}
                   >
-                    {thread.title}
+                    <span>{thread.title}</span>
                   </a>
-                ))}
+                  ))}
                 </div>
               ) : null}
             </div>
           </div>
         ) : null}
-        {mode === "app" ? (
-          <button
-            aria-label={
-              navCollapsed ? content.nav.expandNav : content.nav.collapseNav
-            }
-            className="nav-collapse-toggle"
-            onClick={() => setNavCollapsed((current) => !current)}
-            type="button"
-          >
-            {navCollapsed ? (
-              <PanelLeftOpen aria-hidden="true" />
-            ) : (
-              <PanelLeftClose aria-hidden="true" />
-            )}
-          </button>
-        ) : null}
-      </header>
-
-      <div className="header-actions">
+        <div className="header-actions">
           <div className="language-switcher" ref={languageRef}>
             <button
               aria-expanded={languageOpen}
@@ -1842,35 +1967,11 @@ export function LandingPage({
               )}
             </div>
           </div>
-      </div>
+        </div>
+      </header>
 
       {activeView === "agents" ? (
       <section className="hero" id="agents">
-        <div className="hero-media-wall" aria-hidden="true">
-          <div className="hero-media-track">
-            {[...videos, ...videos].map((video, index) => (
-              <figure
-                className="hero-video-frame"
-                data-video-index={index % videos.length}
-                key={`${video.src}-${index}`}
-              >
-                <video
-                  aria-label={content.hero.videoLabel}
-                  autoPlay
-                  loop
-                  muted
-                  playsInline
-                  poster={video.poster}
-                  preload="metadata"
-                >
-                  <source src={video.src} type="video/mp4" />
-                </video>
-              </figure>
-            ))}
-          </div>
-          <div className="hero-media-shade" />
-        </div>
-
         <div className="hero-inner">
           <div className="hero-copy">
             <div className="hero-title">
@@ -2085,7 +2186,14 @@ export function LandingPage({
       ) : null}
 
       {activeView === "conversation" ? (
-        <section className="conversation-view">{conversationContent}</section>
+        <section
+          className="conversation-view"
+          data-conversation-id={currentConversationId ?? ""}
+        >
+          {renderConversation && currentConversationId
+            ? renderConversation(currentConversationId)
+            : conversationContent}
+        </section>
       ) : null}
 
       {activeView === "skills" ? (
@@ -2353,8 +2461,8 @@ export function LandingPage({
                     >
                       <span>{entry.title}</span>
                       <small>
-                        {entry.lang === "zh-CN" ? "中文" : "English"} ·{" "}
-                        {searchExcerpt(entry.text, docsQuery)}
+                        <span>{entry.lang === "zh-CN" ? "中文" : "English"}</span>
+                        <span>{searchExcerpt(entry.text, docsQuery)}</span>
                       </small>
                     </button>
                   ))
@@ -2469,7 +2577,8 @@ export function LandingPage({
               ×
             </button>
             <p className="preview-eyebrow">
-              {content.assets.details} · {assetDetail.permission}
+              <span>{content.assets.details}</span>
+              <span>{assetDetail.permission}</span>
             </p>
             <h2 id="asset-detail-title">{assetDetail.title}</h2>
             {assetDetail.videoUrl ? (

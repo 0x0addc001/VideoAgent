@@ -131,6 +131,21 @@ Component tests cover:
 - Composer menus stay inside the viewport.
 - Conversation history shows Projects and Recents; folders support creation,
   rename, deletion, and drag-to-file organization.
+- Dragging a Recent into a project folder persists the relationship, removes the
+  item from Recents, and renders it as an indented folder child.
+- Selecting a conversation updates only the URL hash and preserves the mounted
+  application shell; no document navigation occurs.
+- The workspace tree uses directory icons for `Scripts` and `Shots`; Projects,
+  Recents, and their conversation items remain text-only. Agent replies expand
+  without an inner message scrollbar.
+- Assets and Agents collapse independently and restore from their labeled rails.
+- Review auto-loads a score for a non-empty storyboard, exposes a refresh action,
+  opens a dialog titled `Review`, and omits the retired prompt suggestion and
+  redundant VideoAgent label.
+- Review and refresh render inside one shared border, and shot generation displays
+  an approval requirement until the story workflow reaches the approved state.
+- Persisted Agent messages render statically; only a newly returned reply uses
+  the type-on effect and does not replay after the Agents rail is reopened.
 - Stage approval options cover overall direction, episode and shot outline, and
   scene script; custom instructions keep the current stage.
 - Shot estimation and generation remain disabled until the script is approved.
@@ -152,6 +167,8 @@ Component tests cover:
   while refunding reserved credits.
 - Search, language, notifications, credits, and avatar controls use
   translucent surfaces.
+- Docs is positioned beside the fixed navigation and its document iframe loads
+  without being covered by decoration or background layers.
 - Avatar opens login and registration when signed out and sign-out when signed in.
 - API starts with its metadata table.
 - FAQ and TODO have paired English and Chinese documents.

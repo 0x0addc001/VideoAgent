@@ -29,7 +29,7 @@ describe("ProjectWorkspace", () => {
   it(
     "starts the first agent turn from a newly created project brief",
     async () => {
-    window.history.replaceState({}, "", "/en/projects/project-1?start=1");
+    window.history.replaceState({}, "", "/en#conversation/project-1?start=1");
     const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
       if (url.endsWith("/projects/project-1") && !init?.method) {
@@ -240,6 +240,30 @@ describe("ProjectWorkspace", () => {
       screen.getAllByRole("heading", { name: "Copenhagen morning" }),
     ).not.toHaveLength(0);
     expect(screen.getAllByText("Recents").length).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: "Direction" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Scripts" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Shots" })).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Collapse assets" }));
+    expect(screen.getByRole("button", { name: "Expand assets" })).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Expand assets" }));
+    fireEvent.click(screen.getByRole("button", { name: "Collapse agents" }));
+    expect(screen.getByRole("button", { name: "Expand agents" })).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Expand agents" }));
+    await waitFor(() =>
+      expect(
+        screen.getByLabelText("I shaped this into a first treatment."),
+      ).toHaveAttribute("data-animate", "false"),
+    );
+    expect(screen.queryByText("2 shots")).not.toBeInTheDocument();
+    expect(document.querySelector(".max-h-64")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Outline" }));
+    expect(
+      document.querySelector('[data-document-mode="outline"]'),
+    ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Script" }));
+    expect(
+      document.querySelector('[data-document-mode="script"]'),
+    ).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /Shot 01/ }));
     fireEvent.click(screen.getByRole("button", { name: "Move shot later" }));
     await waitFor(() =>
@@ -252,16 +276,39 @@ describe("ProjectWorkspace", () => {
       ),
     );
 
+    expect(screen.getByRole("button", { name: "Review" })).toBeVisible();
+    const refreshReview = screen.getByRole("button", { name: "Refresh review" });
+    expect(refreshReview).toBeVisible();
+    expect(refreshReview.parentElement).toBe(
+      screen.getByRole("button", { name: "Review" }).parentElement,
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "Refresh review" }),
+      ).toBeEnabled(),
+    );
+    const reviewCallsBeforeRefresh = fetchMock.mock.calls.filter(([input]) =>
+      String(input).endsWith("/projects/project-1/evaluate"),
+    ).length;
+    fireEvent.click(screen.getByRole("button", { name: "Refresh review" }));
+    await waitFor(() =>
+      expect(
+        fetchMock.mock.calls.filter(([input]) =>
+          String(input).endsWith("/projects/project-1/evaluate"),
+        ).length,
+      ).toBeGreaterThan(reviewCallsBeforeRefresh),
+    );
     fireEvent.click(screen.getByRole("button", { name: "Review" }));
 
-    expect(await screen.findByRole("heading", { name: "Project review" })).toBeVisible();
-    expect(screen.getByText("88")).toBeVisible();
+    expect(await screen.findByRole("heading", { name: "Review" })).toBeVisible();
+    expect(screen.getByRole("dialog")).not.toHaveTextContent("VideoAgent");
+    expect(screen.getAllByText("88").length).toBeGreaterThan(0);
     expect(screen.getByText("Consistency")).toBeVisible();
     expect(
-      screen.getByText("Add subject, environment, and action details to prompts."),
-    ).toBeVisible();
+      screen.queryByText("Add subject, environment, and action details to prompts."),
+    ).not.toBeInTheDocument();
     },
-    10_000,
+    20_000,
   );
 
   it(
@@ -357,7 +404,7 @@ describe("ProjectWorkspace", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    render(
+    const { container } = render(
       <NextIntlClientProvider locale="en" messages={en}>
         <ProjectWorkspace projectId="project-approval" />
       </NextIntlClientProvider>,
@@ -366,6 +413,12 @@ describe("ProjectWorkspace", () => {
     expect(
       await screen.findByRole("button", { name: "Continue with this direction" }),
     ).toBeVisible();
+    expect(
+      screen.getByLabelText("Review the overall creative direction."),
+    ).toHaveAttribute("data-animate", "false");
+    expect(
+      container.querySelector('.streaming-text[data-animate="true"]'),
+    ).not.toBeInTheDocument();
     fireEvent.click(
       screen.getByRole("button", { name: "Continue with this direction" }),
     );

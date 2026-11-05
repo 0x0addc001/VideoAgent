@@ -18,7 +18,7 @@ test("runs a complete mock video workflow without paid generation", async ({
     .getByLabel("Start with an idea")
     .fill("A quiet Copenhagen morning told in one shot");
   await page.getByRole("button", { name: "Action" }).click();
-  await expect(page).toHaveURL(/\/en\?start=1#conversation\/[^/?]+/);
+  await expect(page).toHaveURL(/\/en#conversation\/[^/?]+/);
 
   await expect(page.getByText("Cinematic establishing shot").first()).toBeVisible();
   for (let stage = 0; stage < 3; stage += 1) {
@@ -65,10 +65,13 @@ test("runs a complete mock video workflow without paid generation", async ({
     status: "succeeded",
   });
 
-  const exportButton = page.getByRole("button", { name: "Export film" });
-  await expect(exportButton).toBeEnabled();
-  await exportButton.click();
+  const shareAction = page.getByRole("button", { name: "Share", exact: true });
+  await expect(shareAction).toBeEnabled();
+  await shareAction.click();
   await expect(page.getByRole("heading", { name: "Export ready" })).toBeVisible();
+  await expect(page.getByLabel(/Share link, valid for 24 hours/)).toHaveValue(
+    /\/api\/v1\/shares\//,
+  );
 
   const downloadLink = page.locator('a[download]').first();
   await expect(downloadLink).toBeVisible();
@@ -78,11 +81,6 @@ test("runs a complete mock video workflow without paid generation", async ({
   const downloadedPath = testInfo.outputPath("delivered-video.mp4");
   await download.saveAs(downloadedPath);
 
-  const shareButton = page.getByRole("button", { name: /^Share / }).first();
-  await shareButton.click();
-  await expect(page.getByLabel(/Share link, valid for 24 hours/)).toHaveValue(
-    /\/api\/v1\/shares\//,
-  );
 });
 
 test("does not expose the obsolete projects index", async ({ page }) => {
@@ -90,6 +88,11 @@ test("does not expose the obsolete projects index", async ({ page }) => {
 
   expect(response?.status()).toBe(404);
   await expect(page.getByText("VideoAgent Studio")).toHaveCount(0);
+
+  const detailResponse = await page.goto(
+    "/en/projects/41432c53-ad62-4e42-8073-1dac36e2f9de?start=1",
+  );
+  expect(detailResponse?.status()).toBe(404);
 });
 
 test("optimizes and persists a published Skill", async ({ page }) => {
@@ -148,6 +151,15 @@ test("publishes an uploaded Hots video and opens it in Assets", async ({ page })
     .click();
   await expect(projectDialog).toBeHidden();
   await expect(page.locator(".sidebar-history")).toContainText("Campaign work");
+  const recentProject = page
+    .locator(".sidebar-recent-list .sidebar-thread")
+    .filter({ hasText: "Sidebar project" });
+  const projectFolder = page
+    .locator(".sidebar-project-list details")
+    .filter({ hasText: "Campaign work" });
+  await recentProject.dragTo(projectFolder);
+  await expect(projectFolder).toContainText("Sidebar project");
+  await expect(recentProject).toHaveCount(0);
   await page.getByRole("button", { name: "Skills", exact: true }).click();
   await page.getByRole("button", { name: "New conversation" }).click();
   await expect(page.getByLabel("Start with an idea")).toBeVisible();
@@ -186,6 +198,12 @@ test("switches the complete documentation set", async ({ page }) => {
   await page.goto("/en");
   await page.getByRole("button", { name: "Docs", exact: true }).click();
 
+  const navBox = await page.locator(".site-header").boundingBox();
+  const docsBox = await page.locator(".docs-view").boundingBox();
+  expect(navBox).not.toBeNull();
+  expect(docsBox).not.toBeNull();
+  expect(docsBox!.x).toBeGreaterThanOrEqual(navBox!.x + navBox!.width);
+
   await expect(page.getByRole("tab")).toHaveText([
     "PRD",
     "Playbook",
@@ -202,6 +220,9 @@ test("switches the complete documentation set", async ({ page }) => {
   await expect(page.locator("iframe")).toHaveAttribute(
     "src",
     /\/docs\/playbooks\.html/,
+  );
+  await expect(page.frameLocator("iframe").locator("body")).toContainText(
+    "VideoAgent",
   );
 });
 

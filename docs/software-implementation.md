@@ -258,10 +258,9 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 | 模块 | 职责 |
 | --- | --- |
 | `app/[locale]/page.tsx` | 加载共享首页与正式产品客户端适配层 |
-| `components/app-landing-page.tsx` | 首页创作框提交、项目创建和路由跳转 |
+| `components/app-landing-page.tsx` | 首页创作框提交、项目创建和会话哈希视图切换 |
 | `app/[locale]/register/page.tsx` | 注册页 |
 | `app/[locale]/login/page.tsx` | 登录页 |
-| `app/[locale]/projects/[projectId]/page.tsx` | 项目编辑工作区 |
 | `packages/landing` | 左侧导航、共享品牌、视频主视觉、创作框、Hots 和 Docs |
 | `locale-switcher.tsx` | 中英文切换 |
 | `auth-form.tsx` | 注册/登录请求 |
@@ -273,8 +272,9 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 
 前端请求类型以 FastAPI OpenAPI 契约为准。
 
-Assets 是项目和资产的统一入口；项目详情路由用于打开具体工作区。
-正式 App 使用 `/#conversation/{project_id}` 打开对话内页，旧的独立项目路径仅保留兼容访问。
+Assets 是项目和资产的统一入口。正式 App 保持项目主页外壳持续挂载，使用
+`/en#conversation/{project_id}` 作为对话哈希视图，不开放独立项目详情页。
+新建、选择或返回对话都只切换视图，不触发页面级导航。
 
 ## 8. 国际化实现
 

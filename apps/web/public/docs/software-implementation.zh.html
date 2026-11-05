@@ -415,7 +415,7 @@ https://example.com/api/   → FastAPI</code></pre>
 </tr>
 <tr>
 <td><code>components/app-landing-page.tsx</code></td>
-<td>首页创作框提交、项目创建和路由跳转</td>
+<td>首页创作框提交、项目创建和会话哈希视图切换</td>
 </tr>
 <tr>
 <td><code>app/[locale]/register/page.tsx</code></td>
@@ -424,10 +424,6 @@ https://example.com/api/   → FastAPI</code></pre>
 <tr>
 <td><code>app/[locale]/login/page.tsx</code></td>
 <td>登录页</td>
-</tr>
-<tr>
-<td><code>app/[locale]/projects/[projectId]/page.tsx</code></td>
-<td>项目编辑工作区</td>
 </tr>
 <tr>
 <td><code>packages/landing</code></td>
@@ -456,7 +452,7 @@ https://example.com/api/   → FastAPI</code></pre>
 </tbody></table></div>
 <p>前端通过 <code>NEXT_PUBLIC_API_BASE_URL</code> 访问 FastAPI，所有鉴权请求设置 <code>credentials: &quot;include&quot;</code>。</p>
 <p>前端请求类型以 FastAPI OpenAPI 契约为准。</p>
-<p>Assets 是项目和资产的统一入口；项目详情路由用于打开具体工作区。 正式 App 使用 <code>/#conversation/{project_id}</code> 打开对话内页，旧的独立项目路径仅保留兼容访问。</p>
+<p>Assets 是项目和资产的统一入口。正式 App 保持项目主页外壳持续挂载，使用 <code>/en#conversation/{project_id}</code> 作为对话哈希视图，不开放独立项目详情页。 新建、选择或返回对话都只切换视图，不触发页面级导航。</p>
 <h2 id="8-国际化实现">8. 国际化实现</h2>
 <p>保留的语言资源：</p>
 <pre><code class="language-text">en

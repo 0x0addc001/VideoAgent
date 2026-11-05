@@ -1400,11 +1400,21 @@ html[lang="zh-CN"] .hero-description {
 }
 
 .preview-eyebrow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
   margin: 0;
   color: var(--accent);
   font-size: 0.82rem;
   font-weight: 600;
   letter-spacing: 0.14em;
+}
+
+.preview-eyebrow span:last-child:not(:first-child) {
+  border: 1px solid rgba(79, 172, 255, 0.22);
+  border-radius: 6px;
+  padding: 3px 7px;
 }
 
 .preview-close {
@@ -1617,11 +1627,11 @@ html[lang="zh-CN"] .hero-description {
 
 @media (min-width: 981px) {
   .va-landing.app-mode {
-    --app-nav-width: 218px;
+    --app-nav-width: clamp(280px, 22.5vw, 360px);
   }
 
   .va-landing.app-mode.nav-collapsed {
-    --app-nav-width: 76px;
+    --app-nav-width: 100px;
   }
 
   .va-landing.app-mode .site-header {
@@ -1645,8 +1655,17 @@ html[lang="zh-CN"] .hero-description {
     display: none;
   }
 
+  .va-landing.app-mode .nav-brand-row {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 8px;
+  }
+
   .va-landing.app-mode .site-header .brand {
-    padding: 0 8px;
+    min-width: 0;
+    flex: 1;
+    padding: 2px 6px;
   }
 
   .va-landing.app-mode .site-header > nav {
@@ -1670,18 +1689,77 @@ html[lang="zh-CN"] .hero-description {
   }
 
   .va-landing.app-mode .nav-collapse-toggle {
-    position: absolute;
-    bottom: 20px;
-    left: 13px;
     display: grid;
-    width: calc(var(--app-nav-width) - 26px);
-    height: 46px;
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
     place-items: center;
-    border: 1px solid rgba(255, 255, 255, 0.09);
-    border-radius: 13px;
-    background: rgba(255, 255, 255, 0.025);
-    color: rgba(255, 255, 255, 0.5);
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: #4facff;
     cursor: pointer;
+  }
+
+  .va-landing.app-mode .nav-collapse-toggle:hover {
+    background: rgba(79, 172, 255, 0.1);
+    color: #9bd8ff;
+  }
+
+  .site-header .header-actions {
+    position: static;
+    z-index: auto;
+    top: auto;
+    right: auto;
+    display: grid;
+    width: 100%;
+    flex-shrink: 0;
+    grid-template-columns: repeat(4, auto);
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    margin-top: auto;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 14px 2px 0;
+  }
+
+  .site-header .header-actions .credit-count {
+    justify-content: center;
+    padding-inline: 8px;
+  }
+
+  .site-header .header-actions .language-options,
+  .site-header .header-actions .notification-panel,
+  .site-header .header-actions .account-menu {
+    top: auto;
+    bottom: calc(100% + 8px);
+  }
+
+  .site-header .header-actions .language-options {
+    right: auto;
+    left: 0;
+  }
+
+  .site-header .header-actions .notification-panel {
+    left: 0;
+    transform: none;
+  }
+
+  .va-landing.app-mode.nav-collapsed .header-actions {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    gap: 8px;
+    padding-top: 12px;
+  }
+
+  .va-landing.app-mode.nav-collapsed .header-actions .language-options,
+  .va-landing.app-mode.nav-collapsed .header-actions .notification-panel,
+  .va-landing.app-mode.nav-collapsed .header-actions .account-menu {
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    left: calc(100% + 8px);
+    transform: translateY(-50%);
   }
 
   .va-landing.app-mode .sidebar-history {
@@ -1691,7 +1769,7 @@ html[lang="zh-CN"] .hero-description {
     overflow-y: auto;
     margin-top: 18px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 14px 3px 72px;
+    padding: 14px 3px 10px;
     scrollbar-color: rgba(79, 172, 255, 0.38) transparent;
     scrollbar-width: thin;
   }
@@ -1739,7 +1817,7 @@ html[lang="zh-CN"] .hero-description {
   .sidebar-history-heading > button:first-child svg {
     width: 15px;
     height: 15px;
-    color: rgba(255, 255, 255, 0.28);
+    color: rgba(79, 172, 255, 0.78);
   }
 
   .sidebar-history-add {
@@ -1748,15 +1826,15 @@ html[lang="zh-CN"] .hero-description {
     height: 28px;
     flex: 0 0 auto;
     place-items: center;
-    border: 1px solid rgba(255, 255, 255, 0.12);
+    border: 0;
     border-radius: 8px;
-    background: rgba(255, 255, 255, 0.035);
-    color: rgba(255, 255, 255, 0.48);
+    background: transparent;
+    color: #4facff;
     cursor: pointer;
   }
 
   .sidebar-history-add:hover {
-    border-color: rgba(79, 172, 255, 0.3);
+    background: rgba(79, 172, 255, 0.1);
     color: #9bd8ff;
   }
 
@@ -1765,29 +1843,20 @@ html[lang="zh-CN"] .hero-description {
     height: 15px;
   }
 
-  .sidebar-project-list summary::after {
-    color: rgba(255, 255, 255, 0.26);
-    content: "⌄";
-    font-size: 0.82rem;
-    transition: transform 160ms ease;
-  }
-
-  .sidebar-project-list details:not([open]) > summary::after {
-    transform: rotate(-90deg);
-  }
-
   .sidebar-history-section {
     margin-bottom: 2px;
   }
 
   .sidebar-project-list details {
     margin-bottom: 4px;
+    margin-left: 8px;
   }
 
   .sidebar-project-list summary {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
+    gap: 8px;
     border-radius: 10px;
     color: rgba(255, 255, 255, 0.62);
     cursor: pointer;
@@ -1804,17 +1873,58 @@ html[lang="zh-CN"] .hero-description {
     background: rgba(255, 255, 255, 0.045);
   }
 
+  .project-folder-chevron {
+    width: 15px;
+    height: 15px;
+    flex: 0 0 auto;
+    color: rgba(79, 172, 255, 0.78);
+    transition: transform 160ms ease;
+  }
+
+  .sidebar-project-list details[open] > summary .project-folder-chevron {
+    transform: rotate(90deg);
+  }
+
+  .project-folder-icon {
+    width: 17px;
+    height: 17px;
+    flex: 0 0 auto;
+    color: #4facff;
+  }
+
+  .sidebar-project-list .sidebar-thread {
+    margin-left: 18px;
+    padding-left: 10px;
+  }
+
+  .sidebar-recent-list {
+    padding-left: 18px;
+  }
+
+  .sidebar-recent-list .sidebar-thread {
+    padding-left: 10px;
+  }
+
   .sidebar-thread {
     display: flex;
     min-height: 34px;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start;
     gap: 8px;
     border-radius: 9px;
     color: rgba(255, 255, 255, 0.48);
     font-size: 1.125rem;
     line-height: 1.45;
     padding: 7px 10px 7px 20px;
+  }
+
+  .sidebar-thread > span {
+    min-width: 0;
+  }
+
+  .sidebar-thread[aria-current="page"] {
+    background: rgba(22, 119, 255, 0.14);
+    color: #8fdcff;
   }
 
   .sidebar-thread:hover {
@@ -1843,37 +1953,72 @@ html[lang="zh-CN"] .hero-description {
     display: none;
   }
 
+  .va-landing.app-mode.nav-collapsed .nav-brand-row {
+    justify-content: center;
+    gap: 4px;
+  }
+
   .va-landing.app-mode.nav-collapsed .site-header .brand,
   .va-landing.app-mode.nav-collapsed .site-header > nav > button {
     justify-content: center;
     padding-inline: 0;
   }
 
+  .va-landing.app-mode.nav-collapsed .brand-mark {
+    width: 30px;
+    height: 30px;
+  }
+
   .va-landing.app-mode.nav-collapsed .nav-collapse-toggle {
-    width: 50px;
+    width: 28px;
   }
 
   .va-landing.app-mode .hero,
   .va-landing.app-mode .section {
     position: relative;
     z-index: 1;
-    width: calc(100% - var(--app-nav-width) - 48px);
+    width: calc(100% - var(--app-nav-width) - 32px);
     max-width: none;
     margin-right: auto;
-    margin-left: calc(var(--app-nav-width) + 24px);
+    margin-left: calc(var(--app-nav-width) + 16px);
   }
 
   .va-landing.app-mode .conversation-view {
-    width: calc(100% - var(--app-nav-width) - 48px);
+    position: relative;
+    z-index: 25;
+    width: calc(100% - var(--app-nav-width) - 32px);
     height: 100dvh;
-    margin-left: calc(var(--app-nav-width) + 24px);
-    padding-top: 72px;
+    margin-left: calc(var(--app-nav-width) + 16px);
+    padding-top: 0;
+  }
+
+  .va-landing.app-mode .hero {
+    display: flex;
+    min-height: 100dvh;
+    align-items: center;
+    justify-content: center;
+    padding-block: 36px;
+  }
+
+  .va-landing.app-mode .hero-inner {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding-top: 0;
+  }
+
+  .va-landing.app-mode .docs-view {
+    position: relative;
+    z-index: 25;
+    width: calc(100% - var(--app-nav-width) - 32px);
+    height: 100dvh;
+    margin-right: 0;
+    margin-left: calc(var(--app-nav-width) + 16px);
+    padding: 18px 16px 0 0;
   }
 
   .va-landing.app-mode[data-view="conversation"]::before {
-    background:
-      radial-gradient(circle at 72% 4%, rgba(22, 119, 255, 0.1), transparent 30%),
-      linear-gradient(180deg, rgba(11, 12, 17, 0.7), transparent 64%);
+    background: transparent;
   }
 
   .va-landing.app-mode::before {
@@ -1915,10 +2060,10 @@ html[lang="zh-CN"] .hero-description {
   }
 
   .va-landing.app-mode .header-actions {
-    position: fixed;
-    z-index: 70;
-    top: 20px;
-    right: 24px;
+    position: static;
+    z-index: auto;
+    top: auto;
+    right: auto;
   }
 }
 
@@ -2050,7 +2195,7 @@ html[lang="zh-CN"] .va-landing select {
 
 .site-header > nav > button[aria-current="page"] .nav-icon {
   fill: currentColor;
-  stroke: var(--background);
+  stroke: transparent;
   stroke-width: 1.75;
   transform: scale(1.08);
 }
@@ -2715,6 +2860,12 @@ html[lang="zh-CN"] .hero-copy h1 {
   color: #4facff;
 }
 
+.skill-publish-card > span {
+  font-size: 1.4rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
 .skill-publish-card:hover {
   border-color: #4facff;
   background: rgba(22, 119, 255, 0.13);
@@ -2978,7 +3129,9 @@ html[lang="zh-CN"] .hero-copy h1 {
   border: 1px dashed rgba(79, 172, 255, 0.58);
   background: rgba(22, 119, 255, 0.075);
   color: #4facff;
-  font-size: 1.15rem;
+  font-size: 1.4rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
 }
 
 .community-card.community-publish-card::after {
@@ -3056,12 +3209,28 @@ html[lang="zh-CN"] .hero-copy h1 {
 }
 
 .docs-search-results small {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
   overflow: hidden;
   color: var(--muted);
   font-size: 0.78rem;
   line-height: 1.4;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.docs-search-results small span:first-child {
+  flex: 0 0 auto;
+  border: 1px solid rgba(79, 172, 255, 0.2);
+  border-radius: 6px;
+  padding: 2px 6px;
+}
+
+.docs-search-results small span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .docs-search-results > p {
@@ -3117,7 +3286,7 @@ html[lang="zh-CN"] .hero-copy h1 {
 
 .docs-tabs button[aria-selected="true"] .docs-tab-icon {
   fill: currentColor;
-  stroke: var(--background);
+  stroke: transparent;
   stroke-width: 1.75;
   transform: scale(1.08);
 }
@@ -3643,6 +3812,33 @@ html[lang="zh-CN"] .hero-copy h1 {
   overflow: hidden;
   pointer-events: none;
   transform: translateX(-50%);
+}
+
+.hero-media-wall.universal-video-wall {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  border: 0;
+  border-radius: 0;
+  transform: none;
+}
+
+.hero-media-wall.universal-video-wall::before {
+  background:
+    linear-gradient(180deg, rgba(8, 8, 7, 0.82), rgba(8, 8, 7, 0.3) 28%, rgba(8, 8, 7, 0.58) 100%),
+    linear-gradient(90deg, rgba(8, 8, 7, 0.7), transparent 26%, transparent 74%, rgba(8, 8, 7, 0.7)),
+    radial-gradient(circle at 50% 42%, transparent 0%, rgba(8, 8, 7, 0.34) 78%);
+}
+
+.hero-media-wall.universal-video-wall::after {
+  background: rgba(8, 8, 7, 0.18);
+  backdrop-filter: blur(1px);
+}
+
+.hero-media-wall.universal-video-wall .hero-video-frame {
+  opacity: 0.58;
+  filter: saturate(0.76) brightness(0.72);
 }
 
 .hero-media-wall::before {

@@ -7,7 +7,6 @@ import {
   Check,
   ChevronDown,
   ChevronRight,
-  CircleCheck,
   Clapperboard,
   Download,
   FileText,
@@ -16,15 +15,17 @@ import {
   Folder,
   FolderOpen,
   Gem,
-  GripVertical,
   Image,
   Layers3,
   MessageCircleMore,
   MessageSquareText,
   PanelLeftClose,
   PanelLeftOpen,
+  PanelRightClose,
+  PanelRightOpen,
   Pencil,
   Plus,
+  RefreshCw,
   ScanSearch,
   Share2,
   Sparkles,
@@ -237,20 +238,26 @@ function workspaceCopy(locale: string) {
         leaveFolder: "拖到这里移出项目",
         collapse: "收起导航",
         expand: "展开导航",
+        collapseAssets: "收起资产",
+        expandAssets: "展开资产",
+        collapseAgents: "收起 Agents",
+        expandAgents: "展开 Agents",
         docs: "文档",
         assets: "资产",
         noAssets: "当前对话还没有资产。",
-        brief: "整体设定",
+        brief: "方向",
         storyboard: "故事板",
         script: "剧本",
-        outline: "分集与分镜大纲",
+        scripts: "剧本",
+        shots: "镜头",
+        outline: "大纲",
         media: "媒体",
         uploads: "上传素材",
         generated: "生成素材",
         exported: "成片与导出",
         stage: "审批阶段",
         stageConcept: "整体设定",
-        stageOutline: "分集/分镜大纲",
+        stageOutline: "故事大纲",
         stageScript: "逐场剧本",
         stageReady: "可以生成",
         awaiting: "等待你的批准",
@@ -265,7 +272,8 @@ function workspaceCopy(locale: string) {
         chatPlaceholder: "描述下一步，或向 VideoAgent 提问……",
         send: "发送",
         review: "即时评估",
-        export: "导出成片",
+        export: "导出",
+        sharing: "分享中……",
         exportReady: "成片已就绪",
         download: "下载",
         share: "分享",
@@ -274,6 +282,7 @@ function workspaceCopy(locale: string) {
         ratio: "画面比例",
         estimate: "估算积分",
         generate: "生成镜头",
+        approvalRequired: "请先在 Agents 中批准故事，再生成镜头。",
         generating: "生成中……",
         upload: "上传素材",
         uploading: "上传中……",
@@ -302,20 +311,26 @@ function workspaceCopy(locale: string) {
         leaveFolder: "Drop here to remove from project",
         collapse: "Collapse navigation",
         expand: "Expand navigation",
+        collapseAssets: "Collapse assets",
+        expandAssets: "Expand assets",
+        collapseAgents: "Collapse agents",
+        expandAgents: "Expand agents",
         docs: "Docs",
         assets: "Assets",
         noAssets: "No assets in this conversation yet.",
-        brief: "Creative direction",
+        brief: "Direction",
         storyboard: "Storyboard",
         script: "Script",
-        outline: "Episode & shot outline",
+        scripts: "Scripts",
+        shots: "Shots",
+        outline: "Outline",
         media: "Media",
         uploads: "Uploads",
         generated: "Generated",
         exported: "Exports",
         stage: "Approval stage",
         stageConcept: "Overall direction",
-        stageOutline: "Episode outline",
+        stageOutline: "Story outline",
         stageScript: "Scene script",
         stageReady: "Ready to generate",
         awaiting: "Waiting for your approval",
@@ -331,7 +346,8 @@ function workspaceCopy(locale: string) {
         chatPlaceholder: "Describe the next move or ask VideoAgent…",
         send: "Send",
         review: "Review",
-        export: "Export film",
+        export: "Export",
+        sharing: "Sharing…",
         exportReady: "Export ready",
         download: "Download",
         share: "Share",
@@ -340,6 +356,7 @@ function workspaceCopy(locale: string) {
         ratio: "Aspect ratio",
         estimate: "Estimate credits",
         generate: "Generate shot",
+        approvalRequired: "Approve the story in Agents before generating a shot.",
         generating: "Generating…",
         upload: "Upload asset",
         uploading: "Uploading…",
@@ -417,20 +434,6 @@ function WorkspaceHistory({
             </a>
           ))}
         </nav>
-        <div className="mt-4 grid gap-2 border-t border-white/10 pt-4">
-          <span
-            className="grid size-10 place-items-center rounded-xl text-white/35"
-            title={copy.projects}
-          >
-            <Folder className="h-[18px] w-[18px]" />
-          </span>
-          <span
-            className="grid size-10 place-items-center rounded-xl text-white/35"
-            title={copy.recent}
-          >
-            <MessageSquareText className="h-[18px] w-[18px]" />
-          </span>
-        </div>
         <button
           aria-label={copy.expand}
           className="mt-auto grid size-10 place-items-center rounded-xl text-white/50 hover:bg-white/[0.06] hover:text-white"
@@ -443,7 +446,7 @@ function WorkspaceHistory({
     );
   }
 
-  const recentThreads = workspace.recents;
+  const recentThreads = workspace.recents.filter((thread) => !thread.folder_id);
   const assignedByFolder = new Map<string, WorkspaceThread[]>();
   for (const thread of recentThreads) {
     if (!thread.folder_id) continue;
@@ -463,50 +466,44 @@ function WorkspaceHistory({
             : "border-transparent hover:border-white/[0.08] hover:bg-white/[0.035]",
         )}
         draggable
-        href={`/${locale}/?start=1#conversation/${thread.id}`}
+        href={`#conversation/${thread.id}`}
         key={thread.id}
+        onClick={(event) => {
+          event.preventDefault();
+          window.history.pushState(null, "", `#conversation/${thread.id}`);
+          window.dispatchEvent(new Event("hashchange"));
+        }}
         onDragStart={(event) => onBeginDrag(event, thread.id)}
       >
-        <span className="flex items-start gap-2.5">
-          <GripVertical
-            className={cn(
-              "mt-0.5 h-3.5 w-3.5 shrink-0",
-              thread.id === activeProjectId
-                ? "text-[#4facff]"
-                : "text-white/15 group-hover:text-white/35",
-            )}
-          />
-          <span className="min-w-0 flex-1">
-            <span className="flex items-center gap-2">
-              <strong
-                className={cn(
-                  "truncate text-[18px] font-medium",
-                  thread.id === activeProjectId
-                    ? "text-[#8fdcff]"
-                    : "text-white/78",
-                )}
-              >
-                {thread.title}
-              </strong>
-            </span>
-            <span className="mt-1 line-clamp-1 text-[12px] leading-5 text-white/32">
-              {thread.preview || thread.brief}
-            </span>
-          </span>
-        </span>
+        <strong
+          className={cn(
+            "truncate text-[18px] font-medium",
+            thread.id === activeProjectId ? "text-[#8fdcff]" : "text-white/78",
+          )}
+        >
+          {thread.title}
+        </strong>
       </a>
     );
   }
 
   return (
-    <aside className="flex w-[208px] min-h-0 shrink-0 flex-col border-white/[0.07] bg-[#0d0c0a] xl:my-5 xl:ml-5 xl:rounded-[26px] xl:border">
-      <div className="flex h-14 items-center px-4">
+    <aside className="flex w-[280px] min-h-0 shrink-0 flex-col border-white/[0.07] bg-[#0d0c0a] xl:my-5 xl:ml-5 xl:rounded-[26px] xl:border">
+      <div className="flex h-14 items-center justify-between px-4">
         <Link className="flex items-center gap-2.5 text-[18px] font-semibold" href="/">
           <span className="grid size-8 place-items-center rounded-lg bg-[#1677ff] text-white">
             <PlayIcon />
           </span>
           VideoAgent
         </Link>
+        <button
+          aria-label={copy.collapse}
+          className="grid size-8 place-items-center rounded-lg text-[#4facff] hover:bg-[#1677ff]/10 hover:text-[#9bd8ff]"
+          onClick={onToggleCollapsed}
+          type="button"
+        >
+          <PanelLeftClose className="h-4 w-4" />
+        </button>
       </div>
 
       <nav
@@ -546,7 +543,7 @@ function WorkspaceHistory({
           </button>
           <button
             aria-label={copy.newFolder}
-            className="grid size-7 place-items-center rounded-lg text-white/35 hover:bg-white/[0.06] hover:text-white"
+            className="sidebar-history-add grid size-7 place-items-center rounded-lg bg-transparent text-white/38 hover:bg-white/[0.06] hover:text-white"
             onClick={onNewFolder}
             type="button"
           >
@@ -587,11 +584,6 @@ function WorkspaceHistory({
                       <ChevronDown className="h-3.5 w-3.5 text-white/30" />
                     ) : (
                       <ChevronRight className="h-3.5 w-3.5 text-white/30" />
-                    )}
-                    {open ? (
-                      <FolderOpen className="h-4 w-4 text-[#6eb8ff]" />
-                    ) : (
-                      <Folder className="h-4 w-4 text-[#6eb8ff]" />
                     )}
                     <span className="truncate">{folder.name}</span>
                   </button>
@@ -654,8 +646,8 @@ function WorkspaceHistory({
             </button>
             <a
               aria-label={copy.newConversation}
-              className="grid size-7 place-items-center rounded-lg border border-white/10 text-white/40 hover:border-[#1677ff]/30 hover:text-[#8fdcff]"
-              href={`/${locale}/#agents`}
+              className="sidebar-history-add grid size-7 place-items-center rounded-lg bg-transparent text-white/38 hover:bg-white/[0.06] hover:text-white"
+              href="#agents"
             >
               <Plus className="h-4 w-4" />
             </a>
@@ -666,16 +658,6 @@ function WorkspaceHistory({
             </div>
           ) : null}
         </div>
-      </div>
-      <div className="border-t border-white/10 p-3">
-        <button
-          aria-label={copy.collapse}
-          className="grid h-10 w-full place-items-center rounded-xl text-white/40 hover:bg-white/[0.06] hover:text-white"
-          onClick={onToggleCollapsed}
-          type="button"
-        >
-          <PanelLeftClose className="h-4 w-4" />
-        </button>
       </div>
     </aside>
   );
@@ -800,24 +782,22 @@ function ApprovalCard({
 
 type AssetsTreeProps = {
   assets: Asset[];
+  collapsed: boolean;
   copy: ReturnType<typeof workspaceCopy>;
-  isWorking: boolean;
   selected: CanvasSelection;
   storyboard: Storyboard | null;
-  workflow: WorkflowState | null;
   onSelect: (selection: CanvasSelection) => void;
-  onUpload: (file: File) => void;
+  onToggleCollapsed: () => void;
 };
 
 function AssetsTree({
   assets,
+  collapsed,
   copy,
-  isWorking,
   selected,
   storyboard,
-  workflow,
   onSelect,
-  onUpload,
+  onToggleCollapsed,
 }: AssetsTreeProps) {
   const [sections, setSections] = useState({
     story: true,
@@ -830,14 +810,41 @@ function AssetsTree({
   const idleClass =
     "border-transparent text-white/50 hover:border-white/[0.07] hover:bg-white/[0.03] hover:text-white/75";
 
+  if (collapsed) {
+    return (
+      <aside className="flex w-full min-h-0 flex-col items-center border-r border-white/[0.07] bg-[#0b0a08]/[0.82] backdrop-blur-xl">
+        <div className="grid h-14 shrink-0 place-items-center border-b border-white/[0.07] bg-[#0b0a08]/[0.96]">
+          <button
+            aria-label={copy.expandAssets}
+            className="grid size-8 place-items-center rounded-lg text-[#4facff] hover:bg-[#1677ff]/10"
+            onClick={onToggleCollapsed}
+            type="button"
+          >
+            <PanelLeftOpen className="h-4 w-4" />
+          </button>
+        </div>
+        <button
+          className="mt-3 grid place-items-center gap-3 rounded-xl px-2 py-3 text-[#4facff] hover:bg-[#1677ff]/10"
+          onClick={onToggleCollapsed}
+          type="button"
+        >
+          <Layers3 className="h-5 w-5" />
+          <span className="[writing-mode:vertical-rl] text-[13px] tracking-[0.08em]">
+            {copy.assets}
+          </span>
+        </button>
+      </aside>
+    );
+  }
+
   function sectionButton(
     key: keyof typeof sections,
     label: string,
-    icon: ReactNode,
   ) {
+    const DirectoryIcon = sections[key] ? FolderOpen : Folder;
     return (
       <button
-        className="flex w-full items-center gap-2 px-2 py-2 text-left text-[12px] font-semibold text-white/30 hover:text-white/55"
+        className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-[15px] font-semibold text-white/48 hover:bg-white/[0.035] hover:text-white/72"
         onClick={() =>
           setSections((current) => ({ ...current, [key]: !current[key] }))
         }
@@ -848,34 +855,27 @@ function AssetsTree({
         ) : (
           <ChevronRight className="h-3 w-3" />
         )}
-        {icon}
+        <DirectoryIcon className="h-4 w-4 text-[#6eb8ff]" />
         {label}
       </button>
     );
   }
 
   return (
-    <aside className="flex w-[232px] min-h-0 shrink-0 flex-col border-r border-white/[0.07] bg-[#0b0a08]">
-      <div className="flex h-14 items-center justify-between border-b border-white/[0.07] px-4">
-        <span className="flex items-center gap-2 text-[12px] font-medium text-white/62">
+    <aside className="flex w-full min-h-0 min-w-0 shrink-0 flex-col border-r border-white/[0.07] bg-[#0b0a08]/[0.72] backdrop-blur-lg">
+      <div className="flex h-14 items-center justify-between border-b border-white/[0.07] bg-[#0b0a08]/[0.96] px-4">
+        <span className="flex items-center gap-2 text-[12px] font-medium text-white/82">
           <Layers3 className="h-4 w-4 text-[#6eb8ff]" />
           {copy.assets}
         </span>
-        <label className="grid size-7 cursor-pointer place-items-center rounded-lg text-white/35 hover:bg-white/[0.06] hover:text-white">
-          <Upload className="h-3.5 w-3.5" />
-          <input
-            accept="image/*,video/*,audio/*"
-            aria-label={copy.upload}
-            className="sr-only"
-            disabled={isWorking}
-            onChange={(event) => {
-              const file = event.target.files?.[0];
-              event.currentTarget.value = "";
-              if (file) onUpload(file);
-            }}
-            type="file"
-          />
-        </label>
+        <button
+          aria-label={copy.collapseAssets}
+          className="grid size-8 place-items-center rounded-lg text-[#4facff] hover:bg-[#1677ff]/10"
+          onClick={onToggleCollapsed}
+          type="button"
+        >
+          <PanelLeftClose className="h-4 w-4" />
+        </button>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-2">
         <button
@@ -886,7 +886,7 @@ function AssetsTree({
           onClick={() => onSelect({ kind: "brief" })}
           type="button"
         >
-          <FileText className="h-3.5 w-3.5" />
+          <FileText className="h-3.5 w-3.5 text-[#4facff]" />
           {copy.brief}
         </button>
         <button
@@ -897,12 +897,12 @@ function AssetsTree({
           onClick={() => onSelect({ kind: "storyboard" })}
           type="button"
         >
-          <Clapperboard className="h-3.5 w-3.5" />
+          <Clapperboard className="h-3.5 w-3.5 text-[#4facff]" />
           {copy.storyboard}
         </button>
 
         <div className="mt-3">
-          {sectionButton("story", copy.script, <FileText className="h-3 w-3" />)}
+          {sectionButton("story", copy.scripts)}
           {sections.story ? (
             <div className="space-y-1 pl-3">
               <button
@@ -915,15 +915,7 @@ function AssetsTree({
                 onClick={() => onSelect({ kind: "document", document: "outline" })}
                 type="button"
               >
-                <CircleCheck
-                  className={cn(
-                    "h-3.5 w-3.5",
-                    workflow &&
-                      ["outline", "script", "ready"].includes(workflow.stage)
-                      ? "text-emerald-300"
-                      : "text-white/20",
-                  )}
-                />
+                <FileText className="h-3.5 w-3.5 text-[#4facff]" />
                 {copy.outline}
               </button>
               <button
@@ -936,14 +928,7 @@ function AssetsTree({
                 onClick={() => onSelect({ kind: "document", document: "script" })}
                 type="button"
               >
-                <CircleCheck
-                  className={cn(
-                    "h-3.5 w-3.5",
-                    workflow && ["script", "ready"].includes(workflow.stage)
-                      ? "text-emerald-300"
-                      : "text-white/20",
-                  )}
-                />
+                <FileText className="h-3.5 w-3.5 text-[#4facff]" />
                 {copy.script}
               </button>
             </div>
@@ -951,7 +936,7 @@ function AssetsTree({
         </div>
 
         <div className="mt-3">
-          {sectionButton("shots", copy.shot, <Film className="h-3 w-3" />)}
+          {sectionButton("shots", copy.shots)}
           {sections.shots ? (
             <div className="space-y-1 pl-3">
               {storyboard?.shots.map((shot) => (
@@ -966,9 +951,7 @@ function AssetsTree({
                   onClick={() => onSelect({ kind: "shot", shotId: shot.id })}
                   type="button"
                 >
-                  <span className="mt-0.5 text-[10px] text-[#6eb8ff]">
-                    {String(shot.index + 1).padStart(2, "0")}
-                  </span>
+                  <Video className="mt-0.5 h-4 w-4 shrink-0 text-[#6eb8ff]" />
                   <span className="line-clamp-2">{shot.description}</span>
                 </button>
               ))}
@@ -980,7 +963,7 @@ function AssetsTree({
         </div>
 
         <div className="mt-3">
-          {sectionButton("media", copy.media, <Image className="h-3 w-3" />)}
+          {sectionButton("media", copy.media)}
           {sections.media ? (
             <div className="space-y-1 pl-3">
               {assets
@@ -999,8 +982,10 @@ function AssetsTree({
                   >
                     {asset.content_type.startsWith("video/") ? (
                       <Video className="h-3.5 w-3.5" />
-                    ) : (
+                    ) : asset.content_type.startsWith("image/") ? (
                       <Image className="h-3.5 w-3.5" />
+                    ) : (
+                      <FileText className="h-3.5 w-3.5" />
                     )}
                     <span className="truncate">{asset.filename}</span>
                   </button>
@@ -1010,7 +995,7 @@ function AssetsTree({
         </div>
 
         <div className="mt-3">
-          {sectionButton("exports", copy.exported, <Download className="h-3 w-3" />)}
+          {sectionButton("exports", copy.exported)}
           {sections.exports ? (
             <div className="space-y-1 pl-3">
               {assets
@@ -1027,7 +1012,13 @@ function AssetsTree({
                     onClick={() => onSelect({ kind: "asset", assetId: asset.id })}
                     type="button"
                   >
-                    <Film className="h-3.5 w-3.5" />
+                    {asset.content_type.startsWith("video/") ? (
+                      <Video className="h-3.5 w-3.5" />
+                    ) : asset.content_type.startsWith("image/") ? (
+                      <Image className="h-3.5 w-3.5" />
+                    ) : (
+                      <FileText className="h-3.5 w-3.5" />
+                    )}
                     <span className="truncate">{asset.filename}</span>
                   </button>
                 ))}
@@ -1051,6 +1042,9 @@ export function ProjectWorkspace({
   const [project, setProject] = useState<Project | null>(null);
   const [storyboard, setStoryboard] = useState<Storyboard | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
+  const [streamingMessageIds, setStreamingMessageIds] = useState<Set<string>>(
+    () => new Set(),
+  );
   const [messageDraft, setMessageDraft] = useState("");
   const [selectedShotId, setSelectedShotId] = useState<string | null>(null);
   const [estimate, setEstimate] = useState<CostEstimate | null>(null);
@@ -1072,6 +1066,8 @@ export function ProjectWorkspace({
   const [isExporting, setIsExporting] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [isReordering, setIsReordering] = useState(false);
+  const [assetsPanelCollapsed, setAssetsPanelCollapsed] = useState(false);
+  const [agentPanelCollapsed, setAgentPanelCollapsed] = useState(false);
   const [mobilePanel, setMobilePanel] = useState<
     "agent" | "canvas" | "inspector" | "assets" | "history"
   >("canvas");
@@ -1093,6 +1089,23 @@ export function ProjectWorkspace({
   const [customDecision, setCustomDecision] = useState("");
   const [pendingDecision, setPendingDecision] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  function beginAssistantStream(message: Message) {
+    setStreamingMessageIds((current) => {
+      const next = new Set(current);
+      next.add(message.id);
+      return next;
+    });
+  }
+
+  function finishAssistantStream(messageId: string) {
+    setStreamingMessageIds((current) => {
+      if (!current.has(messageId)) return current;
+      const next = new Set(current);
+      next.delete(messageId);
+      return next;
+    });
+  }
 
   useEffect(() => {
     let active = true;
@@ -1156,8 +1169,9 @@ export function ProjectWorkspace({
         if (workflowResponse?.ok) {
           setWorkflow((await workflowResponse.json()) as WorkflowState);
         }
+        const hashQuery = window.location.hash.split("?", 2)[1] ?? "";
         const shouldStart =
-          new URLSearchParams(window.location.search).get("start") === "1" &&
+          new URLSearchParams(hashQuery).get("start") === "1" &&
           nextMessages.length === 0 &&
           Boolean(creativeBrief(nextProject.brief));
         if (shouldStart) {
@@ -1172,11 +1186,17 @@ export function ProjectWorkspace({
           );
           if (turnResponse.ok) {
             const turn = (await turnResponse.json()) as AgentTurn;
+            beginAssistantStream(turn.assistant_message);
             setMessages([turn.user_message, turn.assistant_message]);
             setStoryboard(turn.storyboard);
             setSelectedShotId(turn.storyboard.shots[0]?.id ?? null);
             setSelectedCanvas({ kind: "storyboard" });
             if (turn.workflow) setWorkflow(turn.workflow);
+            window.history.replaceState(
+              null,
+              "",
+              `#conversation/${projectId}`,
+            );
           }
         }
         setStatus("ready");
@@ -1190,6 +1210,42 @@ export function ProjectWorkspace({
       active = false;
     };
   }, [projectId]);
+
+  useEffect(() => {
+    if (!project || !storyboard || storyboard.shots.length === 0) {
+      setEvaluation(null);
+      return;
+    }
+
+    let active = true;
+    const controller = new AbortController();
+    setIsReviewing(true);
+    fetch(`${API_BASE_URL}/projects/${project.id}/evaluate`, {
+      method: "POST",
+      credentials: "include",
+      signal: controller.signal,
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("evaluation-failed");
+        return (await response.json()) as Evaluation;
+      })
+      .then((nextEvaluation) => {
+        if (active) setEvaluation(nextEvaluation);
+      })
+      .catch((error: unknown) => {
+        if (active && !(error instanceof DOMException && error.name === "AbortError")) {
+          setActionError(t("reviewError"));
+        }
+      })
+      .finally(() => {
+        if (active) setIsReviewing(false);
+      });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
+  }, [project, storyboard?.id, storyboard?.version, t]);
 
   useEffect(() => {
     setHistoryCollapsed(
@@ -1377,6 +1433,7 @@ export function ProjectWorkspace({
       );
       if (!response.ok) throw new Error("workflow-decision-failed");
       const decision = (await response.json()) as WorkflowDecisionResponse;
+      beginAssistantStream(decision.assistant_message);
       setMessages((current) => [
         ...current,
         decision.user_message,
@@ -1447,6 +1504,7 @@ export function ProjectWorkspace({
       });
       if (!response.ok) throw new Error("agent-message-failed");
       const turn = (await response.json()) as AgentTurn;
+      beginAssistantStream(turn.assistant_message);
       setMessages((current) => [...current, turn.user_message, turn.assistant_message]);
       setStoryboard(turn.storyboard);
       if (turn.workflow) setWorkflow(turn.workflow);
@@ -1600,16 +1658,18 @@ export function ProjectWorkspace({
         return;
       }
       await submitGeneration(selectedShot);
+      const generationMessage: Message = {
+        id: `generation-${crypto.randomUUID()}`,
+        role: "assistant",
+        content: t("agentGenerationStarted", {
+          shot: selectedShot.description,
+        }),
+        created_at: new Date().toISOString(),
+      };
+      beginAssistantStream(generationMessage);
       setMessages((current) => [
         ...current,
-        {
-          id: `generation-${crypto.randomUUID()}`,
-          role: "assistant",
-          content: t("agentGenerationStarted", {
-            shot: selectedShot.description,
-          }),
-          created_at: new Date().toISOString(),
-        },
+        generationMessage,
       ]);
       setMobilePanel("canvas");
     } catch (error) {
@@ -1624,10 +1684,9 @@ export function ProjectWorkspace({
     }
   }
 
-  async function evaluateProject() {
+  async function evaluateProject(openDialog = true) {
+    if (openDialog) setReviewOpen(true);
     if (!project || isReviewing) return;
-    setReviewOpen(true);
-    setEvaluation(null);
     setIsReviewing(true);
     setActionError(null);
     try {
@@ -1639,7 +1698,6 @@ export function ProjectWorkspace({
       setEvaluation((await response.json()) as Evaluation);
     } catch {
       setActionError(t("reviewError"));
-      setReviewOpen(false);
     } finally {
       setIsReviewing(false);
     }
@@ -1671,8 +1729,8 @@ export function ProjectWorkspace({
     }
   }
 
-  async function exportProject() {
-    if (!project || isExporting) return;
+  async function exportProject(): Promise<Asset[]> {
+    if (!project || isExporting) return [];
     setIsExporting(true);
     setActionError(null);
     try {
@@ -1697,8 +1755,10 @@ export function ProjectWorkspace({
       if (payload.items[0]) {
         setSelectedCanvas({ kind: "asset", assetId: payload.items[0].id });
       }
+      return payload.items;
     } catch {
       setActionError(t("exportError"));
+      return [];
     } finally {
       setIsExporting(false);
     }
@@ -1721,6 +1781,16 @@ export function ProjectWorkspace({
       setActionError(t("shareError"));
     } finally {
       setIsSharing(false);
+    }
+  }
+
+  async function shareProject() {
+    if (!project || isExporting || isSharing) return;
+    const targets =
+      exportedAssets.length > 0 ? exportedAssets : await exportProject();
+    const target = targets[0];
+    if (target) {
+      await shareExport(target);
     }
   }
 
@@ -1779,6 +1849,8 @@ export function ProjectWorkspace({
           : selectedCanvas.kind === "shot"
             ? canvasShot?.description ?? copy.shot
             : selectedAsset?.filename ?? copy.media;
+  const activeDocumentMode =
+    selectedCanvas.kind === "document" ? selectedCanvas.document : null;
 
   function selectShot(shot: Shot) {
     setSelectedShotId(shot.id);
@@ -1790,9 +1862,9 @@ export function ProjectWorkspace({
   return (
     <main
       className={cn(
-        "project-workspace-shell flex min-h-0 overflow-hidden bg-[#080807] text-white",
+        "project-workspace-shell flex min-h-0 overflow-hidden bg-[#080807]/[0.28] text-white backdrop-blur-[2px]",
         embedded
-          ? "project-workspace-embedded h-[calc(100dvh-72px)]"
+          ? "project-workspace-embedded h-[100dvh]"
           : "h-screen min-h-[680px]",
       )}
     >
@@ -1831,86 +1903,44 @@ export function ProjectWorkspace({
       ) : null}
 
       <section className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 shrink-0 items-center justify-between border-b border-white/[0.07] bg-[#0b0a08] px-4">
-          <div className="flex min-w-0 flex-1 items-center gap-3">
-            <button
-              aria-label={copy.expand}
-              className={cn(
-                "grid size-8 place-items-center rounded-lg text-white/45 hover:bg-white/[0.06] hover:text-white",
-                embedded ? "hidden" : "xl:hidden",
-              )}
-              onClick={() => setMobilePanel("history")}
-              type="button"
-            >
-              <PanelLeftOpen className="h-4 w-4" />
-            </button>
-            <div className="min-w-0 flex-1">
-              <div
-                aria-level={1}
-                className="truncate text-[14px] font-semibold"
-                role="heading"
-              >
-                {project.title}
-              </div>
-              <p className="mt-0.5 text-[11px] text-white/25">
-                {storyboard ? t("shotCount", { count: storyboard.shots.length }) : t("planFirst")}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              className="hidden items-center gap-1.5 rounded-lg border border-white/[0.09] px-3 py-2 text-[11px] text-white/48 hover:border-white/20 hover:text-white sm:flex"
-              disabled={!storyboard || isReviewing}
-              onClick={() => void evaluateProject()}
-              type="button"
-            >
-              <ScanSearch className="h-3.5 w-3.5" />
-              {copy.review}
-              {evaluation ? ` ${evaluation.overall_score}` : ""}
-            </button>
-            <button
-              className="flex items-center gap-1.5 rounded-lg bg-[#1677ff] px-3 py-2 text-[11px] font-semibold text-white disabled:opacity-35"
-              disabled={!canExport || isExporting}
-              onClick={() => void exportProject()}
-              type="button"
-            >
-              <Download className="h-3.5 w-3.5" />
-              {copy.export}
-            </button>
-          </div>
-        </header>
-
-        <div className="grid min-h-0 flex-1 lg:grid-cols-[232px_minmax(0,1fr)_390px]">
+        <div
+          className={cn(
+            "workspace-grid grid min-h-0 flex-1",
+            assetsPanelCollapsed && "assets-collapsed",
+            agentPanelCollapsed && "agent-collapsed",
+          )}
+        >
           <div
             className={cn(
-              "min-h-0 lg:flex",
+              "min-h-0 xl:flex",
               mobilePanel === "assets" ? "flex" : "hidden",
             )}
           >
             <AssetsTree
               assets={assets}
+              collapsed={assetsPanelCollapsed}
               copy={copy}
-              isWorking={isWorking}
               onSelect={(selection) => {
                 setSelectedCanvas(selection);
                 if (selection.kind === "shot") setSelectedShotId(selection.shotId);
                 setMobilePanel("canvas");
               }}
-              onUpload={(file) => void uploadReference(file)}
+              onToggleCollapsed={() =>
+                setAssetsPanelCollapsed((current) => !current)
+              }
               selected={selectedCanvas}
               storyboard={storyboard}
-              workflow={workflow}
             />
           </div>
 
           <section
             className={cn(
-              "min-h-0 min-w-0 flex-col bg-[#0b0a08] lg:flex",
+              "min-h-0 min-w-0 flex-col bg-[#0b0a08]/[0.7] backdrop-blur-lg xl:flex",
               mobilePanel === "canvas" ? "flex" : "hidden",
             )}
           >
-            <div className="flex h-14 shrink-0 items-center border-b border-white/[0.07] px-5">
-              <span className="flex min-w-0 items-center gap-2 text-[12px] font-medium text-white/58">
+            <div className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-white/[0.07] bg-[#0b0a08]/[0.96] px-5">
+              <span className="flex min-w-0 items-center gap-2 text-[12px] font-medium text-white/82">
                 {selectedCanvas.kind === "asset" &&
                 selectedAsset?.content_type.startsWith("video/") ? (
                   <Video className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
@@ -1924,6 +1954,52 @@ export function ProjectWorkspace({
                 )}
                 <span className="truncate">{canvasTitle}</span>
               </span>
+              <div className="flex shrink-0 items-center gap-2">
+                <div className="hidden shrink-0 items-center rounded-lg border border-white/[0.09] sm:flex">
+                  <button
+                    aria-label={copy.review}
+                    className="flex items-center gap-1.5 px-3 py-2 text-[12px] text-white/58 hover:text-white disabled:opacity-35"
+                    disabled={!storyboard || storyboard.shots.length === 0}
+                    onClick={() => {
+                      setReviewOpen(true);
+                      if (!evaluation && !isReviewing) {
+                        void evaluateProject(false);
+                      }
+                    }}
+                    type="button"
+                  >
+                    <ScanSearch className="h-4 w-4 text-[#4facff]" />
+                    {copy.review}
+                    <span className="rounded-md bg-[#1677ff]/15 px-1.5 py-0.5 text-[#8fdcff]">
+                      {evaluation?.overall_score ?? "—"}
+                    </span>
+                  </button>
+                  <button
+                    aria-label={t("refreshReview")}
+                    className="grid size-9 place-items-center border-l border-white/[0.08] text-[#4facff] hover:bg-[#1677ff]/10 hover:text-[#8fdcff] disabled:opacity-35"
+                    disabled={
+                      !storyboard ||
+                      storyboard.shots.length === 0 ||
+                      isReviewing
+                    }
+                    onClick={() => void evaluateProject(false)}
+                    type="button"
+                  >
+                    <RefreshCw
+                      className={cn("h-4 w-4", isReviewing && "animate-spin")}
+                    />
+                  </button>
+                </div>
+                <button
+                  className="flex items-center gap-1.5 rounded-lg bg-[#1677ff] px-3 py-2 text-[12px] font-semibold text-white disabled:opacity-35"
+                  disabled={!canExport || isExporting || isSharing}
+                  onClick={() => void shareProject()}
+                  type="button"
+                >
+                  <Share2 className="h-4 w-4" />
+                  {isExporting || isSharing ? copy.sharing : copy.share}
+                </button>
+              </div>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto">
               {selectedCanvas.kind === "brief" ? (
@@ -1962,7 +2038,10 @@ export function ProjectWorkspace({
 
               {selectedCanvas.kind === "storyboard" ||
               selectedCanvas.kind === "document" ? (
-                <article className="mx-auto max-w-4xl px-6 py-8 sm:px-10">
+                <article
+                  className="mx-auto max-w-4xl px-6 py-8 sm:px-10"
+                  data-document-mode={activeDocumentMode ?? "storyboard"}
+                >
                   <div className="flex items-start justify-between gap-5 border-b border-white/[0.07] pb-6">
                     <div>
                       <p className="text-[12px] font-semibold text-[#6eb8ff]">
@@ -1994,21 +2073,28 @@ export function ProjectWorkspace({
                           type="button"
                         >
                           <div className="flex items-center justify-between gap-4">
-                            <span className="text-[10px] font-semibold tracking-[0.16em] text-[#6eb8ff]">
+                            <span className="text-[12px] font-semibold text-[#6eb8ff]">
                               {copy.shot} {String(shot.index + 1).padStart(2, "0")}
                             </span>
-                            <span className="text-[10px] text-white/22">
-                              {shot.duration_seconds}s · {shot.aspect_ratio}
+                            <span className="flex flex-wrap items-center justify-end gap-2">
+                              <span className="rounded-md border border-white/[0.08] bg-white/[0.025] px-2.5 py-1 text-[12px] text-white/38">
+                                {shot.duration_seconds}s
+                              </span>
+                              <span className="rounded-md border border-white/[0.08] bg-white/[0.025] px-2.5 py-1 text-[12px] text-white/38">
+                                {shot.aspect_ratio}
+                              </span>
                             </span>
                           </div>
                           <h3 className="mt-3 text-[17px] font-medium leading-8 text-white/82">
                             {shot.description}
                           </h3>
-                          <p className="mt-3 line-clamp-3 text-[14px] leading-7 text-white/38">
-                            {locale.startsWith("zh") && shot.prompt_zh
-                              ? shot.prompt_zh
-                              : shot.prompt_en}
-                          </p>
+                          {activeDocumentMode !== "outline" ? (
+                            <p className="mt-3 line-clamp-3 text-[14px] leading-7 text-white/38">
+                              {locale.startsWith("zh") && shot.prompt_zh
+                                ? shot.prompt_zh
+                                : shot.prompt_en}
+                            </p>
+                          ) : null}
                         </button>
                       ))}
                     </div>
@@ -2034,7 +2120,7 @@ export function ProjectWorkspace({
                   <div className="aspect-video overflow-hidden rounded-2xl border border-white/[0.08] bg-[radial-gradient(circle_at_72%_20%,rgba(22,119,255,0.26),transparent_28%),linear-gradient(145deg,#13213d,#080c13)] p-6">
                     <div className="flex h-full flex-col justify-between">
                       <div className="flex items-center justify-between">
-                        <span className="rounded-full bg-black/25 px-3 py-1.5 text-[10px] font-semibold tracking-[0.14em] backdrop-blur">
+                        <span className="rounded-full bg-black/25 px-3 py-1.5 text-[12px] font-semibold backdrop-blur">
                           {copy.shot} {String(canvasShot.index + 1).padStart(2, "0")}
                         </span>
                         {canvasShot.status === "completed" ? (
@@ -2047,9 +2133,14 @@ export function ProjectWorkspace({
                         <p className="max-w-2xl font-display text-2xl leading-tight text-white/85">
                           {canvasShot.description}
                         </p>
-                        <p className="mt-3 text-[11px] text-white/35">
-                          {canvasShot.duration_seconds}s · {canvasShot.aspect_ratio}
-                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          <span className="rounded-md border border-white/[0.1] bg-black/20 px-2.5 py-1 text-[12px] text-white/52">
+                            {canvasShot.duration_seconds}s
+                          </span>
+                          <span className="rounded-md border border-white/[0.1] bg-black/20 px-2.5 py-1 text-[12px] text-white/52">
+                            {canvasShot.aspect_ratio}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -2081,9 +2172,14 @@ export function ProjectWorkspace({
                         </div>
                       </div>
                       {estimate ? (
-                        <p className="rounded-xl bg-[#1677ff]/[0.08] px-3 py-2 text-[11px] text-[#a8ddff]">
-                          {t("estimatedCredits")}: {estimate.credits}
-                        </p>
+                        <div className="flex flex-wrap items-center gap-2 rounded-xl bg-[#1677ff]/[0.08] px-3 py-2 text-[11px] text-[#a8ddff]">
+                          <span>
+                            {t("estimatedCredits")}: {estimate.credits}
+                          </span>
+                          <span className="rounded-md border border-[#4facff]/25 px-2 py-0.5">
+                            {estimate.provider}
+                          </span>
+                        </div>
                       ) : null}
                       <button
                         className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/[0.09] px-4 py-2.5 text-[12px] text-white/58 hover:border-white/20 hover:text-white disabled:opacity-35"
@@ -2094,6 +2190,11 @@ export function ProjectWorkspace({
                         <Gem className="h-3.5 w-3.5" />
                         {copy.estimate}
                       </button>
+                      {workflow?.status !== "approved" ? (
+                        <p className="rounded-xl border border-[#1677ff]/20 bg-[#1677ff]/[0.055] px-3 py-2 text-[12px] leading-6 text-[#a8ddff]">
+                          {copy.approvalRequired}
+                        </p>
+                      ) : null}
                       <button
                         className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1677ff] px-4 py-2.5 text-[12px] font-semibold text-white disabled:opacity-35"
                         disabled={
@@ -2184,10 +2285,14 @@ export function ProjectWorkspace({
                   <div className="mt-5 flex items-center justify-between gap-4">
                     <div>
                       <h2 className="text-[15px] font-medium">{selectedAsset.filename}</h2>
-                      <p className="mt-1 text-[11px] text-white/28">
-                        {selectedAsset.content_type} ·{" "}
-                        {(selectedAsset.byte_size / 1024 / 1024).toFixed(1)} MB
-                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        <span className="rounded-md border border-white/[0.08] bg-white/[0.025] px-2.5 py-1 text-[12px] text-white/38">
+                          {selectedAsset.content_type}
+                        </span>
+                        <span className="rounded-md border border-white/[0.08] bg-white/[0.025] px-2.5 py-1 text-[12px] text-white/38">
+                          {(selectedAsset.byte_size / 1024 / 1024).toFixed(1)} MB
+                        </span>
+                      </div>
                     </div>
                     <a
                       className="flex items-center gap-2 rounded-lg border border-white/[0.09] px-3 py-2 text-[11px] text-white/55 hover:text-white"
@@ -2269,28 +2374,66 @@ export function ProjectWorkspace({
 
           <aside
             className={cn(
-              "min-h-0 flex-col border-l border-white/[0.07] bg-[#0d0c0a] lg:flex",
+              "min-h-0 flex-col border-l border-white/[0.07] bg-[#0d0c0a]/[0.76] backdrop-blur-lg xl:flex",
               mobilePanel === "agent" ? "flex" : "hidden",
             )}
           >
-            <div className="flex h-14 shrink-0 items-center border-b border-white/[0.07] px-4">
-              <span className="flex items-center gap-2 text-[12px] font-medium text-white/65">
+            {agentPanelCollapsed ? (
+              <>
+                <div className="grid h-14 shrink-0 place-items-center border-b border-white/[0.07] bg-[#0d0c0a]/[0.96]">
+                  <button
+                    aria-label={copy.expandAgents}
+                    className="grid size-8 place-items-center rounded-lg text-[#4facff] hover:bg-[#1677ff]/10"
+                    onClick={() => setAgentPanelCollapsed(false)}
+                    type="button"
+                  >
+                    <PanelRightOpen className="h-4 w-4" />
+                  </button>
+                </div>
+                <button
+                  className="mt-3 grid place-items-center gap-3 rounded-xl px-2 py-3 text-[#4facff] hover:bg-[#1677ff]/10"
+                  onClick={() => setAgentPanelCollapsed(false)}
+                  type="button"
+                >
+                  <Sparkles className="h-5 w-5" />
+                  <span className="[writing-mode:vertical-rl] text-[13px] tracking-[0.08em]">
+                    Agents
+                  </span>
+                </button>
+              </>
+            ) : null}
+            <div
+              className={cn(
+                "flex min-h-0 flex-1 flex-col",
+                agentPanelCollapsed && "hidden",
+              )}
+            >
+            <div className="flex h-14 shrink-0 items-center justify-between border-b border-white/[0.07] bg-[#0d0c0a]/[0.96] px-4">
+              <span className="flex items-center gap-2 text-[12px] font-medium text-white/82">
                 <span className="grid size-6 place-items-center rounded-lg bg-[#1677ff]/15 text-[#7bc6ff]">
                   <Sparkles className="h-3.5 w-3.5" />
                 </span>
-                VideoAgent
+                Agents
               </span>
+              <button
+                aria-label={copy.collapseAgents}
+                className="grid size-8 place-items-center rounded-lg text-[#4facff] hover:bg-[#1677ff]/10"
+                onClick={() => setAgentPanelCollapsed(true)}
+                type="button"
+              >
+                <PanelRightClose className="h-4 w-4" />
+              </button>
             </div>
             <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-5">
               {messages.length === 0 ? (
-                <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-4 text-[12px] leading-6 text-white/45">
-                  <StreamingText text={t("agentIntro")} />
+                <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] p-4 text-[15px] leading-7 text-white/58">
+                  {t("agentIntro")}
                 </div>
               ) : (
                 messages.map((message) => (
                   <div
                     className={cn(
-                      "rounded-2xl px-4 py-3 text-[12px] leading-6",
+                      "rounded-2xl px-4 py-3 text-[15px] leading-7",
                       message.role === "user"
                         ? "ml-8 border border-[#1677ff]/20 bg-[#1677ff]/[0.075] text-white/78"
                         : "mr-3 border border-white/[0.07] bg-white/[0.02] text-white/52",
@@ -2300,20 +2443,22 @@ export function ProjectWorkspace({
                     {message.role === "user" ? (
                       message.content
                     ) : (
-                      <div className="max-h-64 overflow-y-auto pr-1">
-                        <StreamingText text={message.content} />
-                      </div>
+                      <StreamingText
+                        animate={streamingMessageIds.has(message.id)}
+                        onComplete={() => finishAssistantStream(message.id)}
+                        text={message.content}
+                      />
                     )}
                   </div>
                 ))
               )}
               {workflow?.stage === "ready" ? (
-                <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.045] px-4 py-3 text-[12px] leading-6 text-emerald-200/75">
+                <div className="rounded-2xl border border-emerald-400/20 bg-emerald-400/[0.045] px-4 py-3 text-[15px] leading-7 text-emerald-200/75">
                   {copy.readyMessage}
                 </div>
               ) : null}
               {pendingDecision ? (
-                <div className="mr-3 rounded-2xl border border-white/[0.07] bg-white/[0.02] px-4 py-3 text-[12px] text-white/45">
+                <div className="mr-3 rounded-2xl border border-white/[0.07] bg-white/[0.02] px-4 py-3 text-[15px] leading-7 text-white/52">
                   {pendingDecision}
                 </div>
               ) : null}
@@ -2339,7 +2484,7 @@ export function ProjectWorkspace({
               <label className="block rounded-2xl border border-white/[0.09] bg-white/[0.025] p-3 focus-within:border-[#1677ff]/35">
                 <span className="sr-only">{t("agent")}</span>
                 <textarea
-                  className="min-h-16 w-full resize-none bg-transparent text-[12px] leading-6 text-white outline-none placeholder:text-white/24"
+                  className="min-h-16 w-full resize-none bg-transparent text-[15px] leading-7 text-white outline-none placeholder:text-white/28"
                   onChange={(event) => setMessageDraft(event.target.value)}
                   placeholder={copy.chatPlaceholder}
                   value={messageDraft}
@@ -2357,12 +2502,13 @@ export function ProjectWorkspace({
                 </span>
               </label>
             </div>
+            </div>
           </aside>
         </div>
 
         <nav
           className={cn(
-            "grid border-t border-white/[0.07] bg-[#0d0c0a] lg:hidden",
+            "grid border-t border-white/[0.07] bg-[#0d0c0a] xl:hidden",
             embedded ? "grid-cols-3" : "grid-cols-4",
           )}
         >
@@ -2534,10 +2680,7 @@ export function ProjectWorkspace({
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-[12px] text-[#5cc8ff]">
-                  VideoAgent
-                </p>
-                <h2 id="review-title" className="mt-2 text-xl font-semibold">
+                <h2 id="review-title" className="text-xl font-semibold">
                   {t("reviewTitle")}
                 </h2>
               </div>
@@ -2582,14 +2725,18 @@ export function ProjectWorkspace({
                   ))}
                 </div>
                 <div className="mt-5 space-y-2">
-                  {evaluation.suggestions.map((suggestion) => (
+                  {evaluation.suggestions
+                    .filter(
+                      (suggestion) => suggestion.code !== "IMPROVE_PROMPTS",
+                    )
+                    .map((suggestion) => (
                     <p
                       className="rounded-xl border border-white/[0.07] px-3 py-2.5 text-[12px] text-white/52"
                       key={suggestion.code}
                     >
                       {suggestionLabels[suggestion.code]}
                     </p>
-                  ))}
+                    ))}
                 </div>
               </div>
             )}

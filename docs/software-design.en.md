@@ -298,39 +298,63 @@ The shared Landing UI owns:
   hover and Skill cards omit cover images.
 - Searchable embedded Docs with a collapsible table of contents.
 - Semi-transparent search, language, notification, credit, and avatar controls.
+- The muted video carousel is a persistent, translucent backdrop across Agents,
+  Skills, Hots, Assets, Docs, and conversation views.
 - Viewport-aware composer menus that flip above the trigger when needed, plus
   downward-opening language, notification, account, and search menus.
 - Avatar account actions for login, registration, and sign-out.
 - An isolated `/admin` control room for internal operations.
 - Reference uploads, delivery downloads, cover preview, and share-link creation
   in the project workspace.
+- Video-shot generation stays disabled until the staged story workflow is
+  approved, and the shot inspector shows that requirement inline.
 - A collapsible conversation history with Projects and Recents, plus drag-to-file
-  organization.
-- A three-part canvas: current-conversation asset tree, selected asset/document
-  canvas, and approval-driven VideoAgent conversation.
+  organization. Both groups are visible before sign-in and when empty.
+- Project folders expose the disclosure control before a blue folder icon.
+  Filed conversations move out of Recents and render as indented children of
+  their project folder.
+- An IDE-style three-part canvas: the current-conversation asset tree, selected
+  asset/document editor, and approval-driven VideoAgent copilot.
+- The Assets and Agents side panels can collapse to labeled rails. Their widths
+  use responsive clamped proportions so they remain usable across desktop sizes.
 - Skill Studio persists reusable Skills with a stable namespace, instructions,
   quality gates, prompt template, and input/output contracts. `AI optimize`
   turns an early idea into that structure.
 - The built-in `video_agent/skill_synthesis` Skill opens Skill Studio directly
   to help authors compose new Skills.
-- The app navigation collapses into an icon-only left rail while the remaining
-  content fills the space. Projects and chronological Recents live below the
-  Docs divider, are expanded by default, and remain collapsible.
-- Conversations use the `/#conversation/{project_id}` hash view and only the
-  matching history item is active.
+- The app navigation collapses from a control beside the VideoAgent brand into an
+  icon-only left rail while the remaining content fills the space. Projects and
+  chronological Recents live below the Docs divider, are expanded by default,
+  and remain collapsible.
+- Conversations use only the `/en#conversation/{project_id}` hash view, preserve
+  the mounted application shell, and highlight the matching history item.
 - The Projects row opens the project creation form, while the Recents row
   starts a new Agents conversation. Both rows provide disclosure controls.
 - Hots publishing requires an MP4 upload and persists the video as a public
   asset. The author's Assets view lists real Hots videos and Skills, and every
   card opens a detail dialog.
-- Canvas titles use a leading file-type icon without repeating workflow stage;
-  top and VideoAgent headers omit approval status labels. Review shows the
+- The editor pane uses its own compact header. Review and Share are aligned at
+  its far right; no page-level project title bar is rendered. Review shows the
   overall score directly after evaluation.
+- Review is evaluated automatically when the storyboard changes. The current
+  score remains visible, with a separate refresh control that re-runs evaluation
+  without opening the detail dialog. Review and refresh share one framed control.
+- Only a newly returned Agent reply uses type-on presentation. Persisted history
+  and completed replies render as static text, including after a panel is
+  collapsed and reopened.
+- Docs occupies the full content area beside the navigation rail without
+  overlapping it; its embedded document uses the same persistent backdrop.
 - Workspace text never renders smaller than button text, and authentication
   pages use the same dark visual system as the product.
-- Navigation, project folders, and conversation items share one type scale;
-  dates, counts, and empty-state copy are not rendered.
+- Active navigation and asset icons invert outline and fill: inactive icons are
+  transparent inside with a blue stroke; active icons are blue-filled with a
+  transparent stroke.
+- Navigation, project folders, and conversation items share one type scale.
+  Projects, Recents, and conversation items are text-only; dates, counts, and
+  empty-state copy are not rendered.
 - History lists use a thin blue scrollbar with a transparent track.
+- Assets, editor, and Agents scrolling surfaces use the same thin blue scrollbar
+  treatment as Projects and Recents.
 
 The project workspace progresses through overall direction, episode and shot
 outline, scene script, and generation-ready states. Each transition requires an

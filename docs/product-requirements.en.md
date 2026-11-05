@@ -34,7 +34,8 @@ Assets
 Docs
 ```
 
-The account controls are fixed in the upper-right in this order:
+The account controls are fixed at the bottom of the left navigation in this
+order:
 
 ```text
 Language
@@ -45,7 +46,7 @@ Avatar
 
 The account-control container has no outer border.
 Search, language, notifications, credits, and avatar controls use translucent
-surfaces. Their menus open downward and use the same translucent treatment.
+surfaces. Desktop account menus open upward and use the same treatment.
 
 The avatar opens login and registration when signed out. When signed in, it
 shows the account email and a sign-out action.
@@ -211,7 +212,7 @@ Docs requirements:
 - Users authenticate with email and password.
 - Credentials are stored only as cryptographic hashes.
 - Sessions use HttpOnly cookies.
-- The upper-right credit count reflects the current user's VideoAgent balance
+- The sidebar credit count reflects the current user's VideoAgent balance
   without exposing the shared Provider account pool.
 - Generation requires explicit approval before a billable provider call.
 - Credits are reserved before submission and refunded idempotently after submit,

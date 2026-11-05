@@ -514,35 +514,53 @@ query-result</code></pre>
 <p>hover and Skill cards omit cover images.</p>
 <li>Searchable embedded Docs with a collapsible table of contents.</li>
 <li>Semi-transparent search, language, notification, credit, and avatar controls.</li>
+<li>The muted video carousel is a persistent, translucent backdrop across Agents,</li>
+<p>Skills, Hots, Assets, Docs, and conversation views.</p>
 <li>Viewport-aware composer menus that flip above the trigger when needed, plus</li>
 <p>downward-opening language, notification, account, and search menus.</p>
 <li>Avatar account actions for login, registration, and sign-out.</li>
 <li>An isolated <code>/admin</code> control room for internal operations.</li>
 <li>Reference uploads, delivery downloads, cover preview, and share-link creation</li>
 <p>in the project workspace.</p>
+<li>Video-shot generation stays disabled until the staged story workflow is</li>
+<p>approved, and the shot inspector shows that requirement inline.</p>
 <li>A collapsible conversation history with Projects and Recents, plus drag-to-file</li>
-<p>organization.</p>
-<li>A three-part canvas: current-conversation asset tree, selected asset/document</li>
-<p>canvas, and approval-driven VideoAgent conversation.</p>
+<p>organization. Both groups are visible before sign-in and when empty.</p>
+<li>Project folders expose the disclosure control before a blue folder icon.</li>
+<p>Filed conversations move out of Recents and render as indented children of their project folder.</p>
+<li>An IDE-style three-part canvas: the current-conversation asset tree, selected</li>
+<p>asset/document editor, and approval-driven VideoAgent copilot.</p>
+<li>The Assets and Agents side panels can collapse to labeled rails. Their widths</li>
+<p>use responsive clamped proportions so they remain usable across desktop sizes.</p>
 <li>Skill Studio persists reusable Skills with a stable namespace, instructions,</li>
 <p>quality gates, prompt template, and input/output contracts. <code>AI optimize</code> turns an early idea into that structure.</p>
 <li>The built-in <code>video_agent/skill_synthesis</code> Skill opens Skill Studio directly</li>
 <p>to help authors compose new Skills.</p>
-<li>The app navigation collapses into an icon-only left rail while the remaining</li>
-<p>content fills the space. Projects and chronological Recents live below the Docs divider, are expanded by default, and remain collapsible.</p>
-<li>Conversations use the <code>/#conversation/{project_id}</code> hash view and only the</li>
-<p>matching history item is active.</p>
+<li>The app navigation collapses from a control beside the VideoAgent brand into an</li>
+<p>icon-only left rail while the remaining content fills the space. Projects and chronological Recents live below the Docs divider, are expanded by default, and remain collapsible.</p>
+<li>Conversations use only the <code>/en#conversation/{project_id}</code> hash view, preserve</li>
+<p>the mounted application shell, and highlight the matching history item.</p>
 <li>The Projects row opens the project creation form, while the Recents row</li>
 <p>starts a new Agents conversation. Both rows provide disclosure controls.</p>
 <li>Hots publishing requires an MP4 upload and persists the video as a public</li>
 <p>asset. The author's Assets view lists real Hots videos and Skills, and every card opens a detail dialog.</p>
-<li>Canvas titles use a leading file-type icon without repeating workflow stage;</li>
-<p>top and VideoAgent headers omit approval status labels. Review shows the overall score directly after evaluation.</p>
+<li>The editor pane uses its own compact header. Review and Share are aligned at</li>
+<p>its far right; no page-level project title bar is rendered. Review shows the overall score directly after evaluation.</p>
+<li>Review is evaluated automatically when the storyboard changes. The current</li>
+<p>score remains visible, with a separate refresh control that re-runs evaluation without opening the detail dialog. Review and refresh share one framed control.</p>
+<li>Only a newly returned Agent reply uses type-on presentation. Persisted history</li>
+<p>and completed replies render as static text, including after a panel is collapsed and reopened.</p>
+<li>Docs occupies the full content area beside the navigation rail without</li>
+<p>overlapping it; its embedded document uses the same persistent backdrop.</p>
 <li>Workspace text never renders smaller than button text, and authentication</li>
 <p>pages use the same dark visual system as the product.</p>
-<li>Navigation, project folders, and conversation items share one type scale;</li>
-<p>dates, counts, and empty-state copy are not rendered.</p>
+<li>Active navigation and asset icons invert outline and fill: inactive icons are</li>
+<p>transparent inside with a blue stroke; active icons are blue-filled with a transparent stroke.</p>
+<li>Navigation, project folders, and conversation items share one type scale.</li>
+<p>Projects, Recents, and conversation items are text-only; dates, counts, and empty-state copy are not rendered.</p>
 <li>History lists use a thin blue scrollbar with a transparent track.</li>
+<li>Assets, editor, and Agents scrolling surfaces use the same thin blue scrollbar</li>
+<p>treatment as Projects and Recents.</p>
 </ul>
 <p>The project workspace progresses through overall direction, episode and shot outline, scene script, and generation-ready states. Each transition requires an explicit user decision. Refinement and custom instructions remain on the current stage.</p>
 <h2 id="13-documentation-language">13. Documentation Language</h2>

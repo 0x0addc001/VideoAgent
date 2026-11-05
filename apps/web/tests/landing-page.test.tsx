@@ -673,6 +673,145 @@ describe("LandingPage", () => {
     expect(container.querySelector("#agents")).toBeInTheDocument();
   });
 
+  it("opens a conversation as a same-page view without replacing the route", async () => {
+    window.history.replaceState({}, "", "/en?workspace=stable");
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.endsWith("/auth/me")) {
+        return Promise.resolve(
+          Response.json({
+            id: "user-1",
+            email: "director@example.com",
+            locale: "en",
+            created_at: "2026-11-05T00:00:00Z",
+          }),
+        );
+      }
+      if (url.endsWith("/workspace")) {
+        return Promise.resolve(
+          Response.json({
+            folders: [{ id: "folder-1", name: "Campaign work" }],
+            recents: [
+              {
+                id: "project-1",
+                title: "Campaign cut",
+                brief: "A product film",
+                preview: null,
+                stage: "script",
+                status: "awaiting_approval",
+                folder_id: null,
+                message_count: 2,
+                created_at: "2026-11-05T00:00:00Z",
+                updated_at: "2026-11-05T00:00:00Z",
+              },
+              {
+                id: "project-2",
+                title: "Filed cut",
+                brief: "A documentary",
+                preview: null,
+                stage: "outline",
+                status: "awaiting_approval",
+                folder_id: "folder-1",
+                message_count: 1,
+                created_at: "2026-11-05T00:00:00Z",
+                updated_at: "2026-11-05T00:00:00Z",
+              },
+            ],
+          }),
+        );
+      }
+      if (
+        url.endsWith("/skills") ||
+        url.endsWith("/hots") ||
+        url.endsWith("/assets")
+      ) {
+        return Promise.resolve(Response.json({ items: [] }));
+      }
+      return Promise.resolve(Response.json({ credits: 0 }));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const { container } = render(
+      <LandingPage
+        {...props}
+        accountApiBase="/api/account"
+        mode="app"
+        renderConversation={(projectId) => (
+          <div data-testid="conversation-content">{projectId}</div>
+        )}
+      />,
+    );
+
+    const conversation = await waitFor(() => {
+      const link = container.querySelector('a[href="#conversation/project-1"]');
+      expect(link).toBeInTheDocument();
+      return link as HTMLAnchorElement;
+    });
+    expect(conversation.querySelector("svg")).not.toBeInTheDocument();
+    const folderSummary = container.querySelector(
+      ".sidebar-project-list details summary",
+    );
+    expect(folderSummary?.querySelector(".project-folder-chevron")).toBeInTheDocument();
+    expect(folderSummary?.querySelector(".project-folder-icon")).toBeInTheDocument();
+    expect(
+      folderSummary?.querySelector("span")?.textContent,
+    ).toBe("Campaign work");
+    expect(
+      container.querySelector(".sidebar-project-list .sidebar-thread"),
+    ).toHaveTextContent("Filed cut");
+    expect(
+      container.querySelectorAll(".sidebar-recent-list .sidebar-thread"),
+    ).toHaveLength(1);
+    expect(
+      container.querySelector('[aria-label="Create project"]'),
+    ).toHaveClass("sidebar-history-add");
+
+    const dataTransfer = {
+      getData: () => "project-1",
+      setData: vi.fn(),
+    } as unknown as DataTransfer;
+    fireEvent.dragStart(conversation, { dataTransfer });
+    fireEvent.dragOver(folderSummary!, { dataTransfer });
+    fireEvent.drop(folderSummary!, { dataTransfer });
+    await waitFor(() =>
+      expect(
+        container.querySelectorAll(".sidebar-project-list .sidebar-thread"),
+      ).toHaveLength(2),
+    );
+    expect(
+      container.querySelectorAll(".sidebar-recent-list .sidebar-thread"),
+    ).toHaveLength(0);
+
+    fireEvent.click(
+      container.querySelector('a[href="#conversation/project-1"]')!,
+    );
+
+    expect(window.location.pathname).toBe("/en");
+    expect(window.location.search).toBe("?workspace=stable");
+    expect(window.location.hash).toBe("#conversation/project-1");
+    expect(
+      await waitFor(() =>
+        container.querySelector('[data-testid="conversation-content"]'),
+      ),
+    ).toHaveTextContent("project-1");
+  });
+
+  it("shows Projects and Recents before sign-in and without conversations", () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(() => Promise.resolve(new Response(null, { status: 401 }))),
+    );
+    const { container } = render(
+      <LandingPage {...props} accountApiBase="/api/account" mode="app" />,
+    );
+
+    const history = container.querySelector(".sidebar-history");
+    expect(history).toBeVisible();
+    expect(history).toHaveTextContent("Projects");
+    expect(history).toHaveTextContent("Recents");
+    expect(history?.querySelectorAll(".sidebar-thread")).toHaveLength(0);
+    expect(history?.querySelector(".sidebar-project-list svg")).toBeNull();
+  });
+
   it("searches Skills, Hots, and Assets", () => {
     const { container } = render(<LandingPage {...props} />);
 

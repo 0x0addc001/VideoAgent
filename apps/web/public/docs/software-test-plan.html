@@ -166,6 +166,19 @@
 <li>Composer menus stay inside the viewport.</li>
 <li>Conversation history shows Projects and Recents; folders support creation,</li>
 <p>rename, deletion, and drag-to-file organization.</p>
+<li>Dragging a Recent into a project folder persists the relationship, removes the</li>
+<p>item from Recents, and renders it as an indented folder child.</p>
+<li>Selecting a conversation updates only the URL hash and preserves the mounted</li>
+<p>application shell; no document navigation occurs.</p>
+<li>The workspace tree uses directory icons for <code>Scripts</code> and <code>Shots</code>; Projects,</li>
+<p>Recents, and their conversation items remain text-only. Agent replies expand without an inner message scrollbar.</p>
+<li>Assets and Agents collapse independently and restore from their labeled rails.</li>
+<li>Review auto-loads a score for a non-empty storyboard, exposes a refresh action,</li>
+<p>opens a dialog titled <code>Review</code>, and omits the retired prompt suggestion and redundant VideoAgent label.</p>
+<li>Review and refresh render inside one shared border, and shot generation displays</li>
+<p>an approval requirement until the story workflow reaches the approved state.</p>
+<li>Persisted Agent messages render statically; only a newly returned reply uses</li>
+<p>the type-on effect and does not replay after the Agents rail is reopened.</p>
 <li>Stage approval options cover overall direction, episode and shot outline, and</li>
 <p>scene script; custom instructions keep the current stage.</p>
 <li>Shot estimation and generation remain disabled until the script is approved.</li>
@@ -187,6 +200,8 @@
 <p>while refunding reserved credits.</p>
 <li>Search, language, notifications, credits, and avatar controls use</li>
 <p>translucent surfaces.</p>
+<li>Docs is positioned beside the fixed navigation and its document iframe loads</li>
+<p>without being covered by decoration or background layers.</p>
 <li>Avatar opens login and registration when signed out and sign-out when signed in.</li>
 <li>API starts with its metadata table.</li>
 <li>FAQ and TODO have paired English and Chinese documents.</li>
