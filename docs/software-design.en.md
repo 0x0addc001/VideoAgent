@@ -314,8 +314,10 @@ The shared Landing UI owns:
 - The built-in `video_agent/skill_synthesis` Skill opens Skill Studio directly
   to help authors compose new Skills.
 - The app navigation collapses into an icon-only left rail while the remaining
-  content recenters. Projects and chronological Recents live below the Docs
-  divider and keep the same layout inside a conversation.
+  content fills the space. Projects and chronological Recents live below the
+  Docs divider, are expanded by default, and remain collapsible.
+- Conversations use the `/#conversation/{project_id}` hash view and only the
+  matching history item is active.
 - Hots publishing requires an MP4 upload and persists the video as a public
   asset. The author's Assets view lists real Hots videos and Skills, and every
   card opens a detail dialog.
@@ -324,6 +326,8 @@ The shared Landing UI owns:
   overall score directly after evaluation.
 - Workspace text never renders smaller than button text, and authentication
   pages use the same dark visual system as the product.
+- Navigation, project folders, and conversation items share one type scale;
+  dates, counts, and empty-state copy are not rendered.
 
 The project workspace progresses through overall direction, episode and shot
 outline, scene script, and generation-ready states. Each transition requires an

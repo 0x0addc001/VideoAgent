@@ -529,13 +529,17 @@ query-result</code></pre>
 <li>The built-in <code>video_agent/skill_synthesis</code> Skill opens Skill Studio directly</li>
 <p>to help authors compose new Skills.</p>
 <li>The app navigation collapses into an icon-only left rail while the remaining</li>
-<p>content recenters. Projects and chronological Recents live below the Docs divider and keep the same layout inside a conversation.</p>
+<p>content fills the space. Projects and chronological Recents live below the Docs divider, are expanded by default, and remain collapsible.</p>
+<li>Conversations use the <code>/#conversation/{project_id}</code> hash view and only the</li>
+<p>matching history item is active.</p>
 <li>Hots publishing requires an MP4 upload and persists the video as a public</li>
 <p>asset. The author's Assets view lists real Hots videos and Skills, and every card opens a detail dialog.</p>
 <li>Canvas titles use a leading file-type icon without repeating workflow stage;</li>
 <p>top and VideoAgent headers omit approval status labels. Review shows the overall score directly after evaluation.</p>
 <li>Workspace text never renders smaller than button text, and authentication</li>
 <p>pages use the same dark visual system as the product.</p>
+<li>Navigation, project folders, and conversation items share one type scale;</li>
+<p>dates, counts, and empty-state copy are not rendered.</p>
 </ul>
 <p>The project workspace progresses through overall direction, episode and shot outline, scene script, and generation-ready states. Each transition requires an explicit user decision. Refinement and custom instructions remain on the current stage.</p>
 <h2 id="13-documentation-language">13. Documentation Language</h2>

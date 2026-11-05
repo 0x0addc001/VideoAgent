@@ -193,6 +193,8 @@ status
 
 Assets is the unified index for projects and generated media. A project detail
 route opens its workspace.
+The product app opens conversations at `/#conversation/{project_id}` while the
+standalone project route remains for compatibility.
 
 ## 8. Skills Implementation
 

@@ -274,6 +274,7 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 前端请求类型以 FastAPI OpenAPI 契约为准。
 
 Assets 是项目和资产的统一入口；项目详情路由用于打开具体工作区。
+正式 App 使用 `/#conversation/{project_id}` 打开对话内页，旧的独立项目路径仅保留兼容访问。
 
 ## 8. 国际化实现
 

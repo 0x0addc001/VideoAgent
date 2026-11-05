@@ -1458,6 +1458,7 @@ export function LandingPage({
       className={`va-landing${mode === "app" ? " app-mode" : ""}${
         navCollapsed ? " nav-collapsed" : ""
       }`}
+      data-view={activeView}
     >
       <div className="page-grain" aria-hidden="true" />
 
@@ -1545,7 +1546,7 @@ export function LandingPage({
                         <a
                           className="sidebar-thread"
                           draggable
-                          href={`/${locale}/projects/${thread.id}`}
+                          href={`/${locale}/?start=1#conversation/${thread.id}`}
                           key={thread.id}
                           onDragStart={(event) => {
                             setDraggingConversationId(thread.id);
@@ -1580,7 +1581,7 @@ export function LandingPage({
                   <a
                     className="sidebar-thread"
                     draggable
-                    href={`/${locale}/projects/${thread.id}`}
+                    href={`/${locale}/?start=1#conversation/${thread.id}`}
                     key={thread.id}
                     onDragStart={(event) => {
                       setDraggingConversationId(thread.id);

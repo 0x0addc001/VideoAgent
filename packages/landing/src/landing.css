@@ -1671,7 +1671,7 @@ html[lang="zh-CN"] .hero-description {
     justify-content: space-between;
     color: rgba(255, 255, 255, 0.32);
     cursor: pointer;
-    font-size: 16px;
+    font-size: 1.125rem;
     font-weight: 500;
     letter-spacing: 0;
     padding: 8px 8px;
@@ -1679,6 +1679,19 @@ html[lang="zh-CN"] .hero-description {
 
   .sidebar-history-heading::-webkit-details-marker {
     display: none;
+  }
+
+  .sidebar-history-heading::after,
+  .sidebar-project-list summary::after {
+    color: rgba(255, 255, 255, 0.26);
+    content: "⌄";
+    font-size: 0.82rem;
+    transition: transform 160ms ease;
+  }
+
+  .sidebar-history-section:not([open]) > .sidebar-history-heading::after,
+  .sidebar-project-list details:not([open]) > summary::after {
+    transform: rotate(-90deg);
   }
 
   .sidebar-history-section {
@@ -1696,7 +1709,7 @@ html[lang="zh-CN"] .hero-description {
     border-radius: 10px;
     color: rgba(255, 255, 255, 0.62);
     cursor: pointer;
-    font-size: 16px;
+    font-size: 1.125rem;
     list-style: none;
     padding: 8px 10px;
   }
@@ -1717,7 +1730,8 @@ html[lang="zh-CN"] .hero-description {
     gap: 8px;
     border-radius: 9px;
     color: rgba(255, 255, 255, 0.48);
-    font-size: 16px;
+    font-size: 1.125rem;
+    line-height: 1.45;
     padding: 7px 10px 7px 20px;
   }
 
@@ -1759,12 +1773,45 @@ html[lang="zh-CN"] .hero-description {
 
   .va-landing.app-mode .hero,
   .va-landing.app-mode .section {
-    width: min(
-      calc(100% - var(--app-nav-width) - 48px),
-      var(--page-width)
-    );
+    position: relative;
+    z-index: 1;
+    width: calc(100% - var(--app-nav-width) - 48px);
+    max-width: none;
     margin-right: auto;
     margin-left: calc(var(--app-nav-width) + 24px);
+  }
+
+  .va-landing.app-mode::before {
+    position: fixed;
+    z-index: 0;
+    inset: 0 0 0 var(--app-nav-width);
+    pointer-events: none;
+    content: "";
+    transition: background 220ms ease;
+  }
+
+  .va-landing.app-mode[data-view="skills"]::before {
+    background:
+      radial-gradient(circle at 76% 8%, rgba(22, 119, 255, 0.22), transparent 30%),
+      linear-gradient(135deg, rgba(25, 38, 71, 0.48), transparent 52%);
+  }
+
+  .va-landing.app-mode[data-view="hots"]::before {
+    background:
+      radial-gradient(circle at 78% 6%, rgba(255, 112, 67, 0.2), transparent 31%),
+      radial-gradient(circle at 24% 72%, rgba(204, 55, 124, 0.12), transparent 32%);
+  }
+
+  .va-landing.app-mode[data-view="assets"]::before {
+    background:
+      radial-gradient(circle at 82% 18%, rgba(30, 194, 170, 0.16), transparent 30%),
+      radial-gradient(circle at 18% 78%, rgba(22, 119, 255, 0.1), transparent 34%);
+  }
+
+  .va-landing.app-mode[data-view="docs"]::before {
+    background:
+      radial-gradient(circle at 68% 2%, rgba(73, 111, 178, 0.16), transparent 32%),
+      linear-gradient(180deg, rgba(15, 20, 32, 0.5), transparent 60%);
   }
 
   .va-landing.app-mode .hero-media-wall {
@@ -1865,7 +1912,7 @@ html[lang="zh-CN"] .va-landing select {
   background: transparent;
   color: #c3bab0;
   cursor: pointer;
-  font-size: 1.35rem;
+  font-size: 1.125rem;
   font-weight: 500;
   padding: 0 13px;
   text-align: left;
@@ -1918,7 +1965,7 @@ html[lang="zh-CN"] .va-landing select {
   min-height: 48px;
   justify-content: flex-start;
   border-radius: 13px;
-  font-size: 1.35rem;
+  font-size: 1.125rem;
   padding: 0 13px;
 }
 

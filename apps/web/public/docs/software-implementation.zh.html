@@ -456,7 +456,7 @@ https://example.com/api/   → FastAPI</code></pre>
 </tbody></table></div>
 <p>前端通过 <code>NEXT_PUBLIC_API_BASE_URL</code> 访问 FastAPI，所有鉴权请求设置 <code>credentials: &quot;include&quot;</code>。</p>
 <p>前端请求类型以 FastAPI OpenAPI 契约为准。</p>
-<p>Assets 是项目和资产的统一入口；项目详情路由用于打开具体工作区。</p>
+<p>Assets 是项目和资产的统一入口；项目详情路由用于打开具体工作区。 正式 App 使用 <code>/#conversation/{project_id}</code> 打开对话内页，旧的独立项目路径仅保留兼容访问。</p>
 <h2 id="8-国际化实现">8. 国际化实现</h2>
 <p>保留的语言资源：</p>
 <pre><code class="language-text">en

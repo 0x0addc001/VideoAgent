@@ -404,15 +404,15 @@ function WorkspaceHistory({
         </span>
         <nav className="mt-5 grid gap-2" aria-label="Main navigation">
           {primaryNavItems.map(({ href, icon: Icon, label }) => (
-            <Link
+            <a
               aria-label={label}
               className="grid size-10 place-items-center rounded-xl text-white/42 hover:bg-white/[0.06] hover:text-white"
-              href={href}
+              href={`/${locale}${href}`}
               key={label}
               title={label}
             >
               <Icon className="h-[18px] w-[18px]" />
-            </Link>
+            </a>
           ))}
         </nav>
         <div className="mt-4 grid gap-2 border-t border-white/10 pt-4">
@@ -452,7 +452,7 @@ function WorkspaceHistory({
 
   function threadRow(thread: WorkspaceThread) {
     return (
-      <Link
+      <a
         aria-current={thread.id === activeProjectId ? "page" : undefined}
         className={cn(
           "group relative block rounded-xl border px-3 py-2.5 transition",
@@ -461,7 +461,7 @@ function WorkspaceHistory({
             : "border-transparent hover:border-white/[0.08] hover:bg-white/[0.035]",
         )}
         draggable
-        href={`/projects/${thread.id}`}
+        href={`/${locale}/?start=1#conversation/${thread.id}`}
         key={thread.id}
         onDragStart={(event) => onBeginDrag(event, thread.id)}
       >
@@ -478,7 +478,7 @@ function WorkspaceHistory({
             <span className="flex items-center gap-2">
               <strong
                 className={cn(
-                  "truncate text-[16px] font-medium",
+                  "truncate text-[18px] font-medium",
                   thread.id === activeProjectId
                     ? "text-[#8fdcff]"
                     : "text-white/78",
@@ -492,14 +492,14 @@ function WorkspaceHistory({
             </span>
           </span>
         </span>
-      </Link>
+      </a>
     );
   }
 
   return (
     <aside className="flex w-[208px] min-h-0 shrink-0 flex-col border-white/[0.07] bg-[#0d0c0a] xl:my-5 xl:ml-5 xl:rounded-[26px] xl:border">
       <div className="flex h-14 items-center px-4">
-        <Link className="flex items-center gap-2.5 text-[16px] font-semibold" href="/">
+        <Link className="flex items-center gap-2.5 text-[18px] font-semibold" href="/">
           <span className="grid size-8 place-items-center rounded-lg bg-[#1677ff] text-white">
             <PlayIcon />
           </span>
@@ -512,21 +512,21 @@ function WorkspaceHistory({
         aria-label="Main navigation"
       >
         {primaryNavItems.map(({ href, icon: Icon, label }) => (
-          <Link
-            className="flex min-h-10 items-center gap-3 rounded-xl px-3 text-[16px] text-white/48 transition hover:bg-white/[0.04] hover:text-white"
-            href={href}
+          <a
+            className="flex min-h-11 items-center gap-3 rounded-xl px-3 text-[18px] text-white/48 transition hover:bg-white/[0.04] hover:text-white"
+            href={`/${locale}${href}`}
             key={label}
           >
             <Icon className="h-[18px] w-[18px]" />
             {label}
-          </Link>
+          </a>
         ))}
       </nav>
 
       <div className="min-h-0 flex-1 overflow-y-auto border-t border-white/10 px-3 py-3">
         <div className="flex items-center justify-between px-2">
           <button
-            className="text-[16px] font-medium text-white/42 hover:text-white/72"
+            className="text-[18px] font-medium text-white/42 hover:text-white/72"
             onClick={() =>
               setHistorySections((current) => ({
                 ...current,
@@ -535,6 +535,11 @@ function WorkspaceHistory({
             }
             type="button"
           >
+            {historySections.projects ? (
+              <ChevronDown className="mr-1.5 inline h-4 w-4" />
+            ) : (
+              <ChevronRight className="mr-1.5 inline h-4 w-4" />
+            )}
             {copy.projects}
           </button>
           <button
@@ -572,7 +577,7 @@ function WorkspaceHistory({
               >
                 <div className="group flex items-center">
                   <button
-                    className="flex min-w-0 flex-1 items-center gap-2 px-2 py-2 text-left text-[16px] text-white/62"
+                    className="flex min-w-0 flex-1 items-center gap-2 px-2 py-2 text-left text-[18px] text-white/62"
                     onClick={() => onToggleFolder(folder.id)}
                     type="button"
                   >
@@ -629,7 +634,7 @@ function WorkspaceHistory({
         >
           <div className="flex items-center justify-between px-2">
             <button
-              className="text-[16px] font-medium text-white/42 hover:text-white/72"
+              className="text-[18px] font-medium text-white/42 hover:text-white/72"
               onClick={() =>
                 setHistorySections((current) => ({
                   ...current,
@@ -638,6 +643,11 @@ function WorkspaceHistory({
               }
               type="button"
             >
+              {historySections.recents ? (
+                <ChevronDown className="mr-1.5 inline h-4 w-4" />
+              ) : (
+                <ChevronRight className="mr-1.5 inline h-4 w-4" />
+              )}
               {copy.recent}
             </button>
           </div>

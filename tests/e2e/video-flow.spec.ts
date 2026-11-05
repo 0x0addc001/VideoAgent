@@ -18,7 +18,7 @@ test("runs a complete mock video workflow without paid generation", async ({
     .getByLabel("Start with an idea")
     .fill("A quiet Copenhagen morning told in one shot");
   await page.getByRole("button", { name: "Action" }).click();
-  await expect(page).toHaveURL(/\/en\/projects\/[^/?]+/);
+  await expect(page).toHaveURL(/\/en\?start=1#conversation\/[^/?]+/);
 
   await expect(page.getByText("Cinematic establishing shot").first()).toBeVisible();
   for (let stage = 0; stage < 3; stage += 1) {

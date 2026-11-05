@@ -244,12 +244,18 @@ select {
 }
 
 .project-workspace-shell .text-\[10px\],
-.project-workspace-shell .text-\[11px\] {
-  font-size: 12px !important;
-  line-height: 1.45;
+.project-workspace-shell .text-\[11px\],
+.project-workspace-shell .text-\[12px\],
+.project-workspace-shell .text-\[13px\] {
+  font-size: 15px !important;
+  line-height: 1.5;
 }
 
-.project-workspace-shell .text-\[12px\] {
-  font-size: 12.5px;
+.project-workspace-shell .text-\[14px\] {
+  font-size: 16px;
+}
+
+.project-workspace-shell .text-\[15px\] {
+  font-size: 17px;
 }
 
