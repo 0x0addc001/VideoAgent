@@ -143,6 +143,9 @@ Component tests cover:
   list recent conversations.
 - Hots publishing requires an MP4 and the post appears in the author's Assets.
 - Assets video and Skill cards open detail dialogs, with video playback.
+- Workflow approvals advance immediately, and Agent language follows the
+  project brief and user prompt.
+- Login and registration use the same dark visual language as the product.
 - Search, language, notifications, credits, and avatar controls use
   translucent surfaces.
 - Avatar opens login and registration when signed out and sign-out when signed in.

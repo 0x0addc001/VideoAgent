@@ -93,6 +93,7 @@ type AssetView = AssetDetail & {
 };
 
 type RecentConversation = {
+  folderId: string | null;
   id: string;
   preview: string | null;
   stage: string;
@@ -606,6 +607,12 @@ export function LandingPage({
   const [recentConversations, setRecentConversations] = useState<
     RecentConversation[]
   >([]);
+  const [workspaceFolders, setWorkspaceFolders] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
+  const [draggingConversationId, setDraggingConversationId] = useState<
+    string | null
+  >(null);
   const [hotsQuery, setHotsQuery] = useState("");
   const [assetQuery, setAssetQuery] = useState("");
   const [assetType, setAssetType] = useState<"video" | "skill">("video");
@@ -839,21 +846,25 @@ export function LandingPage({
         });
         if (!active || !response.ok) return;
         const payload = (await response.json()) as {
+          folders?: Array<{ id: string; name: string }>;
           recents?: Array<{
             id: string;
             title: string;
             preview: string | null;
             stage: string;
             updated_at: string;
+            folder_id: string | null;
           }>;
         };
+        setWorkspaceFolders(payload.folders ?? []);
         setRecentConversations(
-          (payload.recents ?? []).slice(0, 6).map((item) => ({
+          (payload.recents ?? []).map((item) => ({
             id: item.id,
             title: item.title,
             preview: item.preview,
             stage: item.stage,
             updatedAt: item.updated_at,
+            folderId: item.folder_id,
           })),
         );
       } catch {
@@ -1291,6 +1302,28 @@ export function LandingPage({
     window.history.replaceState(null, "", `#${view}`);
   }
 
+  async function moveConversation(projectId: string, folderId: string | null) {
+    if (!accountApiBase) return;
+    const response = await fetch(
+      `${accountApiBase}/workspace/threads/${projectId}/folder`,
+      {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ folder_id: folderId }),
+      },
+    ).catch(() => null);
+    if (!response?.ok) return;
+    setRecentConversations((current) =>
+      current.map((conversation) =>
+        conversation.id === projectId
+          ? { ...conversation, folderId }
+          : conversation,
+      ),
+    );
+    setDraggingConversationId(null);
+  }
+
   function selectDocsLocale(nextLocale: LandingLocale) {
     setDocsLocale(nextLocale);
     setDocsQuery("");
@@ -1479,6 +1512,93 @@ export function LandingPage({
             <span>{content.nav.docs}</span>
           </button>
         </nav>
+        {mode === "app" && accountEmail ? (
+          <div className="sidebar-history">
+            <div className="sidebar-history-heading">
+              <span>{content.nav.projects}</span>
+              <small>{workspaceFolders.length}</small>
+            </div>
+            <div className="sidebar-project-list">
+              {workspaceFolders.length === 0 ? (
+                <p className="sidebar-history-empty">{content.nav.recentEmpty}</p>
+              ) : (
+                workspaceFolders.map((folder) => {
+                  const threads = recentConversations.filter(
+                    (item) => item.folderId === folder.id,
+                  );
+                  return (
+                    <details
+                      key={folder.id}
+                      onDragOver={(event) => event.preventDefault()}
+                      onDrop={(event) => {
+                        event.preventDefault();
+                        const projectId =
+                          event.dataTransfer.getData("text/plain") ||
+                          draggingConversationId;
+                        if (projectId) {
+                          void moveConversation(projectId, folder.id);
+                        }
+                      }}
+                      open
+                    >
+                      <summary>
+                        <span>{folder.name}</span>
+                        <small>{threads.length}</small>
+                      </summary>
+                      {threads.map((thread) => (
+                        <a
+                          className="sidebar-thread"
+                          draggable
+                          href={`/${locale}/projects/${thread.id}`}
+                          key={thread.id}
+                          onDragStart={(event) => {
+                            setDraggingConversationId(thread.id);
+                            event.dataTransfer.setData("text/plain", thread.id);
+                          }}
+                        >
+                          {thread.title}
+                        </a>
+                      ))}
+                    </details>
+                  );
+                })
+              )}
+            </div>
+            <div
+              className="sidebar-history-heading sidebar-recents-heading"
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={(event) => {
+                event.preventDefault();
+                const projectId =
+                  event.dataTransfer.getData("text/plain") ||
+                  draggingConversationId;
+                if (projectId) void moveConversation(projectId, null);
+              }}
+            >
+              <span>{content.nav.recents}</span>
+              <small>{recentConversations.length}</small>
+            </div>
+            <div className="sidebar-recent-list">
+              {recentConversations.map((thread) => (
+                <a
+                  className="sidebar-thread"
+                  draggable
+                  href={`/${locale}/projects/${thread.id}`}
+                  key={thread.id}
+                  onDragStart={(event) => {
+                    setDraggingConversationId(thread.id);
+                    event.dataTransfer.setData("text/plain", thread.id);
+                  }}
+                >
+                  <span>{thread.title}</span>
+                  <time dateTime={thread.updatedAt}>
+                    {thread.updatedAt.slice(5, 10)}
+                  </time>
+                </a>
+              ))}
+            </div>
+          </div>
+        ) : null}
         {mode === "app" ? (
           <button
             aria-label={
@@ -1843,35 +1963,6 @@ export function LandingPage({
           </form>
         </div>
       </section>
-      ) : null}
-
-      {activeView === "agents" && accountEmail ? (
-        <section className="section recent-conversations">
-          <div className="recent-conversations-heading">
-            <p className="preview-eyebrow">Agents</p>
-            <h2>{content.nav.recentConversations}</h2>
-          </div>
-          {recentConversations.length > 0 ? (
-            <div className="recent-conversation-grid">
-              {recentConversations.map((conversation) => (
-                <a
-                  className="recent-conversation-card"
-                  href={`/${locale}/projects/${conversation.id}`}
-                  key={conversation.id}
-                >
-                  <span className="recent-conversation-stage">
-                    {conversation.stage}
-                  </span>
-                  <strong>{conversation.title}</strong>
-                  <p>{conversation.preview || content.nav.recentEmpty}</p>
-                  <span>{content.nav.openConversation} ↗</span>
-                </a>
-              ))}
-            </div>
-          ) : (
-            <p className="recent-conversation-empty">{content.nav.recentEmpty}</p>
-          )}
-        </section>
       ) : null}
 
       {activeView === "skills" ? (

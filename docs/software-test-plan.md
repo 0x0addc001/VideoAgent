@@ -132,6 +132,8 @@ Kling 国内版另使用依赖注入测试覆盖 `text_to_video`、`query_tasks`
 - App 左侧导航可收起为仅图标，登录后 Agents 首页显示最近对话。
 - Hots 发布必须选择 MP4，上传成功后出现在社区和作者 Assets。
 - Assets 的视频与 Skill 卡片可点击打开详情，视频详情可播放。
+- 工作流批准立即推进；Agent 回复语言跟随项目 Brief 和用户 Prompt。
+- 登录、注册与主产品使用一致的深色视觉语言。
 - 搜索、语言、通知、积分和头像使用半透明表面。
 - 头像在未登录时提供登录与注册，登录后提供退出。
 - API 文档开头展示属性表。
@@ -164,6 +166,7 @@ Playwright 使用真实 Next.js 页面、FastAPI、SQLite 和 Mock Provider，�
 ## 8. 响应式与可访问性
 
 - 导航、下拉、Docs 和弹窗可用键盘操作。
+- 工作区最小字号不低于按钮字号。
 - 焦点样式清晰。
 - 字号和对比度充足。
 - 支持 `prefers-reduced-motion`。

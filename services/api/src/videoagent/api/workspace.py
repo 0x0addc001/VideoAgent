@@ -1,4 +1,4 @@
-from typing import Annotated, Literal, cast
+from typing import Annotated, cast
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, status
@@ -36,6 +36,7 @@ from videoagent.schemas import (
     WorkspaceThreadMove,
     WorkspaceThreadRead,
 )
+from videoagent.services.language import detect_locale
 from videoagent.services.storyboards import (
     load_storyboard,
     owned_project_or_404,
@@ -44,10 +45,6 @@ from videoagent.services.storyboards import (
 from videoagent.services.workflow import get_or_create_workflow, next_workflow_stage
 
 router = APIRouter(tags=["workspace"])
-
-
-def _project_locale(locale: str) -> Literal["en", "zh-CN"]:
-    return "zh-CN" if locale == "zh-CN" else "en"
 
 
 async def _conversation_for_project(
@@ -284,9 +281,19 @@ async def decide_workflow(
         )
 
     conversation = await _conversation_for_project(session, project.id)
-    locale = _project_locale(user.locale)
+    locale = detect_locale(
+        project.brief,
+        payload.instruction,
+        fallback=user.locale,
+    )
     decision_text = (
-        f"Approve {workflow.stage}" if payload.choice == "approve" else (payload.instruction or "")
+        f"批准当前{workflow.stage}阶段"
+        if payload.choice == "approve" and locale == "zh-CN"
+        else (
+            f"Approve {workflow.stage}"
+            if payload.choice == "approve"
+            else (payload.instruction or "")
+        )
     )
     user_message = Message(
         conversation_id=conversation.id,
@@ -322,23 +329,49 @@ async def decide_workflow(
         )
         workflow.stage = "ready"
         workflow.status = "approved"
-    else:
-        if payload.choice == "approve":
-            stage_request = {
-                "outline": (
-                    "Lock the approved overall setting. Produce a compact episode and "
-                    "shot outline that establishes progression, conflict, and a clear ending."
-                ),
-                "script": (
-                    "Lock the approved outline. Develop every shot into a production-ready "
-                    "scene script with action, dialogue or voice-over, camera, light, and sound."
-                ),
-            }[target_stage]
-        else:
-            stage_request = (
-                f"Revise the current {workflow.stage} without advancing. "
-                f"User direction: {payload.instruction}"
+    elif payload.choice == "approve":
+        if storyboard is None:
+            raise AppError(
+                status_code=409,
+                code="STORYBOARD_REQUIRED",
+                message="A storyboard is required before approval.",
             )
+        shot_summary = "\n".join(
+            f"{index + 1}. {shot.description}" for index, shot in enumerate(storyboard.shots)
+        )
+        if locale == "zh-CN":
+            assistant_content = (
+                "已锁定整体设定。\n\n分集与分镜大纲：\n"
+                f"{shot_summary}\n\n"
+                "请确认叙事推进、冲突升级与收束，再进入逐场剧本。"
+                if target_stage == "outline"
+                else (
+                    "逐场剧本已基于当前分镜整理完成：\n"
+                    f"{shot_summary}\n\n"
+                    "请确认动作、对白、镜头、光线与声音后批准生成。"
+                )
+            )
+        else:
+            assistant_content = (
+                "The overall direction is locked.\n\nEpisode and shot outline:\n"
+                f"{shot_summary}\n\n"
+                "Confirm the progression, escalation, and ending before moving "
+                "to the scene script."
+                if target_stage == "outline"
+                else (
+                    "The scene script is organized from the approved shot outline:\n"
+                    f"{shot_summary}\n\n"
+                    "Confirm action, dialogue, camera, light, and sound before "
+                    "approving generation."
+                )
+            )
+        workflow.stage = target_stage
+        workflow.status = "awaiting_approval"
+    else:
+        stage_request = (
+            f"Revise the current {workflow.stage} without advancing. "
+            f"User direction: {payload.instruction}"
+        )
         plan = await agent.plan(
             locale=locale,
             project_title=project.title,

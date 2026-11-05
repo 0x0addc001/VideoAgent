@@ -607,13 +607,15 @@ pnpm --dir apps/web build
 
 测试组成：
 
-- 后端 60 个测试。
+- 后端 61 个测试。
 - 前端 27 个测试。
 - Playwright 7 个端到端测试。
 - 后端测试使用临时 SQLite 文件。
 - Pippit 测试使用本地 Fake CLI，不访问真实生成网络。
 - Kling Provider 测试使用 Fake MCP client，不触发付费生成。
 - 前端测试覆盖共享首页、导航、文档加载、自定义下拉、Hots 发布、创作提交、历史目录、逐层审批、Skill AI 优化和持久化发布。
+- 工作流批准使用本地即时阶段推进；显式调整和自定义修改才调用远程规划器，减少选项点击等待。
+- Agent 语言由项目 Brief 和当前用户 Prompt 自动检测，不直接沿用账户语言。
 - Playwright 使用 Mock Provider 验证审批、生成、导出、分享、Skill 优化，以及 Hots 视频上传和 Assets 详情，不访问付费 Provider。
 - 管理测试覆盖白名单权限、积分调整、账号停用、邀请码、注册关闭和生成开关。
 - 普通 CI 不执行付费生成。

@@ -50,6 +50,25 @@ async def test_agent_rejects_empty_message(client):
 
 
 @pytest.mark.api
+async def test_agent_uses_the_prompt_language_instead_of_account_locale(client):
+    assert (await register(client, locale="en")).status_code == 201
+    project = (
+        await client.post(
+            "/api/v1/projects",
+            json={"title": "城市夜行", "brief": "制作一支雨夜城市短片"},
+        )
+    ).json()
+
+    response = await client.post(
+        f"/api/v1/projects/{project['id']}/messages",
+        json={"content": "先梳理整体设定和人物关系"},
+    )
+
+    assert response.status_code == 200
+    assert "整体设定" in response.json()["assistant_message"]["content"]
+
+
+@pytest.mark.api
 async def test_local_agent_uses_hook_duration_and_aspect_settings(client):
     assert (await register(client)).status_code == 201
     project = (

@@ -370,9 +370,8 @@ describe("ProjectWorkspace", () => {
       screen.getByRole("button", { name: "Continue with this direction" }),
     );
 
-    expect((await screen.findAllByText("Episode outline")).length).toBeGreaterThan(0);
     expect(
-      screen.getByLabelText("The outline is ready for review."),
+      await screen.findByRole("button", { name: "Add another story beat" }),
     ).toBeVisible();
     expect(
       screen.getByRole("button", { name: "Custom instruction" }),

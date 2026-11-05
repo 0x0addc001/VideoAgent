@@ -13,8 +13,8 @@ export default async function RegisterPage({
   const t = await getTranslations("auth");
 
   return (
-    <main className="grid min-h-screen bg-[#eee6da] text-[#16130f] lg:grid-cols-[0.9fr_1.1fr]">
-      <aside className="relative hidden overflow-hidden bg-[#15120e] p-12 text-white lg:flex lg:flex-col lg:justify-between">
+    <main className="grid min-h-screen bg-[#080807] text-white lg:grid-cols-[0.92fr_1.08fr]">
+      <aside className="relative hidden overflow-hidden border-r border-white/8 bg-[#0f0e0b] p-12 text-white lg:flex lg:flex-col lg:justify-between">
         <div className="absolute -right-44 -top-44 size-[34rem] rounded-full bg-[#1677ff]/20 blur-3xl" />
         <Link className="relative flex items-center gap-2 text-sm text-white/70 hover:text-white" href="/">
           <ArrowLeft className="h-4 w-4" />
@@ -38,10 +38,11 @@ export default async function RegisterPage({
         <p className="relative text-xs text-white/35">VideoAgent · Agentic video studio</p>
       </aside>
 
-      <section className="flex min-h-screen items-center justify-center px-5 py-12">
-        <div className="w-full max-w-md">
+      <section className="relative flex min-h-screen items-center justify-center overflow-hidden px-5 py-12">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_68%_24%,rgba(22,119,255,0.13),transparent_32%)]" />
+        <div className="relative w-full max-w-md rounded-[30px] border border-white/10 bg-[#11100d]/90 p-7 shadow-2xl shadow-black/35 backdrop-blur-xl sm:p-9">
           <div className="mb-12 flex items-center justify-between">
-            <Link className="font-semibold lg:hidden" href="/">
+            <Link className="font-semibold text-white lg:hidden" href="/">
               VideoAgent
             </Link>
           </div>

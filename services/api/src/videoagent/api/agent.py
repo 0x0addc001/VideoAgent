@@ -1,4 +1,4 @@
-from typing import Annotated, Literal, cast
+from typing import Annotated, cast
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -18,6 +18,7 @@ from videoagent.schemas import (
     WorkflowStage,
     WorkflowStateRead,
 )
+from videoagent.services.language import detect_locale
 from videoagent.services.storyboards import (
     owned_project_or_404,
     replace_storyboard,
@@ -81,7 +82,11 @@ async def create_agent_message(
     await session.flush()
 
     plan = await agent.plan(
-        locale=_project_locale(user.locale),
+        locale=detect_locale(
+            project.brief,
+            payload.content,
+            fallback=user.locale,
+        ),
         project_title=project.title,
         project_brief=project.brief,
         user_message=payload.content,
@@ -112,7 +117,3 @@ async def create_agent_message(
         storyboard=StoryboardRead.model_validate(storyboard),
         workflow=WorkflowStateRead.model_validate(workflow),
     )
-
-
-def _project_locale(locale: str) -> Literal["en", "zh-CN"]:
-    return "zh-CN" if locale == "zh-CN" else "en"

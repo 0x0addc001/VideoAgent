@@ -131,6 +131,7 @@ class OpenAIStoryboardPlanner:
             base_url=settings.llm_base_url,
             model=settings.llm_model,
             temperature=0.4,
+            max_tokens=1800,
         )
         self._structured = self._chat.with_structured_output(StoryboardPlan)
 

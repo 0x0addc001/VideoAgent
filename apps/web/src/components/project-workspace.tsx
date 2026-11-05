@@ -12,6 +12,7 @@ import {
   Download,
   FileText,
   Film,
+  Flame,
   Folder,
   FolderOpen,
   GripVertical,
@@ -235,7 +236,7 @@ function workspaceCopy(locale: string) {
         collapse: "收起导航",
         expand: "展开导航",
         docs: "文档",
-        assets: "当前对话资产",
+        assets: "资产",
         noAssets: "当前对话还没有资产。",
         brief: "整体设定",
         storyboard: "故事板",
@@ -299,7 +300,7 @@ function workspaceCopy(locale: string) {
         collapse: "Collapse navigation",
         expand: "Expand navigation",
         docs: "Docs",
-        assets: "Conversation assets",
+        assets: "Assets",
         noAssets: "No assets in this conversation yet.",
         brief: "Creative direction",
         storyboard: "Storyboard",
@@ -386,10 +387,17 @@ function WorkspaceHistory({
     locale.startsWith("zh") ? "zh-CN" : "en",
     { month: "short", day: "numeric" },
   );
+  const primaryNavItems = [
+    { href: "/#agents", icon: Clapperboard, label: "Agents" },
+    { href: "/#skills", icon: Video, label: "Skills" },
+    { href: "/#hots", icon: Flame, label: "Hots" },
+    { href: "/#assets", icon: Film, label: copy.assets },
+    { href: "/#docs", icon: FileText, label: copy.docs },
+  ] as const;
 
   if (collapsed) {
     return (
-      <aside className="flex min-h-0 shrink-0 flex-col items-center border-r border-white/[0.07] bg-[#0d0c0a] py-3">
+      <aside className="flex w-[76px] min-h-0 shrink-0 flex-col items-center border-r border-white/[0.07] bg-[#0d0c0a] py-3">
         <span className="grid size-10 place-items-center rounded-xl bg-[#1677ff] text-white">
           <Clapperboard className="h-5 w-5" />
         </span>
@@ -401,28 +409,33 @@ function WorkspaceHistory({
         >
           <PanelLeftOpen className="h-4 w-4" />
         </button>
-        <div className="mt-5 grid gap-2">
+        <nav className="mt-5 grid gap-2" aria-label="Main navigation">
+          {primaryNavItems.map(({ href, icon: Icon, label }) => (
+            <Link
+              aria-label={label}
+              className="grid size-10 place-items-center rounded-xl text-white/42 hover:bg-white/[0.06] hover:text-white"
+              href={href}
+              key={label}
+              title={label}
+            >
+              <Icon className="h-[18px] w-[18px]" />
+            </Link>
+          ))}
+        </nav>
+        <div className="mt-4 grid gap-2 border-t border-white/10 pt-4">
           <span
-            className="grid size-9 place-items-center rounded-xl text-white/35"
+            className="grid size-10 place-items-center rounded-xl text-white/35"
             title={`${copy.projects}: ${workspace.folders.length}`}
           >
-            <Folder className="h-4 w-4" />
+            <Folder className="h-[18px] w-[18px]" />
           </span>
           <span
-            className="grid size-9 place-items-center rounded-xl text-white/35"
+            className="grid size-10 place-items-center rounded-xl text-white/35"
             title={`${copy.recent}: ${workspace.recents.length}`}
           >
-            <MessageSquareText className="h-4 w-4" />
+            <MessageSquareText className="h-[18px] w-[18px]" />
           </span>
         </div>
-        <Link
-          aria-label={copy.docs}
-          className="mt-auto grid size-9 place-items-center rounded-xl text-white/35 hover:bg-white/[0.06] hover:text-white"
-          href="/#docs"
-          title={copy.docs}
-        >
-          <FileText className="h-4 w-4" />
-        </Link>
       </aside>
     );
   }
@@ -475,7 +488,7 @@ function WorkspaceHistory({
   }
 
   return (
-    <aside className="flex w-[292px] min-h-0 shrink-0 flex-col border-r border-white/[0.07] bg-[#0d0c0a]">
+    <aside className="flex w-[252px] min-h-0 shrink-0 flex-col border-r border-white/[0.07] bg-[#0d0c0a]">
       <div className="flex h-14 items-center justify-between border-b border-white/[0.07] px-4">
         <Link className="flex items-center gap-2.5 text-[15px] font-semibold" href="/">
           <span className="grid size-8 place-items-center rounded-lg bg-[#1677ff] text-white">
@@ -493,7 +506,26 @@ function WorkspaceHistory({
         </button>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-4">
+      <nav className="grid gap-1 px-3 py-4" aria-label="Main navigation">
+        {primaryNavItems.map(({ href, icon: Icon, label }) => (
+          <Link
+            aria-current={label === "Agents" ? "page" : undefined}
+            className={cn(
+              "flex min-h-10 items-center gap-3 rounded-xl px-3 text-[13px] transition",
+              label === "Agents"
+                ? "bg-[#1677ff]/10 text-[#8fd3ff]"
+                : "text-white/48 hover:bg-white/[0.04] hover:text-white",
+            )}
+            href={href}
+            key={label}
+          >
+            <Icon className="h-[18px] w-[18px]" />
+            {label}
+          </Link>
+        ))}
+      </nav>
+
+      <div className="min-h-0 flex-1 overflow-y-auto border-t border-white/15 px-3 py-4">
         <div className="flex items-center justify-between px-2">
           <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/32">
             {copy.projects}
@@ -604,16 +636,6 @@ function WorkspaceHistory({
             )}
           </div>
         </div>
-      </div>
-
-      <div className="border-t border-white/[0.07] p-3">
-        <Link
-          className="flex items-center gap-2 rounded-xl px-3 py-2 text-[12px] text-white/38 hover:bg-white/[0.05] hover:text-white"
-          href="/#docs"
-        >
-          <FileText className="h-4 w-4" />
-          {copy.docs}
-        </Link>
       </div>
     </aside>
   );
@@ -1015,6 +1037,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
   const [draggingThreadId, setDraggingThreadId] = useState<string | null>(null);
   const [customDecisionOpen, setCustomDecisionOpen] = useState(false);
   const [customDecision, setCustomDecision] = useState("");
+  const [pendingDecision, setPendingDecision] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -1282,6 +1305,11 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
     if (!project || isWorking) return;
     if (choice === "custom" && !instruction?.trim()) return;
     setIsWorking(true);
+    setPendingDecision(
+      locale.startsWith("zh")
+        ? "VideoAgent 正在整理当前阶段……"
+        : "VideoAgent is refining this stage…",
+    );
     setActionError(null);
     try {
       const response = await fetch(
@@ -1311,6 +1339,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
       setActionError(t("decisionError"));
     } finally {
       setIsWorking(false);
+      setPendingDecision(null);
     }
   }
 
@@ -1469,6 +1498,17 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
     setIsWorking(true);
     setActionError(null);
     try {
+      if (!estimate) {
+        const estimateResponse = await fetch(
+          `${API_BASE_URL}/shots/${selectedShot.id}/estimate`,
+          {
+            method: "POST",
+            credentials: "include",
+          },
+        );
+        if (!estimateResponse.ok) throw new Error("estimate-failed");
+        setEstimate((await estimateResponse.json()) as CostEstimate);
+      }
       await submitGeneration(selectedShot);
     } catch {
       setGenerationErrorOpen(true);
@@ -1679,7 +1719,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
   }
 
   return (
-    <main className="flex h-screen min-h-[680px] overflow-hidden bg-[#080807] text-white">
+    <main className="project-workspace-shell flex h-screen min-h-[680px] overflow-hidden bg-[#080807] text-white">
       <div className="hidden xl:flex">
         <WorkspaceHistory
           activeProjectId={project.id}
@@ -1714,7 +1754,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
 
       <section className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-14 shrink-0 items-center justify-between border-b border-white/[0.07] bg-[#0b0a08] px-4">
-          <div className="flex min-w-0 items-center gap-3">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
             <button
               aria-label={copy.expand}
               className="grid size-8 place-items-center rounded-lg text-white/45 hover:bg-white/[0.06] hover:text-white xl:hidden"
@@ -1723,18 +1763,13 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
             >
               <PanelLeftOpen className="h-4 w-4" />
             </button>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <div
-                  aria-level={1}
-                  className="truncate text-[14px] font-semibold"
-                  role="heading"
-                >
-                  {project.title}
-                </div>
-                <span className="rounded-full border border-[#1677ff]/25 bg-[#1677ff]/[0.08] px-2 py-0.5 text-[10px] text-[#91d1ff]">
-                  {workflow ? stageLabels[workflow.stage] : copy.stageConcept}
-                </span>
+            <div className="min-w-0 flex-1">
+              <div
+                aria-level={1}
+                className="truncate text-[14px] font-semibold"
+                role="heading"
+              >
+                {project.title}
               </div>
               <p className="mt-0.5 text-[11px] text-white/25">
                 {storyboard ? t("shotCount", { count: storyboard.shots.length }) : t("planFirst")}
@@ -1742,22 +1777,6 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <div className="mr-2 hidden items-center gap-1 md:flex">
-              {(["concept", "outline", "script", "ready"] as WorkflowStage[]).map(
-                (stage, index) => (
-                  <span
-                    className={cn(
-                      "h-1.5 rounded-full transition-all",
-                      index <= stageIndex
-                        ? "w-7 bg-[#1677ff]"
-                        : "w-3.5 bg-white/10",
-                    )}
-                    key={stage}
-                    title={stageLabels[stage]}
-                  />
-                ),
-              )}
-            </div>
             <button
               className="hidden items-center gap-1.5 rounded-lg border border-white/[0.09] px-3 py-2 text-[11px] text-white/48 hover:border-white/20 hover:text-white sm:flex"
               disabled={!storyboard || isReviewing}
@@ -1766,6 +1785,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
             >
               <ScanSearch className="h-3.5 w-3.5" />
               {copy.review}
+              {evaluation ? ` ${evaluation.overall_score}` : ""}
             </button>
             <button
               className="flex items-center gap-1.5 rounded-lg bg-[#1677ff] px-3 py-2 text-[11px] font-semibold text-white disabled:opacity-35"
@@ -1808,12 +1828,20 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
               mobilePanel === "canvas" ? "flex" : "hidden",
             )}
           >
-            <div className="flex h-12 shrink-0 items-center justify-between border-b border-white/[0.07] px-5">
-              <span className="truncate text-[12px] font-medium text-white/58">
-                {canvasTitle}
-              </span>
-              <span className="text-[10px] uppercase tracking-[0.14em] text-white/22">
-                {copy.stage} · {workflow ? stageLabels[workflow.stage] : stageLabels.concept}
+            <div className="flex h-14 shrink-0 items-center border-b border-white/[0.07] px-5">
+              <span className="flex min-w-0 items-center gap-2 text-[12px] font-medium text-white/58">
+                {selectedCanvas.kind === "asset" &&
+                selectedAsset?.content_type.startsWith("video/") ? (
+                  <Video className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
+                ) : selectedCanvas.kind === "asset" ? (
+                  <Image className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
+                ) : selectedCanvas.kind === "storyboard" ||
+                  selectedCanvas.kind === "shot" ? (
+                  <Clapperboard className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
+                ) : (
+                  <FileText className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
+                )}
+                <span className="truncate">{canvasTitle}</span>
               </span>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto">
@@ -1988,7 +2016,6 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
                         className="w-full rounded-xl bg-[#1677ff] px-4 py-2.5 text-[12px] font-semibold text-white disabled:opacity-35"
                         disabled={
                           isWorking ||
-                          !estimate ||
                           canvasShot.status === "completed" ||
                           workflow?.status !== "approved"
                         }
@@ -2163,15 +2190,12 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
               mobilePanel === "agent" ? "flex" : "hidden",
             )}
           >
-            <div className="flex h-12 shrink-0 items-center justify-between border-b border-white/[0.07] px-4">
+            <div className="flex h-14 shrink-0 items-center border-b border-white/[0.07] px-4">
               <span className="flex items-center gap-2 text-[12px] font-medium text-white/65">
                 <span className="grid size-6 place-items-center rounded-lg bg-[#1677ff]/15 text-[#7bc6ff]">
                   <Sparkles className="h-3.5 w-3.5" />
                 </span>
                 VideoAgent
-              </span>
-              <span className="text-[10px] text-white/24">
-                {workflow?.status === "approved" ? copy.approved : copy.awaiting}
               </span>
             </div>
             <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-5">
@@ -2205,6 +2229,11 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
                   {copy.readyMessage}
                 </div>
               ) : null}
+              {pendingDecision ? (
+                <div className="mr-3 rounded-2xl border border-white/[0.07] bg-white/[0.02] px-4 py-3 text-[12px] text-white/45">
+                  {pendingDecision}
+                </div>
+              ) : null}
               <div ref={messagesEndRef} />
             </div>
             {workflow?.status === "awaiting_approval" && workflow.stage !== "ready" ? (
@@ -2232,10 +2261,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
                   placeholder={copy.chatPlaceholder}
                   value={messageDraft}
                 />
-                <span className="flex items-center justify-between">
-                  <span className="text-[10px] text-white/20">
-                    {workflow ? stageLabels[workflow.stage] : copy.stageConcept}
-                  </span>
+                <span className="flex items-center justify-end">
                   <button
                     aria-label={copy.send}
                     className="grid size-8 place-items-center rounded-xl bg-[#1677ff] text-white disabled:opacity-35"

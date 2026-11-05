@@ -1578,81 +1578,11 @@ html[lang="zh-CN"] .hero-description {
   }
 }
 
-.recent-conversations {
-  position: relative;
-  z-index: 5;
-  padding: 22px 0 86px;
-}
-
-.recent-conversations-heading h2 {
-  margin: 8px 0 22px;
-  font-size: clamp(28px, 3vw, 42px);
-  letter-spacing: -0.03em;
-}
-
-.recent-conversation-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-
-.recent-conversation-card {
-  display: grid;
-  gap: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.09);
-  border-radius: 18px;
-  background: rgba(14, 13, 11, 0.7);
-  padding: 18px;
-  backdrop-filter: blur(18px);
-  transition:
-    border-color 160ms ease,
-    transform 160ms ease;
-}
-
-.recent-conversation-card:hover {
-  border-color: rgba(79, 172, 255, 0.36);
-  transform: translateY(-2px);
-}
-
-.recent-conversation-card > strong {
-  font-size: 1.12rem;
-}
-
-.recent-conversation-card > p {
-  display: -webkit-box;
-  margin: 0;
-  overflow: hidden;
-  color: var(--muted);
-  font-size: 0.9rem;
-  line-height: 1.55;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-
-.recent-conversation-card > span:last-child {
-  color: #74c6ff;
-  font-size: 0.82rem;
-}
-
-.recent-conversation-stage {
-  width: fit-content;
-  border-radius: 999px;
-  background: rgba(22, 119, 255, 0.12);
-  color: #92d2ff;
-  font-size: 0.72rem;
-  letter-spacing: 0.08em;
-  padding: 4px 8px;
-  text-transform: uppercase;
-}
-
-.recent-conversation-empty {
-  border: 1px dashed rgba(255, 255, 255, 0.12);
-  border-radius: 18px;
-  color: var(--muted);
-  padding: 26px;
-}
-
 .nav-collapse-toggle {
+  display: none;
+}
+
+.sidebar-history {
   display: none;
 }
 
@@ -1697,6 +1627,7 @@ html[lang="zh-CN"] .hero-description {
     justify-content: flex-start;
     gap: 5px;
     margin-top: 30px;
+    flex-shrink: 0;
   }
 
   .va-landing.app-mode .site-header > nav > button {
@@ -1722,6 +1653,111 @@ html[lang="zh-CN"] .hero-description {
     background: rgba(255, 255, 255, 0.025);
     color: rgba(255, 255, 255, 0.5);
     cursor: pointer;
+  }
+
+  .va-landing.app-mode .sidebar-history {
+    display: block;
+    min-height: 0;
+    flex: 1;
+    overflow-y: auto;
+    margin-top: 18px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 14px 3px 72px;
+    scrollbar-width: thin;
+  }
+
+  .sidebar-history-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: rgba(255, 255, 255, 0.32);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.13em;
+    padding: 8px 8px;
+    text-transform: uppercase;
+  }
+
+  .sidebar-history-heading small {
+    color: rgba(255, 255, 255, 0.22);
+    font-size: 12px;
+    letter-spacing: 0;
+  }
+
+  .sidebar-project-list details {
+    margin-bottom: 4px;
+  }
+
+  .sidebar-project-list summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-radius: 10px;
+    color: rgba(255, 255, 255, 0.62);
+    cursor: pointer;
+    font-size: 13px;
+    list-style: none;
+    padding: 8px 10px;
+  }
+
+  .sidebar-project-list summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .sidebar-project-list summary:hover {
+    background: rgba(255, 255, 255, 0.045);
+  }
+
+  .sidebar-project-list summary small {
+    color: rgba(255, 255, 255, 0.24);
+    font-size: 12px;
+  }
+
+  .sidebar-thread {
+    display: flex;
+    min-height: 34px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    border-radius: 9px;
+    color: rgba(255, 255, 255, 0.48);
+    font-size: 12px;
+    padding: 7px 10px 7px 20px;
+  }
+
+  .sidebar-thread:hover {
+    background: rgba(22, 119, 255, 0.09);
+    color: rgba(255, 255, 255, 0.82);
+  }
+
+  .sidebar-thread > span,
+  .sidebar-thread:not(:has(span)) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .sidebar-thread time {
+    flex-shrink: 0;
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 11px;
+  }
+
+  .sidebar-recents-heading {
+    margin-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 14px;
+  }
+
+  .sidebar-history-empty {
+    margin: 4px 10px 10px;
+    color: rgba(255, 255, 255, 0.24);
+    font-size: 12px;
+    line-height: 1.55;
+  }
+
+  .va-landing.app-mode.nav-collapsed .sidebar-history {
+    display: none;
   }
 
   .va-landing.app-mode .nav-collapse-toggle svg {

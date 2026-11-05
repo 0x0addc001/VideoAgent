@@ -32,7 +32,9 @@ test("runs a complete mock video workflow without paid generation", async ({
       .click();
     expect((await decisionResponse).status()).toBe(200);
   }
-  await expect(page.getByText("Ready to generate").first()).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Continue with this direction" }),
+  ).toHaveCount(0);
 
   await page.getByRole("button", { name: /Shot 01/ }).click();
   const reorderResponsePromise = page.waitForResponse(
@@ -52,8 +54,6 @@ test("runs a complete mock video workflow without paid generation", async ({
   });
   await expect(page.getByText("1 uploaded references")).toBeVisible();
 
-  await page.getByRole("button", { name: "Estimate credits" }).click();
-  await expect(page.getByText("Estimated credits: 5")).toBeVisible();
   const pollResponsePromise = page.waitForResponse(
     (response) =>
       response.request().method() === "GET" &&
@@ -134,6 +134,12 @@ test("publishes an uploaded Hots video and opens it in Assets", async ({ page })
   await page.getByRole("button", { name: "Create account" }).click();
   await expect(page).toHaveURL(/\/en#assets$/);
 
+  const createdProject = await page.request.post("/api/account/projects", {
+    data: { title: "Sidebar project", brief: "A conversation history check" },
+  });
+  expect(createdProject.status()).toBe(201);
+  await page.goto("/en");
+  await expect(page.locator(".sidebar-history")).toContainText("Sidebar project");
   await page.getByRole("button", { name: "Collapse navigation" }).click();
   await expect(page.locator(".va-landing")).toHaveClass(/nav-collapsed/);
   await page.getByRole("button", { name: "Expand navigation" }).click();

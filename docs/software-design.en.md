@@ -313,11 +313,17 @@ The shared Landing UI owns:
   turns an early idea into that structure.
 - The built-in `video_agent/skill_synthesis` Skill opens Skill Studio directly
   to help authors compose new Skills.
-- The app navigation collapses into an icon-only left rail, and the Agents home
-  shows recent conversations below the composer.
+- The app navigation collapses into an icon-only left rail while the remaining
+  content recenters. Projects and chronological Recents live below the Docs
+  divider and keep the same layout inside a conversation.
 - Hots publishing requires an MP4 upload and persists the video as a public
   asset. The author's Assets view lists real Hots videos and Skills, and every
   card opens a detail dialog.
+- Canvas titles use a leading file-type icon without repeating workflow stage;
+  top and VideoAgent headers omit approval status labels. Review shows the
+  overall score directly after evaluation.
+- Workspace text never renders smaller than button text, and authentication
+  pages use the same dark visual system as the product.
 
 The project workspace progresses through overall direction, episode and shot
 outline, scene script, and generation-ready states. Each transition requires an

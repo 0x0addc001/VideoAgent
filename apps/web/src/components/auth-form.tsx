@@ -87,20 +87,20 @@ export function AuthForm({ mode }: AuthFormProps) {
 
   return (
     <div>
-      <h1 className="text-4xl font-semibold tracking-[-0.04em]">
+      <h1 className="text-4xl font-semibold tracking-[-0.04em] text-white">
         {isRegister ? t("registerTitle") : t("loginTitle")}
       </h1>
-      <p className="mb-8 mt-3 leading-7 text-[#756d61]">
+      <p className="mb-8 mt-3 leading-7 text-white/45">
         {isRegister ? t("registerSubtitle") : t("loginSubtitle")}
       </p>
       <form className="space-y-5" onSubmit={handleSubmit}>
       <div className="space-y-2">
-        <label className="text-sm font-medium text-[#2b261f]" htmlFor="email">
+        <label className="text-sm font-medium text-white/60" htmlFor="email">
           {t("email")}
         </label>
         <input
           autoComplete="email"
-          className="w-full rounded-2xl border border-[#d9d2c5] bg-white px-4 py-3 text-[#16130f] outline-none transition placeholder:text-[#9c9487] focus:border-[#1677ff] focus:ring-4 focus:ring-[#1677ff]/10"
+          className="w-full rounded-2xl border border-white/10 bg-white/[0.035] px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-[#1677ff] focus:ring-4 focus:ring-[#1677ff]/10"
           id="email"
           name="email"
           placeholder="you@example.com"
@@ -109,12 +109,12 @@ export function AuthForm({ mode }: AuthFormProps) {
         />
       </div>
       <div className="space-y-2">
-        <label className="text-sm font-medium text-[#2b261f]" htmlFor="password">
+        <label className="text-sm font-medium text-white/60" htmlFor="password">
           {t("password")}
         </label>
         <input
           autoComplete={isRegister ? "new-password" : "current-password"}
-          className="w-full rounded-2xl border border-[#d9d2c5] bg-white px-4 py-3 text-[#16130f] outline-none transition placeholder:text-[#9c9487] focus:border-[#1677ff] focus:ring-4 focus:ring-[#1677ff]/10"
+          className="w-full rounded-2xl border border-white/10 bg-white/[0.035] px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-[#1677ff] focus:ring-4 focus:ring-[#1677ff]/10"
           id="password"
           minLength={8}
           name="password"
@@ -125,12 +125,12 @@ export function AuthForm({ mode }: AuthFormProps) {
 
       {isRegister && registrationMode === "invite" ? (
         <div className="space-y-2">
-          <label className="text-sm font-medium text-[#2b261f]" htmlFor="inviteCode">
+          <label className="text-sm font-medium text-white/60" htmlFor="inviteCode">
             Invite code
           </label>
           <input
             autoComplete="off"
-            className="w-full rounded-2xl border border-[#d9d2c5] bg-white px-4 py-3 text-[#16130f] outline-none transition placeholder:text-[#9c9487] focus:border-[#1677ff] focus:ring-4 focus:ring-[#1677ff]/10"
+            className="w-full rounded-2xl border border-white/10 bg-white/[0.035] px-4 py-3 text-white outline-none transition placeholder:text-white/25 focus:border-[#1677ff] focus:ring-4 focus:ring-[#1677ff]/10"
             id="inviteCode"
             name="inviteCode"
             required
@@ -139,13 +139,13 @@ export function AuthForm({ mode }: AuthFormProps) {
       ) : null}
 
       {error ? (
-        <p aria-live="polite" className="rounded-xl bg-red-50 px-3 py-2 text-sm text-red-700">
+        <p aria-live="polite" className="rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-300">
           {error}
         </p>
       ) : null}
 
       <button
-        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#16130f] px-5 py-3.5 font-semibold text-white transition hover:bg-[#332b23] disabled:cursor-not-allowed disabled:opacity-60"
+        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#1677ff] px-5 py-3.5 font-semibold text-white transition hover:bg-[#2b86ff] disabled:cursor-not-allowed disabled:opacity-60"
         disabled={isSubmitting || (isRegister && registrationMode === "closed")}
         type="submit"
       >
@@ -155,15 +155,15 @@ export function AuthForm({ mode }: AuthFormProps) {
       </button>
 
       {isRegister && registrationMode === "closed" ? (
-        <p className="rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-800">
+        <p className="rounded-xl bg-amber-400/10 px-3 py-2 text-sm text-amber-200">
           Registration is currently closed.
         </p>
       ) : null}
 
-      <p className="text-center text-sm text-[#756d61]">
+      <p className="text-center text-sm text-white/38">
         {isRegister ? t("switchToLogin") : t("switchToRegister")}{" "}
         <Link
-          className="font-semibold text-[#3d64d9] hover:underline"
+          className="font-semibold text-[#79c9ff] hover:underline"
           href={isRegister ? "/login" : "/register"}
         >
           {isRegister ? t("signIn") : t("createAccount")}

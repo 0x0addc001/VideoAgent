@@ -243,3 +243,13 @@ select {
   }
 }
 
+.project-workspace-shell .text-\[10px\],
+.project-workspace-shell .text-\[11px\] {
+  font-size: 12px !important;
+  line-height: 1.45;
+}
+
+.project-workspace-shell .text-\[12px\] {
+  font-size: 12.5px;
+}
+
