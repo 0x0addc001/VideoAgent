@@ -1039,7 +1039,13 @@ function AssetsTree({
   );
 }
 
-export function ProjectWorkspace({ projectId }: { projectId: string }) {
+export function ProjectWorkspace({
+  projectId,
+  embedded = false,
+}: {
+  projectId: string;
+  embedded?: boolean;
+}) {
   const t = useTranslations("workspace");
   const locale = useLocale();
   const [project, setProject] = useState<Project | null>(null);
@@ -1782,45 +1788,57 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
   }
 
   return (
-    <main className="project-workspace-shell flex h-screen min-h-[680px] overflow-hidden bg-[#080807] text-white">
-      <div className="hidden xl:mr-3 xl:flex">
-        <WorkspaceHistory
-          activeProjectId={project.id}
-          collapsed={historyCollapsed}
-          draggingThreadId={draggingThreadId}
-          locale={locale}
-          onBeginDrag={beginThreadDrag}
-          onDeleteFolder={(folder) => void deleteFolder(folder)}
-          onDrop={dropThread}
-          onNewFolder={() => {
-            setRenamingFolder(null);
-            setFolderName("");
-            setFolderDialogOpen(true);
-          }}
-          onRenameFolder={(folder) => {
-            setRenamingFolder(folder);
-            setFolderName(folder.name);
-            setFolderDialogOpen(true);
-          }}
-          onToggleCollapsed={() => setHistoryCollapsed((current) => !current)}
-          onToggleFolder={(folderId) =>
-            setOpenFolders((current) =>
-              current.includes(folderId)
-                ? current.filter((id) => id !== folderId)
-                : [...current, folderId],
-            )
-          }
-          openFolders={openFolders}
-          workspace={workspace}
-        />
-      </div>
+    <main
+      className={cn(
+        "project-workspace-shell flex min-h-0 overflow-hidden bg-[#080807] text-white",
+        embedded
+          ? "project-workspace-embedded h-[calc(100dvh-72px)]"
+          : "h-screen min-h-[680px]",
+      )}
+    >
+      {!embedded ? (
+        <div className="hidden xl:mr-3 xl:flex">
+          <WorkspaceHistory
+            activeProjectId={project.id}
+            collapsed={historyCollapsed}
+            draggingThreadId={draggingThreadId}
+            locale={locale}
+            onBeginDrag={beginThreadDrag}
+            onDeleteFolder={(folder) => void deleteFolder(folder)}
+            onDrop={dropThread}
+            onNewFolder={() => {
+              setRenamingFolder(null);
+              setFolderName("");
+              setFolderDialogOpen(true);
+            }}
+            onRenameFolder={(folder) => {
+              setRenamingFolder(folder);
+              setFolderName(folder.name);
+              setFolderDialogOpen(true);
+            }}
+            onToggleCollapsed={() => setHistoryCollapsed((current) => !current)}
+            onToggleFolder={(folderId) =>
+              setOpenFolders((current) =>
+                current.includes(folderId)
+                  ? current.filter((id) => id !== folderId)
+                  : [...current, folderId],
+              )
+            }
+            openFolders={openFolders}
+            workspace={workspace}
+          />
+        </div>
+      ) : null}
 
       <section className="flex min-w-0 flex-1 flex-col">
         <header className="flex h-14 shrink-0 items-center justify-between border-b border-white/[0.07] bg-[#0b0a08] px-4">
           <div className="flex min-w-0 flex-1 items-center gap-3">
             <button
               aria-label={copy.expand}
-              className="grid size-8 place-items-center rounded-lg text-white/45 hover:bg-white/[0.06] hover:text-white xl:hidden"
+              className={cn(
+                "grid size-8 place-items-center rounded-lg text-white/45 hover:bg-white/[0.06] hover:text-white",
+                embedded ? "hidden" : "xl:hidden",
+              )}
               onClick={() => setMobilePanel("history")}
               type="button"
             >
@@ -2342,9 +2360,22 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
           </aside>
         </div>
 
-        <nav className="grid grid-cols-4 border-t border-white/[0.07] bg-[#0d0c0a] lg:hidden">
+        <nav
+          className={cn(
+            "grid border-t border-white/[0.07] bg-[#0d0c0a] lg:hidden",
+            embedded ? "grid-cols-3" : "grid-cols-4",
+          )}
+        >
           {[
-            { id: "history" as const, label: copy.recent, icon: MessageSquareText },
+            ...(!embedded
+              ? [
+                  {
+                    id: "history" as const,
+                    label: copy.recent,
+                    icon: MessageSquareText,
+                  },
+                ]
+              : []),
             { id: "assets" as const, label: copy.assets, icon: Layers3 },
             { id: "canvas" as const, label: t("canvas"), icon: Film },
             { id: "agent" as const, label: t("agent"), icon: MessageCircleMore },

@@ -22,7 +22,7 @@ import {
   Video,
   X,
 } from "lucide-react";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, type ReactNode, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   landingContent,
@@ -35,7 +35,13 @@ export type { LandingHook, LandingLocale, LandingPlaybook } from "./content";
 export { landingContent } from "./content";
 
 export type LandingMode = "app" | "project";
-export type LandingView = "agents" | "skills" | "assets" | "hots" | "docs";
+export type LandingView =
+  | "agents"
+  | "skills"
+  | "assets"
+  | "hots"
+  | "docs"
+  | "conversation";
 
 export type LandingHeroVideo = {
   src: string;
@@ -146,6 +152,9 @@ export type LandingPageProps = {
   accountApiBase?: string;
   accountCredits?: number | null;
   onCreateProject?: (draft: LandingProjectDraft) => Promise<void>;
+  activeConversationId?: string | null;
+  conversationContent?: ReactNode;
+  onViewChange?: (view: LandingView) => void;
 };
 
 function BrandMark() {
@@ -574,6 +583,9 @@ export function LandingPage({
   accountApiBase,
   accountCredits = 0,
   onCreateProject,
+  activeConversationId = null,
+  conversationContent,
+  onViewChange,
 }: LandingPageProps) {
   const content = landingContent[locale];
   const [activeView, setActiveView] = useState<LandingView>("agents");
@@ -664,16 +676,21 @@ export function LandingPage({
     document.documentElement.lang = locale;
     document.title = content.documentTitle;
     setDocsLocale(locale);
-    const hash = window.location.hash.slice(1);
-    if (
-      hash === "agents" ||
-      hash === "skills" ||
-      hash === "assets" ||
-      hash === "hots" ||
-      hash === "docs"
-    ) {
-      setActiveView(hash);
+    function syncHashView() {
+      const hash = window.location.hash.slice(1);
+      if (hash.startsWith("conversation/")) {
+        setActiveView("conversation");
+      } else if (
+        hash === "agents" ||
+        hash === "skills" ||
+        hash === "assets" ||
+        hash === "hots" ||
+        hash === "docs"
+      ) {
+        setActiveView(hash);
+      }
     }
+    syncHashView();
     function closeMenus(event: PointerEvent) {
       if (!notificationRef.current?.contains(event.target as Node)) {
         setNotificationsOpen(false);
@@ -687,7 +704,11 @@ export function LandingPage({
     }
 
     document.addEventListener("pointerdown", closeMenus);
-    return () => document.removeEventListener("pointerdown", closeMenus);
+    window.addEventListener("hashchange", syncHashView);
+    return () => {
+      document.removeEventListener("pointerdown", closeMenus);
+      window.removeEventListener("hashchange", syncHashView);
+    };
   }, [content.documentTitle, locale]);
 
   useEffect(() => {
@@ -695,6 +716,14 @@ export function LandingPage({
       window.localStorage.getItem("videoagent.nav-collapsed") === "1",
     );
   }, []);
+
+  useEffect(() => {
+    if (activeConversationId) {
+      setActiveView("conversation");
+    } else if (activeView === "conversation") {
+      setActiveView("agents");
+    }
+  }, [activeConversationId, activeView]);
 
   useEffect(() => {
     window.localStorage.setItem(
@@ -1018,6 +1047,7 @@ export function LandingPage({
     setSelectedPlaybook(null);
     playbookSnapshotRef.current = null;
     setActiveView("agents");
+    onViewChange?.("agents");
     window.history.replaceState(null, "", "#agents");
     window.setTimeout(() => promptRef.current?.focus(), 250);
   }
@@ -1311,6 +1341,7 @@ export function LandingPage({
 
   function openView(view: LandingView) {
     setActiveView(view);
+    onViewChange?.(view);
     window.history.replaceState(null, "", `#${view}`);
   }
 
@@ -1605,6 +1636,9 @@ export function LandingPage({
                       </summary>
                       {threads.map((thread) => (
                         <a
+                          aria-current={
+                            thread.id === activeConversationId ? "page" : undefined
+                          }
                           className="sidebar-thread"
                           draggable
                           href={`/${locale}/?start=1#conversation/${thread.id}`}
@@ -1664,6 +1698,9 @@ export function LandingPage({
                 <div className="sidebar-recent-list">
                 {recentConversations.map((thread) => (
                   <a
+                    aria-current={
+                      thread.id === activeConversationId ? "page" : undefined
+                    }
                     className="sidebar-thread"
                     draggable
                     href={`/${locale}/?start=1#conversation/${thread.id}`}
@@ -2045,6 +2082,10 @@ export function LandingPage({
           </form>
         </div>
       </section>
+      ) : null}
+
+      {activeView === "conversation" ? (
+        <section className="conversation-view">{conversationContent}</section>
       ) : null}
 
       {activeView === "skills" ? (

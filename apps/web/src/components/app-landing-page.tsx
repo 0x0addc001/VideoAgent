@@ -88,17 +88,26 @@ export function AppLandingPage() {
     router.push(`/?start=1#conversation/${project.id}`);
   }
 
-  if (conversationId) {
-    return <ProjectWorkspace key={conversationId} projectId={conversationId} />;
-  }
-
   return (
     <LandingPage
       accountApiBase="/api/account"
+      activeConversationId={conversationId}
+      conversationContent={
+        conversationId ? (
+          <ProjectWorkspace
+            embedded
+            key={conversationId}
+            projectId={conversationId}
+          />
+        ) : undefined
+      }
       docsBase="/docs/"
       locale="en"
       mode="app"
       onCreateProject={createProject}
+      onViewChange={(view) => {
+        if (view !== "conversation") setConversationId(null);
+      }}
       videos={videos}
     />
   );

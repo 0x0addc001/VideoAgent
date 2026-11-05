@@ -1863,6 +1863,19 @@ html[lang="zh-CN"] .hero-description {
     margin-left: calc(var(--app-nav-width) + 24px);
   }
 
+  .va-landing.app-mode .conversation-view {
+    width: calc(100% - var(--app-nav-width) - 48px);
+    height: 100dvh;
+    margin-left: calc(var(--app-nav-width) + 24px);
+    padding-top: 72px;
+  }
+
+  .va-landing.app-mode[data-view="conversation"]::before {
+    background:
+      radial-gradient(circle at 72% 4%, rgba(22, 119, 255, 0.1), transparent 30%),
+      linear-gradient(180deg, rgba(11, 12, 17, 0.7), transparent 64%);
+  }
+
   .va-landing.app-mode::before {
     position: fixed;
     z-index: 0;
