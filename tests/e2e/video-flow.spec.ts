@@ -140,6 +140,17 @@ test("publishes an uploaded Hots video and opens it in Assets", async ({ page })
   expect(createdProject.status()).toBe(201);
   await page.goto("/en");
   await expect(page.locator(".sidebar-history")).toContainText("Sidebar project");
+  await page.getByRole("button", { name: "Create project" }).click();
+  const projectDialog = page.getByRole("dialog");
+  await projectDialog.getByLabel("Project name").fill("Campaign work");
+  await projectDialog
+    .getByRole("button", { name: "Create project", exact: true })
+    .click();
+  await expect(projectDialog).toBeHidden();
+  await expect(page.locator(".sidebar-history")).toContainText("Campaign work");
+  await page.getByRole("button", { name: "Skills", exact: true }).click();
+  await page.getByRole("button", { name: "New conversation" }).click();
+  await expect(page.getByLabel("Start with an idea")).toBeVisible();
   await page.getByRole("button", { name: "Collapse navigation" }).click();
   await expect(page.locator(".va-landing")).toHaveClass(/nav-collapsed/);
   await page.getByRole("button", { name: "Expand navigation" }).click();

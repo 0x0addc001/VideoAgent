@@ -604,6 +604,75 @@ describe("LandingPage", () => {
     );
   });
 
+  it("creates project folders and starts a new conversation from history plus buttons", async () => {
+    const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith("/auth/me")) {
+        return Promise.resolve(
+          Response.json({
+            id: "user-1",
+            email: "director@example.com",
+            locale: "en",
+            created_at: "2026-11-05T00:00:00Z",
+          }),
+        );
+      }
+      if (url.endsWith("/workspace/folders") && init?.method === "POST") {
+        return Promise.resolve(
+          Response.json({
+            id: "folder-1",
+            name: "Campaign work",
+            created_at: "2026-11-05T00:00:00Z",
+            updated_at: "2026-11-05T00:00:00Z",
+          }),
+        );
+      }
+      if (url.endsWith("/workspace")) {
+        return Promise.resolve(Response.json({ folders: [], recents: [] }));
+      }
+      if (url.endsWith("/skills")) {
+        return Promise.resolve(Response.json({ items: [] }));
+      }
+      if (url.endsWith("/hots")) {
+        return Promise.resolve(Response.json({ items: [] }));
+      }
+      if (url.endsWith("/assets")) {
+        return Promise.resolve(Response.json({ items: [] }));
+      }
+      return Promise.resolve(new Response(null, { status: 401 }));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const { container } = render(
+      <LandingPage {...props} accountApiBase="/api/account" mode="app" />,
+    );
+
+    await waitFor(() =>
+      expect(
+        container.querySelector('[aria-label="Create project"]'),
+      ).toBeInTheDocument(),
+    );
+    fireEvent.click(container.querySelector('[aria-label="Create project"]')!);
+    fireEvent.change(container.querySelector(".project-folder-field input")!, {
+      target: { value: "Campaign work" },
+    });
+    fireEvent.click(
+      container.querySelector('.project-folder-dialog button[type="submit"]')!,
+    );
+    await waitFor(() =>
+      expect(container.querySelector(".sidebar-history")).toHaveTextContent(
+        "Campaign work",
+      ),
+    );
+
+    fireEvent.click(
+      [...container.querySelectorAll(".site-header button")].find(
+        (button) => button.textContent === "Skills",
+      )!,
+    );
+    fireEvent.click(container.querySelector('[aria-label="New conversation"]')!);
+    expect(container.querySelector("#agents")).toBeInTheDocument();
+  });
+
   it("searches Skills, Hots, and Assets", () => {
     const { container } = render(<LandingPage {...props} />);
 

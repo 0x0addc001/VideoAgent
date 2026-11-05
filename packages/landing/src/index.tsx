@@ -3,6 +3,7 @@
 import {
   Bell,
   ChevronDown,
+  ChevronRight,
   Clapperboard,
   FileText,
   Film,
@@ -13,11 +14,13 @@ import {
   PanelLeftClose,
   PanelLeftOpen,
   Play,
+  Plus,
   Search,
   Sparkles,
   Upload,
   UserRound,
   Video,
+  X,
 } from "lucide-react";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
@@ -575,6 +578,10 @@ export function LandingPage({
   const content = landingContent[locale];
   const [activeView, setActiveView] = useState<LandingView>("agents");
   const [navCollapsed, setNavCollapsed] = useState(false);
+  const [historyGroupsOpen, setHistoryGroupsOpen] = useState({
+    projects: true,
+    recents: true,
+  });
   const [activeDocument, setActiveDocument] = useState<string>(
     content.documents[0]?.path ?? "",
   );
@@ -610,6 +617,11 @@ export function LandingPage({
   const [workspaceFolders, setWorkspaceFolders] = useState<
     Array<{ id: string; name: string }>
   >([]);
+  const [projectFolderOpen, setProjectFolderOpen] = useState(false);
+  const [projectFolderName, setProjectFolderName] = useState("");
+  const [projectFolderError, setProjectFolderError] = useState<string | null>(
+    null,
+  );
   const [draggingConversationId, setDraggingConversationId] = useState<
     string | null
   >(null);
@@ -1324,6 +1336,27 @@ export function LandingPage({
     setDraggingConversationId(null);
   }
 
+  async function createProjectFolder(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const name = projectFolderName.trim();
+    if (!name || !accountApiBase) return;
+    setProjectFolderError(null);
+    const response = await fetch(`${accountApiBase}/workspace/folders`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    }).catch(() => null);
+    if (!response?.ok) {
+      setProjectFolderError(content.nav.projectCreateError);
+      return;
+    }
+    const folder = (await response.json()) as { id: string; name: string };
+    setWorkspaceFolders((current) => [folder, ...current]);
+    setProjectFolderName("");
+    setProjectFolderOpen(false);
+  }
+
   function selectDocsLocale(nextLocale: LandingLocale) {
     setDocsLocale(nextLocale);
     setDocsQuery("");
@@ -1515,11 +1548,39 @@ export function LandingPage({
         </nav>
         {mode === "app" && accountEmail ? (
           <div className="sidebar-history">
-            <details className="sidebar-history-section" open>
-              <summary className="sidebar-history-heading">
-                <span>{content.nav.projects}</span>
-              </summary>
-              <div className="sidebar-project-list">
+            <div className="sidebar-history-section">
+              <div className="sidebar-history-heading">
+                <button
+                  onClick={() =>
+                    setHistoryGroupsOpen((current) => ({
+                      ...current,
+                      projects: !current.projects,
+                    }))
+                  }
+                  type="button"
+                >
+                  {historyGroupsOpen.projects ? (
+                    <ChevronDown aria-hidden="true" />
+                  ) : (
+                    <ChevronRight aria-hidden="true" />
+                  )}
+                  <span>{content.nav.projects}</span>
+                </button>
+                <button
+                  aria-label={content.nav.createProject}
+                  className="sidebar-history-add"
+                  onClick={() => {
+                    setProjectFolderName("");
+                    setProjectFolderError(null);
+                    setProjectFolderOpen(true);
+                  }}
+                  type="button"
+                >
+                  <Plus aria-hidden="true" />
+                </button>
+              </div>
+              {historyGroupsOpen.projects ? (
+                <div className="sidebar-project-list">
                 {workspaceFolders.map((folder) => {
                   const threads = recentConversations.filter(
                     (item) => item.folderId === folder.id,
@@ -1559,11 +1620,11 @@ export function LandingPage({
                     </details>
                   );
                 })}
-              </div>
-            </details>
-            <details
+                </div>
+              ) : null}
+            </div>
+            <div
               className="sidebar-history-section"
-              open
               onDragOver={(event) => event.preventDefault()}
               onDrop={(event) => {
                 event.preventDefault();
@@ -1573,10 +1634,34 @@ export function LandingPage({
                 if (projectId) void moveConversation(projectId, null);
               }}
             >
-              <summary className="sidebar-history-heading">
-                <span>{content.nav.recents}</span>
-              </summary>
-              <div className="sidebar-recent-list">
+              <div className="sidebar-history-heading">
+                <button
+                  onClick={() =>
+                    setHistoryGroupsOpen((current) => ({
+                      ...current,
+                      recents: !current.recents,
+                    }))
+                  }
+                  type="button"
+                >
+                  {historyGroupsOpen.recents ? (
+                    <ChevronDown aria-hidden="true" />
+                  ) : (
+                    <ChevronRight aria-hidden="true" />
+                  )}
+                  <span>{content.nav.recents}</span>
+                </button>
+                <button
+                  aria-label={content.nav.newConversation}
+                  className="sidebar-history-add"
+                  onClick={() => openView("agents")}
+                  type="button"
+                >
+                  <Plus aria-hidden="true" />
+                </button>
+              </div>
+              {historyGroupsOpen.recents ? (
+                <div className="sidebar-recent-list">
                 {recentConversations.map((thread) => (
                   <a
                     className="sidebar-thread"
@@ -1591,8 +1676,9 @@ export function LandingPage({
                     {thread.title}
                   </a>
                 ))}
-              </div>
-            </details>
+                </div>
+              ) : null}
+            </div>
           </div>
         ) : null}
         {mode === "app" ? (
@@ -2262,6 +2348,62 @@ export function LandingPage({
             />
           </div>
         </section>
+      ) : null}
+
+      {projectFolderOpen ? (
+        <div
+          className="preview-backdrop"
+          onPointerDown={(event) => {
+            if (event.target === event.currentTarget) setProjectFolderOpen(false);
+          }}
+        >
+          <form
+            aria-labelledby="project-folder-title"
+            aria-modal="true"
+            className="preview-dialog project-folder-dialog"
+            onSubmit={(event) => void createProjectFolder(event)}
+            role="dialog"
+          >
+            <button
+              aria-label={content.nav.cancel}
+              className="preview-close"
+              onClick={() => setProjectFolderOpen(false)}
+              type="button"
+            >
+              <X aria-hidden="true" />
+            </button>
+            <p className="preview-eyebrow">{content.nav.projects}</p>
+            <h2 id="project-folder-title">{content.nav.createProject}</h2>
+            <label className="project-folder-field">
+              <span>{content.nav.projectName}</span>
+              <input
+                autoFocus
+                onChange={(event) => setProjectFolderName(event.target.value)}
+                value={projectFolderName}
+              />
+            </label>
+            {projectFolderError ? (
+              <p className="skill-publish-error">{projectFolderError}</p>
+            ) : null}
+            <div className="publish-actions">
+              <button
+                className="publish-cancel"
+                onClick={() => setProjectFolderOpen(false)}
+                type="button"
+              >
+                {content.nav.cancel}
+              </button>
+              <button
+                className="primary-action"
+                disabled={!projectFolderName.trim()}
+                type="submit"
+              >
+                <Plus aria-hidden="true" />
+                {content.nav.createProject}
+              </button>
+            </div>
+          </form>
+        </div>
       ) : null}
 
       {assetDetail ? (

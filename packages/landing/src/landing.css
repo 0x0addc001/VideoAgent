@@ -1320,6 +1320,36 @@ html[lang="zh-CN"] .hero-description {
   white-space: pre-wrap;
 }
 
+.project-folder-dialog {
+  width: min(100%, 440px);
+}
+
+.project-folder-field {
+  display: grid;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.project-folder-field > span {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.project-folder-field input {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text);
+  outline: none;
+  padding: 0 14px;
+}
+
+.project-folder-field input:focus {
+  border-color: rgba(79, 172, 255, 0.58);
+}
+
 .skill-publish-dialog input {
   width: 100%;
   min-height: 46px;
@@ -1662,7 +1692,23 @@ html[lang="zh-CN"] .hero-description {
     margin-top: 18px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     padding: 14px 3px 72px;
+    scrollbar-color: rgba(79, 172, 255, 0.38) transparent;
     scrollbar-width: thin;
+  }
+
+  .va-landing.app-mode .sidebar-history::-webkit-scrollbar {
+    width: 7px;
+  }
+
+  .va-landing.app-mode .sidebar-history::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .va-landing.app-mode .sidebar-history::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: rgba(79, 172, 255, 0.38);
+    background-clip: padding-box;
   }
 
   .sidebar-history-heading {
@@ -1677,11 +1723,48 @@ html[lang="zh-CN"] .hero-description {
     padding: 8px 8px;
   }
 
-  .sidebar-history-heading::-webkit-details-marker {
-    display: none;
+  .sidebar-history-heading > button:first-child {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 7px;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    font: inherit;
+    padding: 0;
   }
 
-  .sidebar-history-heading::after,
+  .sidebar-history-heading > button:first-child svg {
+    width: 15px;
+    height: 15px;
+    color: rgba(255, 255, 255, 0.28);
+  }
+
+  .sidebar-history-add {
+    display: grid;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 auto;
+    place-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.035);
+    color: rgba(255, 255, 255, 0.48);
+    cursor: pointer;
+  }
+
+  .sidebar-history-add:hover {
+    border-color: rgba(79, 172, 255, 0.3);
+    color: #9bd8ff;
+  }
+
+  .sidebar-history-add svg {
+    width: 15px;
+    height: 15px;
+  }
+
   .sidebar-project-list summary::after {
     color: rgba(255, 255, 255, 0.26);
     content: "⌄";
@@ -1689,7 +1772,6 @@ html[lang="zh-CN"] .hero-description {
     transition: transform 160ms ease;
   }
 
-  .sidebar-history-section:not([open]) > .sidebar-history-heading::after,
   .sidebar-project-list details:not([open]) > summary::after {
     transform: rotate(-90deg);
   }

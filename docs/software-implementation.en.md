@@ -383,6 +383,6 @@ python scripts\build_pages.py
 ```
 
 Backend coverage currently consists of 64 tests, frontend coverage consists of
-27 Vitest tests, and Playwright contains seven no-fee browser flows. Playwright
+28 Vitest tests, and Playwright contains seven no-fee browser flows. Playwright
 uses the Mock Provider for generation and therefore never consumes real
 Provider credits.

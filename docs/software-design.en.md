@@ -318,6 +318,8 @@ The shared Landing UI owns:
   Docs divider, are expanded by default, and remain collapsible.
 - Conversations use the `/#conversation/{project_id}` hash view and only the
   matching history item is active.
+- The Projects row opens the project creation form, while the Recents row
+  starts a new Agents conversation. Both rows provide disclosure controls.
 - Hots publishing requires an MP4 upload and persists the video as a public
   asset. The author's Assets view lists real Hots videos and Skills, and every
   card opens a detail dialog.
@@ -328,6 +330,7 @@ The shared Landing UI owns:
   pages use the same dark visual system as the product.
 - Navigation, project folders, and conversation items share one type scale;
   dates, counts, and empty-state copy are not rendered.
+- History lists use a thin blue scrollbar with a transparent track.
 
 The project workspace progresses through overall direction, episode and shot
 outline, scene script, and generation-ready states. Each transition requires an

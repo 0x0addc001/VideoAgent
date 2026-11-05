@@ -907,6 +907,7 @@ cancelled</code></pre>
 <li>公共入口：左侧导航、连续视频背景、居中创作框、灵感快捷项和八项生成设置。</li>
 <li>App 左侧导航可收起为仅图标模式，右侧内容始终填满剩余空间；Docs 下方固定为 Projects 分组和 Recents 时序历史，两个分组默认展开且可折叠，进入对话后保持相同排布。</li>
 <li>对话使用 <code>/#conversation/{project_id}</code> hash 内页，不切换到独立的 <code>/projects</code> 页面；只高亮当前对话记录。</li>
+<li>Projects 行提供新建项目表单入口；Recents 行提供新建对话入口并返回 Agents。两行均带展开/收起图标。</li>
 <li><code>Agents</code>：首页创作入口和 VideoAgent 对话。</li>
 <li><code>Skills</code>：统一可搜索 Skill 目录，卡片显示 <code>user_id/skill_id</code>；Kling 原生能力使用 <code>kling</code>，跨 Provider 工作流使用 <code>video_agent</code>，用户可发布 Skill。</li>
 <li>Skill Studio 将用户 Skill 持久化到数据库；发布前包含用途、执行规范、质量门禁、启动提示词和输入/输出契约，并提供 AI 优化。</li>
@@ -933,6 +934,9 @@ cancelled</code></pre>
 <p>历史导航支持压缩，Recent 对话可拖入项目目录，也可拖回全部对话列表。Agent 按“整体设定 → 分集/分镜大纲 → 逐场剧本 → 可生成”推进；每一步都必须由用户 批准，调整与自定义意见不会跳过当前阶段。</p>
 <p>中央画布标题前仅展示文件类型图标，不重复标注工作流阶段；顶部和 VideoAgent 标题栏不展示审批状态。</p>
 <p>Review 按钮在完成评估后直接显示综合分，不再展示四段进度条。工作区所有文本的最小字号不低于按钮字号。 导航、Projects、Recents、目录和对话 item 使用统一字号；日期、数量和空状态提示不显示。</p>
+<ul>
+<li>首页与对话页历史列表使用细蓝色滚动条，轨道透明。</li>
+</ul>
 <p>镜头画布包含：</p>
 <ul>
 <li>Prompt 中英文版本。</li>

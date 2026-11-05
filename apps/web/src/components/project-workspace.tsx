@@ -226,6 +226,7 @@ function workspaceCopy(locale: string) {
         recent: "Recents",
         conversations: "全部对话",
         newFolder: "新建项目",
+        newConversation: "新建对话",
         folderName: "项目名称",
         save: "保存",
         cancel: "取消",
@@ -290,6 +291,7 @@ function workspaceCopy(locale: string) {
         recent: "Recents",
         conversations: "All conversations",
         newFolder: "New project",
+        newConversation: "New conversation",
         folderName: "Project name",
         save: "Save",
         cancel: "Cancel",
@@ -523,7 +525,7 @@ function WorkspaceHistory({
         ))}
       </nav>
 
-      <div className="min-h-0 flex-1 overflow-y-auto border-t border-white/10 px-3 py-3">
+      <div className="conversation-history-scroll min-h-0 flex-1 overflow-y-auto border-t border-white/10 px-3 py-3">
         <div className="flex items-center justify-between px-2">
           <button
             className="text-[18px] font-medium text-white/42 hover:text-white/72"
@@ -650,6 +652,13 @@ function WorkspaceHistory({
               )}
               {copy.recent}
             </button>
+            <a
+              aria-label={copy.newConversation}
+              className="grid size-7 place-items-center rounded-lg border border-white/10 text-white/40 hover:border-[#1677ff]/30 hover:text-[#8fdcff]"
+              href={`/${locale}/#agents`}
+            >
+              <Plus className="h-4 w-4" />
+            </a>
           </div>
           {historySections.recents ? (
             <div className="mt-2 space-y-1">

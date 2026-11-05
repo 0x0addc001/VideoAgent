@@ -18,6 +18,7 @@ const ALLOWED_POST_PATHS = new Set([
   "skills",
   "skills/optimize",
   "hots",
+  "workspace/folders",
 ]);
 
 function allowed(path: string, method: "GET" | "POST" | "PATCH" | "DELETE") {

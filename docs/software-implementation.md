@@ -609,7 +609,7 @@ pnpm --dir apps/web build
 测试组成：
 
 - 后端 64 个测试。
-- 前端 27 个测试。
+- 前端 28 个测试。
 - Playwright 7 个端到端测试。
 - 后端测试使用临时 SQLite 文件。
 - Pippit 测试使用本地 Fake CLI，不访问真实生成网络。

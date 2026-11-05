@@ -471,6 +471,7 @@ cancelled
 - 公共入口：左侧导航、连续视频背景、居中创作框、灵感快捷项和八项生成设置。
 - App 左侧导航可收起为仅图标模式，右侧内容始终填满剩余空间；Docs 下方固定为 Projects 分组和 Recents 时序历史，两个分组默认展开且可折叠，进入对话后保持相同排布。
 - 对话使用 `/#conversation/{project_id}` hash 内页，不切换到独立的 `/projects` 页面；只高亮当前对话记录。
+- Projects 行提供新建项目表单入口；Recents 行提供新建对话入口并返回 Agents。两行均带展开/收起图标。
 - `Agents`：首页创作入口和 VideoAgent 对话。
 - `Skills`：统一可搜索 Skill 目录，卡片显示 `user_id/skill_id`；Kling 原生能力使用 `kling`，跨 Provider 工作流使用 `video_agent`，用户可发布 Skill。
 - Skill Studio 将用户 Skill 持久化到数据库；发布前包含用途、执行规范、质量门禁、启动提示词和输入/输出契约，并提供 AI 优化。
@@ -511,6 +512,7 @@ History | Assets | Canvas | Agent
 
 Review 按钮在完成评估后直接显示综合分，不再展示四段进度条。工作区所有文本的最小字号不低于按钮字号。
 导航、Projects、Recents、目录和对话 item 使用统一字号；日期、数量和空状态提示不显示。
+- 首页与对话页历史列表使用细蓝色滚动条，轨道透明。
 
 镜头画布包含：
 
