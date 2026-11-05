@@ -2008,8 +2008,6 @@ html[lang="zh-CN"] .hero-description {
   }
 
   .va-landing.app-mode .docs-view {
-    position: relative;
-    z-index: 25;
     width: calc(100% - var(--app-nav-width) - 32px);
     height: 100dvh;
     margin-right: 0;
@@ -3159,6 +3157,11 @@ html[lang="zh-CN"] .hero-copy h1 {
   padding: 26px 26px 0 0;
 }
 
+.va-landing.app-mode .docs-view {
+  position: relative;
+  z-index: 25;
+}
+
 .docs-search-wrap {
   position: relative;
   z-index: 12;
@@ -3816,6 +3819,7 @@ html[lang="zh-CN"] .hero-copy h1 {
 
 .hero-media-wall.universal-video-wall {
   position: fixed;
+  z-index: -1;
   inset: 0;
   width: 100vw;
   height: 100dvh;
