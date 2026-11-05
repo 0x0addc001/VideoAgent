@@ -1,163 +1,244 @@
 # VideoAgent
 
-VideoAgent is a bilingual AI video creation workspace. It turns a creative brief
-into a structured storyboard, estimates generation cost, and submits approved
-shots to a video provider.
+VideoAgent is an AI video creation workspace. It treats the user as the director:
+describe an idea, shape the direction with an agent, generate controlled visual
+resources, review the final cut, and deliver or share the result.
 
-The static GitHub Pages project homepage is deployed from [`site/`](site/) by
-`.github/workflows/pages.yml`. The full application remains a separate
-Python/Next.js service because GitHub Pages cannot run FastAPI, the Pippit CLI,
-Celery, or media processing.
+The public product interface is English-first. Documentation includes English
+and Chinese editions; product `/zh-CN` routes currently redirect to `/en`.
 
-## Product scope
+[Live project homepage](https://0x0addc001.github.io/VideoAgent/) ·
+[Product requirements](docs/product-requirements.en.md) ·
+[Software design](docs/software-design.en.md) ·
+[API reference](docs/api-reference.md)
 
-- English-first public interface; Chinese routes redirect to English while the
-  Chinese codebase remains available for later re-enablement.
-- Registration, login, logout, and server-side sessions.
-- User-scoped project CRUD foundation.
-- Multi-shot storyboards with versioned replacement.
-- A collapsible Projects/Recents history with drag-to-file conversation
+![VideoAgent home](docs/assets/readme-home.png)
+
+## Current Product
+
+- Agent-led directing workflow for concept, outline, script, characters, shots,
+  and final delivery.
+- IDE-style project workspace with Direction and Vision resource trees.
+- Characters keep separate Description and Generation pages.
+- Shots open one combined Description and Generation page with upload,
+  reference-image, and direct-generation modes.
+- Live production-progress polling based on workflow stage and completed Shots.
+- Observable Agent runs with durable `context`, `memory`, `skill`, `planning`,
+  `validation`, `state`, and `reply` events.
+- Project folders and chronological conversation history with drag-to-file
   organization.
-- Staged VideoAgent approvals for overall direction, episode and shot outline,
-  scene script, and generation readiness.
-- Persisted Skill Studio with AI-assisted structuring, quality gates, prompt
-  templates, and input/output contracts.
-- Collapsible app navigation with recent conversations below Agents.
-- Persistent Hots MP4 publishing and clickable videos and Skills in Assets.
-- LangGraph agent orchestration.
-- Deterministic local planner and configurable OpenAI-compatible planner.
-- Credit estimation and explicit generation approval.
-- Persisted generation jobs with idempotency protection.
-- Mock video provider for development and CI.
-- Pippit CLI provider for video submission, status polling, and credit balance.
-- Kling China-region CLI provider through `@klingai/cli-cn`.
-- Server-owned Pippit authorization; credentials remain outside browser code,
-  API responses, and the repository.
-- Durable generation-job records with idempotency and API-driven status refresh.
-- Celery polling worker for long-running Pippit jobs.
-- Responsive landing page, authentication pages, and a history-first project
-  workspace with an asset tree, canvas, and approval-driven Agent chat.
+- Reusable Skills with AI-assisted authoring and persisted instructions.
+- Searchable Hots feed and an Assets library for videos and Skills.
+- Pippit CLI and Kling China-region CLI video generation behind one provider
+  interface, with an optional Kling MCP backend.
+- Mock generation for development and tests without paid provider calls.
+- Final Cut visual evaluation using configurable multimodal evaluator models.
+- FFmpeg delivery, captions, soundtracks, covers, downloads, and expiring share
+  links.
 - Environment-allowlisted administration console for users, credits, jobs,
-  invites, runtime switches, Provider state, and audit logs.
+  invites, provider status, runtime controls, and audit logs.
 
-The default provider mode is `pippit`. Kling uses the server-owned China-region
-CLI and `https://klingai.com/mcp`; individual users do not provide Kling tokens
-to the browser. The `mock` mode is available for tests and offline UI
-development.
+## Screenshots
 
-## Prerequisites
+### Project workspace
+
+The workspace combines project history, Direction/Vision resources, a Shot
+editor, live readiness progress, and the observable Agent trace.
+
+![VideoAgent project workspace](docs/assets/readme-workspace.png)
+
+### Documentation
+
+Documentation is rendered inside the product. The static project homepage uses
+the same generated documentation pages.
+
+![VideoAgent documentation](docs/assets/readme-docs.png)
+
+## Agent Runtime
+
+The current Agent is a bounded production planner, not an unrestricted ReAct
+loop.
+
+```text
+POST /projects/{project_id}/messages
+  → persist the user request and run_id
+  → assemble bounded Context
+  → load short-term Memory and current project resources
+  → resolve an optional user-owned Skill
+  → run the LangGraph plan_storyboard node
+  → validate the StoryboardPlan with Pydantic
+  → persist Characters, Shots, messages, and workflow state
+  → return the director response
+```
+
+The frontend polls the durable run trace while waiting:
+
+```text
+GET /projects/{project_id}/agent-activity/{run_id}
+```
+
+Only work that actually occurred is displayed. The Storyboard Agent does not
+hold pay-per-use MCP tools, so planning cannot create an unreviewed billable
+side effect.
+
+### Context and Memory
+
+- Context includes project title, brief, current request, locale, workflow
+  stage/status, current Character/Shot summaries, recent conversation, and
+  optional Skill instructions.
+- Short-term memory uses the eight most recent historical messages, clipped to
+  600 characters each, and excludes the current request.
+- Storyboard context is capped at 20 Shots.
+- Long-term memory is the relational source of truth: projects, conversations,
+  messages, workflows, storyboards, Characters, Shots, assets, and generation
+  jobs.
+- No vector database or cross-project user memory is enabled.
+
+### Skills and MCP
+
+The composer writes the selected Skill into the project production settings.
+The Context Builder resolves a current-user Skill and attaches its persisted
+instructions when available. Built-in Skills otherwise contribute their Skill
+ID as a directing constraint.
+
+Kling MCP remains in the provider layer:
+
+```text
+explicit user approval
+  → generation API
+  → provider resolver
+  → Kling MCP tool client or China-region CLI
+  → text_to_video / image_to_video / query_tasks
+```
+
+Character image generation currently uses the Kling China-region CLI for
+text-to-image and reference-image-to-image.
+
+## Final Cut Review
+
+Storyboard completeness is represented by a live production-progress bar, not
+by a visual-quality score.
+
+Final Cut review is separate and runs only on an exported film. Users choose a
+configured multimodal evaluator and one or more metrics:
+
+- Character consistency
+- Style consistency
+- Prompt alignment
+- Temporal stability
+
+The API extracts representative frames with FFmpeg and sends them to the
+selected OpenAI-compatible vision endpoint. If no evaluator is configured, the
+UI reports that explicitly and never fabricates scores.
+
+```env
+VIDEOAGENT_VISION_BASE_URL=
+VIDEOAGENT_VISION_API_KEY=
+VIDEOAGENT_VISION_MODELS=[]
+VIDEOAGENT_VISION_TIMEOUT_SECONDS=120
+```
+
+## Architecture
+
+| Layer | Technology |
+| --- | --- |
+| Product UI | Next.js 16 App Router, React 19, TypeScript, Tailwind CSS |
+| Shared landing UI | React package and Vite static build |
+| API | Python 3.12, FastAPI, SQLAlchemy async |
+| Agent | LangGraph, LangChain OpenAI-compatible provider, Pydantic |
+| Default database | SQLite for local development; PostgreSQL for production-like deployment |
+| Background work | Celery and Redis |
+| Media | FFmpeg, local media storage, optional MinIO deployment |
+| Video providers | Pippit CLI, Kling China-region CLI, optional Kling MCP, Mock |
+| Testing | pytest, Vitest, Playwright |
+
+```text
+apps/web                 Next.js product application
+apps/landing             Vite project homepage
+packages/landing         Shared homepage and product-shell UI
+services/api             FastAPI, LangGraph, providers, data, and tests
+docs                     Product, design, API, operations, FAQ, and tests
+site                     Static homepage media, fonts, and public assets
+deploy                   PostgreSQL, Redis, MinIO, and deployment configuration
+tests/e2e                Playwright end-to-end flows
+```
+
+The GitHub Pages homepage is static. The full application remains a
+Next.js/FastAPI deployment because Pages cannot run the API, provider CLIs,
+Celery, FFmpeg, or persistent media services.
+
+## Requirements
 
 - Python 3.12+
 - `uv`
 - Node.js 24+
 - pnpm 11+
 - FFmpeg and ffprobe
-- Pippit CLI 1.0.48+ for live video generation
-- `@klingai/cli-cn` 0.2.3+ for China-region Kling generation
+- Pippit CLI 1.0.48+ for live Pippit generation
+- `@klingai/cli-cn` for Kling China-region generation
 
-Docker is optional for the current automated tests. The provided Compose file
-starts PostgreSQL, Redis, and MinIO for production-like development.
+Docker is optional locally. The included Compose configuration starts
+PostgreSQL, Redis, and MinIO for production-like development.
 
-## Quick start
+## Quick Start
 
 Install backend dependencies:
 
 ```powershell
-cd D:\_Science\Agent\VideoAgent\services\api
+cd services\api
 uv sync --dev
 ```
 
-Install and authorize Pippit on the machine that runs the API:
+Authorize optional live providers on the API host:
 
 ```powershell
 npx @pippit-dev/cli@latest install
 pippit-tool-cli login
 pippit-tool-cli status
-```
 
-Install and authorize Kling China-region:
-
-```powershell
-npm uninstall -g @klingai/cli-global
 npm install -g @klingai/cli-cn@latest --registry=https://registry.npmjs.org
 kling login
 kling who_am_i
+kling account
 ```
 
-The Windows installer can report a `curl` failure even when the package itself
-was downloaded. In that case, reinstall the npm package with `--ignore-scripts`
-and place the checksum-verified release binary in the package's `bin` directory.
-For CI, set the private `VIDEOAGENT_PIPPIT_ACCESS_KEY` environment variable
-instead of an interactive login.
-
-Start the API with the Windows UTF-8 startup script:
+Start the API with the Windows UTF-8 script:
 
 ```powershell
+cd D:\_Science\Agent\VideoAgent
 .\scripts\dev-api.ps1
 ```
 
-In a second terminal, install and start the web application:
+Start the web application in a second PowerShell window:
 
 ```powershell
+cd D:\_Science\Agent\VideoAgent
 .\scripts\dev-web.ps1
 ```
 
-These scripts switch the PowerShell console and Python processes to UTF-8 so
-Chinese log output is not garbled on Windows.
-
-For persistent background polling, start Redis and set
-`VIDEOAGENT_CELERY_ENABLED=true`, then run the Worker:
+For persistent provider polling:
 
 ```powershell
+$env:VIDEOAGENT_CELERY_ENABLED = "true"
 .\scripts\dev-worker.ps1
 ```
 
-On Windows the script uses Celery's `solo` worker pool. Without Celery, the
-frontend still refreshes active jobs through the authenticated job endpoint.
-
 Open:
 
-- English: http://localhost:3000/en
-- Chinese: http://localhost:3000/zh-CN
-- API documentation: http://localhost:8000/docs
-- API health: http://localhost:8000/api/v1/health
-- Administration: http://localhost:3000/en/admin
+- Product: <http://localhost:3000/en>
+- API documentation: <http://localhost:8000/docs>
+- API health: <http://localhost:8000/api/v1/health>
+- Administration: <http://localhost:3000/en/admin>
 
-The no-Docker path uses SQLite at `services/api/.data/videoagent.db`.
-
-## TDD and quality gates
-
-Backend:
-
-```powershell
-cd services\api
-uv run pytest
-uv run ruff check src tests
-uv run mypy src
-```
-
-Frontend:
-
-```powershell
-pnpm --dir apps/web test
-pnpm --dir apps/web typecheck
-pnpm --dir apps/web build
-pnpm test:e2e
-```
-
-Tests are the executable specification. New behavior should begin with a failing
-test and end with all quality gates passing.
-
-Playwright runs the full registration, composer, upload, Mock Provider
-generation, FFmpeg export, download, and share flow without consuming paid
-Provider credits.
+The no-Docker path stores local data in
+`services/api/.data/videoagent.db`.
 
 ## Configuration
 
-Copy `.env.example` values into your environment or a private `.env` file.
-Never commit real API keys, OAuth tokens, or session secrets.
+Copy `.env.example` into a private environment configuration. Never commit API
+keys, OAuth tokens, credentials, or session secrets.
 
-Important variables:
+Important provider and runtime variables:
 
 ```text
 VIDEOAGENT_DATABASE_URL
@@ -172,8 +253,8 @@ VIDEOAGENT_PIPPIT_ACCESS_KEY
 VIDEOAGENT_PIPPIT_VIDEO_MODEL
 VIDEOAGENT_PIPPIT_VIDEO_RESOLUTION
 VIDEOAGENT_PIPPIT_TIMEOUT_SECONDS
-VIDEOAGENT_KLING_BACKEND=cli
-VIDEOAGENT_KLING_CLI_COMMAND=kling
+VIDEOAGENT_KLING_BACKEND
+VIDEOAGENT_KLING_CLI_COMMAND
 VIDEOAGENT_KLING_EXPECTED_USER_ID
 VIDEOAGENT_CELERY_ENABLED
 VIDEOAGENT_CELERY_BROKER_URL
@@ -181,23 +262,22 @@ VIDEOAGENT_CELERY_RESULT_BACKEND
 VIDEOAGENT_LLM_BASE_URL
 VIDEOAGENT_LLM_API_KEY
 VIDEOAGENT_LLM_MODEL
+VIDEOAGENT_VISION_BASE_URL
+VIDEOAGENT_VISION_API_KEY
+VIDEOAGENT_VISION_MODELS
 VIDEOAGENT_MEDIA_DIR
 VIDEOAGENT_MAX_UPLOAD_BYTES
 VIDEOAGENT_FFMPEG_COMMAND
 VIDEOAGENT_FFPROBE_COMMAND
-VIDEOAGENT_STARTING_USER_CREDITS
 NEXT_PUBLIC_API_BASE_URL
 ```
 
-If LLM variables are absent, the Agent uses its deterministic local planner.
-If `VIDEOAGENT_VIDEO_PROVIDER=mock`, generation uses the mock provider. Use
-`pippit` for the server-owned CLI integration. Provider credentials and Pippit
-login files are never committed.
+The planner uses the deterministic local implementation when LLM settings are
+absent. The Mock provider is the safe default for tests and offline UI work.
 
-### DeepSeek Agent planner
+### DeepSeek Planner
 
-DeepSeek uses the existing OpenAI-compatible planner. Add the private API key
-to `services/api/.env`:
+DeepSeek uses the OpenAI-compatible planner configuration:
 
 ```env
 VIDEOAGENT_LLM_BASE_URL=https://api.deepseek.com/v1
@@ -205,31 +285,60 @@ VIDEOAGENT_LLM_API_KEY=sk-your-private-key
 VIDEOAGENT_LLM_MODEL=deepseek-flash
 ```
 
-Restart the API after changing the file. Model IDs must match the configured
-endpoint's `/models` response; the current endpoint exposes `deepseek-flash`
-and `deepseek-v4-pro`. VideoAgent automatically falls back to a plain chat
-completion plus strict JSON validation when an endpoint does not support
-OpenAI JSON Schema structured output.
+Restart the API after changing `.env`. If a provider does not support OpenAI
+JSON Schema structured output, VideoAgent falls back to plain chat plus strict
+JSON parsing and Pydantic validation.
 
-## Repository structure
+## Testing
 
-```text
-apps/web                 Next.js bilingual application
-services/api             FastAPI, LangGraph, provider adapters, and tests
-docs                     Product, architecture, API, delivery, and test specifications
-deploy                   Infrastructure and container configuration
+Backend:
+
+```powershell
+cd services\api
+uv run pytest
+uv run ruff check src tests
+uv run ruff format --check src tests
+uv run mypy src
 ```
 
-See:
+Frontend:
 
-- [GitHub Pages project homepage](https://0x0addc001.github.io/VideoAgent/)
-- [Product requirements](docs/product-requirements.md)
-- [Playbooks](docs/playbooks.md)
-- [Software design](docs/software-design.md)
-- [API reference](docs/api-reference.zh.md)
-- [Software implementation](docs/software-implementation.md)
-- [Software test and TDD specification](docs/software-test-plan.md)
-- [Operations](docs/operations.md)
-- [FAQ](docs/faq.md)
-- [TODO](docs/todo.md)
+```powershell
+pnpm --dir apps/web test
+pnpm --dir apps/web typecheck
+pnpm --dir apps/web build
+```
 
+Full browser suite:
+
+```powershell
+pnpm exec playwright install chromium
+pnpm test:e2e
+```
+
+Playwright starts isolated frontend and API processes with a temporary database
+and Mock video provider. It covers registration, Agent planning, observable
+activity, Shot/Character generation, polling, download, sharing, Skills, Hots,
+Docs, and administration without consuming paid provider credits.
+
+Build the GitHub Pages artifact:
+
+```powershell
+python scripts\build_pages.py
+python scripts\check_secrets.py
+```
+
+## Documentation
+
+- [Product requirements](docs/product-requirements.en.md)
+- [Playbooks](docs/playbooks.en.md)
+- [Software design](docs/software-design.en.md)
+- [API reference](docs/api-reference.md)
+- [Software implementation](docs/software-implementation.en.md)
+- [Software test and TDD plan](docs/software-test-plan.en.md)
+- [Operations](docs/operations.en.md)
+- [FAQ](docs/faq.en.md)
+- [TODO](docs/todo.en.md)
+
+The documentation build also produces Chinese editions and the static project
+homepage under `.pages-build/`.
