@@ -275,8 +275,16 @@ class ShotInput(BaseModel):
     generation_mode: GenerationMode = "text_to_video"
 
 
+class CharacterInput(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    description: str = Field(min_length=1, max_length=2000)
+    prompt_en: str = Field(min_length=1, max_length=4000)
+    prompt_zh: str | None = Field(default=None, max_length=4000)
+
+
 class StoryboardReplace(BaseModel):
     shots: list[ShotInput] = Field(min_length=1, max_length=50)
+    characters: list[CharacterInput] | None = Field(default=None, max_length=20)
 
 
 class StoryboardReorder(BaseModel):
@@ -297,6 +305,17 @@ class ShotRead(BaseModel):
     status: ShotStatus
 
 
+class CharacterRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    index: int
+    name: str
+    description: str
+    prompt_en: str
+    prompt_zh: str | None
+
+
 class StoryboardRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -304,6 +323,7 @@ class StoryboardRead(BaseModel):
     project_id: UUID
     version: int
     shots: list[ShotRead]
+    characters: list[CharacterRead]
     created_at: datetime
     updated_at: datetime
 
@@ -336,6 +356,17 @@ class EvaluationRead(BaseModel):
 
 class GenerationApproval(BaseModel):
     approved: bool
+    generation_mode: GenerationMode = "text_to_video"
+    reference_asset_id: UUID | None = None
+
+
+ImageGenerationMode = Literal["text_to_image", "image_to_image"]
+
+
+class CharacterGenerationApproval(BaseModel):
+    approved: bool
+    generation_mode: ImageGenerationMode = "text_to_image"
+    reference_asset_id: UUID | None = None
 
 
 class GenerationJobRead(BaseModel):

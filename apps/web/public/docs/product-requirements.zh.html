@@ -160,11 +160,14 @@ video_agent/agent_handoff</code></pre>
 </ul>
 <h3 id="7-1-项目工作区与交付">7.1 项目工作区与交付</h3>
 <ul>
-<li>项目允许上传图片、视频和音频素材，并展示引用数量。</li>
+<li>资源树在 <code>Direction</code> 下组织 <code>Settings</code>、<code>Outlines</code> 和 <code>Scripts</code>，在 <code>Vision</code></li>
+<p>下组织 <code>Characters</code>、<code>Shots</code> 和 <code>Final Cut</code>。</p>
+<li>Settings 将制作属性与 Agent-导演问答合并为同一张属性表；空目录保持安静，不显示等待文案。</li>
+<li>Agent 为每个持续出现的角色和镜头建立资源目录，每个目录包含描述页和生成页。</li>
+<li>角色与镜头的生成页支持上传图片、参考图生成或直接文字生成，具体模式取决于所选模型能力；生成内容可下载。</li>
 <li>上传文件必须通过类型、文件头与大小校验。</li>
 <li>用户可在生成前查看预计积分并明确批准生成。</li>
 <li>用户可把已生成镜头合成为成片，选择 16:9、9:16、1:1 交付版本。</li>
-<li>用户可调整镜头顺序；排序保留 Shot ID、生成资产和生成历史。</li>
 <li>导出支持字幕、上传音轨、自动封面和私有/公开权限。</li>
 <li>每个交付版本可下载；分享链接支持过期与撤销。</li>
 <li>Assets 仅展示当前用户可访问的上传、生成、导出和社区发布资产。</li>
@@ -283,6 +286,7 @@ TODO</code></pre>
 <li>模型下拉框展示全部可用视频模型。</li>
 <li>用户可上传引用素材，完成成片合成、交付下载和分享。</li>
 <li>用户积分预扣、退款与 Provider 账户对账一致。</li>
+<li>Agent 会持久化每个持续出现的 Character 和 Shot 资源，并提供描述页与生成页。</li>
 <li>调整镜头顺序不会删除或重建已有 Shot。</li>
 <li>非管理员无法访问管理接口或管理页面。</li>
 <li>管理员可管理积分、账号、邀请码和生成开关，且操作进入审计日志。</li>

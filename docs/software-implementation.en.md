@@ -116,6 +116,11 @@ register/login
 increments `Storyboard.version`, and assigns contiguous shot indexes starting
 at zero.
 
+The same replacement persists recurring `Character` resources and `Shot`
+resources. Character generation uses the domestic Kling CLI `text_to_image`
+and `image_to_image` tools, validates project-owned image references, reserves
+credits, and persists the downloaded image as a project asset.
+
 ### 5.3 Agent
 
 ```text
@@ -383,7 +388,7 @@ pnpm test:e2e
 python scripts\build_pages.py
 ```
 
-Backend coverage currently consists of 64 tests, frontend coverage consists of
-28 Vitest tests, and Playwright contains seven no-fee browser flows. Playwright
+Backend coverage currently consists of 67 tests, frontend coverage consists of
+30 Vitest tests, and Playwright contains seven no-fee browser flows. Playwright
 uses the Mock Provider for generation and therefore never consumes real
 Provider credits.

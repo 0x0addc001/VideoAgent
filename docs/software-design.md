@@ -335,6 +335,7 @@ CLI 负责国内站 OAuth、MCP 传输和工具参数。Provider 适配器将 Kl
 | `user_skills` | `owner_id`, `skill_id`, `instructions`, `input_schema`, `output_schema` | 用户发布的结构化 Skill |
 | `hots_posts` | `owner_id`, `asset_id`, `title`, `prompt`, `skill_id`, `like_count` | 社区视频发布及详情 |
 | `storyboards` | `id`, `project_id`, `version` | 每个项目唯一的当前故事板 |
+| `characters` | `id`, `storyboard_id`, `index`, `name`, prompts | 持续角色的描述与可复用图片提示词 |
 | `shots` | `id`, `storyboard_id`, `index`, `prompt_en`, `prompt_zh`, `status` | 镜头定义 |
 | `provider_connections` | `id`, `user_id`, `provider`, `encrypted_tokens` | Provider 授权信息 |
 | `oauth_flows` | `id`, `state_hash`, `provider`, `expires_at` | OAuth 事务状态 |
@@ -441,6 +442,7 @@ cancelled
 | GET | `/projects/{id}/storyboard` | 获取故事板 |
 | PUT | `/projects/{id}/storyboard` | 整体替换故事板 |
 | PATCH | `/projects/{id}/storyboard/order` | 调整镜头顺序并保留 Shot ID |
+| POST | `/characters/{id}/estimate`、`/assets`、`/generate` | 角色图片估算、上传与生成 |
 | POST | `/projects/{id}/evaluate` | 故事板即时评估 |
 | POST | `/shots/{id}/estimate` | 积分估算 |
 | POST | `/shots/{id}/generate` | 创建生成任务 |
@@ -484,8 +486,9 @@ cancelled
 - `Assets`：通过 Video 与 Skill 两个内部分页切换，支持搜索；Video 卡片悬浮静音播放，Skill 卡片不显示封面；卡片只展示权限和 `yyyy-mm-dd` 编辑时间。
 - Assets 展示当前用户真实发布的 Hots 视频和 Skill；点击卡片打开详情，视频详情可直接播放。
 - `Docs`：按 PRD、Playbook、Arch、API、Dev、Test、Ops、FAQ、TODO 展示中英文文档，支持全文搜索。
-- 项目工作区采用 IDE 式布局：可压缩历史导航、当前对话文件树、中央编辑画布和右侧审批式 Copilot。
+- 项目工作区采用 IDE 式布局：可压缩历史导航、`Direction` / `Vision` 资源树、中央编辑画布和右侧审批式 Agents。
 - Assets 与 Agents 侧栏可折叠为带标签的窄轨；展开宽度使用响应式比例，适配不同桌面尺寸。
+- `Direction` 包含 `Settings`、`Outlines`、`Scripts`；`Vision` 包含 `Characters`、`Shots`、`Final Cut`。每个持久化角色与镜头都包含描述页和生成页；空目录不显示等待文案。
 - 项目目录将展开按钮放在蓝色目录图标左侧；被收纳的对话从 Recents 移入对应目录，并以缩进子项显示。
 - 品牌与浏览器标签页图标统一使用蓝色播放键；激活导航图标采用填充/线框反转。
 - 管理后台使用独立控制台布局，与用户创作界面隔离。

@@ -575,6 +575,11 @@ pippit-tool-cli query-result</code></pre>
 <td>每个项目唯一的当前故事板</td>
 </tr>
 <tr>
+<td><code>characters</code></td>
+<td><code>id</code>, <code>storyboard_id</code>, <code>index</code>, <code>name</code>, prompts</td>
+<td>持续角色的描述与可复用图片提示词</td>
+</tr>
+<tr>
 <td><code>shots</code></td>
 <td><code>id</code>, <code>storyboard_id</code>, <code>index</code>, <code>prompt_en</code>, <code>prompt_zh</code>, <code>status</code></td>
 <td>镜头定义</td>
@@ -792,6 +797,11 @@ cancelled</code></pre>
 </tr>
 <tr>
 <td>POST</td>
+<td><code>/characters/{id}/estimate</code>、<code>/assets</code>、<code>/generate</code></td>
+<td>角色图片估算、上传与生成</td>
+</tr>
+<tr>
+<td>POST</td>
 <td><code>/projects/{id}/evaluate</code></td>
 <td>故事板即时评估</td>
 </tr>
@@ -920,8 +930,9 @@ cancelled</code></pre>
 <li><code>Assets</code>：通过 Video 与 Skill 两个内部分页切换，支持搜索；Video 卡片悬浮静音播放，Skill 卡片不显示封面；卡片只展示权限和 <code>yyyy-mm-dd</code> 编辑时间。</li>
 <li>Assets 展示当前用户真实发布的 Hots 视频和 Skill；点击卡片打开详情，视频详情可直接播放。</li>
 <li><code>Docs</code>：按 PRD、Playbook、Arch、API、Dev、Test、Ops、FAQ、TODO 展示中英文文档，支持全文搜索。</li>
-<li>项目工作区采用 IDE 式布局：可压缩历史导航、当前对话文件树、中央编辑画布和右侧审批式 Copilot。</li>
+<li>项目工作区采用 IDE 式布局：可压缩历史导航、<code>Direction</code> / <code>Vision</code> 资源树、中央编辑画布和右侧审批式 Agents。</li>
 <li>Assets 与 Agents 侧栏可折叠为带标签的窄轨；展开宽度使用响应式比例，适配不同桌面尺寸。</li>
+<li><code>Direction</code> 包含 <code>Settings</code>、<code>Outlines</code>、<code>Scripts</code>；<code>Vision</code> 包含 <code>Characters</code>、<code>Shots</code>、<code>Final Cut</code>。每个持久化角色与镜头都包含描述页和生成页；空目录不显示等待文案。</li>
 <li>项目目录将展开按钮放在蓝色目录图标左侧；被收纳的对话从 Recents 移入对应目录，并以缩进子项显示。</li>
 <li>品牌与浏览器标签页图标统一使用蓝色播放键；激活导航图标采用填充/线框反转。</li>
 <li>管理后台使用独立控制台布局，与用户创作界面隔离。</li>

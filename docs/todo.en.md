@@ -12,8 +12,7 @@
 | --- | --- | --- | --- |
 | TODO-UI-001 | Add bilingual controls to the product UI | Navigation, composer, workspace, and feedback are fully localized | P1 |
 | TODO-UI-002 | Expand production playbooks by industry | Each template defines prompt, Skill, Hook, frame, duration, and review | P1 |
-| TODO-UI-003 | Generation reference wiring | Pass uploaded image, video, and audio references into the matching Provider generation request | P0 |
-| TODO-UI-004 | Project asset and reference panel | Characters, scenes, props, and styles are reusable across shots | P1 |
+| TODO-UI-003 | Video and audio reference wiring | Pass uploaded video and audio references into the matching Provider generation request | P0 |
 
 ## 2. Agent and Directing Workflow
 
@@ -23,7 +22,7 @@
 | TODO-AGENT-002 | Partial shot patches | Editing one shot preserves other shots, versions, and approval state | P0 |
 | TODO-AGENT-003 | Scene / sequence / beat data | Scene goals, conflict, and entry/exit state are persisted | P0 |
 | TODO-AGENT-004 | Cinematic shot schema | Shot size, angle, lens, movement, performance, gaze, sound, and transitions are structured | P0 |
-| TODO-AGENT-005 | Style bible and continuity graph | Characters, costume, locations, props, and screen direction are checked and reused | P1 |
+| TODO-AGENT-005 | Continuity graph | Costume, locations, props, and screen direction are linked and checked across Characters and Shots | P1 |
 | TODO-AGENT-006 | Animatic and timeline previz | Users approve rhythm before final shot generation | P1 |
 | TODO-AGENT-007 | Multi-node LangGraph with recovery | Story, budget, shot, and cut gates can pause, resume, and remain auditable | P0 |
 

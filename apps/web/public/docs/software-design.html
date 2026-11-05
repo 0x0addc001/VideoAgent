@@ -206,7 +206,7 @@ Celery Worker + Redis
 <p><code>VIDEOAGENT_LLM_MODEL</code> are configured.</p>
 <li>Deterministic and local otherwise.</li>
 </ul>
-<p>Project, conversation, storyboard, Shot, and GenerationJob state live in the database. Approval, generation, review, and polling boundaries are coordinated through FastAPI, Celery, and the workspace client.</p>
+<p>Project, conversation, storyboard, Character, Shot, and GenerationJob state live in the database. Approval, generation, review, and polling boundaries are coordinated through FastAPI, Celery, and the workspace client.</p>
 <h2 id="8-generation-and-provider-boundary">8. Generation and Provider Boundary</h2>
 <pre><code class="language-text">POST /shots/{id}/estimate
   → VideoProvider.estimate
@@ -353,6 +353,10 @@ query-result</code></pre>
 <td>One current storyboard per project</td>
 </tr>
 <tr>
+<td><code>characters</code></td>
+<td>Ordered recurring roles, descriptions, and reusable image prompts</td>
+</tr>
+<tr>
 <td><code>shots</code></td>
 <td>Ordered prompts, duration, frame, mode, and status</td>
 </tr>
@@ -452,6 +456,10 @@ query-result</code></pre>
 <td><code>PATCH /projects/{id}/storyboard/order</code></td>
 </tr>
 <tr>
+<td>Character image</td>
+<td><code>POST /characters/{id}/estimate</code>, <code>/assets</code>, and <code>/generate</code></td>
+</tr>
+<tr>
 <td>Agent</td>
 <td>Get messages, send a message</td>
 </tr>
@@ -528,10 +536,12 @@ query-result</code></pre>
 <p>organization. Both groups are visible before sign-in and when empty.</p>
 <li>Project folders expose the disclosure control before a blue folder icon.</li>
 <p>Filed conversations move out of Recents and render as indented children of their project folder.</p>
-<li>An IDE-style three-part canvas: the current-conversation asset tree, selected</li>
-<p>asset/document editor, and approval-driven VideoAgent copilot.</p>
+<li>An IDE-style three-part canvas: <code>Direction</code> and <code>Vision</code> resources, the selected</li>
+<p>editor document or asset, and the approval-driven Agents panel.</p>
 <li>The Assets and Agents side panels can collapse to labeled rails. Their widths</li>
 <p>use responsive clamped proportions so they remain usable across desktop sizes.</p>
+<li><code>Direction</code> contains <code>Settings</code>, <code>Outlines</code>, and <code>Scripts</code>. <code>Vision</code> contains</li>
+<p><code>Characters</code>, <code>Shots</code>, and <code>Final Cut</code>. Every persisted Character and Shot owns a Description page and a Generation page; empty directories render no waiting copy.</p>
 <li>Skill Studio persists reusable Skills with a stable namespace, instructions,</li>
 <p>quality gates, prompt template, and input/output contracts. <code>AI optimize</code> turns an early idea into that structure.</p>
 <li>The built-in <code>video_agent/skill_synthesis</code> Skill opens Skill Studio directly</li>

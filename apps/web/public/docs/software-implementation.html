@@ -157,6 +157,7 @@ Celery Worker
   → set HttpOnly SameSite cookie</code></pre>
 <h3 id="5-2-storyboards">5.2 Storyboards</h3>
 <p><code>PUT /projects/{project_id}/storyboard</code> replaces the complete shot list, increments <code>Storyboard.version</code>, and assigns contiguous shot indexes starting at zero.</p>
+<p>The same replacement persists recurring <code>Character</code> resources and <code>Shot</code> resources. Character generation uses the domestic Kling CLI <code>text_to_image</code> and <code>image_to_image</code> tools, validates project-owned image references, reserves credits, and persists the downloaded image as a project asset.</p>
 <h3 id="5-3-agent">5.3 Agent</h3>
 <pre><code class="language-text">POST /projects/{project_id}/messages
   → persist user message
@@ -672,7 +673,7 @@ pnpm --dir apps/web typecheck
 pnpm --dir apps/web build
 pnpm test:e2e
 python scripts\build_pages.py</code></pre>
-<p>Backend coverage currently consists of 64 tests, frontend coverage consists of 28 Vitest tests, and Playwright contains seven no-fee browser flows. Playwright uses the Mock Provider for generation and therefore never consumes real Provider credits.</p></article>
+<p>Backend coverage currently consists of 67 tests, frontend coverage consists of 30 Vitest tests, and Playwright contains seven no-fee browser flows. Playwright uses the Mock Provider for generation and therefore never consumes real Provider credits.</p></article>
     </main>
     <script src="../docs.js?v=29"></script>
   </body>

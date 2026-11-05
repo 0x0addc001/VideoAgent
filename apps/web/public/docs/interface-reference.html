@@ -47,6 +47,7 @@
 <a class="toc-link toc-level-2" href="#generation">Generation</a>
 <a class="toc-link toc-level-3" href="#estimate-cost">Estimate Cost</a>
 <a class="toc-link toc-level-3" href="#generate-shot">Generate Shot</a>
+<a class="toc-link toc-level-3" href="#character-image-generation">Character Image Generation</a>
 <a class="toc-link toc-level-3" href="#job-status">Job Status</a>
 <a class="toc-link toc-level-2" href="#credits">Credits</a>
 <a class="toc-link toc-level-2" href="#skills">Skills</a>
@@ -221,6 +222,14 @@ http://localhost:8000/openapi.json</code></pre>
 <h3 id="replace-storyboard">Replace Storyboard</h3>
 <p><code>PUT /projects/{project_id}/storyboard</code></p>
 <pre><code class="language-json">{
+  &quot;characters&quot;: [
+    {
+      &quot;name&quot;: &quot;Mara&quot;,
+      &quot;description&quot;: &quot;A reserved photographer in her early thirties.&quot;,
+      &quot;prompt_en&quot;: &quot;Editorial portrait with stable identity and natural skin texture&quot;,
+      &quot;prompt_zh&quot;: &quot;稳定身份与自然肤质的角色定妆照&quot;
+    }
+  ],
   &quot;shots&quot;: [
     {
       &quot;description&quot;: &quot;Opening product reveal&quot;,
@@ -269,8 +278,40 @@ http://localhost:8000/openapi.json</code></pre>
 <pre><code class="language-text">Idempotency-Key: unique-request-id</code></pre>
 <p>Request:</p>
 <pre><code class="language-json">{
-  &quot;approved&quot;: true
+  &quot;approved&quot;: true,
+  &quot;generation_mode&quot;: &quot;image_to_video&quot;,
+  &quot;reference_asset_id&quot;: &quot;00000000-0000-0000-0000-000000000010&quot;
 }</code></pre>
+<p><code>generation_mode</code> is <code>text_to_video</code> or <code>image_to_video</code>. Image-to-video requires a project-owned image asset that belongs to the current user.</p>
+<h3 id="character-image-generation">Character Image Generation</h3>
+<div class="table-wrap"><table><thead><tr>
+<th>Method</th>
+<th>Path</th>
+<th>Purpose</th>
+</tr></thead><tbody>
+<tr>
+<td><code>POST</code></td>
+<td><code>/characters/{character_id}/estimate</code></td>
+<td>Estimate character image credits</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/characters/{character_id}/assets</code></td>
+<td>Upload a character image</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/characters/{character_id}/generate</code></td>
+<td>Generate or edit a character image</td>
+</tr>
+</tbody></table></div>
+<p>Generation request:</p>
+<pre><code class="language-json">{
+  &quot;approved&quot;: true,
+  &quot;generation_mode&quot;: &quot;image_to_image&quot;,
+  &quot;reference_asset_id&quot;: &quot;00000000-0000-0000-0000-000000000010&quot;
+}</code></pre>
+<p><code>generation_mode</code> is <code>text_to_image</code> or <code>image_to_image</code>. A successful request returns an <code>AssetRead</code> whose content can be previewed and downloaded through <code>content_url</code>.</p>
 <h3 id="job-status">Job Status</h3>
 <p><code>GET /jobs/{job_id}</code></p>
 <p>Possible statuses include <code>submitted</code>, <code>queued</code>, <code>running</code>, <code>succeeded</code>, <code>failed</code>, and <code>cancelled</code>.</p>

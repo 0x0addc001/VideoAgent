@@ -126,14 +126,19 @@ Kling 国内版另使用依赖注入测试覆盖 `text_to_video`、`query_tasks`
 - 历史导航展示 Projects 与 Recents，项目目录支持创建、重命名、删除和拖拽收纳。
 - 将 Recent 拖入项目目录后关系持久化，Recent 列表移除该项，并在目录内以缩进子项显示。
 - 点击历史对话只更新 URL 哈希并复用已挂载的应用外壳，不触发页面级导航。
-- 工作区目录使用 `Scripts`、`Shots` 复数标题和目录图标；Projects、Recents
-  及其对话项不显示图标。Agent 回复完整展开，不设置消息内部滚动条。
+- 工作区资源树包含 `Direction > Settings / Outlines / Scripts` 与
+  `Vision > Characters / Shots / Final Cut`，不再显示 Storyboard、Media、Exports。
+  Projects、Recents 及其对话项保持纯文本。
+- Agent 创建的每个 Character 和 Shot 都提供描述页与生成页；空目录不显示等待文案。
+- Settings 以“问题-答案”属性行展示 Q&A，不显示旧版底部分阶段卡片。
 - Assets 与 Agents 可独立折叠，并通过带标签的窄轨恢复。
 - 非空故事板自动加载 Review 分数，提供刷新按钮；详情弹窗标题为 Review，并移除已废弃的提示词建议和冗余 VideoAgent 标签。
 - Review 与刷新共用同一个边框，镜头生成在工作流批准前显示明确提示。
 - 历史 Agent 消息静态渲染；仅新返回的回复执行一次流式显示，Agents 折叠后重新展开不会重复播放。
+- Agent 请求等待回复时显示旋转的 `Thinking` 状态。
 - Agent 逐层展示整体设定、分集/分镜大纲和逐场剧本审批选项，自定义意见保持当前阶段。
 - 只有剧本批准后才允许估算和生成镜头。
+- 角色生成页支持上传、参考图生图和文字生图；生成图片持久化为可下载的项目资产。
 - Skill 发布表单包含用途、执行规范、质量门禁、启动提示词和输入输出契约。
 - AI 优化按钮能把粗略想法整理为结构化 Skill，保存后从服务端恢复。
 - 内置 `video_agent/skill_synthesis` 直接打开 Skill Studio。

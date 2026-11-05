@@ -15,13 +15,13 @@ from videoagent.api.dependencies import (
 )
 from videoagent.config import Settings
 from videoagent.errors import AppError
-from videoagent.models import GenerationJob, Project, Shot, Storyboard, User
+from videoagent.models import Asset, GenerationJob, Project, Shot, Storyboard, User
 from videoagent.providers.base import CostEstimate, GenerationRequest, VideoProvider
 from videoagent.providers.oauth import KlingOAuthGateway
 from videoagent.schemas import GenerationApproval, GenerationJobRead
 from videoagent.services.credits import refund_credits, reserve_credits
 from videoagent.services.generation_jobs import refresh_generation_job
-from videoagent.services.media import materialize_generation_result
+from videoagent.services.media import asset_path, materialize_generation_result
 from videoagent.services.platform_settings import generation_enabled
 from videoagent.services.provider_resolver import resolve_video_provider
 
@@ -70,14 +70,21 @@ PIPPIT_MODEL_ALIASES = {
 }
 
 
-def provider_request(shot: Shot, *, model: str | None = None) -> GenerationRequest:
+def provider_request(
+    shot: Shot,
+    *,
+    model: str | None = None,
+    generation_mode: str | None = None,
+    reference_image_path: str | None = None,
+) -> GenerationRequest:
     return GenerationRequest(
         shot_id=shot.id,
         prompt=shot.prompt_en,
         duration_seconds=shot.duration_seconds,
         aspect_ratio=shot.aspect_ratio,
-        generation_mode=shot.generation_mode,
+        generation_mode=generation_mode or shot.generation_mode,
         model=model,
+        reference_image_path=reference_image_path,
     )
 
 
@@ -194,7 +201,43 @@ async def generate_shot(
         default_provider=provider,
         gateway=gateway,
     )
-    request = provider_request(shot, model=model)
+    reference_image_path: str | None = None
+    if payload.generation_mode == "image_to_video":
+        if payload.reference_asset_id is None:
+            raise AppError(
+                status_code=422,
+                code="REFERENCE_REQUIRED",
+                message="Image-to-video generation requires a reference image.",
+            )
+        reference_asset = await session.scalar(
+            select(Asset).where(
+                Asset.id == payload.reference_asset_id,
+                Asset.owner_id == user.id,
+                Asset.project_id == project.id,
+                Asset.deleted_at.is_(None),
+            )
+        )
+        if reference_asset is None or not reference_asset.content_type.startswith("image/"):
+            raise AppError(
+                status_code=422,
+                code="REFERENCE_INVALID",
+                message="The selected reference is not an image in this project.",
+            )
+        reference_file = asset_path(reference_asset, settings)
+        if not reference_file.exists():
+            raise AppError(
+                status_code=404,
+                code="REFERENCE_FILE_NOT_FOUND",
+                message="The selected reference image file is unavailable.",
+            )
+        reference_image_path = str(reference_file)
+
+    request = provider_request(
+        shot,
+        model=model,
+        generation_mode=payload.generation_mode,
+        reference_image_path=reference_image_path,
+    )
     job_id = uuid4()
     estimate = await selected_provider.estimate(request)
     if estimate.duration_seconds != request.duration_seconds:

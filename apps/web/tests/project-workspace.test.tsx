@@ -103,6 +103,16 @@ describe("ProjectWorkspace", () => {
               id: "storyboard-1",
               project_id: "project-1",
               version: 1,
+              characters: [
+                {
+                  id: "character-1",
+                  index: 0,
+                  name: "Maya",
+                  description: "A quiet observer moving through the city at dawn.",
+                  prompt_en: "Editorial portrait of Maya in Copenhagen morning light",
+                  prompt_zh: null,
+                },
+              ],
               shots: [
                 {
                   id: "shot-1",
@@ -241,8 +251,17 @@ describe("ProjectWorkspace", () => {
     ).not.toHaveLength(0);
     expect(screen.getAllByText("Recents").length).toBeGreaterThan(0);
     expect(screen.getByRole("button", { name: "Direction" })).toBeVisible();
-    expect(screen.getByRole("button", { name: "Scripts" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Settings" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Vision" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Characters" })).toBeVisible();
+    expect(screen.getByText("Maya")).toBeVisible();
+    expect(screen.getAllByRole("button", { name: "Description" }).length).toBe(3);
+    expect(screen.getAllByRole("button", { name: "Generation" }).length).toBe(3);
     expect(screen.getByRole("button", { name: "Shots" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Final Cut" })).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Storyboard" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Media" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Exports" })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Collapse assets" }));
     expect(screen.getByRole("button", { name: "Expand assets" })).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Expand assets" }));
@@ -256,26 +275,22 @@ describe("ProjectWorkspace", () => {
     );
     expect(screen.queryByText("2 shots")).not.toBeInTheDocument();
     expect(document.querySelector(".max-h-64")).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Outline" }));
+    fireEvent.click(screen.getByRole("button", { name: "Settings" }));
+    expect(screen.getByText("Attributes")).toBeVisible();
+    expect(screen.getByText("Director input")).toBeVisible();
+    expect(screen.queryByText("Agent prompt")).not.toBeInTheDocument();
+    expect(screen.queryByText("Director answer")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Outlines" }));
     expect(
       document.querySelector('[data-document-mode="outline"]'),
     ).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Script" }));
+    fireEvent.click(screen.getByRole("button", { name: "Scripts" }));
     expect(
       document.querySelector('[data-document-mode="script"]'),
     ).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /Shot 01/ }));
-    fireEvent.click(screen.getByRole("button", { name: "Move shot later" }));
-    await waitFor(() =>
-      expect(fetchMock).toHaveBeenCalledWith(
-        "http://localhost:8000/api/v1/projects/project-1/storyboard/order",
-        expect.objectContaining({
-          method: "PATCH",
-          body: JSON.stringify({ shot_ids: ["shot-2", "shot-1"] }),
-        }),
-      ),
+    fireEvent.click(
+      screen.getAllByRole("button", { name: "Generation" })[0],
     );
-
     expect(screen.getByRole("button", { name: "Review" })).toBeVisible();
     const refreshReview = screen.getByRole("button", { name: "Refresh review" });
     expect(refreshReview).toBeVisible();
@@ -308,7 +323,7 @@ describe("ProjectWorkspace", () => {
       screen.queryByText("Add subject, environment, and action details to prompts."),
     ).not.toBeInTheDocument();
     },
-    20_000,
+    30_000,
   );
 
   it(

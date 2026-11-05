@@ -172,12 +172,17 @@ video_agent/agent_handoff</code></pre>
 </ul>
 <h3 id="7-1-project-workspace-and-delivery">7.1 Project Workspace and Delivery</h3>
 <ul>
-<li>A project accepts image, video, and audio uploads and shows the reference count.</li>
+<li>The resource tree groups <code>Settings</code>, <code>Outlines</code>, and <code>Scripts</code> under</li>
+<p><code>Direction</code>, and <code>Characters</code>, <code>Shots</code>, and <code>Final Cut</code> under <code>Vision</code>.</p>
+<li>Settings combines production attributes and Agent-director Q&amp;A in one</li>
+<p>attribute table. Empty directories remain quiet and do not display waiting copy.</p>
+<li>Agents create a directory for every recurring character and shot. Each child</li>
+<p>directory contains a Description page and a Generation page.</p>
+<li>Character and shot Generation pages support an uploaded image, reference-image</li>
+<p>generation, or direct text generation where the selected model supports the mode. Generated media can be downloaded.</p>
 <li>Uploads must pass content-type, file-signature, and size validation.</li>
 <li>Users can inspect estimated credits and explicitly approve generation.</li>
 <li>Generated shots can be composed into a film with 16:9, 9:16, and 1:1 deliveries.</li>
-<li>Users can reorder shots without replacing Shot IDs, generated assets, or</li>
-<p>generation history.</p>
 <li>Export supports captions, an uploaded soundtrack, an automatic cover, and</li>
 <p>private or public permission.</p>
 <li>Each delivery can be downloaded; share links expire and can be revoked.</li>
@@ -312,6 +317,8 @@ TODO</code></pre>
 <li>Users can upload references, compose a film, download a delivery, and</li>
 <p>create a share link.</p>
 <li>User credit reservations, refunds, and Provider-account reconciliation agree.</li>
+<li>Agents persist every recurring Character and Shot as a resource directory,</li>
+<p>and each resource exposes Description and Generation pages.</p>
 <li>Reordering shots does not delete or recreate existing Shots.</li>
 <li>Non-administrators cannot access administration APIs or pages.</li>
 <li>Administrators can manage credits, accounts, invites, and generation state,</li>

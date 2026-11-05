@@ -383,6 +383,7 @@ async def decide_workflow(
             session,
             project.id,
             plan.storyboard.shots,
+            plan.storyboard.characters,
         )
         assistant_content = plan.assistant_message
         workflow.stage = target_stage

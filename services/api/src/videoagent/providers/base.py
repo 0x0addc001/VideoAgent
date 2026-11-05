@@ -22,6 +22,7 @@ class GenerationRequest(BaseModel):
     aspect_ratio: str
     generation_mode: str
     model: str | None = None
+    reference_image_path: str | None = None
 
 
 class CostEstimate(BaseModel):

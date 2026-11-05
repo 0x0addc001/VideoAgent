@@ -205,12 +205,12 @@ https://example.com/api/   → FastAPI</code></pre>
 读取或修改项目资源
   → 同时校验 resource_id 和 owner_id
   → 其他用户统一得到 404</code></pre>
-<p>故事板使用 <code>PUT /projects/{project_id}/storyboard</code> 整体替换镜头列表。替换时：</p>
+<p>故事板使用 <code>PUT /projects/{project_id}/storyboard</code> 整体替换角色与镜头列表。替换时：</p>
 <ol>
-<li>删除旧 Shot。</li>
+<li>删除旧 Character 和 Shot。</li>
 <li><code>Storyboard.version</code> 加一。</li>
-<li>根据请求顺序重建 Shot。</li>
-<li><code>index</code> 从 0 开始连续分配。</li>
+<li>根据请求顺序重建 Character 和 Shot。</li>
+<li>两类资源的 <code>index</code> 均从 0 开始连续分配。</li>
 </ol>
 <h3 id="5-3-agent-对话">5.3 Agent 对话</h3>
 <pre><code class="language-text">POST /projects/{project_id}/messages
@@ -234,6 +234,7 @@ https://example.com/api/   → FastAPI</code></pre>
   → 保存 GenerationJob
   → 更新 Shot 状态
   → 投递 Celery 轮询任务</code></pre>
+<p>角色图片使用 <code>POST /characters/{character_id}/generate</code>。服务端校验图片引用、 预扣积分，再调用 Kling 国内版 CLI 的 <code>text_to_image</code> 或 <code>image_to_image</code>； 生成文件写入项目媒体目录并作为可下载 Asset 返回。</p>
 <p>如果相同镜头和 <code>Idempotency-Key</code> 已经存在，接口返回已有 Job，HTTP 状态为 200，不会再次提交 Provider。</p>
 <p>前端每 5 秒请求一次任务状态。<code>GET /jobs/{job_id}</code> 会在任务未结束时调用 Provider 查询最新状态。</p>
 <h3 id="5-5-celery-轮询">5.5 Celery 轮询</h3>
@@ -577,6 +578,7 @@ zh-CN</code></pre>
 <li><code>Storyboard.project_id</code> 唯一。</li>
 <li><code>Conversation.project_id</code> 唯一。</li>
 <li><code>WorkspaceFolderItem.project_id</code> 唯一，一个对话只能收纳在一个项目目录中。</li>
+<li><code>(Character.storyboard_id, Character.index)</code> 唯一。</li>
 <li><code>(Shot.storyboard_id, Shot.index)</code> 唯一。</li>
 <li><code>(GenerationJob.shot_id, GenerationJob.idempotency_key)</code> 唯一。</li>
 <li><code>(ProviderConnection.user_id, ProviderConnection.provider)</code> 唯一。</li>

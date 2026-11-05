@@ -36,30 +36,51 @@ test("runs a complete mock video workflow without paid generation", async ({
     page.getByRole("button", { name: "Continue with this direction" }),
   ).toHaveCount(0);
 
-  await page.getByRole("button", { name: /Shot 01/ }).click();
-  const reorderResponsePromise = page.waitForResponse(
+  const characterFolder = page
+    .locator("summary")
+    .filter({ hasText: "Lead" })
+    .first();
+  await characterFolder.click();
+  await characterFolder
+    .locator("..")
+    .getByRole("button", { name: "Generation" })
+    .click();
+  const characterGeneration = page.waitForResponse(
     (response) =>
-      response.request().method() === "PATCH" &&
-      response.url().endsWith("/storyboard/order"),
+      response.request().method() === "POST" &&
+      /\/api\/v1\/characters\/[^/]+\/generate$/.test(
+        new URL(response.url()).pathname,
+      ),
   );
-  await page.getByRole("button", { name: "Move shot later" }).click();
-  expect((await reorderResponsePromise).status()).toBe(200);
-  await page.getByLabel("Upload reference").setInputFiles({
-    name: "reference.png",
-    mimeType: "image/png",
-    buffer: Buffer.from(
-      "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2nGQAAAAASUVORK5CYII=",
-      "base64",
-    ),
-  });
-  await expect(page.getByText("1 uploaded references")).toBeVisible();
+  await page.getByRole("button", { name: "Generate directly" }).click();
+  expect((await characterGeneration).status()).toBe(201);
+  const characterPreview = page.getByRole("img", { name: "Lead" });
+  await characterPreview.scrollIntoViewIfNeeded();
+  await expect
+    .poll(() =>
+      characterPreview.evaluate(
+        (image) =>
+          image instanceof HTMLImageElement &&
+          image.complete &&
+          image.naturalWidth > 0,
+      ),
+    )
+    .toBe(true);
+  await expect(characterPreview).toBeVisible();
+
+  const shotFolder = page.locator("summary").filter({ hasText: "Shot 1" }).first();
+  await shotFolder.click();
+  await shotFolder
+    .locator("..")
+    .getByRole("button", { name: "Generation" })
+    .click();
 
   const pollResponsePromise = page.waitForResponse(
     (response) =>
       response.request().method() === "GET" &&
       /\/api\/v1\/jobs\/[^/]+$/.test(new URL(response.url()).pathname),
   );
-  await page.getByRole("button", { name: "Generate shot" }).click();
+  await page.getByRole("button", { name: "Generate directly" }).click();
   const pollResponse = await pollResponsePromise;
   expect((await pollResponse.json()) as { status: string }).toMatchObject({
     status: "succeeded",

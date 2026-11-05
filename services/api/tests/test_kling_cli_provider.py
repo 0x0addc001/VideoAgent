@@ -86,3 +86,42 @@ async def test_kling_cli_reports_domestic_identity_and_credits(monkeypatch):
         "userId": "5867025089",
     }
     assert await provider.credits() == 42
+
+
+@pytest.mark.unit
+async def test_kling_cli_generates_character_image_with_reference(monkeypatch):
+    provider = KlingCLIVideoProvider(command=("kling",))
+    calls: list[tuple[str, ...]] = []
+
+    async def capture(*args: str) -> dict[str, object]:
+        calls.append(args)
+        return {
+            "generationId": "image-generation-1",
+            "status": "succeeded",
+            "works": [{"url": "https://cdn.example.com/character.png"}],
+        }
+
+    monkeypatch.setattr(provider, "_run_json", capture)
+    result = await provider.generate_image(
+        prompt="Editorial portrait of Mara",
+        generation_mode="image_to_image",
+        reference_image_path="C:/media/reference.jpg",
+    )
+
+    assert result == "https://cdn.example.com/character.png"
+    assert calls == [
+        (
+            "--quiet",
+            "image_to_image",
+            "--model",
+            "kling-image-v3_0",
+            "--aspect_ratio",
+            "3:4",
+            "--img_resolution",
+            "2k",
+            "--image",
+            "C:/media/reference.jpg",
+            "Editorial portrait of Mara",
+            "--poll=60",
+        )
+    ]

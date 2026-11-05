@@ -6,7 +6,7 @@ from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 
 from videoagent.config import Settings
-from videoagent.schemas import ShotInput, StoryboardReplace
+from videoagent.schemas import CharacterInput, ShotInput, StoryboardReplace
 
 
 class StoryboardPlan(BaseModel):
@@ -85,6 +85,27 @@ class LocalStoryboardPlanner:
                 generation_mode="text_to_video",
             ),
         ]
+        character_name = "主角" if chinese else "Lead"
+        character_description = (
+            f"故事的核心人物，围绕“{subject}”展开。"
+            if chinese
+            else f"The central character whose story revolves around {subject}."
+        )
+        characters = [
+            CharacterInput(
+                name=character_name,
+                description=character_description,
+                prompt_en=(
+                    f"Cinematic character portrait for {subject}, consistent identity, "
+                    "natural skin texture, production-ready costume and lighting"
+                ),
+                prompt_zh=(
+                    f"“{subject}”的电影感角色定妆照，稳定身份特征，自然肤质，成片级服装与灯光"
+                    if chinese
+                    else None
+                ),
+            )
+        ]
         messages = {
             "concept": (
                 "我先确定整体设定：题材、受众、核心冲突、情绪和视觉方向。确认后我再展开分集与分镜。"
@@ -118,7 +139,7 @@ class LocalStoryboardPlanner:
         }
         return StoryboardPlan(
             assistant_message=messages[context.workflow_stage],
-            storyboard=StoryboardReplace(shots=shots),
+            storyboard=StoryboardReplace(shots=shots, characters=characters),
         )
 
 
@@ -153,6 +174,9 @@ class OpenAIStoryboardPlanner:
         }[context.workflow_stage]
         prompt = (
             "Create a production-ready three-shot video storyboard. "
+            "Also define one to three recurring characters with distinct names, "
+            "descriptions, and reusable English image prompts when characters are "
+            "relevant to the brief. "
             "Return prompts in English and a Chinese prompt when the locale is zh-CN. "
             "Each shot must be between 1 and 15 seconds. "
             f"Workflow stage: {context.workflow_stage}. {stage_instruction} "

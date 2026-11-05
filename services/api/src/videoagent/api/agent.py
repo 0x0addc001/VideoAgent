@@ -96,6 +96,7 @@ async def create_agent_message(
         session,
         project.id,
         plan.storyboard.shots,
+        plan.storyboard.characters,
     )
     assistant_message = Message(
         conversation_id=conversation.id,

@@ -20,6 +20,13 @@ async def test_user_can_create_and_read_ordered_storyboard(client):
     created = await client.put(
         f"/api/v1/projects/{project['id']}/storyboard",
         json={
+            "characters": [
+                {
+                    "name": "Avery",
+                    "description": "The recurring lead, calm and observant.",
+                    "prompt_en": "Cinematic portrait of Avery with stable identity",
+                }
+            ],
             "shots": [
                 {
                     "description": "The product emerges from shadow.",
@@ -36,7 +43,7 @@ async def test_user_can_create_and_read_ordered_storyboard(client):
                     "aspect_ratio": "16:9",
                     "generation_mode": "text_to_video",
                 },
-            ]
+            ],
         },
     )
 
@@ -45,10 +52,13 @@ async def test_user_can_create_and_read_ordered_storyboard(client):
     assert body["version"] == 1
     assert [shot["index"] for shot in body["shots"]] == [0, 1]
     assert body["shots"][0]["prompt_zh"] == "暗色影棚中的电影感产品展示"
+    assert body["characters"][0]["name"] == "Avery"
+    assert body["characters"][0]["index"] == 0
 
     fetched = await client.get(f"/api/v1/projects/{project['id']}/storyboard")
     assert fetched.status_code == 200
     assert fetched.json()["shots"][1]["prompt_en"] == "Macro shot of the product label"
+    assert fetched.json()["characters"][0]["description"].startswith("The recurring lead")
 
 
 @pytest.mark.api
@@ -59,6 +69,13 @@ async def test_replacing_storyboard_increments_version_and_removes_old_shots(cli
     first = await client.put(
         f"/api/v1/projects/{project['id']}/storyboard",
         json={
+            "characters": [
+                {
+                    "name": "Mara",
+                    "description": "The recurring lead.",
+                    "prompt_en": "Recurring lead portrait",
+                }
+            ],
             "shots": [
                 {
                     "description": "First",
@@ -67,7 +84,7 @@ async def test_replacing_storyboard_increments_version_and_removes_old_shots(cli
                     "aspect_ratio": "9:16",
                     "generation_mode": "text_to_video",
                 }
-            ]
+            ],
         },
     )
     assert first.status_code == 200
@@ -91,6 +108,7 @@ async def test_replacing_storyboard_increments_version_and_removes_old_shots(cli
     assert second.json()["version"] == 2
     assert len(second.json()["shots"]) == 1
     assert second.json()["shots"][0]["prompt_en"] == "Replacement shot"
+    assert second.json()["characters"][0]["name"] == "Mara"
 
 
 @pytest.mark.api

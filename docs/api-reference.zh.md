@@ -131,6 +131,14 @@ http://localhost:8000/openapi.json
 
 ```json
 {
+  "characters": [
+    {
+      "name": "Mara",
+      "description": "一位克制、敏锐的摄影师。",
+      "prompt_en": "Editorial portrait with stable identity and natural skin texture",
+      "prompt_zh": "稳定身份与自然肤质的角色定妆照"
+    }
+  ],
   "shots": [
     {
       "description": "开场产品亮相",
@@ -249,11 +257,36 @@ Idempotency-Key: unique-request-id
 
 ```json
 {
-  "approved": true
+  "approved": true,
+  "generation_mode": "image_to_video",
+  "reference_asset_id": "00000000-0000-0000-0000-000000000010"
 }
 ```
 
 未显式批准时返回 `403`。相同镜头和幂等键重复请求会返回已有任务，不会再次提交 Provider。
+`generation_mode` 为 `text_to_video` 或 `image_to_video`；图生视频必须引用当前用户、
+当前项目中的有效图片资产。
+
+## 角色图片生成
+
+| 方法 | 路径 | 用途 |
+| --- | --- | --- |
+| `POST` | `/characters/{character_id}/estimate` | 估算角色图片生成积分 |
+| `POST` | `/characters/{character_id}/assets` | 上传角色图片 |
+| `POST` | `/characters/{character_id}/generate` | 生成或编辑角色图片 |
+
+生成请求：
+
+```json
+{
+  "approved": true,
+  "generation_mode": "image_to_image",
+  "reference_asset_id": "00000000-0000-0000-0000-000000000010"
+}
+```
+
+`generation_mode` 为 `text_to_image` 或 `image_to_image`。成功响应为 `AssetRead`，
+客户端可通过 `content_url` 预览和下载生成图片。
 
 ### 查询任务
 

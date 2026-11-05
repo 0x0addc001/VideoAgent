@@ -143,6 +143,14 @@ Rename request:
 
 ```json
 {
+  "characters": [
+    {
+      "name": "Mara",
+      "description": "A reserved photographer in her early thirties.",
+      "prompt_en": "Editorial portrait with stable identity and natural skin texture",
+      "prompt_zh": "稳定身份与自然肤质的角色定妆照"
+    }
+  ],
   "shots": [
     {
       "description": "Opening product reveal",
@@ -234,9 +242,36 @@ Request:
 
 ```json
 {
-  "approved": true
+  "approved": true,
+  "generation_mode": "image_to_video",
+  "reference_asset_id": "00000000-0000-0000-0000-000000000010"
 }
 ```
+
+`generation_mode` is `text_to_video` or `image_to_video`. Image-to-video
+requires a project-owned image asset that belongs to the current user.
+
+### Character Image Generation
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `POST` | `/characters/{character_id}/estimate` | Estimate character image credits |
+| `POST` | `/characters/{character_id}/assets` | Upload a character image |
+| `POST` | `/characters/{character_id}/generate` | Generate or edit a character image |
+
+Generation request:
+
+```json
+{
+  "approved": true,
+  "generation_mode": "image_to_image",
+  "reference_asset_id": "00000000-0000-0000-0000-000000000010"
+}
+```
+
+`generation_mode` is `text_to_image` or `image_to_image`. A successful request
+returns an `AssetRead` whose content can be previewed and downloaded through
+`content_url`.
 
 ### Job Status
 

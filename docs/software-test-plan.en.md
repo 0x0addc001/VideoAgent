@@ -135,9 +135,14 @@ Component tests cover:
   item from Recents, and renders it as an indented folder child.
 - Selecting a conversation updates only the URL hash and preserves the mounted
   application shell; no document navigation occurs.
-- The workspace tree uses directory icons for `Scripts` and `Shots`; Projects,
-  Recents, and their conversation items remain text-only. Agent replies expand
-  without an inner message scrollbar.
+- The workspace tree contains `Direction > Settings / Outlines / Scripts` and
+  `Vision > Characters / Shots / Final Cut`; legacy Storyboard, Media, and Exports
+  groups are absent. Projects, Recents, and their conversation items remain
+  text-only.
+- Every Agent-created Character and Shot exposes Description and Generation
+  pages. Empty directories do not render waiting copy.
+- Settings renders Q&A as question-answer attribute rows without the retired
+  lower stage cards.
 - Assets and Agents collapse independently and restore from their labeled rails.
 - Review auto-loads a score for a non-empty storyboard, exposes a refresh action,
   opens a dialog titled `Review`, and omits the retired prompt suggestion and
@@ -146,9 +151,12 @@ Component tests cover:
   an approval requirement until the story workflow reaches the approved state.
 - Persisted Agent messages render statically; only a newly returned reply uses
   the type-on effect and does not replay after the Agents rail is reopened.
+- Agent requests show a spinning `Thinking` indicator while waiting for a reply.
 - Stage approval options cover overall direction, episode and shot outline, and
   scene script; custom instructions keep the current stage.
 - Shot estimation and generation remain disabled until the script is approved.
+- Character Generation supports upload, image-to-image, and text-to-image;
+  generated images are persisted as downloadable project assets.
 - Skill Studio captures purpose, instructions, quality gates, starter prompt,
   and input/output contracts.
 - AI optimization converts a rough idea into a structured draft, and saved

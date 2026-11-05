@@ -149,12 +149,12 @@ https://example.com/api/   → FastAPI
   → 其他用户统一得到 404
 ```
 
-故事板使用 `PUT /projects/{project_id}/storyboard` 整体替换镜头列表。替换时：
+故事板使用 `PUT /projects/{project_id}/storyboard` 整体替换角色与镜头列表。替换时：
 
-1. 删除旧 Shot。
+1. 删除旧 Character 和 Shot。
 2. `Storyboard.version` 加一。
-3. 根据请求顺序重建 Shot。
-4. `index` 从 0 开始连续分配。
+3. 根据请求顺序重建 Character 和 Shot。
+4. 两类资源的 `index` 均从 0 开始连续分配。
 
 ### 5.3 Agent 对话
 
@@ -189,6 +189,10 @@ START → plan_storyboard → END
   → 更新 Shot 状态
   → 投递 Celery 轮询任务
 ```
+
+角色图片使用 `POST /characters/{character_id}/generate`。服务端校验图片引用、
+预扣积分，再调用 Kling 国内版 CLI 的 `text_to_image` 或 `image_to_image`；
+生成文件写入项目媒体目录并作为可下载 Asset 返回。
 
 如果相同镜头和 `Idempotency-Key` 已经存在，接口返回已有 Job，HTTP 状态为 200，不会再次提交 Provider。
 
@@ -339,6 +343,7 @@ ORM 表：
 - `Storyboard.project_id` 唯一。
 - `Conversation.project_id` 唯一。
 - `WorkspaceFolderItem.project_id` 唯一，一个对话只能收纳在一个项目目录中。
+- `(Character.storyboard_id, Character.index)` 唯一。
 - `(Shot.storyboard_id, Shot.index)` 唯一。
 - `(GenerationJob.shot_id, GenerationJob.idempotency_key)` 唯一。
 - `(ProviderConnection.user_id, ProviderConnection.provider)` 唯一。

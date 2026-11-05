@@ -152,6 +152,11 @@ def _mock_source() -> Path:
     return repository / "apps" / "web" / "public" / "media" / "vlog-hero.mp4"
 
 
+def _mock_image_source() -> Path:
+    repository = Path(__file__).resolve().parents[5]
+    return repository / "apps" / "web" / "public" / "media" / "vlog-hero-poster.jpg"
+
+
 async def _download(url: str, destination: Path, settings: Settings) -> bool:
     try:
         async with (
@@ -170,6 +175,79 @@ async def _download(url: str, destination: Path, settings: Settings) -> bool:
     except Exception:
         await asyncio.to_thread(destination.unlink, missing_ok=True)
         return False
+
+
+def _image_media(path: Path) -> tuple[str, str]:
+    header = path.read_bytes()[:16]
+    if header.startswith(b"\xff\xd8\xff"):
+        return "image/jpeg", ".jpg"
+    if header.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "image/png", ".png"
+    if header.startswith(b"RIFF") and header[8:12] == b"WEBP":
+        return "image/webp", ".webp"
+    raise AppError(
+        status_code=502,
+        code="INVALID_PROVIDER_IMAGE",
+        message="The image provider returned an unsupported file.",
+    )
+
+
+async def materialize_character_image(
+    session: AsyncSession,
+    *,
+    owner_id: UUID,
+    project_id: UUID,
+    character_id: UUID,
+    result_url: str,
+    settings: Settings,
+) -> Asset:
+    media_dir = Path(settings.media_dir).expanduser().resolve()  # noqa: ASYNC240
+    media_dir.mkdir(parents=True, exist_ok=True)
+    raw_path = media_dir / f".character-{uuid4().hex}.download"
+    try:
+        if result_url.startswith("mock://"):
+            source = _mock_image_source()
+            if not source.exists():
+                raise AppError(
+                    status_code=502,
+                    code="PROVIDER_RESULT_UNAVAILABLE",
+                    message="The mock image source is unavailable.",
+                )
+            shutil.copyfile(source, raw_path)
+        elif result_url.startswith(("http://", "https://")):
+            if not await _download(result_url, raw_path, settings):
+                raise AppError(
+                    status_code=502,
+                    code="PROVIDER_RESULT_UNAVAILABLE",
+                    message="The generated image could not be downloaded.",
+                )
+        else:
+            raise AppError(
+                status_code=502,
+                code="PROVIDER_RESULT_UNAVAILABLE",
+                message="The image provider returned no usable result URL.",
+            )
+        content_type, extension = _image_media(raw_path)
+        storage_key = f"character-{character_id}-{uuid4().hex}{extension}"
+        destination = media_dir / storage_key
+        raw_path.replace(destination)
+    except Exception:
+        raw_path.unlink(missing_ok=True)
+        raise
+
+    asset = Asset(
+        owner_id=owner_id,
+        project_id=project_id,
+        kind="generated",
+        filename=storage_key,
+        content_type=content_type,
+        storage_key=storage_key,
+        byte_size=destination.stat().st_size,
+        checksum=_checksum(destination),
+    )
+    session.add(asset)
+    await session.flush()
+    return asset
 
 
 async def materialize_generation_result(

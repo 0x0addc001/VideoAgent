@@ -205,6 +205,35 @@ class Storyboard(Base):
         cascade="all, delete-orphan",
         order_by="Shot.index",
     )
+    characters: Mapped[list["Character"]] = relationship(
+        back_populates="storyboard",
+        cascade="all, delete-orphan",
+        order_by="Character.index",
+    )
+
+
+class Character(Base):
+    __tablename__ = "characters"
+    __table_args__ = (UniqueConstraint("storyboard_id", "index"),)
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    storyboard_id: Mapped[UUID] = mapped_column(
+        ForeignKey("storyboards.id", ondelete="CASCADE"),
+        index=True,
+    )
+    index: Mapped[int] = mapped_column(Integer)
+    name: Mapped[str] = mapped_column(String(120))
+    description: Mapped[str] = mapped_column(Text)
+    prompt_en: Mapped[str] = mapped_column(Text)
+    prompt_zh: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    storyboard: Mapped[Storyboard] = relationship(back_populates="characters")
 
 
 class Shot(Base):

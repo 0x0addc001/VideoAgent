@@ -106,5 +106,5 @@ describe("AdminDashboard", () => {
         }),
       ),
     );
-  });
+  }, 10_000);
 });

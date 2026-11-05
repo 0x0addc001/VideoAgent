@@ -5,8 +5,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from videoagent.errors import AppError
-from videoagent.models import Project, Shot, Storyboard
-from videoagent.schemas import ShotInput
+from videoagent.models import Character, Project, Shot, Storyboard
+from videoagent.schemas import CharacterInput, ShotInput
 
 
 async def owned_project_or_404(
@@ -33,7 +33,10 @@ async def load_storyboard(
 ) -> Storyboard | None:
     result = await session.execute(
         select(Storyboard)
-        .options(selectinload(Storyboard.shots))
+        .options(
+            selectinload(Storyboard.shots),
+            selectinload(Storyboard.characters),
+        )
         .where(Storyboard.project_id == project_id)
         .execution_options(populate_existing=True)
     )
@@ -44,6 +47,7 @@ async def replace_storyboard(
     session: AsyncSession,
     project_id: UUID,
     shots: list[ShotInput],
+    characters: list[CharacterInput] | None = None,
 ) -> Storyboard:
     storyboard = await load_storyboard(session, project_id)
     if storyboard is None:
@@ -52,9 +56,22 @@ async def replace_storyboard(
         await session.flush()
     else:
         await session.execute(delete(Shot).where(Shot.storyboard_id == storyboard.id))
+        if characters is not None:
+            await session.execute(delete(Character).where(Character.storyboard_id == storyboard.id))
         storyboard.version += 1
         await session.flush()
 
+    for index, character_data in enumerate(characters or []):
+        session.add(
+            Character(
+                storyboard_id=storyboard.id,
+                index=index,
+                name=character_data.name,
+                description=character_data.description,
+                prompt_en=character_data.prompt_en,
+                prompt_zh=character_data.prompt_zh,
+            )
+        )
     for index, shot_data in enumerate(shots):
         session.add(
             Shot(

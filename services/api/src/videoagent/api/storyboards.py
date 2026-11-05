@@ -43,7 +43,12 @@ async def replace_storyboard(
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> StoryboardRead:
     await owned_project_or_404(session, project_id, user.id)
-    storyboard = await replace_storyboard_service(session, project_id, payload.shots)
+    storyboard = await replace_storyboard_service(
+        session,
+        project_id,
+        payload.shots,
+        payload.characters,
+    )
     await session.commit()
     return StoryboardRead.model_validate(storyboard)
 

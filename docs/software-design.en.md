@@ -131,7 +131,7 @@ The planner is:
   `VIDEOAGENT_LLM_MODEL` are configured.
 - Deterministic and local otherwise.
 
-Project, conversation, storyboard, Shot, and GenerationJob state live in the
+Project, conversation, storyboard, Character, Shot, and GenerationJob state live in the
 database. Approval, generation, review, and polling boundaries are coordinated
 through FastAPI, Celery, and the workspace client.
 
@@ -239,6 +239,7 @@ sound cue, or proof first.
 | `sessions` | Hashed server-side session tokens |
 | `projects` | Project metadata and owner |
 | `storyboards` | One current storyboard per project |
+| `characters` | Ordered recurring roles, descriptions, and reusable image prompts |
 | `shots` | Ordered prompts, duration, frame, mode, and status |
 | `conversations` | One conversation per project |
 | `messages` | User and assistant messages |
@@ -269,6 +270,7 @@ Base path: `/api/v1`
 | Projects | List, create, read, rename, archive |
 | Storyboards | `GET` and `PUT /projects/{id}/storyboard` |
 | Storyboard order | `PATCH /projects/{id}/storyboard/order` |
+| Character image | `POST /characters/{id}/estimate`, `/assets`, and `/generate` |
 | Agent | Get messages, send a message |
 | Workspace | Folders, recent conversations, and drag-to-file conversation organization |
 | Workflow | Read and decide concept, outline, and script approval stages |
@@ -313,10 +315,14 @@ The shared Landing UI owns:
 - Project folders expose the disclosure control before a blue folder icon.
   Filed conversations move out of Recents and render as indented children of
   their project folder.
-- An IDE-style three-part canvas: the current-conversation asset tree, selected
-  asset/document editor, and approval-driven VideoAgent copilot.
+- An IDE-style three-part canvas: `Direction` and `Vision` resources, the selected
+  editor document or asset, and the approval-driven Agents panel.
 - The Assets and Agents side panels can collapse to labeled rails. Their widths
   use responsive clamped proportions so they remain usable across desktop sizes.
+- `Direction` contains `Settings`, `Outlines`, and `Scripts`. `Vision` contains
+  `Characters`, `Shots`, and `Final Cut`. Every persisted Character and Shot owns
+  a Description page and a Generation page; empty directories render no waiting
+  copy.
 - Skill Studio persists reusable Skills with a stable namespace, instructions,
   quality gates, prompt template, and input/output contracts. `AI optimize`
   turns an early idea into that structure.

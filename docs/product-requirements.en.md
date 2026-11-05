@@ -155,12 +155,19 @@ Assets contains the current user's finished and in-progress work.
 
 ### 7.1 Project Workspace and Delivery
 
-- A project accepts image, video, and audio uploads and shows the reference count.
+- The resource tree groups `Settings`, `Outlines`, and `Scripts` under
+  `Direction`, and `Characters`, `Shots`, and `Final Cut` under `Vision`.
+- Settings combines production attributes and Agent-director Q&A in one
+  attribute table. Empty directories remain quiet and do not display waiting
+  copy.
+- Agents create a directory for every recurring character and shot. Each child
+  directory contains a Description page and a Generation page.
+- Character and shot Generation pages support an uploaded image, reference-image
+  generation, or direct text generation where the selected model supports the
+  mode. Generated media can be downloaded.
 - Uploads must pass content-type, file-signature, and size validation.
 - Users can inspect estimated credits and explicitly approve generation.
 - Generated shots can be composed into a film with 16:9, 9:16, and 1:1 deliveries.
-- Users can reorder shots without replacing Shot IDs, generated assets, or
-  generation history.
 - Export supports captions, an uploaded soundtrack, an automatic cover, and
   private or public permission.
 - Each delivery can be downloaded; share links expire and can be revoked.
@@ -272,7 +279,9 @@ Docs requirements:
 19. Users can upload references, compose a film, download a delivery, and
     create a share link.
 20. User credit reservations, refunds, and Provider-account reconciliation agree.
-21. Reordering shots does not delete or recreate existing Shots.
-22. Non-administrators cannot access administration APIs or pages.
-23. Administrators can manage credits, accounts, invites, and generation state,
+21. Agents persist every recurring Character and Shot as a resource directory,
+    and each resource exposes Description and Generation pages.
+22. Reordering shots does not delete or recreate existing Shots.
+23. Non-administrators cannot access administration APIs or pages.
+24. Administrators can manage credits, accounts, invites, and generation state,
     with every action recorded in the audit log.

@@ -48,6 +48,7 @@
 <a class="toc-link toc-level-2" href="#视频生成">视频生成</a>
 <a class="toc-link toc-level-3" href="#积分估算">积分估算</a>
 <a class="toc-link toc-level-3" href="#提交生成">提交生成</a>
+<a class="toc-link toc-level-2" href="#角色图片生成">角色图片生成</a>
 <a class="toc-link toc-level-3" href="#查询任务">查询任务</a>
 <a class="toc-link toc-level-2" href="#用户积分">用户积分</a>
 <a class="toc-link toc-level-2" href="#skill">Skill</a>
@@ -218,6 +219,14 @@ http://localhost:8000/openapi.json</code></pre>
 <h3 id="整体替换">整体替换</h3>
 <p><code>PUT /projects/{project_id}/storyboard</code></p>
 <pre><code class="language-json">{
+  &quot;characters&quot;: [
+    {
+      &quot;name&quot;: &quot;Mara&quot;,
+      &quot;description&quot;: &quot;一位克制、敏锐的摄影师。&quot;,
+      &quot;prompt_en&quot;: &quot;Editorial portrait with stable identity and natural skin texture&quot;,
+      &quot;prompt_zh&quot;: &quot;稳定身份与自然肤质的角色定妆照&quot;
+    }
+  ],
   &quot;shots&quot;: [
     {
       &quot;description&quot;: &quot;开场产品亮相&quot;,
@@ -289,9 +298,40 @@ http://localhost:8000/openapi.json</code></pre>
 <pre><code class="language-text">Idempotency-Key: unique-request-id</code></pre>
 <p>请求：</p>
 <pre><code class="language-json">{
-  &quot;approved&quot;: true
+  &quot;approved&quot;: true,
+  &quot;generation_mode&quot;: &quot;image_to_video&quot;,
+  &quot;reference_asset_id&quot;: &quot;00000000-0000-0000-0000-000000000010&quot;
 }</code></pre>
-<p>未显式批准时返回 <code>403</code>。相同镜头和幂等键重复请求会返回已有任务，不会再次提交 Provider。</p>
+<p>未显式批准时返回 <code>403</code>。相同镜头和幂等键重复请求会返回已有任务，不会再次提交 Provider。 <code>generation_mode</code> 为 <code>text_to_video</code> 或 <code>image_to_video</code>；图生视频必须引用当前用户、 当前项目中的有效图片资产。</p>
+<h2 id="角色图片生成">角色图片生成</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>方法</th>
+<th>路径</th>
+<th>用途</th>
+</tr></thead><tbody>
+<tr>
+<td><code>POST</code></td>
+<td><code>/characters/{character_id}/estimate</code></td>
+<td>估算角色图片生成积分</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/characters/{character_id}/assets</code></td>
+<td>上传角色图片</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/characters/{character_id}/generate</code></td>
+<td>生成或编辑角色图片</td>
+</tr>
+</tbody></table></div>
+<p>生成请求：</p>
+<pre><code class="language-json">{
+  &quot;approved&quot;: true,
+  &quot;generation_mode&quot;: &quot;image_to_image&quot;,
+  &quot;reference_asset_id&quot;: &quot;00000000-0000-0000-0000-000000000010&quot;
+}</code></pre>
+<p><code>generation_mode</code> 为 <code>text_to_image</code> 或 <code>image_to_image</code>。成功响应为 <code>AssetRead</code>， 客户端可通过 <code>content_url</code> 预览和下载生成图片。</p>
 <h3 id="查询任务">查询任务</h3>
 <p><code>GET /jobs/{job_id}</code></p>
 <p>常见状态：</p>

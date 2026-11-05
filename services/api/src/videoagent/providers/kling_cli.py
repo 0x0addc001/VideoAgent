@@ -111,23 +111,26 @@ class KlingCLIVideoProvider:
         )
 
     async def submit(self, request: GenerationRequest) -> ProviderJob:
-        if request.generation_mode != "text_to_video":
-            raise KlingCLIError(
-                "Media-reference inputs are not connected for Kling CLI generation yet."
-            )
+        if request.generation_mode not in {"text_to_video", "image_to_video"}:
+            raise KlingCLIError(f"Unsupported Kling generation mode: {request.generation_mode}")
         if not request.model:
             raise KlingCLIError("A Kling model is required.")
-        body = await self._run_json(
+        if request.generation_mode == "image_to_video" and not request.reference_image_path:
+            raise KlingCLIError("Kling image-to-video requires a reference image.")
+        args = [
             "--quiet",
-            "text_to_video",
+            request.generation_mode,
             "--model",
             request.model,
             "--duration",
             str(request.duration_seconds),
             "--aspect_ratio",
             request.aspect_ratio,
-            request.prompt,
-        )
+        ]
+        if request.reference_image_path:
+            args.extend(["--image", request.reference_image_path])
+        args.append(request.prompt)
+        body = await self._run_json(*args)
         generation_id = body.get("generationId") or body.get("generation_id")
         if not isinstance(generation_id, str) or not generation_id:
             raise KlingCLIError("Kling did not return a generationId.")
@@ -147,6 +150,40 @@ class KlingCLIVideoProvider:
             status=_normalize_status(body.get("status")),
             result_url=_result_url(body),
         )
+
+    async def generate_image(
+        self,
+        *,
+        prompt: str,
+        generation_mode: str,
+        reference_image_path: str | None = None,
+        model: str = "kling-image-v3_0",
+        aspect_ratio: str = "3:4",
+    ) -> str:
+        if generation_mode not in {"text_to_image", "image_to_image"}:
+            raise KlingCLIError(f"Unsupported Kling image generation mode: {generation_mode}")
+        if generation_mode == "image_to_image" and not reference_image_path:
+            raise KlingCLIError("Kling image-to-image requires a reference image.")
+        args = [
+            "--quiet",
+            generation_mode,
+            "--model",
+            model,
+            "--aspect_ratio",
+            aspect_ratio,
+            "--img_resolution",
+            "2k",
+        ]
+        if reference_image_path:
+            args.extend(["--image", reference_image_path])
+        args.extend([prompt, "--poll=60"])
+        body = await self._run_json(*args)
+        result = _result_url(body)
+        if not result:
+            generation_id = body.get("generationId") or body.get("generation_id")
+            suffix = f" ({generation_id})" if generation_id else ""
+            raise KlingCLIError(f"Kling did not return a generated image{suffix}.")
+        return result
 
     async def account_status(self) -> dict[str, Any]:
         body = await self._run_json("--quiet", "who_am_i")

@@ -2,7 +2,6 @@
 
 import {
   ArrowLeft,
-  ArrowRight,
   ArrowUp,
   Check,
   ChevronDown,
@@ -16,6 +15,7 @@ import {
   FolderOpen,
   Gem,
   Image,
+  LoaderCircle,
   Layers3,
   MessageCircleMore,
   MessageSquareText,
@@ -71,11 +71,21 @@ type Shot = {
   status: string;
 };
 
+type Character = {
+  id: string;
+  index: number;
+  name: string;
+  description: string;
+  prompt_en: string;
+  prompt_zh: string | null;
+};
+
 type Storyboard = {
   id: string;
   project_id: string;
   version: number;
   shots: Shot[];
+  characters: Character[];
 };
 
 type CostEstimate = {
@@ -140,11 +150,19 @@ type WorkspaceData = {
 };
 
 type CanvasSelection =
-  | { kind: "brief" }
-  | { kind: "storyboard" }
+  | { kind: "settings" }
   | { kind: "document"; document: "outline" | "script" }
-  | { kind: "shot"; shotId: string }
-  | { kind: "asset"; assetId: string };
+  | { kind: "shot"; shotId: string; section: "description" | "generation" }
+  | {
+      kind: "character";
+      characterId: string;
+      section: "description" | "generation";
+    }
+  | {
+      kind: "asset";
+      assetId: string;
+      section?: "description" | "generation";
+    };
 
 type GenerationJob = {
   id: string;
@@ -219,6 +237,30 @@ function creativeBrief(brief: string) {
   return brief.split(PRODUCTION_SETTINGS_MARKER, 1)[0]?.trim() || brief.trim();
 }
 
+function productionSettingPairs(brief: string) {
+  const settingsLine = brief.match(/Production settings:\s*(.+)/i)?.[1];
+  if (!settingsLine) return [];
+  const labels = [
+    "Skill",
+    "Hook",
+    "Style",
+    "Frame",
+    "Length",
+    "Model",
+    "Quality",
+    "Audio",
+    "Review",
+  ];
+  return settingsLine
+    .split("·")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .map((value, index) => ({
+      label: labels[index] ?? `Setting ${index + 1}`,
+      value: value.replace(/^(Hook|Audio|Review)\s+/i, ""),
+    }));
+}
+
 function workspaceCopy(locale: string) {
   const chinese = locale.startsWith("zh");
   return chinese
@@ -244,13 +286,24 @@ function workspaceCopy(locale: string) {
         expandAgents: "展开 Agents",
         docs: "文档",
         assets: "资产",
+        direction: "方向",
+        vision: "视觉",
+        settings: "设定集",
+        settingAttributes: "属性",
+        description: "描述",
+        generation: "生成",
+        directorInput: "导演输入",
+        character: "角色集",
+        finalCut: "终版",
+        visionReferenceHint: "参考素材由 Agents 向你询问，或从 Vision 中获取。",
+        thinking: "思考中",
         noAssets: "当前对话还没有资产。",
         brief: "方向",
         storyboard: "故事板",
-        script: "剧本",
-        scripts: "剧本",
+        script: "剧本集",
+        scripts: "剧本集",
         shots: "镜头",
-        outline: "大纲",
+        outline: "大纲集",
         media: "媒体",
         uploads: "上传素材",
         generated: "生成素材",
@@ -286,6 +339,13 @@ function workspaceCopy(locale: string) {
         generating: "生成中……",
         upload: "上传素材",
         uploading: "上传中……",
+        direct: "直接生成",
+        reference: "参考生成",
+        referenceImage: "参考图",
+        chooseReference: "选择 Vision 参考图",
+        generateDirect: "直接生成",
+        generateWithReference: "参考生成",
+        downloadResult: "下载生成内容",
         current: "当前",
         keep: "按当前方向推进",
         adjustTone: "增强情绪张力",
@@ -317,13 +377,25 @@ function workspaceCopy(locale: string) {
         expandAgents: "Expand agents",
         docs: "Docs",
         assets: "Assets",
+        direction: "Direction",
+        vision: "Vision",
+        settings: "Settings",
+        settingAttributes: "Attributes",
+        description: "Description",
+        generation: "Generation",
+        directorInput: "Director input",
+        character: "Characters",
+        finalCut: "Final Cut",
+        visionReferenceHint:
+          "Reference assets come from Vision or are requested by Agents.",
+        thinking: "Thinking",
         noAssets: "No assets in this conversation yet.",
         brief: "Direction",
         storyboard: "Storyboard",
-        script: "Script",
+        script: "Scripts",
         scripts: "Scripts",
         shots: "Shots",
-        outline: "Outline",
+        outline: "Outlines",
         media: "Media",
         uploads: "Uploads",
         generated: "Generated",
@@ -360,6 +432,13 @@ function workspaceCopy(locale: string) {
         generating: "Generating…",
         upload: "Upload asset",
         uploading: "Uploading…",
+        direct: "Direct",
+        reference: "Reference",
+        referenceImage: "Reference image",
+        chooseReference: "Choose a Vision reference",
+        generateDirect: "Generate directly",
+        generateWithReference: "Generate from reference",
+        downloadResult: "Download result",
         current: "Current",
         keep: "Continue with this direction",
         adjustTone: "Raise the emotional stakes",
@@ -788,6 +867,7 @@ type AssetsTreeProps = {
   storyboard: Storyboard | null;
   onSelect: (selection: CanvasSelection) => void;
   onToggleCollapsed: () => void;
+  onUpload: (file: File) => void;
 };
 
 function AssetsTree({
@@ -798,12 +878,14 @@ function AssetsTree({
   storyboard,
   onSelect,
   onToggleCollapsed,
+  onUpload,
 }: AssetsTreeProps) {
   const [sections, setSections] = useState({
-    story: true,
+    direction: true,
+    vision: true,
+    character: true,
     shots: true,
-    media: true,
-    exports: true,
+    finalCut: true,
   });
   const selectedClass =
     "border-[#1677ff]/30 bg-[#1677ff]/[0.08] text-white";
@@ -840,11 +922,15 @@ function AssetsTree({
   function sectionButton(
     key: keyof typeof sections,
     label: string,
+    nested = false,
   ) {
     const DirectoryIcon = sections[key] ? FolderOpen : Folder;
     return (
       <button
-        className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-[15px] font-semibold text-white/48 hover:bg-white/[0.035] hover:text-white/72"
+        className={cn(
+          "flex w-full items-center gap-2 rounded-lg py-2 pr-2 text-left text-[15px] font-semibold text-white/48 hover:bg-white/[0.035] hover:text-white/72",
+          nested ? "pl-7" : "pl-2",
+        )}
         onClick={() =>
           setSections((current) => ({ ...current, [key]: !current[key] }))
         }
@@ -860,6 +946,16 @@ function AssetsTree({
       </button>
     );
   }
+
+  const characters = storyboard?.characters ?? [];
+  const shotAssets = assets.filter(
+    (asset) =>
+      asset.content_type.startsWith("video/") &&
+      !["export", "cover"].includes(asset.kind),
+  );
+  const finalCutAssets = assets.filter((asset) =>
+    ["export", "cover"].includes(asset.kind),
+  );
 
   return (
     <aside className="flex w-full min-h-0 min-w-0 shrink-0 flex-col border-r border-white/[0.07] bg-[#0b0a08]/[0.72] backdrop-blur-lg">
@@ -878,33 +974,21 @@ function AssetsTree({
         </button>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto p-2">
-        <button
-          className={cn(
-            "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
-            selected.kind === "brief" ? selectedClass : idleClass,
-          )}
-          onClick={() => onSelect({ kind: "brief" })}
-          type="button"
-        >
-          <FileText className="h-3.5 w-3.5 text-[#4facff]" />
-          {copy.brief}
-        </button>
-        <button
-          className={cn(
-            "mt-1 flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
-            selected.kind === "storyboard" ? selectedClass : idleClass,
-          )}
-          onClick={() => onSelect({ kind: "storyboard" })}
-          type="button"
-        >
-          <Clapperboard className="h-3.5 w-3.5 text-[#4facff]" />
-          {copy.storyboard}
-        </button>
-
-        <div className="mt-3">
-          {sectionButton("story", copy.scripts)}
-          {sections.story ? (
+        <div className="space-y-1">
+          {sectionButton("direction", copy.direction)}
+          {sections.direction ? (
             <div className="space-y-1 pl-3">
+              <button
+                className={cn(
+                  "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
+                  selected.kind === "settings" ? selectedClass : idleClass,
+                )}
+                onClick={() => onSelect({ kind: "settings" })}
+                type="button"
+              >
+                <FileText className="h-3.5 w-3.5 text-[#4facff]" />
+                {copy.settings}
+              </button>
               <button
                 className={cn(
                   "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
@@ -933,95 +1017,194 @@ function AssetsTree({
               </button>
             </div>
           ) : null}
-        </div>
 
-        <div className="mt-3">
-          {sectionButton("shots", copy.shots)}
-          {sections.shots ? (
+          {sectionButton("vision", copy.vision)}
+          {sections.vision ? (
             <div className="space-y-1 pl-3">
-              {storyboard?.shots.map((shot) => (
-                <button
-                  className={cn(
-                    "flex w-full items-start gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
-                    selected.kind === "shot" && selected.shotId === shot.id
-                      ? selectedClass
-                      : idleClass,
-                  )}
-                  key={shot.id}
-                  onClick={() => onSelect({ kind: "shot", shotId: shot.id })}
-                  type="button"
-                >
-                  <Video className="mt-0.5 h-4 w-4 shrink-0 text-[#6eb8ff]" />
-                  <span className="line-clamp-2">{shot.description}</span>
-                </button>
-              ))}
-              {!storyboard ? (
-                <p className="px-3 py-2 text-[11px] text-white/20">{copy.noAssets}</p>
+              {sectionButton("character", copy.character, true)}
+              {sections.character ? (
+                <div className="space-y-1 pl-7">
+                  {characters.map((character) => (
+                    <details
+                      className="rounded-lg border border-white/[0.055] bg-black/10"
+                      key={character.id}
+                    >
+                      <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2 text-[12px] text-white/58">
+                        <ChevronRight className="tree-chevron h-3.5 w-3.5 text-[#4facff]" />
+                        <Folder className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
+                        <span className="truncate">{character.name}</span>
+                      </summary>
+                      <div className="space-y-1 px-2 pb-2 pl-6">
+                        <button
+                          className={cn(
+                            "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
+                            selected.kind === "character" &&
+                              selected.characterId === character.id &&
+                              selected.section === "description"
+                              ? selectedClass
+                              : idleClass,
+                          )}
+                          onClick={() =>
+                            onSelect({
+                              kind: "character",
+                              characterId: character.id,
+                              section: "description",
+                            })
+                          }
+                          type="button"
+                        >
+                          <FileText className="h-3.5 w-3.5 text-[#4facff]" />
+                          {copy.description}
+                        </button>
+                        <button
+                          className={cn(
+                            "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
+                            selected.kind === "character" &&
+                              selected.characterId === character.id &&
+                              selected.section === "generation"
+                              ? selectedClass
+                              : idleClass,
+                          )}
+                          onClick={() =>
+                            onSelect({
+                              kind: "character",
+                              characterId: character.id,
+                              section: "generation",
+                            })
+                          }
+                          type="button"
+                        >
+                          <Sparkles className="h-3.5 w-3.5 text-[#4facff]" />
+                          {copy.generation}
+                        </button>
+                      </div>
+                    </details>
+                  ))}
+                </div>
               ) : null}
-            </div>
-          ) : null}
-        </div>
 
-        <div className="mt-3">
-          {sectionButton("media", copy.media)}
-          {sections.media ? (
-            <div className="space-y-1 pl-3">
-              {assets
-                .filter((asset) => !["export", "cover"].includes(asset.kind))
-                .map((asset) => (
-                  <button
-                    className={cn(
-                      "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
-                      selected.kind === "asset" && selected.assetId === asset.id
-                        ? selectedClass
-                        : idleClass,
-                    )}
-                    key={asset.id}
-                    onClick={() => onSelect({ kind: "asset", assetId: asset.id })}
-                    type="button"
-                  >
-                    {asset.content_type.startsWith("video/") ? (
-                      <Video className="h-3.5 w-3.5" />
-                    ) : asset.content_type.startsWith("image/") ? (
-                      <Image className="h-3.5 w-3.5" />
-                    ) : (
-                      <FileText className="h-3.5 w-3.5" />
-                    )}
-                    <span className="truncate">{asset.filename}</span>
-                  </button>
-                ))}
-            </div>
-          ) : null}
-        </div>
+              {sectionButton("shots", copy.shots, true)}
+              {sections.shots ? (
+                <div className="space-y-1 pl-7">
+                  {storyboard?.shots.map((shot) => (
+                    <details
+                      className="rounded-lg border border-white/[0.055] bg-black/10"
+                      key={shot.id}
+                    >
+                      <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2 text-[12px] text-white/58">
+                        <ChevronRight className="tree-chevron h-3.5 w-3.5 text-[#4facff]" />
+                        <Folder className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
+                        <strong className="text-[#6eb8ff]">
+                          {copy.shot} {shot.index + 1}
+                        </strong>
+                      </summary>
+                      <div className="space-y-1 px-2 pb-2 pl-6">
+                        <button
+                          className={cn(
+                            "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
+                            selected.kind === "shot" &&
+                              selected.shotId === shot.id &&
+                              selected.section === "description"
+                              ? selectedClass
+                              : idleClass,
+                          )}
+                          onClick={() =>
+                            onSelect({
+                              kind: "shot",
+                              shotId: shot.id,
+                              section: "description",
+                            })
+                          }
+                          type="button"
+                        >
+                          <FileText className="h-3.5 w-3.5 text-[#4facff]" />
+                          {copy.description}
+                        </button>
+                        <button
+                          className={cn(
+                            "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
+                            selected.kind === "shot" &&
+                              selected.shotId === shot.id &&
+                              selected.section === "generation"
+                              ? selectedClass
+                              : idleClass,
+                          )}
+                          onClick={() =>
+                            onSelect({
+                              kind: "shot",
+                              shotId: shot.id,
+                              section: "generation",
+                            })
+                          }
+                          type="button"
+                        >
+                          <Clapperboard className="h-3.5 w-3.5 text-[#4facff]" />
+                          {copy.generation}
+                        </button>
+                      </div>
+                    </details>
+                  ))}
+                  {shotAssets.map((asset) => (
+                    <button
+                      className={cn(
+                        "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
+                        selected.kind === "asset" && selected.assetId === asset.id
+                          ? selectedClass
+                          : idleClass,
+                      )}
+                      key={asset.id}
+                      onClick={() =>
+                        onSelect({
+                          kind: "asset",
+                          assetId: asset.id,
+                          section: "generation",
+                        })
+                      }
+                      type="button"
+                    >
+                      <Video className="h-3.5 w-3.5 text-[#4facff]" />
+                      <span className="truncate">{asset.filename}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
 
-        <div className="mt-3">
-          {sectionButton("exports", copy.exported)}
-          {sections.exports ? (
-            <div className="space-y-1 pl-3">
-              {assets
-                .filter((asset) => ["export", "cover"].includes(asset.kind))
-                .map((asset) => (
-                  <button
-                    className={cn(
-                      "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
-                      selected.kind === "asset" && selected.assetId === asset.id
-                        ? selectedClass
-                        : idleClass,
-                    )}
-                    key={asset.id}
-                    onClick={() => onSelect({ kind: "asset", assetId: asset.id })}
-                    type="button"
-                  >
-                    {asset.content_type.startsWith("video/") ? (
-                      <Video className="h-3.5 w-3.5" />
-                    ) : asset.content_type.startsWith("image/") ? (
-                      <Image className="h-3.5 w-3.5" />
-                    ) : (
-                      <FileText className="h-3.5 w-3.5" />
-                    )}
-                    <span className="truncate">{asset.filename}</span>
-                  </button>
-                ))}
+              {sectionButton("finalCut", copy.finalCut, true)}
+              {sections.finalCut ? (
+                <div className="space-y-1 pl-7">
+                  {finalCutAssets.map((asset) => (
+                    <button
+                      className={cn(
+                        "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
+                        selected.kind === "asset" && selected.assetId === asset.id
+                          ? selectedClass
+                          : idleClass,
+                      )}
+                      key={asset.id}
+                      onClick={() => onSelect({ kind: "asset", assetId: asset.id })}
+                      type="button"
+                    >
+                      <Video className="h-3.5 w-3.5 text-[#4facff]" />
+                      <span className="truncate">{asset.filename}</span>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+              <label className="ml-7 flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-[#1677ff]/25 px-3 py-2 text-[12px] text-white/45 hover:border-[#1677ff]/50 hover:text-white">
+                <Upload className="h-3.5 w-3.5 text-[#4facff]" />
+                {copy.upload}
+                <input
+                  accept="image/*,video/*"
+                  aria-label={copy.upload}
+                  className="sr-only"
+                  onChange={(event) => {
+                    const file = event.target.files?.[0];
+                    event.currentTarget.value = "";
+                    if (file) onUpload(file);
+                  }}
+                  type="file"
+                />
+              </label>
             </div>
           ) : null}
         </div>
@@ -1048,6 +1231,19 @@ export function ProjectWorkspace({
   const [messageDraft, setMessageDraft] = useState("");
   const [selectedShotId, setSelectedShotId] = useState<string | null>(null);
   const [estimate, setEstimate] = useState<CostEstimate | null>(null);
+  const [shotGenerationMode, setShotGenerationMode] = useState<
+    "direct" | "reference"
+  >("direct");
+  const [referenceAssetId, setReferenceAssetId] = useState<string | null>(null);
+  const [characterGenerationMode, setCharacterGenerationMode] = useState<
+    "direct" | "reference"
+  >("direct");
+  const [characterReferenceAssetId, setCharacterReferenceAssetId] = useState<
+    string | null
+  >(null);
+  const [characterEstimate, setCharacterEstimate] = useState<CostEstimate | null>(
+    null,
+  );
   const [status, setStatus] = useState<"loading" | "ready" | "missing">("loading");
   const [isWorking, setIsWorking] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -1065,7 +1261,6 @@ export function ProjectWorkspace({
   const [shareLink, setShareLink] = useState<ShareLink | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
-  const [isReordering, setIsReordering] = useState(false);
   const [assetsPanelCollapsed, setAssetsPanelCollapsed] = useState(false);
   const [agentPanelCollapsed, setAgentPanelCollapsed] = useState(false);
   const [mobilePanel, setMobilePanel] = useState<
@@ -1079,7 +1274,7 @@ export function ProjectWorkspace({
   const [historyCollapsed, setHistoryCollapsed] = useState(false);
   const [openFolders, setOpenFolders] = useState<string[]>([]);
   const [selectedCanvas, setSelectedCanvas] = useState<CanvasSelection>({
-    kind: "brief",
+    kind: "settings",
   });
   const [folderDialogOpen, setFolderDialogOpen] = useState(false);
   const [folderName, setFolderName] = useState("");
@@ -1151,7 +1346,7 @@ export function ProjectWorkspace({
           const nextStoryboard = (await storyboardResponse.json()) as Storyboard;
           setStoryboard(nextStoryboard);
           setSelectedShotId(nextStoryboard.shots[0]?.id ?? null);
-          setSelectedCanvas({ kind: "storyboard" });
+          setSelectedCanvas({ kind: "document", document: "outline" });
         }
         let nextMessages: Message[] = [];
         if (messagesResponse.ok) {
@@ -1190,7 +1385,7 @@ export function ProjectWorkspace({
             setMessages([turn.user_message, turn.assistant_message]);
             setStoryboard(turn.storyboard);
             setSelectedShotId(turn.storyboard.shots[0]?.id ?? null);
-            setSelectedCanvas({ kind: "storyboard" });
+            setSelectedCanvas({ kind: "document", document: "outline" });
             if (turn.workflow) setWorkflow(turn.workflow);
             window.history.replaceState(
               null,
@@ -1322,6 +1517,29 @@ export function ProjectWorkspace({
     selectedCanvas.kind === "shot"
       ? storyboard?.shots.find((shot) => shot.id === selectedCanvas.shotId) ?? null
       : null;
+  const selectedCharacter =
+    selectedCanvas.kind === "character"
+      ? storyboard?.characters?.find(
+          (character) => character.id === selectedCanvas.characterId,
+        ) ?? null
+      : null;
+  const referenceAssets = assets.filter((asset) =>
+    asset.content_type.startsWith("image/"),
+  );
+  const generatedCharacterAsset =
+    selectedCharacter === null
+      ? undefined
+      : assets.find(
+          (asset) =>
+            asset.content_type.startsWith("image/") &&
+            asset.filename.startsWith(`character-${selectedCharacter.id}-`),
+        );
+  const generatedShotAsset = assets.find(
+    (asset) =>
+      asset.shot_id === canvasShot?.id &&
+      asset.content_type.startsWith("video/") &&
+      !["export", "cover"].includes(asset.kind),
+  );
 
   async function refreshWorkspace() {
     const response = await fetch(`${API_BASE_URL}/workspace`, {
@@ -1442,7 +1660,7 @@ export function ProjectWorkspace({
       setStoryboard(decision.storyboard);
       setSelectedShotId(decision.storyboard.shots[0]?.id ?? null);
       setWorkflow(decision.workflow);
-      setSelectedCanvas({ kind: "storyboard" });
+      setSelectedCanvas({ kind: "document", document: "outline" });
       setCustomDecision("");
       setCustomDecisionOpen(false);
       await refreshWorkspace();
@@ -1494,6 +1712,7 @@ export function ProjectWorkspace({
     const content = messageDraft.trim();
     if (!project || !content || isWorking) return;
     setIsWorking(true);
+    setPendingDecision(copy.thinking);
     setActionError(null);
     try {
       const response = await fetch(`${API_BASE_URL}/projects/${project.id}/messages`, {
@@ -1509,7 +1728,7 @@ export function ProjectWorkspace({
       setStoryboard(turn.storyboard);
       if (turn.workflow) setWorkflow(turn.workflow);
       setSelectedShotId(turn.storyboard.shots[0]?.id ?? null);
-      setSelectedCanvas({ kind: "storyboard" });
+      setSelectedCanvas({ kind: "document", document: "outline" });
       setEstimate(null);
       setMessageDraft("");
       setMobilePanel("canvas");
@@ -1518,6 +1737,7 @@ export function ProjectWorkspace({
       setActionError(t("agentIntro"));
     } finally {
       setIsWorking(false);
+      setPendingDecision(null);
     }
   }
 
@@ -1539,40 +1759,10 @@ export function ProjectWorkspace({
     }
   }
 
-  async function moveSelectedShot(direction: -1 | 1) {
-    if (!project || !storyboard || !selectedShot || isReordering) return;
-    const currentIndex = storyboard.shots.findIndex((shot) => shot.id === selectedShot.id);
-    const targetIndex = currentIndex + direction;
-    if (targetIndex < 0 || targetIndex >= storyboard.shots.length) return;
-    const reordered = [...storyboard.shots];
-    [reordered[currentIndex], reordered[targetIndex]] = [
-      reordered[targetIndex],
-      reordered[currentIndex],
-    ];
-
-    setIsReordering(true);
-    setActionError(null);
-    try {
-      const response = await fetch(
-        `${API_BASE_URL}/projects/${project.id}/storyboard/order`,
-        {
-          method: "PATCH",
-          credentials: "include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ shot_ids: reordered.map((shot) => shot.id) }),
-        },
-      );
-      if (!response.ok) throw new Error("reorder-failed");
-      setStoryboard((await response.json()) as Storyboard);
-      setSelectedShotId(selectedShot.id);
-    } catch {
-      setActionError(t("reorderError"));
-    } finally {
-      setIsReordering(false);
-    }
-  }
-
-  async function submitGeneration(shot: Shot) {
+  async function submitGeneration(
+    shot: Shot,
+    mode: "direct" | "reference" = "direct",
+  ) {
     const response = await fetch(`${API_BASE_URL}/shots/${shot.id}/generate`, {
       method: "POST",
       credentials: "include",
@@ -1580,7 +1770,15 @@ export function ProjectWorkspace({
         "Content-Type": "application/json",
         "Idempotency-Key": crypto.randomUUID(),
       },
-      body: JSON.stringify({ approved: true }),
+      body: JSON.stringify({
+        approved: true,
+        generation_mode:
+          mode === "reference" ? "image_to_video" : "text_to_video",
+        reference_asset_id:
+          mode === "reference"
+            ? (referenceAssetId ?? referenceAssets[0]?.id ?? null)
+            : null,
+      }),
     });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as
@@ -1626,7 +1824,10 @@ export function ProjectWorkspace({
         if (!estimateResponse.ok) throw new Error("estimate-failed");
         setEstimate((await estimateResponse.json()) as CostEstimate);
       }
-      await submitGeneration(selectedShot);
+      if (shotGenerationMode === "reference" && !referenceAssetId) {
+        throw new Error("Select a reference image from Vision first.");
+      }
+      await submitGeneration(selectedShot, shotGenerationMode);
     } catch (error) {
       setGenerationErrorMessage(
         error instanceof Error && error.message !== "generation-failed"
@@ -1707,8 +1908,8 @@ export function ProjectWorkspace({
     return new URL(path, API_BASE_URL).toString();
   }
 
-  async function uploadReference(file: File) {
-    if (!project || isWorking) return;
+  async function uploadVisionAsset(file: File): Promise<Asset | null> {
+    if (!project || isWorking) return null;
     setIsWorking(true);
     setActionError(null);
     const body = new FormData();
@@ -1722,8 +1923,110 @@ export function ProjectWorkspace({
       if (!response.ok) throw new Error("upload-failed");
       const asset = (await response.json()) as Asset;
       setAssets((current) => [asset, ...current]);
+      return asset;
     } catch {
       setActionError(t("uploadError"));
+      return null;
+    } finally {
+      setIsWorking(false);
+    }
+  }
+
+  async function uploadCharacterAsset(
+    character: Character,
+    file: File,
+  ): Promise<Asset | null> {
+    if (isWorking) return null;
+    setIsWorking(true);
+    setActionError(null);
+    const body = new FormData();
+    body.append("file", file);
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/characters/${character.id}/assets`,
+        {
+          method: "POST",
+          credentials: "include",
+          body,
+        },
+      );
+      if (!response.ok) throw new Error("character-upload-failed");
+      const asset = (await response.json()) as Asset;
+      setAssets((current) => [asset, ...current]);
+      setCharacterReferenceAssetId(asset.id);
+      setCharacterGenerationMode("reference");
+      return asset;
+    } catch {
+      setActionError(t("uploadError"));
+      return null;
+    } finally {
+      setIsWorking(false);
+    }
+  }
+
+  async function estimateCharacter(character: Character) {
+    if (isWorking) return;
+    setIsWorking(true);
+    setActionError(null);
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/characters/${character.id}/estimate`,
+        {
+          method: "POST",
+          credentials: "include",
+        },
+      );
+      if (!response.ok) throw new Error("character-estimate-failed");
+      setCharacterEstimate((await response.json()) as CostEstimate);
+    } catch {
+      setActionError(t("noShot"));
+    } finally {
+      setIsWorking(false);
+    }
+  }
+
+  async function generateCharacter(character: Character) {
+    if (isWorking) return;
+    setIsWorking(true);
+    setActionError(null);
+    try {
+      const referenceId =
+        characterReferenceAssetId ?? referenceAssets[0]?.id ?? null;
+      if (characterGenerationMode === "reference" && !referenceId) {
+        throw new Error("Select or upload a reference image first.");
+      }
+      const response = await fetch(
+        `${API_BASE_URL}/characters/${character.id}/generate`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            approved: true,
+            generation_mode:
+              characterGenerationMode === "reference"
+                ? "image_to_image"
+                : "text_to_image",
+            reference_asset_id:
+              characterGenerationMode === "reference" ? referenceId : null,
+          }),
+        },
+      );
+      if (!response.ok) {
+        const body = (await response.json().catch(() => null)) as
+          | { error?: { message?: string } }
+          | null;
+        throw new Error(body?.error?.message || "character-generation-failed");
+      }
+      const asset = (await response.json()) as Asset;
+      setAssets((current) => [asset, ...current]);
+    } catch (error) {
+      setGenerationErrorMessage(
+        error instanceof Error && error.message !== "character-generation-failed"
+          ? error.message
+          : t("generationError"),
+      );
+      setGenerationErrorOpen(true);
     } finally {
       setIsWorking(false);
     }
@@ -1830,32 +2133,44 @@ export function ProjectWorkspace({
   }
 
   const copy = workspaceCopy(locale);
-  const stageLabels: Record<WorkflowStage, string> = {
-    concept: copy.stageConcept,
-    outline: copy.stageOutline,
-    script: copy.stageScript,
-    ready: copy.stageReady,
-  };
-  const stageIndex = workflow
-    ? ["concept", "outline", "script", "ready"].indexOf(workflow.stage)
-    : 0;
   const canvasTitle =
-    selectedCanvas.kind === "brief"
-      ? copy.brief
-      : selectedCanvas.kind === "storyboard"
-        ? copy.storyboard
+    selectedCanvas.kind === "settings"
+      ? copy.settings
         : selectedCanvas.kind === "document"
           ? copy[selectedCanvas.document]
+          : selectedCanvas.kind === "character"
+            ? selectedCharacter?.name ?? copy.character
           : selectedCanvas.kind === "shot"
             ? canvasShot?.description ?? copy.shot
-            : selectedAsset?.filename ?? copy.media;
+            : selectedAsset?.filename ?? copy.vision;
   const activeDocumentMode =
     selectedCanvas.kind === "document" ? selectedCanvas.document : null;
+  const shotCanvasSection =
+    selectedCanvas.kind === "shot" ? selectedCanvas.section : null;
+  const characterCanvasSection =
+    selectedCanvas.kind === "character" ? selectedCanvas.section : null;
+  const settingPairs = project ? productionSettingPairs(project.brief) : [];
+  const settingAnswers = messages
+    .map((message, index) => ({ message, index }))
+    .filter(({ message }) => message.role === "user")
+    .map(({ message, index }) => ({
+      answer: message.content,
+      question:
+        [...messages.slice(0, index)]
+          .reverse()
+          .find((candidate) => candidate.role === "assistant")?.content ??
+        copy.directorInput,
+    }));
 
-  function selectShot(shot: Shot) {
+  function selectShot(
+    shot: Shot,
+    section: "description" | "generation" = "generation",
+  ) {
     setSelectedShotId(shot.id);
-    setSelectedCanvas({ kind: "shot", shotId: shot.id });
+    setSelectedCanvas({ kind: "shot", shotId: shot.id, section });
     setEstimate(null);
+    setShotGenerationMode("direct");
+    setReferenceAssetId(referenceAssets[0]?.id ?? null);
     setMobilePanel("canvas");
   }
 
@@ -1923,11 +2238,17 @@ export function ProjectWorkspace({
               onSelect={(selection) => {
                 setSelectedCanvas(selection);
                 if (selection.kind === "shot") setSelectedShotId(selection.shotId);
+                if (selection.kind === "character") {
+                  setCharacterEstimate(null);
+                  setCharacterGenerationMode("direct");
+                  setCharacterReferenceAssetId(referenceAssets[0]?.id ?? null);
+                }
                 setMobilePanel("canvas");
               }}
               onToggleCollapsed={() =>
                 setAssetsPanelCollapsed((current) => !current)
               }
+              onUpload={(file) => void uploadVisionAsset(file)}
               selected={selectedCanvas}
               storyboard={storyboard}
             />
@@ -1946,9 +2267,10 @@ export function ProjectWorkspace({
                   <Video className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
                 ) : selectedCanvas.kind === "asset" ? (
                   <Image className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
-                ) : selectedCanvas.kind === "storyboard" ||
-                  selectedCanvas.kind === "shot" ? (
+                ) : selectedCanvas.kind === "shot" ? (
                   <Clapperboard className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
+                ) : selectedCanvas.kind === "character" ? (
+                  <Image className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
                 ) : (
                   <FileText className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
                 )}
@@ -2002,10 +2324,10 @@ export function ProjectWorkspace({
               </div>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto">
-              {selectedCanvas.kind === "brief" ? (
+              {selectedCanvas.kind === "settings" ? (
                 <article className="mx-auto max-w-4xl px-6 py-10 sm:px-10">
                   <p className="text-[12px] font-semibold text-[#6eb8ff]">
-                    {copy.brief}
+                    {copy.settings}
                   </p>
                   <h2 className="mt-4 max-w-3xl font-display text-4xl leading-tight text-white/90">
                     {project.title}
@@ -2013,31 +2335,39 @@ export function ProjectWorkspace({
                   <p className="mt-7 whitespace-pre-wrap text-[16px] leading-8 text-white/52">
                     {creativeBrief(project.brief)}
                   </p>
-                  <div className="mt-10 grid gap-3 sm:grid-cols-3">
-                    {(["concept", "outline", "script"] as WorkflowStage[]).map(
-                      (stage, index) => (
+                  <section className="mt-8 rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
+                    <h3 className="text-[15px] font-semibold text-white/76">
+                      {copy.settingAttributes}
+                    </h3>
+                    <div className="mt-4 divide-y divide-white/[0.06]">
+                      {settingPairs.map((pair) => (
                         <div
-                          className={cn(
-                            "rounded-2xl border p-4",
-                            index <= stageIndex
-                              ? "border-[#1677ff]/22 bg-[#1677ff]/[0.045]"
-                              : "border-white/[0.07] bg-white/[0.015]",
-                          )}
-                          key={stage}
+                          className="grid grid-cols-[112px_minmax(0,1fr)] gap-3 py-2.5 text-[13px]"
+                          key={`${pair.label}-${pair.value}`}
                         >
-                          <span className="text-[12px] text-white/25">
-                            0{index + 1}
-                          </span>
-                          <p className="mt-2 text-[13px] text-white/65">{stageLabels[stage]}</p>
+                          <span className="text-white/32">{pair.label}</span>
+                          <span className="text-white/68">{pair.value}</span>
                         </div>
-                      ),
-                    )}
-                  </div>
+                      ))}
+                      {settingAnswers.map((pair, index) => (
+                        <div
+                          className="grid grid-cols-[112px_minmax(0,1fr)] gap-3 py-3 text-[13px]"
+                          key={`${pair.question}-${index}`}
+                        >
+                          <span className="whitespace-pre-wrap leading-7 text-white/38">
+                            {pair.question}
+                          </span>
+                          <span className="whitespace-pre-wrap leading-7 text-white/68">
+                            {pair.answer}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
                 </article>
               ) : null}
 
-              {selectedCanvas.kind === "storyboard" ||
-              selectedCanvas.kind === "document" ? (
+              {selectedCanvas.kind === "document" ? (
                 <article
                   className="mx-auto max-w-4xl px-6 py-8 sm:px-10"
                   data-document-mode={activeDocumentMode ?? "storyboard"}
@@ -2045,16 +2375,10 @@ export function ProjectWorkspace({
                   <div className="flex items-start justify-between gap-5 border-b border-white/[0.07] pb-6">
                     <div>
                       <p className="text-[12px] font-semibold text-[#6eb8ff]">
-                        {selectedCanvas.kind === "document"
-                          ? copy[selectedCanvas.document]
-                          : copy.storyboard}
+                        {copy[selectedCanvas.document]}
                       </p>
                       <h2 className="mt-3 line-clamp-2 font-display text-2xl leading-tight text-white/88">
-                        {selectedCanvas.kind === "document"
-                          ? selectedCanvas.document === "outline"
-                            ? copy.stageOutline
-                            : copy.stageScript
-                          : project.title}
+                        {project.title}
                       </h2>
                     </div>
                     {storyboard ? (
@@ -2074,7 +2398,7 @@ export function ProjectWorkspace({
                         >
                           <div className="flex items-center justify-between gap-4">
                             <span className="text-[12px] font-semibold text-[#6eb8ff]">
-                              {copy.shot} {String(shot.index + 1).padStart(2, "0")}
+                              {copy.shot} {shot.index + 1}
                             </span>
                             <span className="flex flex-wrap items-center justify-end gap-2">
                               <span className="rounded-md border border-white/[0.08] bg-white/[0.025] px-2.5 py-1 text-[12px] text-white/38">
@@ -2115,13 +2439,199 @@ export function ProjectWorkspace({
                 </article>
               ) : null}
 
+              {selectedCanvas.kind === "character" && selectedCharacter ? (
+                <article className="mx-auto max-w-4xl px-6 py-8 sm:px-10">
+                  <div className="border-b border-white/[0.07] pb-6">
+                    <p className="text-[12px] font-semibold text-[#6eb8ff]">
+                      {copy.character}
+                    </p>
+                    <h2 className="mt-3 font-display text-3xl leading-tight text-white/90">
+                      {selectedCharacter.name}
+                    </h2>
+                  </div>
+                  <div
+                    className={cn(
+                      "mt-5 grid gap-5",
+                      characterCanvasSection === "generation" &&
+                        "2xl:grid-cols-[minmax(0,1fr)_300px]",
+                    )}
+                  >
+                    <div className="space-y-3">
+                      <div className="rounded-2xl border border-white/[0.07] p-5">
+                        <p className="text-[12px] font-semibold text-white/28">
+                          {copy.description}
+                        </p>
+                        <p className="mt-3 whitespace-pre-wrap text-[15px] leading-8 text-white/58">
+                          {selectedCharacter.description}
+                        </p>
+                      </div>
+                      <div className="rounded-2xl border border-white/[0.07] p-5">
+                        <p className="text-[12px] font-semibold text-white/28">
+                          Prompt
+                        </p>
+                        <p className="mt-3 whitespace-pre-wrap text-[15px] leading-8 text-white/52">
+                          {locale.startsWith("zh") &&
+                          selectedCharacter.prompt_zh
+                            ? selectedCharacter.prompt_zh
+                            : selectedCharacter.prompt_en}
+                        </p>
+                      </div>
+                      {generatedCharacterAsset ? (
+                        <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-black/30">
+                          <img
+                            alt={selectedCharacter.name}
+                            className="max-h-[56vh] w-full object-contain"
+                            src={mediaUrl(generatedCharacterAsset.content_url)}
+                          />
+                        </div>
+                      ) : null}
+                    </div>
+
+                    {characterCanvasSection === "generation" ? (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-3 gap-2">
+                          <label className="flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-white/[0.09] px-2 py-2 text-center text-[12px] text-white/55 hover:border-[#1677ff]/35 hover:text-white">
+                            <Upload className="h-3.5 w-3.5 text-[#4facff]" />
+                            {copy.upload}
+                            <input
+                              accept="image/*"
+                              aria-label={`${copy.upload} ${selectedCharacter.name}`}
+                              className="sr-only"
+                              disabled={isWorking}
+                              onChange={(event) => {
+                                const file = event.target.files?.[0];
+                                event.currentTarget.value = "";
+                                if (file) {
+                                  void uploadCharacterAsset(
+                                    selectedCharacter,
+                                    file,
+                                  );
+                                }
+                              }}
+                              type="file"
+                            />
+                          </label>
+                          <button
+                            className={cn(
+                              "rounded-xl border px-2 py-2 text-[12px] transition",
+                              characterGenerationMode === "reference"
+                                ? "border-[#1677ff]/35 bg-[#1677ff]/[0.1] text-[#8fdcff]"
+                                : "border-white/[0.09] text-white/55 hover:text-white",
+                            )}
+                            disabled={referenceAssets.length === 0}
+                            onClick={() =>
+                              setCharacterGenerationMode("reference")
+                            }
+                            type="button"
+                          >
+                            {copy.reference}
+                          </button>
+                          <button
+                            className={cn(
+                              "rounded-xl border px-2 py-2 text-[12px] transition",
+                              characterGenerationMode === "direct"
+                                ? "border-[#1677ff]/35 bg-[#1677ff]/[0.1] text-[#8fdcff]"
+                                : "border-white/[0.09] text-white/55 hover:text-white",
+                            )}
+                            onClick={() => setCharacterGenerationMode("direct")}
+                            type="button"
+                          >
+                            {copy.direct}
+                          </button>
+                        </div>
+                        {characterGenerationMode === "reference" ? (
+                          <label className="block text-[12px] text-white/36">
+                            <span>{copy.referenceImage}</span>
+                            <select
+                              className="mt-2 w-full rounded-xl border border-white/[0.09] bg-[#11100d] px-3 py-2 text-white/72 outline-none"
+                              onChange={(event) =>
+                                setCharacterReferenceAssetId(
+                                  event.target.value || null,
+                                )
+                              }
+                              value={
+                                characterReferenceAssetId ??
+                                referenceAssets[0]?.id ??
+                                ""
+                              }
+                            >
+                              {referenceAssets.map((asset) => (
+                                <option key={asset.id} value={asset.id}>
+                                  {asset.filename}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        ) : null}
+                        {characterEstimate ? (
+                          <div className="flex flex-wrap items-center gap-2 rounded-xl bg-[#1677ff]/[0.08] px-3 py-2 text-[11px] text-[#a8ddff]">
+                            <span>
+                              {t("estimatedCredits")}: {characterEstimate.credits}
+                            </span>
+                            <span className="rounded-md border border-[#4facff]/25 px-2 py-0.5">
+                              {characterEstimate.provider}
+                            </span>
+                          </div>
+                        ) : null}
+                        {generatedCharacterAsset ? (
+                          <a
+                            className="flex items-center justify-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.055] px-4 py-2.5 text-[12px] text-emerald-200/78 hover:border-emerald-300/40"
+                            download={generatedCharacterAsset.filename}
+                            href={mediaUrl(generatedCharacterAsset.content_url)}
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                            {copy.downloadResult}
+                          </a>
+                        ) : null}
+                        <button
+                          className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/[0.09] px-4 py-2.5 text-[12px] text-white/58 hover:border-white/20 hover:text-white disabled:opacity-35"
+                          disabled={isWorking}
+                          onClick={() =>
+                            void estimateCharacter(selectedCharacter)
+                          }
+                          type="button"
+                        >
+                          <Gem className="h-3.5 w-3.5" />
+                          {copy.estimate}
+                        </button>
+                        {workflow?.status !== "approved" ? (
+                          <p className="rounded-xl border border-[#1677ff]/20 bg-[#1677ff]/[0.055] px-3 py-2 text-[12px] leading-6 text-[#a8ddff]">
+                            {copy.approvalRequired}
+                          </p>
+                        ) : null}
+                        <button
+                          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1677ff] px-4 py-2.5 text-[12px] font-semibold text-white disabled:opacity-35"
+                          disabled={
+                            isWorking ||
+                            workflow?.status !== "approved" ||
+                            (characterGenerationMode === "reference" &&
+                              referenceAssets.length === 0)
+                          }
+                          onClick={() =>
+                            void generateCharacter(selectedCharacter)
+                          }
+                          type="button"
+                        >
+                          <Sparkles className="h-3.5 w-3.5" />
+                          {isWorking
+                            ? copy.generating
+                            : characterGenerationMode === "reference"
+                              ? copy.generateWithReference
+                              : copy.generateDirect}
+                        </button>
+                      </div>
+                    ) : null}
+                  </div>
+                </article>
+              ) : null}
+
               {selectedCanvas.kind === "shot" && canvasShot ? (
                 <article className="mx-auto max-w-4xl px-6 py-8 sm:px-10">
                   <div className="aspect-video overflow-hidden rounded-2xl border border-white/[0.08] bg-[radial-gradient(circle_at_72%_20%,rgba(22,119,255,0.26),transparent_28%),linear-gradient(145deg,#13213d,#080c13)] p-6">
                     <div className="flex h-full flex-col justify-between">
                       <div className="flex items-center justify-between">
                         <span className="rounded-full bg-black/25 px-3 py-1.5 text-[12px] font-semibold backdrop-blur">
-                          {copy.shot} {String(canvasShot.index + 1).padStart(2, "0")}
+                          {copy.shot} {canvasShot.index + 1}
                         </span>
                         {canvasShot.status === "completed" ? (
                           <span className="grid size-8 place-items-center rounded-full bg-emerald-400 text-[#122016]">
@@ -2145,7 +2655,13 @@ export function ProjectWorkspace({
                     </div>
                   </div>
 
-                  <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_260px]">
+                  <div
+                    className={cn(
+                      "mt-5 grid gap-5",
+                      shotCanvasSection === "generation" &&
+                        "2xl:grid-cols-[minmax(0,1fr)_300px]",
+                    )}
+                  >
                     <div className="rounded-2xl border border-white/[0.07] p-5">
                       <p className="text-[12px] font-semibold text-white/28">
                         Prompt
@@ -2156,7 +2672,75 @@ export function ProjectWorkspace({
                           : canvasShot.prompt_en}
                       </p>
                     </div>
+                    {shotCanvasSection === "generation" ? (
                     <div className="space-y-3">
+                      <div className="grid grid-cols-3 gap-2">
+                        <label className="flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-white/[0.09] px-2 py-2 text-center text-[12px] text-white/55 hover:border-[#1677ff]/35 hover:text-white">
+                          <Upload className="h-3.5 w-3.5 text-[#4facff]" />
+                          {copy.upload}
+                          <input
+                            accept="image/*"
+                            aria-label={copy.upload}
+                            className="sr-only"
+                            onChange={(event) => {
+                              const file = event.target.files?.[0];
+                              event.currentTarget.value = "";
+                              if (!file) return;
+                              void uploadVisionAsset(file).then((asset) => {
+                                if (!asset) return;
+                                setReferenceAssetId(asset.id);
+                                setShotGenerationMode("reference");
+                              });
+                            }}
+                            type="file"
+                          />
+                        </label>
+                        <button
+                          className={cn(
+                            "rounded-xl border px-2 py-2 text-[12px] transition",
+                            shotGenerationMode === "reference"
+                              ? "border-[#1677ff]/35 bg-[#1677ff]/[0.1] text-[#8fdcff]"
+                              : "border-white/[0.09] text-white/55 hover:text-white",
+                          )}
+                          disabled={referenceAssets.length === 0}
+                          onClick={() => setShotGenerationMode("reference")}
+                          type="button"
+                        >
+                          {copy.reference}
+                        </button>
+                        <button
+                          className={cn(
+                            "rounded-xl border px-2 py-2 text-[12px] transition",
+                            shotGenerationMode === "direct"
+                              ? "border-[#1677ff]/35 bg-[#1677ff]/[0.1] text-[#8fdcff]"
+                              : "border-white/[0.09] text-white/55 hover:text-white",
+                          )}
+                          onClick={() => setShotGenerationMode("direct")}
+                          type="button"
+                        >
+                          {copy.direct}
+                        </button>
+                      </div>
+                      {shotGenerationMode === "reference" ? (
+                        <label className="block text-[12px] text-white/36">
+                          <span>{copy.chooseReference}</span>
+                          <select
+                            className="mt-2 w-full rounded-xl border border-white/[0.09] bg-[#11100d] px-3 py-2 text-white/72 outline-none"
+                            onChange={(event) =>
+                              setReferenceAssetId(event.target.value || null)
+                            }
+                            value={
+                              referenceAssetId ?? referenceAssets[0]?.id ?? ""
+                            }
+                          >
+                            {referenceAssets.map((asset) => (
+                              <option key={asset.id} value={asset.id}>
+                                {asset.filename}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      ) : null}
                       <div className="grid grid-cols-2 gap-2">
                         <div className="rounded-xl border border-white/[0.07] p-3">
                           <p className="text-[10px] text-white/24">{copy.ratio}</p>
@@ -2181,6 +2765,16 @@ export function ProjectWorkspace({
                           </span>
                         </div>
                       ) : null}
+                      {generatedShotAsset ? (
+                        <a
+                          className="flex items-center justify-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.055] px-4 py-2.5 text-[12px] text-emerald-200/78 hover:border-emerald-300/40"
+                          download={generatedShotAsset.filename}
+                          href={mediaUrl(generatedShotAsset.content_url)}
+                        >
+                          <Download className="h-3.5 w-3.5" />
+                          {copy.downloadResult}
+                        </a>
+                      ) : null}
                       <button
                         className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/[0.09] px-4 py-2.5 text-[12px] text-white/58 hover:border-white/20 hover:text-white disabled:opacity-35"
                         disabled={isWorking}
@@ -2200,7 +2794,9 @@ export function ProjectWorkspace({
                         disabled={
                           isWorking ||
                           canvasShot.status === "completed" ||
-                          workflow?.status !== "approved"
+                          workflow?.status !== "approved" ||
+                          (shotGenerationMode === "reference" &&
+                            referenceAssets.length === 0)
                         }
                         onClick={() => void generateShot()}
                         type="button"
@@ -2210,53 +2806,27 @@ export function ProjectWorkspace({
                           ? copy.generating
                           : canvasShot.status === "completed"
                             ? t("completed")
-                            : copy.generate}
+                            : shotGenerationMode === "reference"
+                              ? copy.generateWithReference
+                              : copy.generateDirect}
                       </button>
                     </div>
+                    ) : null}
                   </div>
-                  <div className="mt-5 flex items-center gap-2">
-                    <button
-                      aria-label={t("moveEarlier")}
-                      className="grid size-9 place-items-center rounded-lg border border-white/[0.08] text-white/40 disabled:opacity-20"
-                      disabled={isReordering || canvasShot.index === 0}
-                      onClick={() => void moveSelectedShot(-1)}
-                      type="button"
+                  {shotCanvasSection === "generation" ? (
+                    <p className="mt-5 rounded-xl border border-[#1677ff]/15 bg-[#1677ff]/[0.045] px-4 py-3 text-[13px] leading-6 text-white/46">
+                      {copy.visionReferenceHint}
+                    </p>
+                  ) : generatedShotAsset ? (
+                    <a
+                      className="mt-5 flex w-fit items-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.055] px-4 py-2.5 text-[13px] text-emerald-200/78"
+                      download={generatedShotAsset.filename}
+                      href={mediaUrl(generatedShotAsset.content_url)}
                     >
-                      <ArrowLeft className="h-4 w-4" />
-                    </button>
-                    <button
-                      aria-label={t("moveLater")}
-                      className="grid size-9 place-items-center rounded-lg border border-white/[0.08] text-white/40 disabled:opacity-20"
-                      disabled={
-                        isReordering ||
-                        canvasShot.index === (storyboard?.shots.length ?? 1) - 1
-                      }
-                      onClick={() => void moveSelectedShot(1)}
-                      type="button"
-                    >
-                      <ArrowRight className="h-4 w-4" />
-                    </button>
-                    <label className="ml-auto flex cursor-pointer items-center gap-2 rounded-lg border border-dashed border-white/[0.1] px-3 py-2 text-[11px] text-white/42 hover:border-[#1677ff]/35 hover:text-white">
-                      <Upload className="h-3.5 w-3.5" />
-                      {isWorking ? copy.uploading : copy.upload}
-                      <input
-                        accept="image/*,video/*,audio/*"
-                        aria-label={t("uploadReference")}
-                        className="sr-only"
-                        disabled={isWorking}
-                        onChange={(event) => {
-                          const file = event.target.files?.[0];
-                          event.currentTarget.value = "";
-                          if (file) void uploadReference(file);
-                        }}
-                        type="file"
-                      />
-                    </label>
-                    <span className="text-[10px] text-white/24">
-                      {assets.filter((asset) => asset.kind === "upload").length}{" "}
-                      {t("referenceCount")}
-                    </span>
-                  </div>
+                      <Download className="h-4 w-4" />
+                      {copy.downloadResult}
+                    </a>
+                  ) : null}
                 </article>
               ) : null}
 
@@ -2458,7 +3028,8 @@ export function ProjectWorkspace({
                 </div>
               ) : null}
               {pendingDecision ? (
-                <div className="mr-3 rounded-2xl border border-white/[0.07] bg-white/[0.02] px-4 py-3 text-[15px] leading-7 text-white/52">
+                <div className="mr-3 flex items-center gap-2 rounded-2xl border border-white/[0.07] bg-white/[0.02] px-4 py-3 text-[15px] leading-7 text-white/52">
+                  <LoaderCircle className="h-4 w-4 shrink-0 animate-spin text-[#4facff]" />
                   {pendingDecision}
                 </div>
               ) : null}

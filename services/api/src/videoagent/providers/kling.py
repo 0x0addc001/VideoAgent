@@ -81,6 +81,10 @@ class KlingVideoProvider:
         }
         if request.model:
             arguments["model"] = request.model
+        if request.generation_mode == "image_to_video":
+            if not request.reference_image_path:
+                raise ValueError("Kling image-to-video requires a reference image.")
+            arguments["image"] = request.reference_image_path
         raw = await self._client.call_tool(tool_name, arguments)
         task = _unwrap(raw)
         task_id = _first(task, "taskId", "task_id", "id")
