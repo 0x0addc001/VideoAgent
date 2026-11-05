@@ -131,7 +131,8 @@ Review uses the same skill-card structure as other task-oriented Skills.
 - Cards play muted looping video.
 - Each card shows the title first and author and likes below.
 - Each scenario card opens Agents with its prompt and corresponding Skill.
-- Users can publish a post from the feed.
+- Users can publish a post from the feed. Publishing requires an MP4 upload,
+  title, description, and Skill.
 - Search matches title, author, and prompt.
 
 ## 7. Assets
@@ -148,6 +149,8 @@ Assets contains the current user's finished and in-progress work.
 - Duration, progress, and summary are not shown.
 - Video cards play a muted loop on hover and pause when hover ends. Skill cards
   have no cover image.
+- Assets displays the current user's real Hots videos and Skills. Every card
+  opens a detail dialog, and video details support playback.
 
 ### 7.1 Project Workspace and Delivery
 
@@ -160,8 +163,8 @@ Assets contains the current user's finished and in-progress work.
 - Export supports captions, an uploaded soundtrack, an automatic cover, and
   private or public permission.
 - Each delivery can be downloaded; share links expire and can be revoked.
-- Assets lists only uploads, generated clips, and deliveries available to the
-  current user.
+- Assets lists only uploads, generated clips, deliveries, and community posts
+  available to the current user.
 
 ## 8. Docs
 

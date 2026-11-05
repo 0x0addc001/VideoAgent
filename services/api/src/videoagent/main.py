@@ -14,6 +14,7 @@ from videoagent.api.credits import router as credits_router
 from videoagent.api.evaluation import router as evaluation_router
 from videoagent.api.generation import router as generation_router
 from videoagent.api.health import router as health_router
+from videoagent.api.hots import router as hots_router
 from videoagent.api.projects import router as projects_router
 from videoagent.api.providers import router as providers_router
 from videoagent.api.skills import router as skills_router
@@ -86,6 +87,7 @@ def create_app(
     application.include_router(assets_router, prefix=resolved_settings.api_prefix)
     application.include_router(workspace_router, prefix=resolved_settings.api_prefix)
     application.include_router(skills_router, prefix=resolved_settings.api_prefix)
+    application.include_router(hots_router, prefix=resolved_settings.api_prefix)
     return application
 
 

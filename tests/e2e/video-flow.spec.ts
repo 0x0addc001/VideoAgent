@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { resolve } from "node:path";
 
 test("runs a complete mock video workflow without paid generation", async ({
   page,
@@ -122,6 +123,45 @@ test("optimizes and persists a published Skill", async ({ page }) => {
   await page.getByRole("button", { name: "Skills", exact: true }).click();
   await expect(page.locator("#skills")).toContainText(
     "Create A Reusable Lip Sync Workflow For Character Videos",
+  );
+});
+
+test("publishes an uploaded Hots video and opens it in Assets", async ({ page }) => {
+  const email = `hots-e2e-${Date.now()}@example.com`;
+  await page.goto("/en/register");
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password").fill("Correct-Horse-Battery9");
+  await page.getByRole("button", { name: "Create account" }).click();
+  await expect(page).toHaveURL(/\/en#assets$/);
+
+  await page.getByRole("button", { name: "Collapse navigation" }).click();
+  await expect(page.locator(".va-landing")).toHaveClass(/nav-collapsed/);
+  await page.getByRole("button", { name: "Expand navigation" }).click();
+
+  await page.goto("/en");
+  await page.getByRole("button", { name: "Hots", exact: true }).click();
+  await page.getByRole("button", { name: "Publish video", exact: true }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByLabel("Post title").fill("Rain study");
+  await dialog
+    .getByLabel("Describe the video you want to share...")
+    .fill("A quiet rain study with slow editorial movement");
+  await dialog
+    .getByLabel("Video file")
+    .setInputFiles(resolve("apps/web/public/media/vlog-hero.mp4"));
+  await dialog
+    .getByRole("button", { name: "Publish video", exact: true })
+    .click();
+  await expect(dialog).toBeHidden();
+  await expect(page.locator("#hots")).toContainText("Rain study");
+
+  await page.getByRole("button", { name: "Assets", exact: true }).click();
+  await page.getByRole("button", { name: "View Rain study" }).click();
+  const detail = page.getByRole("dialog");
+  await expect(detail.getByRole("heading", { name: "Rain study" })).toBeVisible();
+  await expect(detail.locator("video")).toBeVisible();
+  await expect(detail).toContainText(
+    "A quiet rain study with slow editorial movement",
   );
 });
 

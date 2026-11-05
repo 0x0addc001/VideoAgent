@@ -129,6 +129,9 @@ Kling 国内版另使用依赖注入测试覆盖 `text_to_video`、`query_tasks`
 - Skill 发布表单包含用途、执行规范、质量门禁、启动提示词和输入输出契约。
 - AI 优化按钮能把粗略想法整理为结构化 Skill，保存后从服务端恢复。
 - 内置 `video_agent/skill_synthesis` 直接打开 Skill Studio。
+- App 左侧导航可收起为仅图标，登录后 Agents 首页显示最近对话。
+- Hots 发布必须选择 MP4，上传成功后出现在社区和作者 Assets。
+- Assets 的视频与 Skill 卡片可点击打开详情，视频详情可播放。
 - 搜索、语言、通知、积分和头像使用半透明表面。
 - 头像在未登录时提供登录与注册，登录后提供退出。
 - API 文档开头展示属性表。
@@ -145,6 +148,12 @@ Playwright 使用真实 Next.js 页面、FastAPI、SQLite 和 Mock Provider，�
 
 ```text
 注册 → Skills → 输入粗略想法 → AI 优化 → 发布 → 刷新后恢复
+```
+
+无费用 Hots / Assets 链路：
+
+```text
+注册 → Hots → 上传 MP4 → 发布 → Assets → 查看详情并播放
 ```
 
 该链路不调用真实付费 Provider，应作为每个 Pull Request 的必过门禁。

@@ -284,6 +284,18 @@ scoped to the authenticated account and are loaded back into the Skills view.
 }
 ```
 
+## Hots
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/hots` | List published community videos; `mine=true` filters to the current user |
+| `POST` | `/hots` | Upload an MP4 and publish a community post |
+| `GET` | `/hots/{post_id}/video` | Stream the public video |
+
+`POST /hots` uses `multipart/form-data` with `file`, `title`, `prompt`, and
+`skill`. The uploaded video asset is public and appears in the authenticated
+author's Assets view.
+
 ### Evaluate Storyboard
 
 `POST /projects/{project_id}/evaluate`

@@ -231,6 +231,7 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 | `api/providers.py` | Pippit 服务端状态和积分余额 |
 | `api/assets.py` | 上传、下载、导出、分享与撤销 |
 | `api/skills.py` | Skill 读取、持久化和 AI 优化 |
+| `api/hots.py` | 社区视频上传、列表和公开播放 |
 | `api/credits.py` | 用户独立积分余额 |
 | `api/admin.py` | 管理总览、用户、积分、任务、邀请码、设置、审计 |
 | `middleware.py` | 同源写请求校验与请求限流 |
@@ -318,6 +319,7 @@ ORM 表：
 | `workspace_folder_items` | 对话与项目目录的收纳关系 |
 | `project_workflows` | 整体设定、分集/分镜大纲、逐场剧本与生成审批状态 |
 | `user_skills` | 用户 Skill 名称、说明、执行规范、提示词和输入输出契约 |
+| `hots_posts` | Hots 视频、标题、描述、Skill 和喜欢数 |
 | `generation_jobs` | Provider 任务、幂等键和结果 |
 | `provider_connections` | Provider 授权信息 |
 | `oauth_flows` | OAuth 事务状态 |
@@ -418,6 +420,8 @@ task reference    → query-result   → JobStatus + result URL
 | POST | `/projects/{id}/workflow/decision` | 批准、调整或自定义修改 |
 | GET/POST | `/skills` | 读取和保存当前用户 Skill |
 | POST | `/skills/optimize` | AI 优化 Skill 草稿 |
+| GET/POST | `/hots` | 社区列表与 MP4 发布 |
+| GET | `/hots/{id}/video` | 播放公开视频 |
 | GET | `/projects/{id}/storyboard` | 获取故事板 |
 | PUT | `/projects/{id}/storyboard` | 整体替换故事板 |
 | PATCH | `/projects/{id}/storyboard/order` | 调整镜头顺序并保留 Shot ID 与资产 |
@@ -603,14 +607,14 @@ pnpm --dir apps/web build
 
 测试组成：
 
-- 后端 58 个测试。
+- 后端 60 个测试。
 - 前端 27 个测试。
-- Playwright 6 个端到端测试。
+- Playwright 7 个端到端测试。
 - 后端测试使用临时 SQLite 文件。
 - Pippit 测试使用本地 Fake CLI，不访问真实生成网络。
 - Kling Provider 测试使用 Fake MCP client，不触发付费生成。
 - 前端测试覆盖共享首页、导航、文档加载、自定义下拉、Hots 发布、创作提交、历史目录、逐层审批、Skill AI 优化和持久化发布。
-- Playwright 使用 Mock Provider 验证审批、生成、导出、分享，以及 Skill AI 优化和持久化，不访问付费 Provider。
+- Playwright 使用 Mock Provider 验证审批、生成、导出、分享、Skill 优化，以及 Hots 视频上传和 Assets 详情，不访问付费 Provider。
 - 管理测试覆盖白名单权限、积分调整、账号停用、邀请码、注册关闭和生成开关。
 - 普通 CI 不执行付费生成。
 

@@ -444,6 +444,31 @@ class UserSkill(Base):
     )
 
 
+class HotsPost(Base):
+    __tablename__ = "hots_posts"
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    owner_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+    )
+    asset_id: Mapped[UUID] = mapped_column(
+        ForeignKey("assets.id", ondelete="CASCADE"),
+        unique=True,
+        index=True,
+    )
+    title: Mapped[str] = mapped_column(String(200))
+    prompt: Mapped[str] = mapped_column(Text, default="")
+    skill_id: Mapped[str] = mapped_column(String(120), default="auto")
+    like_count: Mapped[int] = mapped_column(Integer, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+
 class ProviderConnection(Base):
     __tablename__ = "provider_connections"
     __table_args__ = (UniqueConstraint("user_id", "provider"),)

@@ -10,9 +10,12 @@ import {
   Gem,
   Globe,
   Heart,
+  PanelLeftClose,
+  PanelLeftOpen,
   Play,
   Search,
   Sparkles,
+  Upload,
   UserRound,
   Video,
 } from "lucide-react";
@@ -51,10 +54,50 @@ export type LandingProjectDraft = {
 
 type PublishedHot = {
   author: string;
+  assetId?: string;
+  createdAt?: string;
+  id?: string;
+  isMine?: boolean;
   likes: number;
   prompt: string;
   skill: string;
   title: string;
+  videoUrl?: string;
+};
+
+type UserVideoAsset = {
+  id: string;
+  assetId: string;
+  contentUrl: string;
+  createdAt: string;
+  permission: "private" | "public";
+  title: string;
+};
+
+type AssetDetail = {
+  author?: string;
+  body?: string;
+  editedAt: string;
+  instructions?: string;
+  likes?: number;
+  permission: "private" | "public";
+  prompt?: string;
+  title: string;
+  type: "video" | "skill";
+  videoUrl?: string;
+};
+
+type AssetView = AssetDetail & {
+  id?: string;
+  imageIndex?: number;
+};
+
+type RecentConversation = {
+  id: string;
+  preview: string | null;
+  stage: string;
+  title: string;
+  updatedAt: string;
 };
 
 type PublishedSkill = {
@@ -68,6 +111,7 @@ type PublishedSkill = {
   promptTemplate?: string;
   skillId: string;
   title: string;
+  updatedAt?: string;
   userId: string;
   visibility?: "private" | "public";
 };
@@ -529,6 +573,7 @@ export function LandingPage({
 }: LandingPageProps) {
   const content = landingContent[locale];
   const [activeView, setActiveView] = useState<LandingView>("agents");
+  const [navCollapsed, setNavCollapsed] = useState(false);
   const [activeDocument, setActiveDocument] = useState<string>(
     content.documents[0]?.path ?? "",
   );
@@ -537,8 +582,13 @@ export function LandingPage({
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [previewNoticeOpen, setPreviewNoticeOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
+  const [publishTitleDraft, setPublishTitleDraft] = useState("");
   const [publishDraft, setPublishDraft] = useState("");
+  const [publishVideoFile, setPublishVideoFile] = useState<File | null>(null);
+  const [publishHotError, setPublishHotError] = useState<string | null>(null);
+  const [isPublishingHot, setIsPublishingHot] = useState(false);
   const [publishedHots, setPublishedHots] = useState<PublishedHot[]>([]);
+  const [userVideoAssets, setUserVideoAssets] = useState<UserVideoAsset[]>([]);
   const [skillsQuery, setSkillsQuery] = useState("");
   const [publishSkillOpen, setPublishSkillOpen] = useState(false);
   const [skillIdeaDraft, setSkillIdeaDraft] = useState("");
@@ -553,9 +603,13 @@ export function LandingPage({
   const [isOptimizingSkill, setIsOptimizingSkill] = useState(false);
   const [isSavingSkill, setIsSavingSkill] = useState(false);
   const [publishedSkills, setPublishedSkills] = useState<PublishedSkill[]>([]);
+  const [recentConversations, setRecentConversations] = useState<
+    RecentConversation[]
+  >([]);
   const [hotsQuery, setHotsQuery] = useState("");
   const [assetQuery, setAssetQuery] = useState("");
   const [assetType, setAssetType] = useState<"video" | "skill">("video");
+  const [assetDetail, setAssetDetail] = useState<AssetDetail | null>(null);
   const [docsQuery, setDocsQuery] = useState("");
   const [docsSearchIndex, setDocsSearchIndex] = useState<DocsSearchEntry[]>([]);
   const [displayCredits, setDisplayCredits] = useState(
@@ -618,6 +672,19 @@ export function LandingPage({
   }, [content.documentTitle, locale]);
 
   useEffect(() => {
+    setNavCollapsed(
+      window.localStorage.getItem("videoagent.nav-collapsed") === "1",
+    );
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem(
+      "videoagent.nav-collapsed",
+      navCollapsed ? "1" : "0",
+    );
+  }, [navCollapsed]);
+
+  useEffect(() => {
     if (!accountApiBase || mode !== "app") return;
     let active = true;
 
@@ -668,6 +735,7 @@ export function LandingPage({
               id: string;
               user_id: string;
               visibility: "private" | "public";
+              updated_at: string;
             }
           >;
         };
@@ -683,6 +751,7 @@ export function LandingPage({
             promptTemplate: item.prompt_template,
             skillId: item.skill_id,
             title: item.title,
+            updatedAt: item.updated_at,
             userId: item.user_id,
             visibility: item.visibility,
           })),
@@ -692,9 +761,112 @@ export function LandingPage({
       }
     }
 
+    async function loadHots() {
+      try {
+        const response = await fetch(`${accountApiBase}/hots`, {
+          credentials: "include",
+        });
+        if (!active || !response.ok) return;
+        const payload = (await response.json()) as {
+          items?: Array<{
+            id: string;
+            asset_id: string;
+            title: string;
+            prompt: string;
+            skill: string;
+            author: string;
+            likes: number;
+            is_mine: boolean;
+            created_at: string;
+          }>;
+        };
+        setPublishedHots(
+          (payload.items ?? []).map((item) => ({
+            id: item.id,
+            assetId: item.asset_id,
+            author: item.author,
+            createdAt: item.created_at,
+            isMine: item.is_mine,
+            likes: item.likes,
+            prompt: item.prompt,
+            skill: item.skill,
+            title: item.title,
+            videoUrl: `${accountApiBase}/hots/${item.id}/video`,
+          })),
+        );
+      } catch {
+        // The bundled feed remains available while community data is offline.
+      }
+    }
+
+    async function loadAssets() {
+      try {
+        const response = await fetch(`${accountApiBase}/assets`, {
+          credentials: "include",
+        });
+        if (!active || !response.ok) return;
+        const payload = (await response.json()) as {
+          items?: Array<{
+            id: string;
+            filename: string;
+            content_type: string;
+            permission: "private" | "public";
+            content_url: string;
+            created_at: string;
+          }>;
+        };
+        setUserVideoAssets(
+          (payload.items ?? [])
+            .filter((asset) => asset.content_type.startsWith("video/"))
+            .map((asset) => ({
+              id: asset.id,
+              assetId: asset.id,
+              contentUrl: `${accountApiBase}/assets/${asset.id}/content`,
+              createdAt: asset.created_at,
+              permission: asset.permission,
+              title: asset.filename,
+            })),
+        );
+      } catch {
+        // Asset browsing falls back to the bundled examples.
+      }
+    }
+
+    async function loadWorkspace() {
+      try {
+        const response = await fetch(`${accountApiBase}/workspace`, {
+          credentials: "include",
+        });
+        if (!active || !response.ok) return;
+        const payload = (await response.json()) as {
+          recents?: Array<{
+            id: string;
+            title: string;
+            preview: string | null;
+            stage: string;
+            updated_at: string;
+          }>;
+        };
+        setRecentConversations(
+          (payload.recents ?? []).slice(0, 6).map((item) => ({
+            id: item.id,
+            title: item.title,
+            preview: item.preview,
+            stage: item.stage,
+            updatedAt: item.updated_at,
+          })),
+        );
+      } catch {
+        // Signed-out users see the empty conversation state.
+      }
+    }
+
     void loadAccount();
     void loadCredits();
     void loadSkills();
+    void loadHots();
+    void loadAssets();
+    void loadWorkspace();
     return () => {
       active = false;
     };
@@ -884,25 +1056,87 @@ export function LandingPage({
       setPreviewNoticeOpen(true);
       return;
     }
+    setPublishTitleDraft("");
+    setPublishDraft("");
+    setPublishVideoFile(null);
+    setPublishHotError(null);
     setPublishOpen(true);
   }
 
-  function publishHot(event: FormEvent<HTMLFormElement>) {
+  async function publishHot(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (mode === "project" || !accountApiBase) {
+      setPreviewNoticeOpen(true);
+      return;
+    }
     const value = publishDraft.trim();
-    if (!value) return;
-    setPublishedHots((current) => [
-      {
-        author: content.hots.you,
-        likes: 0,
-        prompt: value,
-        skill,
-        title: value.length > 42 ? `${value.slice(0, 42)}…` : value,
-      },
-      ...current,
-    ]);
-    setPublishDraft("");
-    setPublishOpen(false);
+    const title =
+      publishTitleDraft.trim() ||
+      (value.length > 42 ? `${value.slice(0, 42)}…` : value);
+    if (!title || !value || !publishVideoFile) {
+      setPublishHotError(content.hots.publishError);
+      return;
+    }
+    setPublishHotError(null);
+    setIsPublishingHot(true);
+    const body = new FormData();
+    body.append("file", publishVideoFile);
+    body.append("title", title);
+    body.append("prompt", value);
+    body.append("skill", skill);
+    try {
+      const response = await fetch(`${accountApiBase}/hots`, {
+        method: "POST",
+        credentials: "include",
+        body,
+      });
+      if (!response.ok) {
+        setPublishHotError(content.hots.publishError);
+        return;
+      }
+      const saved = (await response.json()) as {
+        id: string;
+        asset_id: string;
+        title: string;
+        prompt: string;
+        skill: string;
+        author: string;
+        likes: number;
+        is_mine: boolean;
+        created_at: string;
+      };
+      setPublishedHots((current) => [
+        {
+          id: saved.id,
+          assetId: saved.asset_id,
+          author: saved.author,
+          createdAt: saved.created_at,
+          isMine: saved.is_mine,
+          likes: saved.likes,
+          prompt: saved.prompt,
+          skill: saved.skill,
+          title: saved.title,
+          videoUrl: `${accountApiBase}/hots/${saved.id}/video`,
+        },
+        ...current,
+      ]);
+      setUserVideoAssets((current) => [
+        {
+          id: saved.asset_id,
+          assetId: saved.asset_id,
+          contentUrl: `${accountApiBase}/hots/${saved.id}/video`,
+          createdAt: saved.created_at,
+          permission: "public",
+          title: saved.title,
+        },
+        ...current,
+      ]);
+      setPublishOpen(false);
+    } catch {
+      setPublishHotError(content.hots.publishError);
+    } finally {
+      setIsPublishingHot(false);
+    }
   }
 
   function resetSkillStudio(idea = "") {
@@ -1024,6 +1258,7 @@ export function LandingPage({
         id: string;
         user_id: string;
         visibility: "private" | "public";
+        updated_at: string;
       };
       setPublishedSkills((current) => [
         {
@@ -1037,6 +1272,7 @@ export function LandingPage({
           promptTemplate: saved.prompt_template,
           skillId: saved.skill_id,
           title: saved.title,
+          updatedAt: saved.updated_at,
           userId: saved.user_id,
           visibility: saved.visibility,
         },
@@ -1100,7 +1336,10 @@ export function LandingPage({
         .includes(normalizedSkillsQuery),
   );
   const normalizedHotsQuery = hotsQuery.trim().toLowerCase();
-  const visibleHots = [...publishedHots, ...content.hots.items].filter(
+  const visibleHots: PublishedHot[] = [
+    ...publishedHots,
+    ...content.hots.items.map((item) => ({ ...item })),
+  ].filter(
     (item) =>
       !normalizedHotsQuery ||
       `${item.title} ${item.author} ${item.prompt}`
@@ -1108,11 +1347,67 @@ export function LandingPage({
         .includes(normalizedHotsQuery),
   );
   const normalizedAssetQuery = assetQuery.trim().toLowerCase();
-  const visibleAssets = content.assets.items.filter(
+  const hotAssetIds = new Set(
+    publishedHots
+      .filter((item) => item.isMine && item.assetId)
+      .map((item) => item.assetId),
+  );
+  const ownedAssets: AssetView[] = accountEmail
+    ? [
+        ...publishedHots
+          .filter((item) => item.isMine)
+          .map((item) => ({
+            id: item.id,
+            title: item.title,
+            type: "video" as const,
+            permission: "public" as const,
+            editedAt: (item.createdAt ?? new Date().toISOString()).slice(0, 10),
+            videoUrl: item.videoUrl,
+            prompt: item.prompt,
+            author: item.author,
+            likes: item.likes,
+          })),
+        ...userVideoAssets
+          .filter((asset) => !hotAssetIds.has(asset.assetId))
+          .map((asset) => ({
+            id: asset.id,
+            title: asset.title,
+            type: "video" as const,
+            permission: asset.permission,
+            editedAt: asset.createdAt.slice(0, 10),
+            videoUrl: asset.contentUrl,
+            prompt: "",
+            author: content.hots.you,
+            likes: 0,
+          })),
+        ...publishedSkills.map((item) => ({
+          id: item.id,
+          title: item.title,
+          type: "skill" as const,
+          permission: item.visibility ?? "private",
+          editedAt: item.updatedAt?.slice(0, 10) ?? "—",
+          videoUrl: undefined,
+          prompt: item.prompt,
+          author: item.userId,
+          likes: 0,
+          body: item.body,
+          instructions: item.instructions,
+        })),
+      ]
+    : content.assets.items.map((item) => ({
+        ...item,
+        videoUrl: undefined,
+        prompt: "",
+        author: content.hots.you,
+        likes: 0,
+        body: "",
+        instructions: undefined,
+      }));
+  const visibleAssets = ownedAssets.filter(
     (asset) =>
       asset.type === assetType &&
       (!normalizedAssetQuery ||
-        `${asset.title} ${asset.permission}`
+        `${asset.title} ${asset.permission} ${asset.prompt ?? ""}`
           .toLowerCase()
           .includes(normalizedAssetQuery)),
   );
@@ -1126,7 +1421,11 @@ export function LandingPage({
     : [];
 
   return (
-    <main className="va-landing">
+    <main
+      className={`va-landing${mode === "app" ? " app-mode" : ""}${
+        navCollapsed ? " nav-collapsed" : ""
+      }`}
+    >
       <div className="page-grain" aria-hidden="true" />
 
       <header className="site-header">
@@ -1180,6 +1479,22 @@ export function LandingPage({
             <span>{content.nav.docs}</span>
           </button>
         </nav>
+        {mode === "app" ? (
+          <button
+            aria-label={
+              navCollapsed ? content.nav.expandNav : content.nav.collapseNav
+            }
+            className="nav-collapse-toggle"
+            onClick={() => setNavCollapsed((current) => !current)}
+            type="button"
+          >
+            {navCollapsed ? (
+              <PanelLeftOpen aria-hidden="true" />
+            ) : (
+              <PanelLeftClose aria-hidden="true" />
+            )}
+          </button>
+        ) : null}
       </header>
 
       <div className="header-actions">
@@ -1530,6 +1845,35 @@ export function LandingPage({
       </section>
       ) : null}
 
+      {activeView === "agents" && accountEmail ? (
+        <section className="section recent-conversations">
+          <div className="recent-conversations-heading">
+            <p className="preview-eyebrow">Agents</p>
+            <h2>{content.nav.recentConversations}</h2>
+          </div>
+          {recentConversations.length > 0 ? (
+            <div className="recent-conversation-grid">
+              {recentConversations.map((conversation) => (
+                <a
+                  className="recent-conversation-card"
+                  href={`/${locale}/projects/${conversation.id}`}
+                  key={conversation.id}
+                >
+                  <span className="recent-conversation-stage">
+                    {conversation.stage}
+                  </span>
+                  <strong>{conversation.title}</strong>
+                  <p>{conversation.preview || content.nav.recentEmpty}</p>
+                  <span>{content.nav.openConversation} ↗</span>
+                </a>
+              ))}
+            </div>
+          ) : (
+            <p className="recent-conversation-empty">{content.nav.recentEmpty}</p>
+          )}
+        </section>
+      ) : null}
+
       {activeView === "skills" ? (
       <section className="section feature-section" id="skills">
         <div className="view-toolbar">
@@ -1616,10 +1960,26 @@ export function LandingPage({
           </div>
         </div>
         <div className="asset-stream">
-          {visibleAssets.map((asset) => (
-            <article
+          {visibleAssets.map((asset, index) => (
+            <button
+              aria-label={`View ${asset.title}`}
               className={`asset-card asset-card-${asset.type}`}
-              key={asset.title}
+              key={asset.id ?? asset.title}
+              onClick={() =>
+                setAssetDetail({
+                  title: asset.title,
+                  type: asset.type,
+                  permission: asset.permission,
+                  editedAt: asset.editedAt,
+                  videoUrl: asset.videoUrl,
+                  prompt: asset.prompt,
+                  author: asset.author,
+                  likes: asset.likes,
+                  body: asset.body,
+                  instructions: asset.instructions,
+                })
+              }
+              type="button"
             >
               {asset.type === "video" ? (
                 <div className="asset-media">
@@ -1637,10 +1997,20 @@ export function LandingPage({
                       event.currentTarget.currentTime = 0;
                     }}
                     playsInline
-                    poster={videos[asset.imageIndex].poster}
+                    poster={
+                      videos[
+                        asset.imageIndex ?? index % videos.length
+                      ].poster
+                    }
                     preload="metadata"
                   >
-                    <source src={videos[asset.imageIndex].src} type="video/mp4" />
+                    <source
+                      src={
+                        asset.videoUrl ??
+                        videos[asset.imageIndex ?? index % videos.length].src
+                      }
+                      type="video/mp4"
+                    />
                   </video>
                 </div>
               ) : null}
@@ -1653,7 +2023,7 @@ export function LandingPage({
                   <time dateTime={asset.editedAt}>{asset.editedAt}</time>
                 </div>
               </div>
-            </article>
+            </button>
           ))}
         </div>
         {visibleAssets.length === 0 ? (
@@ -1689,7 +2059,21 @@ export function LandingPage({
             <button
               className={`community-card community-card-${(index % 5) + 1}`}
               key={`${item.author}-${item.title}-${index}`}
-              onClick={() => useSkill(item.skill, item.prompt)}
+              onClick={() =>
+                item.id
+                  ? setAssetDetail({
+                      author: item.author,
+                      editedAt: (item.createdAt ?? new Date().toISOString()).slice(0, 10),
+                      likes: item.likes,
+                      permission: "public",
+                      prompt: item.prompt,
+                      title: item.title,
+                      type: "video",
+                      videoUrl:
+                        item.videoUrl ?? videos[index % videos.length].src,
+                    })
+                  : useSkill(item.skill, item.prompt)
+              }
               type="button"
             >
               <video
@@ -1701,7 +2085,10 @@ export function LandingPage({
                 poster={videos[index % videos.length].poster}
                 preload="auto"
               >
-                <source src={videos[index % videos.length].src} type="video/mp4" />
+                <source
+                  src={item.videoUrl ?? videos[index % videos.length].src}
+                  type="video/mp4"
+                />
               </video>
               <span className="community-card-content">
                 <span className="community-card-title">{item.title}</span>
@@ -1788,6 +2175,77 @@ export function LandingPage({
             />
           </div>
         </section>
+      ) : null}
+
+      {assetDetail ? (
+        <div
+          className="preview-backdrop"
+          onPointerDown={(event) => {
+            if (event.target === event.currentTarget) setAssetDetail(null);
+          }}
+        >
+          <article
+            aria-labelledby="asset-detail-title"
+            aria-modal="true"
+            className="preview-dialog asset-detail-dialog"
+            role="dialog"
+          >
+            <button
+              aria-label={content.assets.closeDetails}
+              className="preview-close"
+              onClick={() => setAssetDetail(null)}
+              type="button"
+            >
+              ×
+            </button>
+            <p className="preview-eyebrow">
+              {content.assets.details} · {assetDetail.permission}
+            </p>
+            <h2 id="asset-detail-title">{assetDetail.title}</h2>
+            {assetDetail.videoUrl ? (
+              <video
+                autoPlay
+                className="asset-detail-video"
+                controls
+                loop
+                muted
+                playsInline
+                src={assetDetail.videoUrl}
+              />
+            ) : null}
+            <div className="asset-detail-meta">
+              {assetDetail.author ? (
+                <span>
+                  {content.assets.authorLabel}: {assetDetail.author}
+                </span>
+              ) : null}
+              {assetDetail.likes != null ? (
+                <span>
+                  {content.assets.likesLabel}: {assetDetail.likes}
+                </span>
+              ) : null}
+              <time dateTime={assetDetail.editedAt}>{assetDetail.editedAt}</time>
+            </div>
+            {assetDetail.prompt ? (
+              <section>
+                <h3>{content.assets.promptLabel}</h3>
+                <p>{assetDetail.prompt}</p>
+              </section>
+            ) : null}
+            {assetDetail.body ? (
+              <section>
+                <h3>{content.assets.details}</h3>
+                <p>{assetDetail.body}</p>
+              </section>
+            ) : null}
+            {assetDetail.instructions ? (
+              <section>
+                <h3>{content.assets.instructionsLabel}</h3>
+                <pre>{assetDetail.instructions}</pre>
+              </section>
+            ) : null}
+          </article>
+        </div>
       ) : null}
 
       {publishSkillOpen ? (
@@ -1936,12 +2394,38 @@ export function LandingPage({
             </button>
             <p className="preview-eyebrow">{content.nav.hots}</p>
             <h2 id="publish-title">{content.hots.publishTitle}</h2>
+            <label className="hots-publish-field">
+              <span>{content.hots.titleLabel}</span>
+              <input
+                maxLength={200}
+                onChange={(event) => setPublishTitleDraft(event.target.value)}
+                value={publishTitleDraft}
+              />
+            </label>
             <textarea
               aria-label={content.hots.publishPlaceholder}
               onChange={(event) => setPublishDraft(event.target.value)}
               placeholder={content.hots.publishPlaceholder}
               value={publishDraft}
             />
+            <label className="hots-video-picker">
+              <Upload aria-hidden="true" />
+              <span>{content.hots.videoLabel}</span>
+              <strong>{publishVideoFile?.name ?? "MP4"}</strong>
+              <input
+                accept="video/mp4"
+                onChange={(event) => {
+                  setPublishVideoFile(event.target.files?.[0] ?? null);
+                  event.currentTarget.value = "";
+                }}
+                type="file"
+              />
+            </label>
+            {publishHotError ? (
+              <p aria-live="polite" className="skill-publish-error">
+                {publishHotError}
+              </p>
+            ) : null}
             <div className="publish-actions">
               <button
                 className="publish-cancel"
@@ -1952,10 +2436,15 @@ export function LandingPage({
               </button>
               <button
                 className="primary-action"
-                disabled={!publishDraft.trim()}
+                disabled={
+                  isPublishingHot ||
+                  !publishVideoFile ||
+                  !publishDraft.trim() ||
+                  (!publishTitleDraft.trim() && !publishDraft.trim())
+                }
                 type="submit"
               >
-                {content.hots.publishAction}
+                {isPublishingHot ? content.hots.publishing : content.hots.publishAction}
               </button>
             </div>
           </form>

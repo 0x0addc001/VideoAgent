@@ -165,6 +165,7 @@ status
 | `api.providers` | Pippit status and credits |
 | `api.assets` | Uploads, downloads, exports, sharing, and revocation |
 | `api.skills` | Skill listing, persistence, and AI optimization |
+| `api.hots` | Community video upload, listing, and streaming |
 | `api.credits` | Per-user VideoAgent balance |
 | `api.admin` | Overview, users, credits, jobs, invites, settings, audit |
 | `middleware` | Same-origin write checks and request limits |
@@ -263,6 +264,7 @@ locale state.
 | `workspace_folder_items` | One-to-one conversation filing |
 | `project_workflows` | Concept, outline, script, and generation approval state |
 | `user_skills` | Published Skill instructions, prompt template, and I/O contracts |
+| `hots_posts` | Community videos, captions, Skill references, and likes |
 | `generation_jobs` | Provider task and idempotency |
 | `provider_connections` | Legacy OAuth storage |
 | `oauth_flows` | Legacy OAuth state |
@@ -293,6 +295,8 @@ locale state.
 | `POST` | `/projects/{id}/workflow/decision` |
 | `GET/POST` | `/skills` |
 | `POST` | `/skills/optimize` |
+| `GET/POST` | `/hots` |
+| `GET` | `/hots/{id}/video` |
 | `GET/PUT` | `/projects/{id}/storyboard` |
 | `PATCH` | `/projects/{id}/storyboard/order` |
 | `POST` | `/projects/{id}/evaluate` |
@@ -376,7 +380,7 @@ pnpm test:e2e
 python scripts\build_pages.py
 ```
 
-Backend coverage currently consists of 58 tests, frontend coverage consists of
-27 Vitest tests, and Playwright contains six no-fee browser flows. Playwright
+Backend coverage currently consists of 60 tests, frontend coverage consists of
+27 Vitest tests, and Playwright contains seven no-fee browser flows. Playwright
 uses the Mock Provider for generation and therefore never consumes real
 Provider credits.

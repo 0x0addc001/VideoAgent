@@ -459,6 +459,22 @@ class UserSkillList(BaseModel):
     items: list[UserSkillRead]
 
 
+class HotsPostRead(BaseModel):
+    id: UUID
+    asset_id: UUID
+    title: str
+    prompt: str
+    skill: str
+    author: str
+    likes: int
+    is_mine: bool
+    created_at: datetime
+
+
+class HotsPostList(BaseModel):
+    items: list[HotsPostRead]
+
+
 class AgentMessageCreate(BaseModel):
     content: str = Field(min_length=1, max_length=20_000)
 

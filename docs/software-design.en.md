@@ -246,6 +246,7 @@ sound cue, or proof first.
 | `workspace_folder_items` | Conversation-to-folder filing |
 | `project_workflows` | Concept, outline, script, and generation approval state |
 | `user_skills` | Published Skill instructions, prompt template, and I/O contracts |
+| `hots_posts` | Community video publication and metadata |
 | `generation_jobs` | Provider task, idempotency key, status, result |
 | `provider_connections` | Provider authorization metadata |
 | `oauth_flows` | OAuth transaction state |
@@ -272,6 +273,7 @@ Base path: `/api/v1`
 | Workspace | Folders, recent conversations, and drag-to-file conversation organization |
 | Workflow | Read and decide concept, outline, and script approval stages |
 | Skills | List and persist user Skills; optimize rough ideas into structured drafts |
+| Hots | Upload MP4 posts, list community videos, and stream public content |
 | Evaluation | `POST /projects/{id}/evaluate` |
 | Generation | Estimate, submit, job status |
 | Providers | Pippit status and credits |
@@ -311,6 +313,11 @@ The shared Landing UI owns:
   turns an early idea into that structure.
 - The built-in `video_agent/skill_synthesis` Skill opens Skill Studio directly
   to help authors compose new Skills.
+- The app navigation collapses into an icon-only left rail, and the Agents home
+  shows recent conversations below the composer.
+- Hots publishing requires an MP4 upload and persists the video as a public
+  asset. The author's Assets view lists real Hots videos and Skills, and every
+  card opens a detail dialog.
 
 The project workspace progresses through overall direction, episode and shot
 outline, scene script, and generation-ready states. Each transition requires an

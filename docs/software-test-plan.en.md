@@ -139,6 +139,10 @@ Component tests cover:
 - AI optimization converts a rough idea into a structured draft, and saved
   Skills reload from the server.
 - `video_agent/skill_synthesis` opens Skill Studio directly.
+- The app navigation collapses to an icon-only rail, and signed-in Agents views
+  list recent conversations.
+- Hots publishing requires an MP4 and the post appears in the author's Assets.
+- Assets video and Skill cards open detail dialogs, with video playback.
 - Search, language, notifications, credits, and avatar controls use
   translucent surfaces.
 - Avatar opens login and registration when signed out and sign-out when signed in.
@@ -157,6 +161,12 @@ An additional no-fee Skill flow verifies:
 
 ```text
 register → Skills → rough idea → AI optimize → publish → reload
+```
+
+The no-fee Hots and Assets flow is:
+
+```text
+register → Hots → upload MP4 → publish → Assets → open details and play
 ```
 
 This flow never calls a paid Provider and is a required Pull Request gate.

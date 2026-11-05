@@ -424,8 +424,43 @@ describe("LandingPage", () => {
     expect(container.querySelector(".account-menu")).toHaveTextContent("Log in");
   });
 
-  it("publishes a Hots post from the app feed", () => {
-    const { container } = render(<LandingPage {...props} mode="app" />);
+  it("publishes a Hots post with an uploaded video", async () => {
+    const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith("/hots") && init?.method === "POST") {
+        expect(init.body).toBeInstanceOf(FormData);
+        return Promise.resolve(
+          Response.json({
+            id: "hot-1",
+            asset_id: "asset-1",
+            title: "A new film from my studio",
+            prompt: "A new film from my studio",
+            skill: "auto",
+            author: "studio_author",
+            likes: 0,
+            is_mine: true,
+            created_at: "2026-11-05T00:00:00Z",
+          }),
+        );
+      }
+      if (url.endsWith("/hots")) {
+        return Promise.resolve(Response.json({ items: [] }));
+      }
+      if (url.endsWith("/assets")) {
+        return Promise.resolve(Response.json({ items: [] }));
+      }
+      if (url.endsWith("/workspace")) {
+        return Promise.resolve(Response.json({ folders: [], recents: [] }));
+      }
+      if (url.endsWith("/skills")) {
+        return Promise.resolve(Response.json({ items: [] }));
+      }
+      return Promise.resolve(new Response(null, { status: 401 }));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    const { container } = render(
+      <LandingPage {...props} accountApiBase="/api/account" mode="app" />,
+    );
 
     fireEvent.click(
       [...container.querySelectorAll(".site-header button")].find(
@@ -433,17 +468,34 @@ describe("LandingPage", () => {
       )!,
     );
     fireEvent.click(container.querySelector(".community-publish-card")!);
+    const dialog = container.querySelector(".publish-dialog")!;
+    fireEvent.change(dialog.querySelector(".hots-publish-field input")!, {
+      target: { value: "A new film from my studio" },
+    });
     fireEvent.change(container.querySelector(".publish-dialog textarea")!, {
       target: { value: "A new film from my studio" },
+    });
+    fireEvent.change(dialog.querySelector('input[type="file"]')!, {
+      target: {
+        files: [
+          new File(["video"], "studio.mp4", {
+            type: "video/mp4",
+          }),
+        ],
+      },
     });
     fireEvent.click(
       container.querySelector('.publish-dialog button[type="submit"]')!,
     );
 
-    expect(
-      container.querySelector(".community-card:not(.community-publish-card)"),
-    ).toHaveTextContent("A new film from my studio");
-    expect(container.querySelector(".community-author")).toHaveTextContent("You");
+    await waitFor(() =>
+      expect(
+        container.querySelector(".community-card:not(.community-publish-card)"),
+      ).toHaveTextContent("A new film from my studio"),
+    );
+    expect(container.querySelector(".community-author")).toHaveTextContent(
+      "studio_author",
+    );
     expect(container.querySelector(".community-likes")).toHaveTextContent("0");
   });
 

@@ -50,6 +50,7 @@
 <a class="toc-link toc-level-3" href="#job-status">Job Status</a>
 <a class="toc-link toc-level-2" href="#credits">Credits</a>
 <a class="toc-link toc-level-2" href="#skills">Skills</a>
+<a class="toc-link toc-level-2" href="#hots">Hots</a>
 <a class="toc-link toc-level-3" href="#evaluate-storyboard">Evaluate Storyboard</a>
 <a class="toc-link toc-level-2" href="#assets-and-media">Assets and Media</a>
 <a class="toc-link toc-level-2" href="#administration">Administration</a>
@@ -310,6 +311,29 @@ http://localhost:8000/openapi.json</code></pre>
   &quot;title&quot;: &quot;Editorial product film&quot;,
   &quot;locale&quot;: &quot;en&quot;
 }</code></pre>
+<h2 id="hots">Hots</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Method</th>
+<th>Path</th>
+<th>Purpose</th>
+</tr></thead><tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/hots</code></td>
+<td>List published community videos; <code>mine=true</code> filters to the current user</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/hots</code></td>
+<td>Upload an MP4 and publish a community post</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/hots/{post_id}/video</code></td>
+<td>Stream the public video</td>
+</tr>
+</tbody></table></div>
+<p><code>POST /hots</code> uses <code>multipart/form-data</code> with <code>file</code>, <code>title</code>, <code>prompt</code>, and <code>skill</code>. The uploaded video asset is public and appears in the authenticated author's Assets view.</p>
 <h3 id="evaluate-storyboard">Evaluate Storyboard</h3>
 <p><code>POST /projects/{project_id}/evaluate</code></p>
 <p>Returns an immediate review of the current storyboard:</p>

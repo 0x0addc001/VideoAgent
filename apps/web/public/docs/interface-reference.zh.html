@@ -51,6 +51,7 @@
 <a class="toc-link toc-level-3" href="#查询任务">查询任务</a>
 <a class="toc-link toc-level-2" href="#用户积分">用户积分</a>
 <a class="toc-link toc-level-2" href="#skill">Skill</a>
+<a class="toc-link toc-level-2" href="#hots">Hots</a>
 <a class="toc-link toc-level-2" href="#资产与媒体">资产与媒体</a>
 <a class="toc-link toc-level-2" href="#管理后台">管理后台</a>
 <a class="toc-link toc-level-2" href="#pippit-provider">Pippit Provider</a>
@@ -340,6 +341,29 @@ cancelled</code></pre>
   &quot;title&quot;: &quot;电影感产品广告&quot;,
   &quot;locale&quot;: &quot;zh-CN&quot;
 }</code></pre>
+<h2 id="hots">Hots</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>方法</th>
+<th>路径</th>
+<th>说明</th>
+</tr></thead><tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/hots</code></td>
+<td>获取社区视频；<code>mine=true</code> 仅返回当前用户发布</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/hots</code></td>
+<td>上传 MP4 并发布社区作品</td>
+</tr>
+<tr>
+<td><code>GET</code></td>
+<td><code>/hots/{post_id}/video</code></td>
+<td>播放公开视频</td>
+</tr>
+</tbody></table></div>
+<p><code>POST /hots</code> 使用 <code>multipart/form-data</code>，字段为 <code>file</code>、<code>title</code>、<code>prompt</code> 和 <code>skill</code>。上传视频作为公开资产保存，并自动出现在作者的 Assets 中。</p>
 <h2 id="资产与媒体">资产与媒体</h2>
 <p>媒体接口均校验当前用户所有权。不支持的类型、文件头不匹配或超过大小限制的文件 会在创建 Asset 记录前被拒绝。</p>
 <div class="table-wrap"><table><thead><tr>

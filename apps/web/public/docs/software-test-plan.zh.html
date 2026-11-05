@@ -165,6 +165,9 @@
 <li>Skill 发布表单包含用途、执行规范、质量门禁、启动提示词和输入输出契约。</li>
 <li>AI 优化按钮能把粗略想法整理为结构化 Skill，保存后从服务端恢复。</li>
 <li>内置 <code>video_agent/skill_synthesis</code> 直接打开 Skill Studio。</li>
+<li>App 左侧导航可收起为仅图标，登录后 Agents 首页显示最近对话。</li>
+<li>Hots 发布必须选择 MP4，上传成功后出现在社区和作者 Assets。</li>
+<li>Assets 的视频与 Skill 卡片可点击打开详情，视频详情可播放。</li>
 <li>搜索、语言、通知、积分和头像使用半透明表面。</li>
 <li>头像在未登录时提供登录与注册，登录后提供退出。</li>
 <li>API 文档开头展示属性表。</li>
@@ -175,6 +178,8 @@
 → 积分估算 → 生成 → 轮询/落地 → 合成导出 → 下载 → 分享</code></pre>
 <p>另有一条无费用 Skill 链路：</p>
 <pre><code class="language-text">注册 → Skills → 输入粗略想法 → AI 优化 → 发布 → 刷新后恢复</code></pre>
+<p>无费用 Hots / Assets 链路：</p>
+<pre><code class="language-text">注册 → Hots → 上传 MP4 → 发布 → Assets → 查看详情并播放</code></pre>
 <p>该链路不调用真实付费 Provider，应作为每个 Pull Request 的必过门禁。</p>
 <p>管理后台 E2E 验证管理员登录、控制台加载和暂停生成；后端集成测试验证普通用户 返回 <code>403</code>、积分调整、账号停用、邀请码注册和审计日志。</p>
 <h2 id="8-响应式与可访问性">8. 响应式与可访问性</h2>

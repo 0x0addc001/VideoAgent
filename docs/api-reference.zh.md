@@ -310,6 +310,17 @@ cancelled
 }
 ```
 
+## Hots
+
+| 方法 | 路径 | 说明 |
+| --- | --- | --- |
+| `GET` | `/hots` | 获取社区视频；`mine=true` 仅返回当前用户发布 |
+| `POST` | `/hots` | 上传 MP4 并发布社区作品 |
+| `GET` | `/hots/{post_id}/video` | 播放公开视频 |
+
+`POST /hots` 使用 `multipart/form-data`，字段为 `file`、`title`、`prompt` 和
+`skill`。上传视频作为公开资产保存，并自动出现在作者的 Assets 中。
+
 ## 资产与媒体
 
 媒体接口均校验当前用户所有权。不支持的类型、文件头不匹配或超过大小限制的文件

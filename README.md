@@ -22,6 +22,8 @@ Celery, or media processing.
   scene script, and generation readiness.
 - Persisted Skill Studio with AI-assisted structuring, quality gates, prompt
   templates, and input/output contracts.
+- Collapsible app navigation with recent conversations below Agents.
+- Persistent Hots MP4 publishing and clickable videos and Skills in Assets.
 - LangGraph agent orchestration.
 - Deterministic local planner and configurable OpenAI-compatible planner.
 - Credit estimation and explicit generation approval.

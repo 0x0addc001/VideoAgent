@@ -320,6 +320,10 @@ https://example.com/api/   → FastAPI</code></pre>
 <td>Skill 读取、持久化和 AI 优化</td>
 </tr>
 <tr>
+<td><code>api/hots.py</code></td>
+<td>社区视频上传、列表和公开播放</td>
+</tr>
+<tr>
 <td><code>api/credits.py</code></td>
 <td>用户独立积分余额</td>
 </tr>
@@ -526,6 +530,10 @@ zh-CN</code></pre>
 <td>用户 Skill 名称、说明、执行规范、提示词和输入输出契约</td>
 </tr>
 <tr>
+<td><code>hots_posts</code></td>
+<td>Hots 视频、标题、描述、Skill 和喜欢数</td>
+</tr>
+<tr>
 <td><code>generation_jobs</code></td>
 <td>Provider 任务、幂等键和结果</td>
 </tr>
@@ -724,6 +732,16 @@ task reference    → query-result   → JobStatus + result URL</code></pre>
 <td>POST</td>
 <td><code>/skills/optimize</code></td>
 <td>AI 优化 Skill 草稿</td>
+</tr>
+<tr>
+<td>GET/POST</td>
+<td><code>/hots</code></td>
+<td>社区列表与 MP4 发布</td>
+</tr>
+<tr>
+<td>GET</td>
+<td><code>/hots/{id}/video</code></td>
+<td>播放公开视频</td>
 </tr>
 <tr>
 <td>GET</td>
@@ -1092,14 +1110,14 @@ pnpm --dir apps/web typecheck
 pnpm --dir apps/web build</code></pre>
 <p>测试组成：</p>
 <ul>
-<li>后端 58 个测试。</li>
+<li>后端 60 个测试。</li>
 <li>前端 27 个测试。</li>
-<li>Playwright 6 个端到端测试。</li>
+<li>Playwright 7 个端到端测试。</li>
 <li>后端测试使用临时 SQLite 文件。</li>
 <li>Pippit 测试使用本地 Fake CLI，不访问真实生成网络。</li>
 <li>Kling Provider 测试使用 Fake MCP client，不触发付费生成。</li>
 <li>前端测试覆盖共享首页、导航、文档加载、自定义下拉、Hots 发布、创作提交、历史目录、逐层审批、Skill AI 优化和持久化发布。</li>
-<li>Playwright 使用 Mock Provider 验证审批、生成、导出、分享，以及 Skill AI 优化和持久化，不访问付费 Provider。</li>
+<li>Playwright 使用 Mock Provider 验证审批、生成、导出、分享、Skill 优化，以及 Hots 视频上传和 Assets 详情，不访问付费 Provider。</li>
 <li>管理测试覆盖白名单权限、积分调整、账号停用、邀请码、注册关闭和生成开关。</li>
 <li>普通 CI 不执行付费生成。</li>
 </ul>

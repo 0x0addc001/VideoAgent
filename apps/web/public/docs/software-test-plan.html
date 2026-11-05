@@ -174,6 +174,10 @@
 <li>AI optimization converts a rough idea into a structured draft, and saved</li>
 <p>Skills reload from the server.</p>
 <li><code>video_agent/skill_synthesis</code> opens Skill Studio directly.</li>
+<li>The app navigation collapses to an icon-only rail, and signed-in Agents views</li>
+<p>list recent conversations.</p>
+<li>Hots publishing requires an MP4 and the post appears in the author's Assets.</li>
+<li>Assets video and Skill cards open detail dialogs, with video playback.</li>
 <li>Search, language, notifications, credits, and avatar controls use</li>
 <p>translucent surfaces.</p>
 <li>Avatar opens login and registration when signed out and sign-out when signed in.</li>
@@ -185,6 +189,8 @@
 → estimate → generate → poll/materialize → export → download → share</code></pre>
 <p>An additional no-fee Skill flow verifies:</p>
 <pre><code class="language-text">register → Skills → rough idea → AI optimize → publish → reload</code></pre>
+<p>The no-fee Hots and Assets flow is:</p>
+<pre><code class="language-text">register → Hots → upload MP4 → publish → Assets → open details and play</code></pre>
 <p>This flow never calls a paid Provider and is a required Pull Request gate.</p>
 <p>The administration E2E covers administrator sign-in, console loading, and generation pause. Backend integration tests cover non-admin <code>403</code> responses, credit adjustments, account disablement, invite registration, and audit logs.</p>
 <h2 id="8-responsive-and-accessibility-checks">8. Responsive and Accessibility Checks</h2>

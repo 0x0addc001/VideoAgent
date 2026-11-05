@@ -8,17 +8,27 @@ const ALLOWED_GET_PATHS = new Set([
   "credits",
   "providers/pippit/credits",
   "skills",
+  "assets",
+  "hots",
+  "workspace",
 ]);
 const ALLOWED_POST_PATHS = new Set([
   "auth/logout",
   "projects",
   "skills",
   "skills/optimize",
+  "hots",
 ]);
 
 function allowed(path: string, method: "GET" | "POST" | "PATCH" | "DELETE") {
   if (path === "admin" || path.startsWith("admin/")) return true;
-  if (method === "GET") return ALLOWED_GET_PATHS.has(path);
+  if (method === "GET") {
+    return (
+      ALLOWED_GET_PATHS.has(path) ||
+      (path.startsWith("hots/") && path.endsWith("/video")) ||
+      (path.startsWith("assets/") && path.endsWith("/content"))
+    );
+  }
   if (method === "POST") return ALLOWED_POST_PATHS.has(path);
   return false;
 }
@@ -56,14 +66,16 @@ export async function POST(
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
 
+  const contentType = request.headers.get("content-type") ?? "";
+  const multipart = contentType.startsWith("multipart/form-data");
   const response = await fetch(`${API_BASE_URL}/${path}`, {
     method: "POST",
     cache: "no-store",
     headers: {
       ...(await sessionHeaders()),
-      "content-type": request.headers.get("content-type") ?? "application/json",
+      ...(multipart ? {} : { "content-type": contentType || "application/json" }),
     },
-    body: await request.text(),
+    body: multipart ? await request.formData() : await request.text(),
   });
   return proxyResponse(response);
 }
@@ -105,12 +117,20 @@ export async function DELETE(
 }
 
 async function proxyResponse(response: Response) {
-  const body = await response.text();
+  const contentType = response.headers.get("content-type") ?? "application/json";
+  const textual =
+    contentType.startsWith("text/") ||
+    contentType.includes("json") ||
+    contentType.includes("xml");
+  const body = textual ? await response.text() : await response.arrayBuffer();
 
   return new NextResponse(body, {
     status: response.status,
     headers: {
-      "content-type": response.headers.get("content-type") ?? "application/json",
+      "content-type": contentType,
+      ...(response.headers.get("content-disposition")
+        ? { "content-disposition": response.headers.get("content-disposition")! }
+        : {}),
     },
   });
 }

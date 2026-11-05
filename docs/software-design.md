@@ -333,6 +333,7 @@ CLI 负责国内站 OAuth、MCP 传输和工具参数。Provider 适配器将 Kl
 | `workspace_folder_items` | `folder_id`, `project_id` | 对话与项目目录的收纳关系 |
 | `project_workflows` | `project_id`, `stage`, `status` | 整体设定、大纲、剧本与生成审批状态 |
 | `user_skills` | `owner_id`, `skill_id`, `instructions`, `input_schema`, `output_schema` | 用户发布的结构化 Skill |
+| `hots_posts` | `owner_id`, `asset_id`, `title`, `prompt`, `skill_id`, `like_count` | 社区视频发布及详情 |
 | `storyboards` | `id`, `project_id`, `version` | 每个项目唯一的当前故事板 |
 | `shots` | `id`, `storyboard_id`, `index`, `prompt_en`, `prompt_zh`, `status` | 镜头定义 |
 | `provider_connections` | `id`, `user_id`, `provider`, `encrypted_tokens` | Provider 授权信息 |
@@ -435,6 +436,8 @@ cancelled
 | POST | `/projects/{id}/workflow/decision` | 批准、调整或自定义修改当前阶段 |
 | GET/POST | `/skills` | 读取和保存用户 Skill |
 | POST | `/skills/optimize` | 使用 AI 将粗略想法整理为结构化 Skill |
+| GET/POST | `/hots` | 社区列表与视频发布 |
+| GET | `/hots/{id}/video` | 播放公开社区视频 |
 | GET | `/projects/{id}/storyboard` | 获取故事板 |
 | PUT | `/projects/{id}/storyboard` | 整体替换故事板 |
 | PATCH | `/projects/{id}/storyboard/order` | 调整镜头顺序并保留 Shot ID |
@@ -466,6 +469,7 @@ cancelled
 ### 15.1 信息架构
 
 - 公共入口：左侧导航、连续视频背景、居中创作框、灵感快捷项和八项生成设置。
+- App 左侧导航可收起为仅图标模式；Agents 首页下方展示最近对话，可直接回到历史工作区。
 - `Agents`：首页创作入口和 VideoAgent 对话。
 - `Skills`：统一可搜索 Skill 目录，卡片显示 `user_id/skill_id`；Kling 原生能力使用 `kling`，跨 Provider 工作流使用 `video_agent`，用户可发布 Skill。
 - Skill Studio 将用户 Skill 持久化到数据库；发布前包含用途、执行规范、质量门禁、启动提示词和输入/输出契约，并提供 AI 优化。
@@ -473,7 +477,9 @@ cancelled
 - `Agents`：首页提供产品广告、创作者 Vlog、微短剧、音乐 MV、视频本地化和批量测款六类 Playbook；选择后统一设置提示词、Skill、Hook、风格、画幅、时长和审核模式，再次点击当前项会恢复应用前草稿。
 - Skills 目录还覆盖视频本地化、批量变体、剧本助手、智能预演、运镜设计、音乐 MV、参考复刻和外部 Agent 接力。
 - `Hots`：可搜索社区瀑布流，视频自动播放，展示标题、作者、喜欢数，并支持发布。
+- Hots 发布必须上传 MP4，可填写标题、描述和 Skill；发布视频持久化并出现在作者 Assets。
 - `Assets`：通过 Video 与 Skill 两个内部分页切换，支持搜索；Video 卡片悬浮静音播放，Skill 卡片不显示封面；卡片只展示权限和 `yyyy-mm-dd` 编辑时间。
+- Assets 展示当前用户真实发布的 Hots 视频和 Skill；点击卡片打开详情，视频详情可直接播放。
 - `Docs`：按 PRD、Playbook、Arch、API、Dev、Test、Ops、FAQ、TODO 展示中英文文档，支持全文搜索。
 - 项目工作区：可压缩历史导航、当前对话资产树、中央资产画布和右侧审批式 Agent 对话。
 - 品牌与浏览器标签页图标统一使用蓝色播放键；激活导航图标采用填充/线框反转。
