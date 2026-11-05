@@ -1598,9 +1598,7 @@ export function LandingPage({
 
   return (
     <main
-      className={`va-landing${mode === "app" ? " app-mode" : ""}${
-        navCollapsed ? " nav-collapsed" : ""
-      }`}
+      className={`va-landing app-mode${navCollapsed ? " nav-collapsed" : ""}`}
       data-view={activeView}
     >
       <div className="page-grain" aria-hidden="true" />
@@ -1642,22 +1640,20 @@ export function LandingPage({
               <em>Agent</em>
             </span>
           </a>
-          {mode === "app" ? (
-            <button
-              aria-label={
-                navCollapsed ? content.nav.expandNav : content.nav.collapseNav
-              }
-              className="nav-collapse-toggle"
-              onClick={() => setNavCollapsed((current) => !current)}
-              type="button"
-            >
-              {navCollapsed ? (
-                <PanelLeftOpen aria-hidden="true" />
-              ) : (
-                <PanelLeftClose aria-hidden="true" />
-              )}
-            </button>
-          ) : null}
+          <button
+            aria-label={
+              navCollapsed ? content.nav.expandNav : content.nav.collapseNav
+            }
+            className="nav-collapse-toggle"
+            onClick={() => setNavCollapsed((current) => !current)}
+            type="button"
+          >
+            {navCollapsed ? (
+              <PanelLeftOpen aria-hidden="true" />
+            ) : (
+              <PanelLeftClose aria-hidden="true" />
+            )}
+          </button>
         </div>
 
         <nav aria-label="Main navigation">
@@ -1702,8 +1698,7 @@ export function LandingPage({
             <span>{content.nav.docs}</span>
           </button>
         </nav>
-        {mode === "app" ? (
-          <div className="sidebar-history">
+        <div className="sidebar-history">
             <div className="sidebar-history-section">
               <div className="sidebar-history-heading">
                 <button
@@ -1859,8 +1854,7 @@ export function LandingPage({
                 </div>
               ) : null}
             </div>
-          </div>
-        ) : null}
+        </div>
         <div className="header-actions">
           <div className="language-switcher" ref={languageRef}>
             <button

@@ -3132,6 +3132,12 @@ html[lang="zh-CN"] .hero-copy h1 {
   letter-spacing: -0.01em;
 }
 
+.community-card.community-publish-card > span {
+  font-size: 1.8rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
 .community-card.community-publish-card::after {
   display: none;
 }
@@ -3142,8 +3148,8 @@ html[lang="zh-CN"] .hero-copy h1 {
 }
 
 .community-card.community-publish-card .community-publish-icon {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   fill: currentColor;
   stroke: currentColor;
 }
