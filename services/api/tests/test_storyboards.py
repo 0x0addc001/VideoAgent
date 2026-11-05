@@ -229,3 +229,56 @@ async def test_other_user_cannot_read_or_replace_storyboard(client):
 
     assert read.status_code == 404
     assert write.status_code == 404
+
+
+@pytest.mark.api
+async def test_user_can_edit_shot_and_character_resources(client):
+    assert (await register(client)).status_code == 201
+    project = await create_project(client)
+    created = await client.put(
+        f"/api/v1/projects/{project['id']}/storyboard",
+        json={
+            "characters": [
+                {
+                    "name": "Mara",
+                    "description": "Lead character",
+                    "prompt_en": "Portrait of Mara",
+                }
+            ],
+            "shots": [
+                {
+                    "description": "Opening",
+                    "prompt_en": "Cinematic opening",
+                    "duration_seconds": 5,
+                    "aspect_ratio": "16:9",
+                    "generation_mode": "text_to_video",
+                }
+            ],
+        },
+    )
+    assert created.status_code == 200
+    shot = created.json()["shots"][0]
+    character = created.json()["characters"][0]
+
+    shot_response = await client.patch(
+        f"/api/v1/projects/{project['id']}/storyboard/shots/{shot['id']}",
+        json={
+            "description": "Revised opening",
+            "prompt_en": "Revised cinematic opening",
+            "duration_seconds": 8,
+        },
+    )
+    character_response = await client.patch(
+        f"/api/v1/projects/{project['id']}/storyboard/characters/{character['id']}",
+        json={
+            "name": "Mara Chen",
+            "description": "Revised lead",
+            "prompt_en": "Revised portrait of Mara Chen",
+        },
+    )
+
+    assert shot_response.status_code == 200
+    assert shot_response.json()["description"] == "Revised opening"
+    assert shot_response.json()["duration_seconds"] == 8
+    assert character_response.status_code == 200
+    assert character_response.json()["name"] == "Mara Chen"

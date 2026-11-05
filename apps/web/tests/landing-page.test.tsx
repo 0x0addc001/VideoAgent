@@ -45,8 +45,8 @@ describe("LandingPage", () => {
       ),
     ).toEqual(["Agents", "Skills", "Hots", "Assets", "Docs"]);
     expect(nav?.querySelectorAll(".nav-icon")).toHaveLength(5);
-    expect(container.querySelector(".language-button")).toBeInTheDocument();
-    expect(container.querySelector(".notification-button svg")).toBeInTheDocument();
+    expect(container.querySelector(".profile-trigger")).toBeInTheDocument();
+    expect(container.querySelector(".profile-menu")).toBeInTheDocument();
     expect(container.querySelector(".brand-mark .brand-play")).toBeInTheDocument();
     expect(composer).toBeInTheDocument();
     expect(composer?.querySelectorAll(".composer-select")).toHaveLength(9);
@@ -67,18 +67,15 @@ describe("LandingPage", () => {
       "Review",
     ]);
     expect(composer?.querySelectorAll("select")).toHaveLength(0);
-    expect(container.querySelector(".credit-count")).toHaveTextContent("0");
+    expect(container.querySelector(".profile-menu")).toHaveTextContent("0");
     expect(container.querySelector(".account-avatar svg")).toBeInTheDocument();
     expect(container.querySelector("a.account-summary")).not.toBeInTheDocument();
     const actionItems = [...container.querySelectorAll(".header-actions > *")];
     expect(actionItems.map((item) => item.className)).toEqual([
-      "language-switcher",
-      "notification-switcher",
-      "credit-count",
       "account-switcher",
     ]);
     expect(container.querySelector(".account-menu")).not.toBeVisible();
-    fireEvent.click(container.querySelector(".account-avatar")!);
+    fireEvent.click(container.querySelector(".profile-trigger")!);
     expect(container.querySelector(".account-menu")).toBeVisible();
     expect(container.querySelector(".account-menu")).toHaveTextContent("Log in");
     expect(container.querySelector(".account-menu")).toHaveTextContent("Register");
@@ -236,10 +233,10 @@ describe("LandingPage", () => {
       "/docs/faq.html?v=32",
     );
 
-    fireEvent.click(container.querySelector(".language-button")!);
+    fireEvent.click(container.querySelector(".profile-trigger")!);
     fireEvent.click(
-      [...container.querySelectorAll(".language-options button")].find(
-        (button) => button.textContent === "中文",
+      [...container.querySelectorAll(".profile-language-row button")].find(
+        (button) => button.textContent === "中",
       )!,
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
@@ -406,7 +403,7 @@ describe("LandingPage", () => {
     await waitFor(() =>
       expect(container.querySelector(".account-avatar")).toHaveTextContent("CR"),
     );
-    fireEvent.click(container.querySelector(".account-avatar")!);
+    fireEvent.click(container.querySelector(".profile-trigger")!);
     expect(container.querySelector(".account-menu")).toHaveTextContent(
       "creator@example.com",
     );

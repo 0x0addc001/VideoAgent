@@ -41,8 +41,10 @@ import {
 import { StreamingText } from "@videoagent/landing";
 import { useLocale, useTranslations } from "next-intl";
 import {
+  type CSSProperties,
   DragEvent,
   FormEvent,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
   useEffect,
   useMemo,
@@ -83,6 +85,21 @@ type Character = {
   prompt_zh: string | null;
 };
 
+type ShotDraft = Pick<
+  Shot,
+  | "description"
+  | "prompt_en"
+  | "prompt_zh"
+  | "duration_seconds"
+  | "aspect_ratio"
+  | "generation_mode"
+>;
+
+type CharacterDraft = Pick<
+  Character,
+  "name" | "description" | "prompt_en" | "prompt_zh"
+>;
+
 type Storyboard = {
   id: string;
   project_id: string;
@@ -102,6 +119,7 @@ type Message = {
   role: "user" | "assistant" | "system" | "tool";
   content: string;
   created_at: string;
+  metadata?: Record<string, unknown>;
 };
 
 type AgentActivity = {
@@ -177,7 +195,6 @@ type CanvasSelection =
   | {
       kind: "character";
       characterId: string;
-      section: "description" | "generation";
     }
   | {
       kind: "asset";
@@ -293,6 +310,45 @@ function productionSettingPairs(brief: string) {
       label: labels[index] ?? `Setting ${index + 1}`,
       value: value.replace(/^(Hook|Audio|Review)\s+/i, ""),
     }));
+}
+
+function extractedConversationAttributes(
+  messages: Message[],
+): { label: string; value: string }[] {
+  const attributes: { label: string; value: string }[] = [];
+  for (const [index, message] of messages.entries()) {
+    if (message.role !== "user" || message.metadata?.workflow_choice) continue;
+    const explicit = [...message.content.matchAll(
+      /(?:^|\n)\s*([^:：\n]{2,36})[:：]\s*([^\n]+)/g,
+    )].map((match) => ({
+      label: match[1]?.trim() ?? "Direction",
+      value: match[2]?.trim() ?? "",
+    }));
+    if (explicit.length > 0) {
+      attributes.push(...explicit.filter((pair) => pair.value));
+      continue;
+    }
+    const question =
+      [...messages.slice(0, index)]
+        .reverse()
+        .find((candidate) => candidate.role === "assistant")?.content ?? "";
+    const mappings: Array<[RegExp, string]> = [
+      [/audience|受众|观众/i, "Audience"],
+      [/tone|mood|emotion|情绪|基调|风格/i, "Tone"],
+      [/conflict|冲突|矛盾/i, "Conflict"],
+      [/character|人物|角色/i, "Characters"],
+      [/scene|setting|environment|场景|环境/i, "Setting"],
+      [/style|visual|视觉|风格/i, "Visual style"],
+      [/duration|length|时长/i, "Duration"],
+      [/hook|开场|钩子/i, "Hook"],
+      [/ending|结尾|收束/i, "Ending"],
+    ];
+    const inferred = mappings.find(([pattern]) => pattern.test(question))?.[1];
+    const fallback = attributes.length === 0 ? "Creative brief" : "Director direction";
+    const value = message.content.replace(/\s+/g, " ").trim().slice(0, 240);
+    if (value) attributes.push({ label: inferred ?? fallback, value });
+  }
+  return attributes;
 }
 
 function AgentActivityTrace({
@@ -443,7 +499,6 @@ function workspaceCopy(locale: string) {
         settingAttributes: "属性",
         description: "描述",
         generation: "生成",
-        directorInput: "导演输入",
         character: "角色集",
         finalCut: "终版",
         thinking: "思考中",
@@ -488,12 +543,6 @@ function workspaceCopy(locale: string) {
         generating: "生成中……",
         upload: "上传素材",
         uploading: "上传中……",
-        direct: "直接生成",
-        reference: "参考生成",
-        referenceImage: "参考图",
-        chooseReference: "选择 Vision 参考图",
-        generateDirect: "直接生成",
-        generateWithReference: "参考生成",
         downloadResult: "下载生成内容",
         current: "当前",
         keep: "按当前方向推进",
@@ -532,7 +581,6 @@ function workspaceCopy(locale: string) {
         settingAttributes: "Attributes",
         description: "Description",
         generation: "Generation",
-        directorInput: "Director input",
         character: "Characters",
         finalCut: "Final Cut",
         thinking: "Thinking",
@@ -578,12 +626,6 @@ function workspaceCopy(locale: string) {
         generating: "Generating…",
         upload: "Upload asset",
         uploading: "Uploading…",
-        direct: "Direct",
-        reference: "Reference",
-        referenceImage: "Reference image",
-        chooseReference: "Choose a Vision reference",
-        generateDirect: "Generate directly",
-        generateWithReference: "Generate from reference",
         downloadResult: "Download result",
         current: "Current",
         keep: "Continue with this direction",
@@ -1005,11 +1047,85 @@ function ApprovalCard({
   );
 }
 
+function AssetResultList({
+  assets,
+  selectedAssetId,
+  onDelete,
+  onOpen,
+  onSelect,
+}: {
+  assets: Asset[];
+  selectedAssetId?: string;
+  onDelete: (asset: Asset) => void;
+  onOpen: (asset: Asset) => void;
+  onSelect: (assetId: string | null) => void;
+}) {
+  if (assets.length === 0) return null;
+  return (
+    <div className="space-y-1">
+      {assets.map((asset) => (
+        <div
+          className="flex items-center gap-2 rounded-lg bg-white/[0.02] px-2 py-1.5"
+          key={asset.id}
+        >
+          <input
+            aria-label={`Select ${asset.id} as final`}
+            checked={selectedAssetId === asset.id}
+            className="size-4 accent-[#1677ff]"
+            onChange={(event) => onSelect(event.target.checked ? asset.id : null)}
+            type="checkbox"
+          />
+          <button
+            className="flex min-w-0 flex-1 items-center gap-2 text-left text-[12px] text-white/52 hover:text-white/82"
+            onClick={() => onOpen(asset)}
+            type="button"
+          >
+            {asset.content_type.startsWith("video/") ? (
+              <Video className="h-3.5 w-3.5 shrink-0 text-[#4facff]" />
+            ) : (
+              <Image className="h-3.5 w-3.5 shrink-0 text-[#4facff]" />
+            )}
+            <span className="truncate">{asset.filename}</span>
+            <span className="shrink-0 text-[11px] text-white/28">
+              @{asset.id.slice(0, 8)}
+            </span>
+          </button>
+          <button
+            aria-label={`Copy asset ID ${asset.id}`}
+            className="grid size-7 place-items-center rounded-md text-white/32 hover:bg-white/[0.04] hover:text-white"
+            onClick={() => void navigator.clipboard?.writeText(asset.id)}
+            title={asset.id}
+            type="button"
+          >
+            <FileCheck2 className="h-3.5 w-3.5" />
+          </button>
+          <button
+            aria-label={`Delete ${asset.filename}`}
+            className="grid size-7 place-items-center rounded-md text-white/32 hover:bg-red-400/10 hover:text-red-300"
+            onClick={() => onDelete(asset)}
+            type="button"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 type AssetsTreeProps = {
   assets: Asset[];
   collapsed: boolean;
   copy: ReturnType<typeof workspaceCopy>;
+  onDeleteAsset: (asset: Asset) => void;
+  onResizeStart: (event: ReactPointerEvent<HTMLButtonElement>) => void;
+  onSelectAsset: (
+    resourceType: "shot" | "character",
+    resourceId: string,
+    assetId: string | null,
+  ) => void;
   selected: CanvasSelection;
+  selectedResourceAssets: Record<string, string>;
   storyboard: Storyboard | null;
   onSelect: (selection: CanvasSelection) => void;
   onToggleCollapsed: () => void;
@@ -1019,7 +1135,11 @@ function AssetsTree({
   assets,
   collapsed,
   copy,
+  onDeleteAsset,
+  onResizeStart,
+  onSelectAsset,
   selected,
+  selectedResourceAssets,
   storyboard,
   onSelect,
   onToggleCollapsed,
@@ -1092,17 +1212,21 @@ function AssetsTree({
   }
 
   const characters = storyboard?.characters ?? [];
-  const shotAssets = assets.filter(
-    (asset) =>
-      asset.content_type.startsWith("video/") &&
-      !["export", "cover"].includes(asset.kind),
+  const sourceAssets = assets.filter(
+    (asset) => !["export", "cover"].includes(asset.kind),
   );
   const finalCutAssets = assets.filter((asset) =>
     ["export", "cover"].includes(asset.kind),
   );
 
   return (
-    <aside className="flex w-full min-h-0 min-w-0 shrink-0 flex-col border-r border-white/[0.07] bg-[#0b0a08]/[0.72] backdrop-blur-lg">
+    <aside className="relative flex w-full min-h-0 min-w-0 shrink-0 flex-col border-r border-white/[0.07] bg-[#0b0a08]/[0.72] backdrop-blur-lg">
+      <button
+        aria-label="Resize assets pane"
+        className="absolute -right-1 top-0 z-20 hidden h-full w-2 cursor-col-resize bg-transparent xl:block"
+        onPointerDown={onResizeStart}
+        type="button"
+      />
       <div className="flex h-14 items-center justify-between border-b border-white/[0.07] bg-[#0b0a08]/[0.96] px-4">
         <span className="flex items-center gap-2 text-[12px] font-medium text-white/82">
           <Layers3 className="h-4 w-4 text-[#6eb8ff]" />
@@ -1169,60 +1293,58 @@ function AssetsTree({
               {sections.character ? (
                 <div className="space-y-1 pl-7">
                   {characters.map((character) => (
-                    <details
-                      className="rounded-lg border border-white/[0.055] bg-black/10"
-                      key={character.id}
-                    >
-                      <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2 text-[12px] text-white/58">
-                        <ChevronRight className="tree-chevron h-3.5 w-3.5 text-[#4facff]" />
+                    <div className="space-y-1" key={character.id}>
+                      <button
+                        className={cn(
+                          "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[12px] transition",
+                          selected.kind === "character" &&
+                            selected.characterId === character.id
+                            ? "bg-[#1677ff]/[0.08] text-white"
+                            : "text-white/58 hover:bg-white/[0.03] hover:text-white/78",
+                        )}
+                        onClick={() =>
+                          onSelect({
+                            kind: "character",
+                            characterId: character.id,
+                          })
+                        }
+                        type="button"
+                      >
                         <Folder className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
                         <span className="truncate">{character.name}</span>
-                      </summary>
-                      <div className="space-y-1 px-2 pb-2 pl-6">
-                        <button
-                          className={cn(
-                            "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
-                            selected.kind === "character" &&
-                              selected.characterId === character.id &&
-                              selected.section === "description"
-                              ? selectedClass
-                              : idleClass,
-                          )}
-                          onClick={() =>
-                            onSelect({
-                              kind: "character",
-                              characterId: character.id,
-                              section: "description",
-                            })
-                          }
-                          type="button"
-                        >
-                          <FileText className="h-3.5 w-3.5 text-[#4facff]" />
-                          {copy.description}
-                        </button>
-                        <button
-                          className={cn(
-                            "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
-                            selected.kind === "character" &&
-                              selected.characterId === character.id &&
-                              selected.section === "generation"
-                              ? selectedClass
-                              : idleClass,
-                          )}
-                          onClick={() =>
-                            onSelect({
-                              kind: "character",
-                              characterId: character.id,
-                              section: "generation",
-                            })
-                          }
-                          type="button"
-                        >
-                          <Sparkles className="h-3.5 w-3.5 text-[#4facff]" />
-                          {copy.generation}
-                        </button>
+                      </button>
+                        <div className="mt-1 pl-2">
+                          <AssetResultList
+                            assets={sourceAssets.filter(
+                              (asset) =>
+                                asset.content_type.startsWith("image/") &&
+                                asset.filename.startsWith(
+                                  `character-${character.id}-`,
+                                ),
+                            )}
+                            onDelete={onDeleteAsset}
+                            onOpen={(asset) =>
+                              onSelect({
+                                kind: "asset",
+                                assetId: asset.id,
+                                section: "generation",
+                              })
+                            }
+                            onSelect={(assetId) =>
+                              void onSelectAsset(
+                                "character",
+                                character.id,
+                                assetId,
+                              )
+                            }
+                            selectedAssetId={
+                              selectedResourceAssets[
+                                `character:${character.id}`
+                              ]
+                            }
+                          />
+                        </div>
                       </div>
-                    </details>
                   ))}
                 </div>
               ) : null}
@@ -1250,35 +1372,35 @@ function AssetsTree({
                           {copy.shot} {shot.index + 1}
                         </span>
                       </button>
-                      {shotAssets
-                        .filter((asset) => asset.shot_id === shot.id)
-                        .map((asset) => (
-                        <button
-                          className={cn(
-                            "flex w-full items-center gap-2 rounded-lg py-1.5 pl-8 pr-3 text-left text-[12px] transition",
-                            selected.kind === "asset" &&
-                              selected.assetId === asset.id
-                              ? "bg-[#1677ff]/[0.07] text-white/82"
-                              : "text-white/40 hover:bg-white/[0.025] hover:text-white/70",
+                      <div className="pl-6">
+                        <AssetResultList
+                          assets={sourceAssets.filter(
+                            (asset) => asset.shot_id === shot.id,
                           )}
-                          onClick={() =>
+                          onDelete={onDeleteAsset}
+                          onOpen={(asset) =>
                             onSelect({
                               kind: "asset",
                               assetId: asset.id,
                               section: "generation",
                             })
                           }
-                          key={asset.id}
-                          type="button"
-                        >
-                          <Video className="h-3.5 w-3.5 text-[#4facff]" />
-                          <span className="truncate">{asset.filename}</span>
-                        </button>
-                        ))}
+                          onSelect={(assetId) =>
+                            void onSelectAsset("shot", shot.id, assetId)
+                          }
+                          selectedAssetId={
+                            selectedResourceAssets[`shot:${shot.id}`]
+                          }
+                        />
+                      </div>
                     </div>
                   ))}
-                  {shotAssets
-                    .filter((asset) => asset.shot_id === null)
+                  {sourceAssets
+                    .filter(
+                      (asset) =>
+                        asset.shot_id === null &&
+                        !asset.filename.startsWith("character-"),
+                    )
                     .map((asset) => (
                         <button
                           className={cn(
@@ -1356,16 +1478,10 @@ export function ProjectWorkspace({
   const [messageDraft, setMessageDraft] = useState("");
   const [selectedShotId, setSelectedShotId] = useState<string | null>(null);
   const [estimate, setEstimate] = useState<CostEstimate | null>(null);
-  const [shotGenerationMode, setShotGenerationMode] = useState<
-    "direct" | "reference"
-  >("direct");
-  const [referenceAssetId, setReferenceAssetId] = useState<string | null>(null);
-  const [characterGenerationMode, setCharacterGenerationMode] = useState<
-    "direct" | "reference"
-  >("direct");
-  const [characterReferenceAssetId, setCharacterReferenceAssetId] = useState<
-    string | null
-  >(null);
+  const [shotDraft, setShotDraft] = useState<ShotDraft | null>(null);
+  const [characterDraft, setCharacterDraft] = useState<CharacterDraft | null>(
+    null,
+  );
   const [characterEstimate, setCharacterEstimate] = useState<CostEstimate | null>(
     null,
   );
@@ -1396,6 +1512,9 @@ export function ProjectWorkspace({
   const [visualReviewError, setVisualReviewError] = useState<string | null>(null);
   const [isReviewing, setIsReviewing] = useState(false);
   const [assets, setAssets] = useState<Asset[]>([]);
+  const [selectedResourceAssets, setSelectedResourceAssets] = useState<
+    Record<string, string>
+  >({});
   const [exportedAssets, setExportedAssets] = useState<Asset[]>([]);
   const [exportCover, setExportCover] = useState<Asset | null>(null);
   const [shareLink, setShareLink] = useState<ShareLink | null>(null);
@@ -1403,6 +1522,8 @@ export function ProjectWorkspace({
   const [isSharing, setIsSharing] = useState(false);
   const [assetsPanelCollapsed, setAssetsPanelCollapsed] = useState(false);
   const [agentPanelCollapsed, setAgentPanelCollapsed] = useState(false);
+  const [assetsPaneWidth, setAssetsPaneWidth] = useState<number | null>(null);
+  const [agentPaneWidth, setAgentPaneWidth] = useState<number | null>(null);
   const [mobilePanel, setMobilePanel] = useState<
     "agent" | "canvas" | "inspector" | "assets" | "history"
   >("canvas");
@@ -1587,6 +1708,41 @@ export function ProjectWorkspace({
   }, [project]);
 
   useEffect(() => {
+    if (!project) return;
+    let active = true;
+    fetch(`${API_BASE_URL}/projects/${project.id}/asset-selections`, {
+      credentials: "include",
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("selection-load-failed");
+        return (await response.json()) as {
+          items: Array<{
+            resource_type: "shot" | "character";
+            resource_id: string;
+            asset_id: string;
+          }>;
+        };
+      })
+      .then((payload) => {
+        if (!active) return;
+        setSelectedResourceAssets(
+          Object.fromEntries(
+            payload.items.map((item) => [
+              `${item.resource_type}:${item.resource_id}`,
+              item.asset_id,
+            ]),
+          ),
+        );
+      })
+      .catch(() => {
+        if (active) setSelectedResourceAssets({});
+      });
+    return () => {
+      active = false;
+    };
+  }, [project]);
+
+  useEffect(() => {
     if (!project || selectedCanvas.kind !== "asset") return;
     const asset = assets.find((item) => item.id === selectedCanvas.assetId);
     if (!asset || asset.kind !== "export") return;
@@ -1676,6 +1832,7 @@ export function ProjectWorkspace({
             : current,
         );
         setActiveJob(null);
+        void refreshAssets();
       } else if (["failed", "cancelled"].includes(job.status)) {
         setGenerationErrorOpen(true);
         setActiveJob(null);
@@ -1719,23 +1876,34 @@ export function ProjectWorkspace({
           (character) => character.id === selectedCanvas.characterId,
         ) ?? null
       : null;
-  const referenceAssets = assets.filter((asset) =>
-    asset.content_type.startsWith("image/"),
-  );
-  const generatedCharacterAsset =
-    selectedCharacter === null
-      ? undefined
-      : assets.find(
-          (asset) =>
-            asset.content_type.startsWith("image/") &&
-            asset.filename.startsWith(`character-${selectedCharacter.id}-`),
-        );
-  const generatedShotAsset = assets.find(
-    (asset) =>
-      asset.shot_id === canvasShot?.id &&
-      asset.content_type.startsWith("video/") &&
-      !["export", "cover"].includes(asset.kind),
-  );
+
+  useEffect(() => {
+    if (!canvasShot) {
+      setShotDraft(null);
+      return;
+    }
+    setShotDraft({
+      description: canvasShot.description,
+      prompt_en: canvasShot.prompt_en,
+      prompt_zh: canvasShot.prompt_zh,
+      duration_seconds: canvasShot.duration_seconds,
+      aspect_ratio: canvasShot.aspect_ratio,
+      generation_mode: canvasShot.generation_mode,
+    });
+  }, [canvasShot]);
+
+  useEffect(() => {
+    if (!selectedCharacter) {
+      setCharacterDraft(null);
+      return;
+    }
+    setCharacterDraft({
+      name: selectedCharacter.name,
+      description: selectedCharacter.description,
+      prompt_en: selectedCharacter.prompt_en,
+      prompt_zh: selectedCharacter.prompt_zh,
+    });
+  }, [selectedCharacter]);
 
   async function refreshWorkspace() {
     const response = await fetch(`${API_BASE_URL}/workspace`, {
@@ -1743,6 +1911,17 @@ export function ProjectWorkspace({
     }).catch(() => null);
     if (response?.ok) {
       setWorkspace((await response.json()) as WorkspaceData);
+    }
+  }
+
+  async function refreshAssets() {
+    if (!project) return;
+    const response = await fetch(
+      `${API_BASE_URL}/projects/${project.id}/assets`,
+      { credentials: "include" },
+    ).catch(() => null);
+    if (response?.ok) {
+      setAssets(((await response.json()) as { items: Asset[] }).items);
     }
   }
 
@@ -1762,6 +1941,176 @@ export function ProjectWorkspace({
     if (!response?.ok) return;
     const payload = (await response.json()) as { items: AgentActivity[] };
     setAgentActivities(payload.items);
+  }
+
+  function replaceShot(updated: Shot) {
+    setStoryboard((current) =>
+      current
+        ? {
+            ...current,
+            shots: current.shots.map((shot) =>
+              shot.id === updated.id ? updated : shot,
+            ),
+          }
+        : current,
+    );
+  }
+
+  function replaceCharacter(updated: Character) {
+    setStoryboard((current) =>
+      current
+        ? {
+            ...current,
+            characters: current.characters.map((character) =>
+              character.id === updated.id ? updated : character,
+            ),
+          }
+        : current,
+    );
+  }
+
+  async function saveShotDraft(
+    shot: Shot,
+    draft: ShotDraft | null = shotDraft,
+  ): Promise<Shot | null> {
+    if (!project || !draft) return null;
+    const response = await fetch(
+      `${API_BASE_URL}/projects/${project.id}/storyboard/shots/${shot.id}`,
+      {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(draft),
+      },
+    ).catch(() => null);
+    if (!response?.ok) {
+      setActionError("Shot changes could not be saved.");
+      return null;
+    }
+    const updated = (await response.json()) as Shot;
+    replaceShot(updated);
+    return updated;
+  }
+
+  async function saveCharacterDraft(
+    character: Character,
+  ): Promise<Character | null> {
+    if (!project || !characterDraft) return null;
+    const response = await fetch(
+      `${API_BASE_URL}/projects/${project.id}/storyboard/characters/${character.id}`,
+      {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(characterDraft),
+      },
+    ).catch(() => null);
+    if (!response?.ok) {
+      setActionError("Character changes could not be saved.");
+      return null;
+    }
+    const updated = (await response.json()) as Character;
+    replaceCharacter(updated);
+    return updated;
+  }
+
+  async function saveProjectBrief(brief: string) {
+    if (!project) return;
+    const productionSettings =
+      project.brief.match(/\n+\s*Production settings:[\s\S]*/i)?.[0] ?? "";
+    const response = await fetch(`${API_BASE_URL}/projects/${project.id}`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        brief: `${brief.trim()}${productionSettings}`,
+      }),
+    }).catch(() => null);
+    if (!response?.ok) {
+      setActionError("Direction could not be saved.");
+      return;
+    }
+    setProject((await response.json()) as Project);
+  }
+
+  function referencedAsset(
+    prompt: string,
+    contentPrefix: string,
+  ): Asset | null {
+    return (
+      assets.find(
+        (asset) =>
+          asset.content_type.startsWith(contentPrefix) &&
+          prompt.includes(`@${asset.id}`),
+      ) ?? null
+    );
+  }
+
+  async function setSelectedAsset(
+    resourceType: "shot" | "character",
+    resourceId: string,
+    assetId: string | null,
+  ) {
+    if (!project) return;
+    const response = await fetch(
+      `${API_BASE_URL}/projects/${project.id}/asset-selections`,
+      {
+        method: "PUT",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          resource_type: resourceType,
+          resource_id: resourceId,
+          asset_id: assetId,
+        }),
+      },
+    ).catch(() => null);
+    if (!response?.ok) {
+      setActionError("The selected result could not be updated.");
+      return;
+    }
+    setSelectedResourceAssets((current) => {
+      const next = { ...current };
+      const key = `${resourceType}:${resourceId}`;
+      if (assetId) next[key] = assetId;
+      else delete next[key];
+      return next;
+    });
+  }
+
+  async function deleteProjectAsset(asset: Asset) {
+    if (!project || !window.confirm(`Delete ${asset.filename}?`)) return;
+    const response = await fetch(`${API_BASE_URL}/assets/${asset.id}`, {
+      method: "DELETE",
+      credentials: "include",
+    }).catch(() => null);
+    if (!response?.ok) {
+      setActionError("The asset could not be deleted.");
+      return;
+    }
+    setAssets((current) => current.filter((item) => item.id !== asset.id));
+    setSelectedResourceAssets((current) =>
+      Object.fromEntries(
+        Object.entries(current).filter(([, assetId]) => assetId !== asset.id),
+      ),
+    );
+  }
+
+  async function renameProjectAsset(asset: Asset, filename: string) {
+    const response = await fetch(`${API_BASE_URL}/assets/${asset.id}`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ filename }),
+    }).catch(() => null);
+    if (!response?.ok) {
+      setActionError("The asset name could not be saved.");
+      return;
+    }
+    const updated = (await response.json()) as Asset;
+    setAssets((current) =>
+      current.map((item) => (item.id === updated.id ? updated : item)),
+    );
   }
 
   async function saveFolder(event: FormEvent<HTMLFormElement>) {
@@ -1838,6 +2187,35 @@ export function ProjectWorkspace({
     event.preventDefault();
     const projectId = event.dataTransfer.getData("text/plain") || draggingThreadId;
     if (projectId) void moveThread(projectId, folderId);
+  }
+
+  function beginPaneResize(
+    kind: "assets" | "agent",
+    event: ReactPointerEvent<HTMLButtonElement>,
+  ) {
+    event.preventDefault();
+    const pane = event.currentTarget.parentElement;
+    if (!pane) return;
+    const startX = event.clientX;
+    const startWidth = pane.getBoundingClientRect().width;
+    const move = (moveEvent: PointerEvent) => {
+      const delta =
+        kind === "assets"
+          ? moveEvent.clientX - startX
+          : startX - moveEvent.clientX;
+      const next = Math.max(
+        220,
+        Math.min(window.innerWidth * 0.32, startWidth + delta),
+      );
+      if (kind === "assets") setAssetsPaneWidth(next);
+      else setAgentPaneWidth(next);
+    };
+    const stop = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", stop);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", stop, { once: true });
   }
 
   async function decideWorkflow(
@@ -1964,6 +2342,8 @@ export function ProjectWorkspace({
     setIsWorking(true);
     setActionError(null);
     try {
+      const savedShot = await saveShotDraft(selectedShot);
+      if (!savedShot) return;
       const response = await fetch(`${API_BASE_URL}/shots/${selectedShot.id}/estimate`, {
         method: "POST",
         credentials: "include",
@@ -1979,8 +2359,9 @@ export function ProjectWorkspace({
 
   async function submitGeneration(
     shot: Shot,
-    mode: "direct" | "reference" = "direct",
+    prompt: string = shot.prompt_en,
   ) {
+    const reference = referencedAsset(prompt, "image/");
     const response = await fetch(`${API_BASE_URL}/shots/${shot.id}/generate`, {
       method: "POST",
       credentials: "include",
@@ -1990,12 +2371,8 @@ export function ProjectWorkspace({
       },
       body: JSON.stringify({
         approved: true,
-        generation_mode:
-          mode === "reference" ? "image_to_video" : "text_to_video",
-        reference_asset_id:
-          mode === "reference"
-            ? (referenceAssetId ?? referenceAssets[0]?.id ?? null)
-            : null,
+        generation_mode: reference ? "image_to_video" : "text_to_video",
+        reference_asset_id: reference?.id ?? null,
       }),
     });
     if (!response.ok) {
@@ -2031,6 +2408,8 @@ export function ProjectWorkspace({
     setIsWorking(true);
     setActionError(null);
     try {
+      const savedShot = await saveShotDraft(selectedShot);
+      if (!savedShot) return;
       if (!estimate) {
         const estimateResponse = await fetch(
           `${API_BASE_URL}/shots/${selectedShot.id}/estimate`,
@@ -2042,10 +2421,10 @@ export function ProjectWorkspace({
         if (!estimateResponse.ok) throw new Error("estimate-failed");
         setEstimate((await estimateResponse.json()) as CostEstimate);
       }
-      if (shotGenerationMode === "reference" && !referenceAssetId) {
-        throw new Error("Select a reference image from Vision first.");
+      const job = await submitGeneration(savedShot, savedShot.prompt_en);
+      if (job.status === "succeeded") {
+        await refreshAssets();
       }
-      await submitGeneration(selectedShot, shotGenerationMode);
     } catch (error) {
       setGenerationErrorMessage(
         error instanceof Error && error.message !== "generation-failed"
@@ -2076,7 +2455,9 @@ export function ProjectWorkspace({
       if (!window.confirm(t("agentGenerateConfirm", { credits: nextEstimate.credits }))) {
         return;
       }
-      await submitGeneration(selectedShot);
+      const savedShot = await saveShotDraft(selectedShot);
+      if (!savedShot) return;
+      await submitGeneration(savedShot, savedShot.prompt_en);
       const generationMessage: Message = {
         id: `generation-${crypto.randomUUID()}`,
         role: "assistant",
@@ -2154,12 +2535,16 @@ export function ProjectWorkspace({
     return new URL(path, API_BASE_URL).toString();
   }
 
-  async function uploadVisionAsset(file: File): Promise<Asset | null> {
+  async function uploadVisionAsset(
+    file: File,
+    shotId?: string,
+  ): Promise<Asset | null> {
     if (!project || isWorking) return null;
     setIsWorking(true);
     setActionError(null);
     const body = new FormData();
     body.append("file", file);
+    if (shotId) body.append("shot_id", shotId);
     try {
       const response = await fetch(`${API_BASE_URL}/projects/${project.id}/assets`, {
         method: "POST",
@@ -2182,7 +2567,7 @@ export function ProjectWorkspace({
     character: Character,
     file: File,
   ): Promise<Asset | null> {
-    if (isWorking) return null;
+    if (!project || isWorking) return null;
     setIsWorking(true);
     setActionError(null);
     const body = new FormData();
@@ -2199,8 +2584,28 @@ export function ProjectWorkspace({
       if (!response.ok) throw new Error("character-upload-failed");
       const asset = (await response.json()) as Asset;
       setAssets((current) => [asset, ...current]);
-      setCharacterReferenceAssetId(asset.id);
-      setCharacterGenerationMode("reference");
+      const nextDraft = {
+        ...(characterDraft ?? {
+          name: character.name,
+          description: character.description,
+          prompt_en: character.prompt_en,
+          prompt_zh: character.prompt_zh,
+        }),
+        prompt_en: `${character.prompt_en.trim()} @${asset.id}`.trim(),
+      };
+      setCharacterDraft(nextDraft);
+      const patchResponse = await fetch(
+        `${API_BASE_URL}/projects/${project.id}/storyboard/characters/${character.id}`,
+        {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(nextDraft),
+        },
+      ).catch(() => null);
+      if (patchResponse?.ok) {
+        replaceCharacter((await patchResponse.json()) as Character);
+      }
       return asset;
     } catch {
       setActionError(t("uploadError"));
@@ -2215,6 +2620,8 @@ export function ProjectWorkspace({
     setIsWorking(true);
     setActionError(null);
     try {
+      const saved = await saveCharacterDraft(character);
+      if (!saved) return;
       const response = await fetch(
         `${API_BASE_URL}/characters/${character.id}/estimate`,
         {
@@ -2236,11 +2643,9 @@ export function ProjectWorkspace({
     setIsWorking(true);
     setActionError(null);
     try {
-      const referenceId =
-        characterReferenceAssetId ?? referenceAssets[0]?.id ?? null;
-      if (characterGenerationMode === "reference" && !referenceId) {
-        throw new Error("Select or upload a reference image first.");
-      }
+      const saved = await saveCharacterDraft(character);
+      if (!saved) return;
+      const reference = referencedAsset(saved.prompt_en, "image/");
       const response = await fetch(
         `${API_BASE_URL}/characters/${character.id}/generate`,
         {
@@ -2249,12 +2654,8 @@ export function ProjectWorkspace({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             approved: true,
-            generation_mode:
-              characterGenerationMode === "reference"
-                ? "image_to_image"
-                : "text_to_image",
-            reference_asset_id:
-              characterGenerationMode === "reference" ? referenceId : null,
+            generation_mode: reference ? "image_to_image" : "text_to_image",
+            reference_asset_id: reference?.id ?? null,
           }),
         },
       );
@@ -2387,27 +2788,15 @@ export function ProjectWorkspace({
             : selectedAsset?.filename ?? copy.vision;
   const activeDocumentMode =
     selectedCanvas.kind === "document" ? selectedCanvas.document : null;
-  const characterCanvasSection =
-    selectedCanvas.kind === "character" ? selectedCanvas.section : null;
-  const settingPairs = project ? productionSettingPairs(project.brief) : [];
-  const settingAnswers = messages
-    .map((message, index) => ({ message, index }))
-    .filter(({ message }) => message.role === "user")
-    .map(({ message, index }) => ({
-      answer: message.content,
-      question:
-        [...messages.slice(0, index)]
-          .reverse()
-          .find((candidate) => candidate.role === "assistant")?.content ??
-        copy.directorInput,
-    }));
+  const settingPairs = [
+    ...(project ? productionSettingPairs(project.brief) : []),
+    ...extractedConversationAttributes(messages),
+  ];
 
   function selectShot(shot: Shot) {
     setSelectedShotId(shot.id);
     setSelectedCanvas({ kind: "shot", shotId: shot.id });
     setEstimate(null);
-    setShotGenerationMode("direct");
-    setReferenceAssetId(referenceAssets[0]?.id ?? null);
     setMobilePanel("canvas");
   }
 
@@ -2461,6 +2850,16 @@ export function ProjectWorkspace({
             assetsPanelCollapsed && "assets-collapsed",
             agentPanelCollapsed && "agent-collapsed",
           )}
+          style={
+            {
+              "--assets-pane-width": assetsPaneWidth
+                ? `${assetsPaneWidth}px`
+                : "25vw",
+              "--agent-pane-width": agentPaneWidth
+                ? `${agentPaneWidth}px`
+                : "25vw",
+            } as CSSProperties
+          }
         >
           <div
             className={cn(
@@ -2472,13 +2871,16 @@ export function ProjectWorkspace({
               assets={assets}
               collapsed={assetsPanelCollapsed}
               copy={copy}
+              onDeleteAsset={(asset) => void deleteProjectAsset(asset)}
+              onResizeStart={(event) => beginPaneResize("assets", event)}
+              onSelectAsset={(resourceType, resourceId, assetId) =>
+                void setSelectedAsset(resourceType, resourceId, assetId)
+              }
               onSelect={(selection) => {
                 setSelectedCanvas(selection);
                 if (selection.kind === "shot") setSelectedShotId(selection.shotId);
                 if (selection.kind === "character") {
                   setCharacterEstimate(null);
-                  setCharacterGenerationMode("direct");
-                  setCharacterReferenceAssetId(referenceAssets[0]?.id ?? null);
                 }
                 setMobilePanel("canvas");
               }}
@@ -2486,6 +2888,7 @@ export function ProjectWorkspace({
                 setAssetsPanelCollapsed((current) => !current)
               }
               selected={selectedCanvas}
+              selectedResourceAssets={selectedResourceAssets}
               storyboard={storyboard}
             />
           </div>
@@ -2523,7 +2926,7 @@ export function ProjectWorkspace({
                 >
                   <div className="flex items-center justify-between text-[12px]">
                     <span className="text-white/42">
-                      {locale.startsWith("zh") ? "制作进度" : "Production progress"}
+                      {locale.startsWith("zh") ? "进度" : "Progress"}
                     </span>
                     <span className="text-[#8fdcff]">
                       {projectProgress?.percent ?? 0}%
@@ -2531,7 +2934,7 @@ export function ProjectWorkspace({
                   </div>
                   <div
                     aria-label={
-                      locale.startsWith("zh") ? "制作进度" : "Production progress"
+                      locale.startsWith("zh") ? "进度" : "Progress"
                     }
                     aria-valuemax={100}
                     aria-valuemin={0}
@@ -2565,9 +2968,27 @@ export function ProjectWorkspace({
                   <h2 className="mt-4 max-w-3xl font-display text-4xl leading-tight text-white/90">
                     {project.title}
                   </h2>
-                  <p className="mt-7 whitespace-pre-wrap text-[16px] leading-8 text-white/52">
-                    {creativeBrief(project.brief)}
-                  </p>
+                  <form
+                    className="mt-7 space-y-3"
+                    key={`${project.id}-${project.updated_at}`}
+                    onSubmit={(event) => {
+                      event.preventDefault();
+                      const form = new FormData(event.currentTarget);
+                      void saveProjectBrief(String(form.get("brief") ?? ""));
+                    }}
+                  >
+                    <textarea
+                      className="min-h-36 w-full resize-y rounded-xl border border-white/[0.08] bg-white/[0.025] px-4 py-3 text-[16px] leading-8 text-white/68 outline-none focus:border-[#1677ff]/40"
+                      defaultValue={creativeBrief(project.brief)}
+                      name="brief"
+                    />
+                    <button
+                      className="rounded-lg bg-[#1677ff] px-4 py-2 text-[12px] font-semibold text-white"
+                      type="submit"
+                    >
+                      Save direction
+                    </button>
+                  </form>
                   <section className="mt-8 rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
                     <h3 className="text-[15px] font-semibold text-white/76">
                       {copy.settingAttributes}
@@ -2580,19 +3001,6 @@ export function ProjectWorkspace({
                         >
                           <span className="text-white/32">{pair.label}</span>
                           <span className="text-white/68">{pair.value}</span>
-                        </div>
-                      ))}
-                      {settingAnswers.map((pair, index) => (
-                        <div
-                          className="grid grid-cols-[112px_minmax(0,1fr)] gap-3 py-3 text-[13px]"
-                          key={`${pair.question}-${index}`}
-                        >
-                          <span className="whitespace-pre-wrap leading-7 text-white/38">
-                            {pair.question}
-                          </span>
-                          <span className="whitespace-pre-wrap leading-7 text-white/68">
-                            {pair.answer}
-                          </span>
                         </div>
                       ))}
                     </div>
@@ -2674,187 +3082,138 @@ export function ProjectWorkspace({
 
               {selectedCanvas.kind === "character" && selectedCharacter ? (
                 <article className="mx-auto max-w-4xl px-6 py-8 sm:px-10">
-                  <div className="border-b border-white/[0.07] pb-6">
-                    <p className="text-[12px] font-semibold text-[#6eb8ff]">
-                      {copy.character}
-                    </p>
-                    <h2 className="mt-3 font-display text-3xl leading-tight text-white/90">
-                      {selectedCharacter.name}
-                    </h2>
-                  </div>
-                  <div
-                    className={cn(
-                      "mt-5 grid gap-5",
-                      characterCanvasSection === "generation" &&
-                        "2xl:grid-cols-[minmax(0,1fr)_300px]",
-                    )}
-                  >
-                    <div className="space-y-3">
-                      <div className="rounded-2xl border border-white/[0.07] p-5">
-                        <p className="text-[12px] font-semibold text-white/28">
-                          {copy.description}
-                        </p>
-                        <p className="mt-3 whitespace-pre-wrap text-[15px] leading-8 text-white/58">
-                          {selectedCharacter.description}
-                        </p>
-                      </div>
-                      <div className="rounded-2xl border border-white/[0.07] p-5">
-                        <p className="text-[12px] font-semibold text-white/28">
-                          Prompt
-                        </p>
-                        <p className="mt-3 whitespace-pre-wrap text-[15px] leading-8 text-white/52">
-                          {locale.startsWith("zh") &&
-                          selectedCharacter.prompt_zh
-                            ? selectedCharacter.prompt_zh
-                            : selectedCharacter.prompt_en}
-                        </p>
-                      </div>
-                      {generatedCharacterAsset ? (
-                        <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-black/30">
-                          <img
-                            alt={selectedCharacter.name}
-                            className="max-h-[56vh] w-full object-contain"
-                            src={mediaUrl(generatedCharacterAsset.content_url)}
-                          />
-                        </div>
-                      ) : null}
+                  <div className="rounded-2xl border border-white/[0.07] p-5">
+                    <label className="block text-[12px] text-white/38">
+                      <span>Character name</span>
+                      <input
+                        className="mt-2 w-full rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-2 text-[16px] text-white/78 outline-none"
+                        onChange={(event) =>
+                          setCharacterDraft((current) =>
+                            current
+                              ? { ...current, name: event.target.value }
+                              : current,
+                          )
+                        }
+                        value={characterDraft?.name ?? ""}
+                      />
+                    </label>
+                    <label className="mt-4 block text-[12px] text-white/38">
+                      <span>{copy.description}</span>
+                      <textarea
+                        aria-label="Character description"
+                        className="mt-2 min-h-24 w-full resize-y rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-3 text-[15px] leading-7 text-white/70 outline-none"
+                        onChange={(event) =>
+                          setCharacterDraft((current) =>
+                            current
+                              ? { ...current, description: event.target.value }
+                              : current,
+                          )
+                        }
+                        value={characterDraft?.description ?? ""}
+                      />
+                    </label>
+                    <label className="mt-4 block text-[12px] text-white/38">
+                      <span>Prompt</span>
+                      <textarea
+                        aria-label="Character prompt"
+                        className="mt-2 min-h-32 w-full resize-y rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-3 text-[15px] leading-7 text-white/70 outline-none"
+                        onChange={(event) =>
+                          setCharacterDraft((current) =>
+                            current
+                              ? { ...current, prompt_en: event.target.value }
+                              : current,
+                          )
+                        }
+                        value={characterDraft?.prompt_en ?? ""}
+                      />
+                    </label>
+                    <div className="mt-3 flex justify-end">
+                      <button
+                        className="rounded-lg border border-white/[0.09] px-3 py-2 text-[12px] text-white/58 hover:text-white"
+                        onClick={() => void saveCharacterDraft(selectedCharacter)}
+                        type="button"
+                      >
+                        Save character
+                      </button>
                     </div>
-
-                    {characterCanvasSection === "generation" ? (
-                      <div className="space-y-3">
-                        <div className="grid grid-cols-3 gap-2">
-                          <label className="flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-white/[0.09] px-2 py-2 text-center text-[12px] text-white/55 hover:border-[#1677ff]/35 hover:text-white">
-                            <Upload className="h-3.5 w-3.5 text-[#4facff]" />
-                            {copy.upload}
-                            <input
-                              accept="image/*"
-                              aria-label={`${copy.upload} ${selectedCharacter.name}`}
-                              className="sr-only"
-                              disabled={isWorking}
-                              onChange={(event) => {
-                                const file = event.target.files?.[0];
-                                event.currentTarget.value = "";
-                                if (file) {
-                                  void uploadCharacterAsset(
-                                    selectedCharacter,
-                                    file,
-                                  );
-                                }
-                              }}
-                              type="file"
-                            />
-                          </label>
-                          <button
-                            className={cn(
-                              "rounded-xl border px-2 py-2 text-[12px] transition",
-                              characterGenerationMode === "reference"
-                                ? "border-[#1677ff]/35 bg-[#1677ff]/[0.1] text-[#8fdcff]"
-                                : "border-white/[0.09] text-white/55 hover:text-white",
-                            )}
-                            disabled={referenceAssets.length === 0}
-                            onClick={() =>
-                              setCharacterGenerationMode("reference")
+                    <div className="mt-4 grid grid-cols-3 gap-2 border-t border-white/[0.06] pt-4">
+                      <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/[0.09] px-3 py-2.5 text-[12px] text-white/60">
+                        <Upload className="h-3.5 w-3.5 text-[#4facff]" />
+                        Upload
+                        <input
+                          accept="image/*"
+                          aria-label="Upload character image"
+                          className="sr-only"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            event.currentTarget.value = "";
+                            if (file) {
+                              void uploadCharacterAsset(selectedCharacter, file);
                             }
-                            type="button"
-                          >
-                            {copy.reference}
-                          </button>
-                          <button
-                            className={cn(
-                              "rounded-xl border px-2 py-2 text-[12px] transition",
-                              characterGenerationMode === "direct"
-                                ? "border-[#1677ff]/35 bg-[#1677ff]/[0.1] text-[#8fdcff]"
-                                : "border-white/[0.09] text-white/55 hover:text-white",
-                            )}
-                            onClick={() => setCharacterGenerationMode("direct")}
-                            type="button"
-                          >
-                            {copy.direct}
-                          </button>
-                        </div>
-                        {characterGenerationMode === "reference" ? (
-                          <label className="block text-[12px] text-white/36">
-                            <span>{copy.referenceImage}</span>
-                            <select
-                              className="mt-2 w-full rounded-xl border border-white/[0.09] bg-[#11100d] px-3 py-2 text-white/72 outline-none"
-                              onChange={(event) =>
-                                setCharacterReferenceAssetId(
-                                  event.target.value || null,
-                                )
-                              }
-                              value={
-                                characterReferenceAssetId ??
-                                referenceAssets[0]?.id ??
-                                ""
-                              }
-                            >
-                              {referenceAssets.map((asset) => (
-                                <option key={asset.id} value={asset.id}>
-                                  {asset.filename}
-                                </option>
-                              ))}
-                            </select>
-                          </label>
-                        ) : null}
-                        {characterEstimate ? (
-                          <div className="flex flex-wrap items-center gap-2 rounded-xl bg-[#1677ff]/[0.08] px-3 py-2 text-[11px] text-[#a8ddff]">
-                            <span>
-                              {t("estimatedCredits")}: {characterEstimate.credits}
-                            </span>
-                            <span className="rounded-md border border-[#4facff]/25 px-2 py-0.5">
-                              {characterEstimate.provider}
-                            </span>
-                          </div>
-                        ) : null}
-                        {generatedCharacterAsset ? (
-                          <a
-                            className="flex items-center justify-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.055] px-4 py-2.5 text-[12px] text-emerald-200/78 hover:border-emerald-300/40"
-                            download={generatedCharacterAsset.filename}
-                            href={mediaUrl(generatedCharacterAsset.content_url)}
-                          >
-                            <Download className="h-3.5 w-3.5" />
-                            {copy.downloadResult}
-                          </a>
-                        ) : null}
-                        <button
-                          className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/[0.09] px-4 py-2.5 text-[12px] text-white/58 hover:border-white/20 hover:text-white disabled:opacity-35"
-                          disabled={isWorking}
-                          onClick={() =>
-                            void estimateCharacter(selectedCharacter)
-                          }
-                          type="button"
-                        >
-                          <Gem className="h-3.5 w-3.5" />
-                          {copy.estimate}
-                        </button>
-                        {workflow?.status !== "approved" ? (
-                          <p className="rounded-xl border border-[#1677ff]/20 bg-[#1677ff]/[0.055] px-3 py-2 text-[12px] leading-6 text-[#a8ddff]">
-                            {copy.approvalRequired}
-                          </p>
-                        ) : null}
-                        <button
-                          className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1677ff] px-4 py-2.5 text-[12px] font-semibold text-white disabled:opacity-35"
-                          disabled={
-                            isWorking ||
-                            workflow?.status !== "approved" ||
-                            (characterGenerationMode === "reference" &&
-                              referenceAssets.length === 0)
-                          }
-                          onClick={() =>
-                            void generateCharacter(selectedCharacter)
-                          }
-                          type="button"
-                        >
-                          <Sparkles className="h-3.5 w-3.5" />
-                          {isWorking
-                            ? copy.generating
-                            : characterGenerationMode === "reference"
-                              ? copy.generateWithReference
-                              : copy.generateDirect}
-                        </button>
-                      </div>
+                          }}
+                          type="file"
+                        />
+                      </label>
+                      <button
+                        className="rounded-xl border border-white/[0.09] px-3 py-2.5 text-[12px] text-white/60 disabled:opacity-35"
+                        disabled={isWorking}
+                        onClick={() => void estimateCharacter(selectedCharacter)}
+                        type="button"
+                      >
+                        {copy.estimate}
+                      </button>
+                      <button
+                        className="rounded-xl bg-[#1677ff] px-3 py-2.5 text-[12px] font-semibold text-white disabled:opacity-35"
+                        disabled={
+                          isWorking || workflow?.status !== "approved"
+                        }
+                        onClick={() => void generateCharacter(selectedCharacter)}
+                        type="button"
+                      >
+                        {isWorking ? copy.generating : "Generate"}
+                      </button>
+                    </div>
+                    {characterEstimate ? (
+                      <p className="mt-3 rounded-lg bg-[#1677ff]/[0.08] px-3 py-2 text-[12px] text-[#a8ddff]">
+                        {t("estimatedCredits")}: {characterEstimate.credits} · {characterEstimate.provider}
+                      </p>
+                    ) : null}
+                    {workflow?.status !== "approved" ? (
+                      <p className="mt-3 rounded-lg border border-[#1677ff]/20 px-3 py-2 text-[12px] text-[#a8ddff]">
+                        {copy.approvalRequired}
+                      </p>
                     ) : null}
                   </div>
+                  <section className="mt-5 rounded-2xl border border-white/[0.07] p-4">
+                    <p className="mb-3 text-[12px] font-semibold text-white/38">
+                      Results
+                    </p>
+                    <AssetResultList
+                      assets={assets.filter(
+                        (asset) =>
+                          asset.content_type.startsWith("image/") &&
+                          asset.filename.startsWith(
+                            `character-${selectedCharacter.id}-`,
+                          ),
+                      )}
+                      onDelete={(asset) => void deleteProjectAsset(asset)}
+                      onOpen={(asset) =>
+                        setSelectedCanvas({ kind: "asset", assetId: asset.id })
+                      }
+                      onSelect={(assetId) =>
+                        void setSelectedAsset(
+                          "character",
+                          selectedCharacter.id,
+                          assetId,
+                        )
+                      }
+                      selectedAssetId={
+                        selectedResourceAssets[
+                          `character:${selectedCharacter.id}`
+                        ]
+                      }
+                    />
+                  </section>
                 </article>
               ) : null}
 
@@ -2874,14 +3233,14 @@ export function ProjectWorkspace({
                       </div>
                       <div>
                         <p className="max-w-2xl font-display text-2xl leading-tight text-white/85">
-                          {canvasShot.description}
+                          {shotDraft?.description ?? canvasShot.description}
                         </p>
                         <div className="mt-3 flex flex-wrap gap-2">
                           <span className="rounded-md border border-white/[0.1] bg-black/20 px-2.5 py-1 text-[12px] text-white/52">
-                            {canvasShot.duration_seconds}s
+                            {shotDraft?.duration_seconds ?? canvasShot.duration_seconds}s
                           </span>
                           <span className="rounded-md border border-white/[0.1] bg-black/20 px-2.5 py-1 text-[12px] text-white/52">
-                            {canvasShot.aspect_ratio}
+                            {shotDraft?.aspect_ratio ?? canvasShot.aspect_ratio}
                           </span>
                         </div>
                       </div>
@@ -2889,183 +3248,168 @@ export function ProjectWorkspace({
                   </div>
 
                   <div className="mt-5 rounded-2xl border border-white/[0.07] p-5">
-                    <div className="flex items-start justify-between gap-4">
-                      <div>
-                        <p className="text-[12px] font-semibold text-[#6eb8ff]">
-                          {copy.description}
-                        </p>
-                        <p className="mt-3 whitespace-pre-wrap text-[16px] leading-8 text-white/72">
-                          {canvasShot.description}
-                        </p>
-                      </div>
-                      <div className="flex shrink-0 gap-2">
-                        <span className="rounded-md border border-white/[0.08] px-2.5 py-1 text-[12px] text-white/40">
-                          {canvasShot.duration_seconds}s
-                        </span>
-                        <span className="rounded-md border border-white/[0.08] px-2.5 py-1 text-[12px] text-white/40">
-                          {canvasShot.aspect_ratio}
-                        </span>
-                      </div>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <label className="text-[12px] text-white/38 sm:col-span-2">
+                        <span>{copy.description}</span>
+                        <textarea
+                          className="mt-2 min-h-20 w-full resize-y rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-2 text-[15px] leading-6 text-white/78 outline-none focus:border-[#1677ff]/40"
+                          onChange={(event) =>
+                            setShotDraft((current) =>
+                              current
+                                ? { ...current, description: event.target.value }
+                                : current,
+                            )
+                          }
+                          value={shotDraft?.description ?? ""}
+                        />
+                      </label>
+                      <label className="text-[12px] text-white/38">
+                        <span>{copy.duration}</span>
+                        <input
+                          className="mt-2 w-full rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-2 text-white/78 outline-none"
+                          max={15}
+                          min={1}
+                          onChange={(event) =>
+                            setShotDraft((current) =>
+                              current
+                                ? {
+                                    ...current,
+                                    duration_seconds: Number(event.target.value),
+                                  }
+                                : current,
+                            )
+                          }
+                          type="number"
+                          value={shotDraft?.duration_seconds ?? 5}
+                        />
+                      </label>
+                      <label className="text-[12px] text-white/38">
+                        <span>{copy.ratio}</span>
+                        <select
+                          className="mt-2 w-full rounded-xl border border-white/[0.09] bg-[#11100d] px-3 py-2 text-white/78 outline-none"
+                          onChange={(event) =>
+                            setShotDraft((current) =>
+                              current
+                                ? {
+                                    ...current,
+                                    aspect_ratio: event.target.value as Shot["aspect_ratio"],
+                                  }
+                                : current,
+                            )
+                          }
+                          value={shotDraft?.aspect_ratio ?? "16:9"}
+                        >
+                          <option value="16:9">16:9</option>
+                          <option value="9:16">9:16</option>
+                          <option value="1:1">1:1</option>
+                        </select>
+                      </label>
                     </div>
-                    <div className="mt-5 border-t border-white/[0.06] pt-5">
-                      <p className="text-[12px] font-semibold text-white/28">
-                        Prompt
-                      </p>
-                      <p className="mt-3 whitespace-pre-wrap text-[15px] leading-8 text-white/52">
-                        {locale.startsWith("zh") && canvasShot.prompt_zh
-                          ? canvasShot.prompt_zh
-                          : canvasShot.prompt_en}
-                      </p>
-                    </div>
-                    <div className="mt-5 space-y-3 border-t border-white/[0.06] pt-5">
-                      <div className="grid grid-cols-3 gap-2">
-                        <label className="flex cursor-pointer items-center justify-center gap-1.5 rounded-xl border border-white/[0.09] px-2 py-2 text-center text-[12px] text-white/55 hover:border-[#1677ff]/35 hover:text-white">
-                          <Upload className="h-3.5 w-3.5 text-[#4facff]" />
-                          {copy.upload}
-                          <input
-                            accept="image/*"
-                            aria-label={copy.upload}
-                            className="sr-only"
-                            onChange={(event) => {
-                              const file = event.target.files?.[0];
-                              event.currentTarget.value = "";
-                              if (!file) return;
-                              void uploadVisionAsset(file).then((asset) => {
-                                if (!asset) return;
-                                setReferenceAssetId(asset.id);
-                                setShotGenerationMode("reference");
-                              });
-                            }}
-                            type="file"
-                          />
-                        </label>
-                        <button
-                          className={cn(
-                            "rounded-xl border px-2 py-2 text-[12px] transition",
-                            shotGenerationMode === "reference"
-                              ? "border-[#1677ff]/35 bg-[#1677ff]/[0.1] text-[#8fdcff]"
-                              : "border-white/[0.09] text-white/55 hover:text-white",
-                          )}
-                          disabled={referenceAssets.length === 0}
-                          onClick={() => setShotGenerationMode("reference")}
-                          type="button"
-                        >
-                          {copy.reference}
-                        </button>
-                        <button
-                          className={cn(
-                            "rounded-xl border px-2 py-2 text-[12px] transition",
-                            shotGenerationMode === "direct"
-                              ? "border-[#1677ff]/35 bg-[#1677ff]/[0.1] text-[#8fdcff]"
-                              : "border-white/[0.09] text-white/55 hover:text-white",
-                          )}
-                          onClick={() => setShotGenerationMode("direct")}
-                          type="button"
-                        >
-                          {copy.direct}
-                        </button>
-                      </div>
-                      {shotGenerationMode === "reference" ? (
-                        <label className="block text-[12px] text-white/36">
-                          <span>{copy.chooseReference}</span>
-                          <select
-                            className="mt-2 w-full rounded-xl border border-white/[0.09] bg-[#11100d] px-3 py-2 text-white/72 outline-none"
-                            onChange={(event) =>
-                              setReferenceAssetId(event.target.value || null)
-                            }
-                            value={
-                              referenceAssetId ?? referenceAssets[0]?.id ?? ""
-                            }
-                          >
-                            {referenceAssets.map((asset) => (
-                              <option key={asset.id} value={asset.id}>
-                                {asset.filename}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                      ) : null}
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="rounded-xl border border-white/[0.07] p-3">
-                          <p className="text-[10px] text-white/24">{copy.ratio}</p>
-                          <p className="mt-1 text-[12px] text-white/65">
-                            {canvasShot.aspect_ratio}
-                          </p>
-                        </div>
-                        <div className="rounded-xl border border-white/[0.07] p-3">
-                          <p className="text-[10px] text-white/24">{copy.duration}</p>
-                          <p className="mt-1 text-[12px] text-white/65">
-                            {canvasShot.duration_seconds}s
-                          </p>
-                        </div>
-                      </div>
-                      {estimate ? (
-                        <div className="flex flex-wrap items-center gap-2 rounded-xl bg-[#1677ff]/[0.08] px-3 py-2 text-[11px] text-[#a8ddff]">
-                          <span>
-                            {t("estimatedCredits")}: {estimate.credits}
-                          </span>
-                          <span className="rounded-md border border-[#4facff]/25 px-2 py-0.5">
-                            {estimate.provider}
-                          </span>
-                        </div>
-                      ) : null}
-                      {generatedShotAsset ? (
-                        <a
-                          className="flex items-center justify-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.055] px-4 py-2.5 text-[12px] text-emerald-200/78 hover:border-emerald-300/40"
-                          download={generatedShotAsset.filename}
-                          href={mediaUrl(generatedShotAsset.content_url)}
-                        >
-                          <Download className="h-3.5 w-3.5" />
-                          {copy.downloadResult}
-                        </a>
-                      ) : null}
+                    <label className="mt-4 block text-[12px] text-white/38">
+                      <span>Prompt</span>
+                      <textarea
+                        aria-label="Shot prompt"
+                        className="mt-2 min-h-40 w-full resize-y rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-3 text-[15px] leading-7 text-white/70 outline-none focus:border-[#1677ff]/40"
+                        onChange={(event) =>
+                          setShotDraft((current) =>
+                            current
+                              ? { ...current, prompt_en: event.target.value }
+                              : current,
+                          )
+                        }
+                        value={shotDraft?.prompt_en ?? ""}
+                      />
+                    </label>
+                    <div className="mt-3 flex justify-end">
                       <button
-                        className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/[0.09] px-4 py-2.5 text-[12px] text-white/58 hover:border-white/20 hover:text-white disabled:opacity-35"
+                        className="rounded-lg border border-white/[0.09] px-3 py-2 text-[12px] text-white/58 hover:text-white"
+                        onClick={() => void saveShotDraft(canvasShot)}
+                        type="button"
+                      >
+                        Save shot
+                      </button>
+                    </div>
+                    <div className="mt-4 grid grid-cols-3 gap-2 border-t border-white/[0.06] pt-4">
+                      <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/[0.09] px-3 py-2.5 text-[12px] text-white/60 hover:border-[#1677ff]/35 hover:text-white">
+                        <Upload className="h-3.5 w-3.5 text-[#4facff]" />
+                        Upload
+                        <input
+                          accept="image/*"
+                          aria-label="Upload shot reference"
+                          className="sr-only"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            event.currentTarget.value = "";
+                            if (!file) return;
+                            void uploadVisionAsset(file, canvasShot.id).then(
+                              async (asset) => {
+                                if (!asset || !shotDraft) return;
+                                const next = {
+                                  ...shotDraft,
+                                  prompt_en: `${shotDraft.prompt_en.trim()} @${asset.id}`,
+                                };
+                                setShotDraft(next);
+                                await saveShotDraft(canvasShot, next);
+                              },
+                            );
+                          }}
+                          type="file"
+                        />
+                      </label>
+                      <button
+                        className="rounded-xl border border-white/[0.09] px-3 py-2.5 text-[12px] text-white/60 hover:text-white disabled:opacity-35"
                         disabled={isWorking}
                         onClick={() => void estimateShot()}
                         type="button"
                       >
-                        <Gem className="h-3.5 w-3.5" />
                         {copy.estimate}
                       </button>
-                      {workflow?.status !== "approved" ? (
-                        <p className="rounded-xl border border-[#1677ff]/20 bg-[#1677ff]/[0.055] px-3 py-2 text-[12px] leading-6 text-[#a8ddff]">
-                          {copy.approvalRequired}
-                        </p>
-                      ) : null}
                       <button
-                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1677ff] px-4 py-2.5 text-[12px] font-semibold text-white disabled:opacity-35"
+                        className="rounded-xl bg-[#1677ff] px-3 py-2.5 text-[12px] font-semibold text-white disabled:opacity-35"
                         disabled={
                           isWorking ||
                           canvasShot.status === "completed" ||
-                          workflow?.status !== "approved" ||
-                          (shotGenerationMode === "reference" &&
-                            referenceAssets.length === 0)
+                          workflow?.status !== "approved"
                         }
                         onClick={() => void generateShot()}
                         type="button"
                       >
-                        <Clapperboard className="h-3.5 w-3.5" />
-                        {isWorking
-                          ? copy.generating
-                          : canvasShot.status === "completed"
-                            ? t("completed")
-                            : shotGenerationMode === "reference"
-                              ? copy.generateWithReference
-                              : copy.generateDirect}
+                        {isWorking ? copy.generating : "Generate"}
                       </button>
                     </div>
+                    {estimate ? (
+                      <p className="mt-3 rounded-lg bg-[#1677ff]/[0.08] px-3 py-2 text-[12px] text-[#a8ddff]">
+                        {t("estimatedCredits")}: {estimate.credits} · {estimate.provider}
+                      </p>
+                    ) : null}
+                    {workflow?.status !== "approved" ? (
+                      <p className="mt-3 rounded-lg border border-[#1677ff]/20 px-3 py-2 text-[12px] text-[#a8ddff]">
+                        {copy.approvalRequired}
+                      </p>
+                    ) : null}
                   </div>
-                  {generatedShotAsset ? (
-                    <a
-                      className="mt-5 flex w-fit items-center gap-2 rounded-xl border border-emerald-400/20 bg-emerald-400/[0.055] px-4 py-2.5 text-[13px] text-emerald-200/78"
-                      download={generatedShotAsset.filename}
-                      href={mediaUrl(generatedShotAsset.content_url)}
-                    >
-                      <Download className="h-4 w-4" />
-                      {copy.downloadResult}
-                    </a>
-                  ) : null}
+                  <section className="mt-5 rounded-2xl border border-white/[0.07] p-4">
+                    <p className="mb-3 text-[12px] font-semibold text-white/38">
+                      Results
+                    </p>
+                    <AssetResultList
+                      assets={assets.filter(
+                        (asset) =>
+                          asset.shot_id === canvasShot.id &&
+                          !["export", "cover"].includes(asset.kind),
+                      )}
+                      onDelete={(asset) => void deleteProjectAsset(asset)}
+                      onOpen={(asset) =>
+                        setSelectedCanvas({ kind: "asset", assetId: asset.id })
+                      }
+                      onSelect={(assetId) =>
+                        void setSelectedAsset("shot", canvasShot.id, assetId)
+                      }
+                      selectedAssetId={
+                        selectedResourceAssets[`shot:${canvasShot.id}`]
+                      }
+                    />
+                  </section>
                 </article>
               ) : null}
 
@@ -3093,7 +3437,29 @@ export function ProjectWorkspace({
                   </div>
                   <div className="mt-5 flex items-center justify-between gap-4">
                     <div>
-                      <h2 className="text-[15px] font-medium">{selectedAsset.filename}</h2>
+                      <form
+                        className="flex items-center gap-2"
+                        onSubmit={(event) => {
+                          event.preventDefault();
+                          const form = new FormData(event.currentTarget);
+                          void renameProjectAsset(
+                            selectedAsset,
+                            String(form.get("filename") ?? ""),
+                          );
+                        }}
+                      >
+                        <input
+                          className="min-w-0 flex-1 rounded-lg border border-white/[0.08] bg-white/[0.025] px-3 py-2 text-[15px] font-medium text-white/82 outline-none"
+                          defaultValue={selectedAsset.filename}
+                          name="filename"
+                        />
+                        <button
+                          className="rounded-lg border border-white/[0.09] px-3 py-2 text-[12px] text-white/52 hover:text-white"
+                          type="submit"
+                        >
+                          Save
+                        </button>
+                      </form>
                       <div className="mt-2 flex flex-wrap gap-2">
                         <span className="rounded-md border border-white/[0.08] bg-white/[0.025] px-2.5 py-1 text-[12px] text-white/38">
                           {selectedAsset.content_type}
@@ -3101,16 +3467,36 @@ export function ProjectWorkspace({
                         <span className="rounded-md border border-white/[0.08] bg-white/[0.025] px-2.5 py-1 text-[12px] text-white/38">
                           {(selectedAsset.byte_size / 1024 / 1024).toFixed(1)} MB
                         </span>
+                        <button
+                          className="rounded-md border border-white/[0.08] bg-white/[0.025] px-2.5 py-1 text-[12px] text-[#8fdcff] hover:text-white"
+                          onClick={() =>
+                            void navigator.clipboard?.writeText(selectedAsset.id)
+                          }
+                          title={selectedAsset.id}
+                          type="button"
+                        >
+                          Copy ID @{selectedAsset.id.slice(0, 8)}
+                        </button>
                       </div>
                     </div>
-                    <a
-                      className="flex items-center gap-2 rounded-lg border border-white/[0.09] px-3 py-2 text-[11px] text-white/55 hover:text-white"
-                      download={selectedAsset.filename}
-                      href={mediaUrl(selectedAsset.content_url)}
-                    >
-                      <Download className="h-3.5 w-3.5" />
-                      {copy.download}
-                    </a>
+                    <div className="flex items-center gap-2">
+                      <a
+                        className="flex items-center gap-2 rounded-lg border border-white/[0.09] px-3 py-2 text-[11px] text-white/55 hover:text-white"
+                        download={selectedAsset.filename}
+                        href={mediaUrl(selectedAsset.content_url)}
+                      >
+                        <Download className="h-3.5 w-3.5" />
+                        {copy.download}
+                      </a>
+                      <button
+                        aria-label={`Delete ${selectedAsset.filename}`}
+                        className="grid size-9 place-items-center rounded-lg border border-white/[0.09] text-white/38 hover:border-red-400/30 hover:text-red-300"
+                        onClick={() => void deleteProjectAsset(selectedAsset)}
+                        type="button"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
                   </div>
                   {selectedAsset.kind === "export" ? (
                     <section className="mt-5 rounded-2xl border border-white/[0.07] bg-white/[0.018] p-5">
@@ -3327,10 +3713,16 @@ export function ProjectWorkspace({
 
           <aside
             className={cn(
-              "min-h-0 flex-col border-l border-white/[0.07] bg-[#0d0c0a]/[0.76] backdrop-blur-lg xl:flex",
+              "relative min-h-0 flex-col border-l border-white/[0.07] bg-[#0d0c0a]/[0.76] backdrop-blur-lg xl:flex",
               mobilePanel === "agent" ? "flex" : "hidden",
             )}
           >
+            <button
+              aria-label="Resize agent pane"
+              className="absolute -left-1 top-0 z-20 hidden h-full w-2 cursor-col-resize bg-transparent xl:block"
+              onPointerDown={(event) => beginPaneResize("agent", event)}
+              type="button"
+            />
             {agentPanelCollapsed ? (
               <>
                 <div className="grid h-14 shrink-0 place-items-center border-b border-white/[0.07] bg-[#0d0c0a]/[0.96]">

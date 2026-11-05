@@ -94,6 +94,7 @@ async def save_upload(
     *,
     owner_id: UUID,
     project_id: UUID | None,
+    shot_id: UUID | None = None,
     upload: UploadFile,
     settings: Settings,
 ) -> Asset:
@@ -134,6 +135,7 @@ async def save_upload(
     asset = Asset(
         owner_id=owner_id,
         project_id=project_id,
+        shot_id=shot_id,
         kind="upload",
         filename=filename,
         content_type=content_type,

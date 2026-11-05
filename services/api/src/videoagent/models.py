@@ -336,6 +336,33 @@ class Asset(Base):
     )
 
 
+class ResourceSelection(Base):
+    __tablename__ = "resource_selections"
+    __table_args__ = (UniqueConstraint("resource_type", "resource_id"),)
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    owner_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+    )
+    project_id: Mapped[UUID] = mapped_column(
+        ForeignKey("projects.id", ondelete="CASCADE"),
+        index=True,
+    )
+    resource_type: Mapped[str] = mapped_column(String(16), index=True)
+    resource_id: Mapped[UUID] = mapped_column(Uuid, index=True)
+    asset_id: Mapped[UUID] = mapped_column(
+        ForeignKey("assets.id", ondelete="CASCADE"),
+        index=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+
 class ShareLink(Base):
     __tablename__ = "share_links"
 

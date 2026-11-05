@@ -321,6 +321,8 @@ locale state.
 | `GET` | `/hots/{id}/video` |
 | `GET/PUT` | `/projects/{id}/storyboard` |
 | `PATCH` | `/projects/{id}/storyboard/order` |
+| `PATCH` | `/projects/{id}/storyboard/shots/{shot_id}` |
+| `PATCH` | `/projects/{id}/storyboard/characters/{character_id}` |
 | `GET` | `/projects/{id}/progress` |
 | `GET/POST` | `/projects/{id}/visual-review/models`, `/visual-review` |
 | `POST` | `/shots/{id}/estimate` |
@@ -331,6 +333,8 @@ locale state.
 | `GET` | `/credits` |
 | `GET` | `/assets` |
 | `GET/POST` | `/projects/{id}/assets` |
+| `PATCH/DELETE` | `/assets/{id}` |
+| `GET/PUT` | `/projects/{id}/asset-selections` |
 | `GET` | `/assets/{id}/content` |
 | `POST` | `/projects/{id}/exports` |
 | `POST` | `/assets/{id}/share` |
@@ -403,7 +407,7 @@ pnpm test:e2e
 python scripts\build_pages.py
 ```
 
-Backend coverage currently consists of 69 tests, frontend coverage consists of
+Backend coverage currently consists of 71 tests, frontend coverage consists of
 30 Vitest tests, and Playwright contains seven no-fee browser flows. Playwright
 uses the Mock Provider for generation and therefore never consumes real
 Provider credits.

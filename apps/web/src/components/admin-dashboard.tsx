@@ -460,7 +460,7 @@ export function AdminDashboard() {
                     <h2 className="text-xl font-medium">Runtime</h2>
                     <dl className="mt-5 grid gap-4 text-base">
                       <div className="flex justify-between gap-4">
-                        <dt className="text-white/38">Pippit</dt>
+                        <dt className="text-white/38">Pippit China</dt>
                         <dd>{providerLabel(provider?.pippit)}</dd>
                       </div>
                       <div className="flex justify-between gap-4">

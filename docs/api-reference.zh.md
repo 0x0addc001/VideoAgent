@@ -395,6 +395,9 @@ cancelled
 | `GET` | `/assets` | 当前用户资产列表 |
 | `GET` | `/projects/{project_id}/assets` | 项目资产列表 |
 | `POST` | `/projects/{project_id}/assets` | 上传图片、视频或音频素材 |
+| `PATCH` | `/assets/{asset_id}` | 重命名当前用户素材 |
+| `DELETE` | `/assets/{asset_id}` | 软删除当前用户素材 |
+| `GET/PUT` | `/projects/{project_id}/asset-selections` | 读取或更新最终选用素材 |
 | `GET` | `/assets/{asset_id}/content` | 读取私有资产内容 |
 | `POST` | `/projects/{project_id}/exports` | 合成并导出当前成片 |
 | `POST` | `/assets/{asset_id}/share` | 创建限时分享链接 |
@@ -408,6 +411,9 @@ POST /projects/{project_id}/assets
 Content-Type: multipart/form-data
 file=<图片、视频或音频>
 ```
+
+项目上传可附带 `shot_id` 表单字段，把参考图归入镜头。返回的素材 UUID 就是
+Prompt 中使用的稳定 ID，格式为 `@<asset-id>`。
 
 导出请求：
 

@@ -144,6 +144,19 @@ Component tests cover:
   render waiting copy.
 - Settings renders Q&A as question-answer attribute rows without the retired
   lower stage cards.
+- Settings extracts semantic `Attribute / Value` clues and excludes approval
+  decisions instead of rendering raw Q&A text.
+- Shot and Character editors persist prompt/description changes through their
+  resource PATCH endpoints.
+- Uploads append `@<asset-id>` to the active Prompt; generation infers
+  image-to-video or image-to-image from that reference.
+- Uploaded and generated results appear under their directory with a persisted
+  final-selection checkbox, copy-ID, preview, and delete action.
+- Desktop panes default to equal widths and expose draggable separators.
+- The left navigation profile popover contains language, notifications, and
+  credits; the bottom trigger shows avatar and username.
+- Browser titles are exactly `VideoAgent`; the administration runtime label is
+  `Pippit China`.
 - Assets and Agents collapse independently and restore from their labeled rails.
 - The editor header shows a readiness progress bar that polls every three
   seconds; no storyboard “Review” score button is rendered.

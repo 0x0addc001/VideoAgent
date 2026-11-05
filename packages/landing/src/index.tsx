@@ -23,7 +23,15 @@ import {
   Video,
   X,
 } from "lucide-react";
-import { FormEvent, type ReactNode, useEffect, useRef, useState } from "react";
+import {
+  type CSSProperties,
+  FormEvent,
+  type PointerEvent as ReactPointerEvent,
+  type ReactNode,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { createPortal } from "react-dom";
 import {
   landingContent,
@@ -614,6 +622,7 @@ export function LandingPage({
     null,
   );
   const [navCollapsed, setNavCollapsed] = useState(false);
+  const [navWidth, setNavWidth] = useState<number | null>(null);
   const [historyGroupsOpen, setHistoryGroupsOpen] = useState({
     projects: true,
     recents: true,
@@ -622,8 +631,6 @@ export function LandingPage({
     content.documents[0]?.path ?? "",
   );
   const [docsLocale, setDocsLocale] = useState<LandingLocale>(locale);
-  const [languageOpen, setLanguageOpen] = useState(false);
-  const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [previewNoticeOpen, setPreviewNoticeOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
   const [publishTitleDraft, setPublishTitleDraft] = useState("");
@@ -690,12 +697,32 @@ export function LandingPage({
     useState<LandingProjectDraft["reviewMode"]>("auto");
   const [isCreating, setIsCreating] = useState(false);
   const [composerError, setComposerError] = useState<string | null>(null);
-  const notificationRef = useRef<HTMLDivElement>(null);
-  const languageRef = useRef<HTMLDivElement>(null);
   const accountRef = useRef<HTMLDivElement>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const playbookSnapshotRef = useRef<ComposerPlaybookSnapshot | null>(null);
   const currentConversationId = activeConversationId ?? hashConversationId;
+
+  function beginNavResize(event: ReactPointerEvent<HTMLButtonElement>) {
+    event.preventDefault();
+    const header = event.currentTarget.parentElement;
+    if (!header) return;
+    const startX = event.clientX;
+    const startWidth = header.getBoundingClientRect().width;
+    const move = (moveEvent: PointerEvent) => {
+      setNavWidth(
+        Math.max(
+          260,
+          Math.min(window.innerWidth * 0.32, startWidth + moveEvent.clientX - startX),
+        ),
+      );
+    };
+    const stop = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", stop);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", stop, { once: true });
+  }
 
   useEffect(() => {
     document.documentElement.lang = locale;
@@ -720,12 +747,6 @@ export function LandingPage({
     }
     syncHashView();
     function closeMenus(event: PointerEvent) {
-      if (!notificationRef.current?.contains(event.target as Node)) {
-        setNotificationsOpen(false);
-      }
-      if (!languageRef.current?.contains(event.target as Node)) {
-        setLanguageOpen(false);
-      }
       if (!accountRef.current?.contains(event.target as Node)) {
         setAccountMenuOpen(false);
       }
@@ -1470,7 +1491,6 @@ export function LandingPage({
   function selectDocsLocale(nextLocale: LandingLocale) {
     setDocsLocale(nextLocale);
     setDocsQuery("");
-    setLanguageOpen(false);
   }
 
   async function signOut() {
@@ -1600,6 +1620,11 @@ export function LandingPage({
     <main
       className={`va-landing app-mode${navCollapsed ? " nav-collapsed" : ""}`}
       data-view={activeView}
+      style={
+        navWidth
+          ? ({ "--app-nav-width": `${navWidth}px` } as CSSProperties)
+          : undefined
+      }
     >
       <div className="page-grain" aria-hidden="true" />
       <div className="hero-media-wall universal-video-wall" aria-hidden="true">
@@ -1628,6 +1653,14 @@ export function LandingPage({
       </div>
 
       <header className="site-header">
+        {!navCollapsed ? (
+          <button
+            aria-label="Resize navigation"
+            className="nav-resize-handle"
+            onPointerDown={beginNavResize}
+            type="button"
+          />
+        ) : null}
         <div className="nav-brand-row">
           <a
             className="brand"
@@ -1856,71 +1889,66 @@ export function LandingPage({
             </div>
         </div>
         <div className="header-actions">
-          <div className="language-switcher" ref={languageRef}>
-            <button
-              aria-expanded={languageOpen}
-              aria-label={content.nav.language}
-              className="language-button"
-              onClick={() => setLanguageOpen((current) => !current)}
-              title={`${content.nav.language}: ${docsLocale === "zh-CN" ? "中文" : "English"}`}
-              type="button"
-            >
-              <Globe aria-hidden="true" />
-            </button>
-            <div
-              aria-label={content.nav.language}
-              className="language-options"
-              hidden={!languageOpen}
-              role="menu"
-            >
-              <button
-                aria-checked={docsLocale === "en"}
-                onClick={() => selectDocsLocale("en")}
-                role="menuitemradio"
-                type="button"
-              >
-                English
-              </button>
-              <button
-                aria-checked={docsLocale === "zh-CN"}
-                onClick={() => selectDocsLocale("zh-CN")}
-                role="menuitemradio"
-                type="button"
-              >
-                中文
-              </button>
-            </div>
-          </div>
-          <div className="notification-switcher" ref={notificationRef}>
-            <button
-              aria-expanded={notificationsOpen}
-              aria-label={content.nav.notifications}
-              className="notification-button"
-              onClick={() => setNotificationsOpen((current) => !current)}
-              type="button"
-            >
-              <Bell aria-hidden="true" strokeWidth={1.6} />
-            </button>
-            <div className="notification-panel" hidden={!notificationsOpen}>
-              <p>{content.nav.emptyNotifications}</p>
-            </div>
-          </div>
-          <span className="credit-count" title={`${displayCredits} ${content.nav.credits}`}>
-            <Gem aria-hidden="true" className="credit-icon" strokeWidth={1.6} />
-            <span>{displayCredits}</span>
-          </span>
           <div className="account-switcher" ref={accountRef}>
             <button
               aria-expanded={accountMenuOpen}
               aria-label={content.nav.account}
-              className={`account-avatar${displayAvatar ? "" : " account-avatar-default"}`}
+              className="profile-trigger"
               onClick={() => setAccountMenuOpen((current) => !current)}
               title={content.nav.account}
               type="button"
             >
-              {displayAvatar ?? <UserRound className="avatar-placeholder" />}
+              <span
+                className={`account-avatar${displayAvatar ? "" : " account-avatar-default"}`}
+              >
+                {displayAvatar ?? <UserRound className="avatar-placeholder" />}
+              </span>
+              <span className="profile-name">
+                {accountEmail?.split("@")[0] ??
+                  (docsLocale === "zh-CN" ? "访客" : "Guest")}
+              </span>
+              <ChevronDown aria-hidden="true" />
             </button>
-            <div className="account-menu" hidden={!accountMenuOpen}>
+            <div className="account-menu profile-menu" hidden={!accountMenuOpen}>
+              <div className="profile-menu-row profile-language-row">
+                <span>
+                  <Globe aria-hidden="true" />
+                  {content.nav.language}
+                </span>
+                <div>
+                  <button
+                    aria-checked={docsLocale === "en"}
+                    onClick={() => selectDocsLocale("en")}
+                    role="menuitemradio"
+                    type="button"
+                  >
+                    EN
+                  </button>
+                  <button
+                    aria-checked={docsLocale === "zh-CN"}
+                    onClick={() => selectDocsLocale("zh-CN")}
+                    role="menuitemradio"
+                    type="button"
+                  >
+                    中
+                  </button>
+                </div>
+              </div>
+              <div className="profile-menu-row">
+                <span>
+                  <Bell aria-hidden="true" />
+                  {content.nav.notifications}
+                </span>
+                <em>{content.nav.emptyNotifications}</em>
+              </div>
+              <div className="profile-menu-row">
+                <span>
+                  <Gem aria-hidden="true" />
+                  {content.nav.credits}
+                </span>
+                <strong>{displayCredits}</strong>
+              </div>
+              <div className="profile-menu-divider" />
               {accountEmail ? (
                 <>
                   <span className="account-email">{accountEmail}</span>

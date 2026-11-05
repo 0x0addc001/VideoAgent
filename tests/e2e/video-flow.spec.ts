@@ -28,7 +28,7 @@ test("runs a complete mock video workflow without paid generation", async ({
     "Read project memory",
   );
   await expect(
-    page.getByRole("progressbar", { name: "Production progress" }),
+    page.getByRole("progressbar", { name: "Progress" }),
   ).toBeVisible();
   await expect(page.getByRole("button", { name: "Review" })).toHaveCount(0);
   for (let stage = 0; stage < 3; stage += 1) {
@@ -46,15 +46,7 @@ test("runs a complete mock video workflow without paid generation", async ({
     page.getByRole("button", { name: "Continue with this direction" }),
   ).toHaveCount(0);
 
-  const characterFolder = page
-    .locator("summary")
-    .filter({ hasText: "Lead" })
-    .first();
-  await characterFolder.click();
-  await characterFolder
-    .locator("..")
-    .getByRole("button", { name: "Generation" })
-    .click();
+  await page.getByRole("button", { name: "Lead", exact: true }).click();
   const characterGeneration = page.waitForResponse(
     (response) =>
       response.request().method() === "POST" &&
@@ -62,30 +54,38 @@ test("runs a complete mock video workflow without paid generation", async ({
         new URL(response.url()).pathname,
       ),
   );
-  await page.getByRole("button", { name: "Generate directly" }).click();
-  expect((await characterGeneration).status()).toBe(201);
-  const characterPreview = page.getByRole("img", { name: "Lead" });
-  await characterPreview.scrollIntoViewIfNeeded();
-  await expect
-    .poll(() =>
-      characterPreview.evaluate(
-        (image) =>
-          image instanceof HTMLImageElement &&
-          image.complete &&
-          image.naturalWidth > 0,
-      ),
-    )
-    .toBe(true);
-  await expect(characterPreview).toBeVisible();
+  await page.getByRole("button", { name: "Generate", exact: true }).click();
+  const characterResponse = await characterGeneration;
+  expect(characterResponse.status()).toBe(201);
+  const characterAsset = (await characterResponse.json()) as { id: string };
+  await expect(
+    page.getByText(`@${characterAsset.id.slice(0, 8)}`).first(),
+  ).toBeVisible();
 
   await page.getByRole("button", { name: "Shot 1" }).click();
+  const uploadResponsePromise = page.waitForResponse(
+    (response) =>
+      response.request().method() === "POST" &&
+      /\/api\/v1\/projects\/[^/]+\/assets$/.test(
+        new URL(response.url()).pathname,
+      ),
+  );
+  await page
+    .getByLabel("Upload shot reference")
+    .setInputFiles(resolve("apps/web/public/media/vlog-hero-poster.jpg"));
+  const uploadedAsset = (await (await uploadResponsePromise).json()) as {
+    id: string;
+  };
+  await expect(page.getByLabel("Shot prompt")).toHaveValue(
+    new RegExp(`@${uploadedAsset.id}`),
+  );
 
   const pollResponsePromise = page.waitForResponse(
     (response) =>
       response.request().method() === "GET" &&
       /\/api\/v1\/jobs\/[^/]+$/.test(new URL(response.url()).pathname),
   );
-  await page.getByRole("button", { name: "Generate directly" }).click();
+  await page.getByRole("button", { name: "Generate", exact: true }).click();
   const pollResponse = await pollResponsePromise;
   expect((await pollResponse.json()) as { status: string }).toMatchObject({
     status: "succeeded",
@@ -93,7 +93,15 @@ test("runs a complete mock video workflow without paid generation", async ({
 
   const shareAction = page.getByRole("button", { name: "Share", exact: true });
   await expect(shareAction).toBeEnabled();
+  const exportResponsePromise = page.waitForResponse(
+    (response) =>
+      response.request().method() === "POST" &&
+      /\/api\/v1\/projects\/[^/]+\/exports$/.test(
+        new URL(response.url()).pathname,
+      ),
+  );
   await shareAction.click();
+  expect((await exportResponsePromise).status()).toBe(200);
   await expect(page.getByRole("heading", { name: "Export ready" })).toBeVisible();
   await expect(page.getByLabel(/Share link, valid for 24 hours/)).toHaveValue(
     /\/api\/v1\/shares\//,

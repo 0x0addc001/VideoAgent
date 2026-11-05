@@ -380,6 +380,14 @@ The shared Landing UI owns:
 - Final Cut review is separate from readiness. Users choose a configured vision
   evaluator and metrics for character consistency, style consistency, prompt
   alignment, or temporal stability.
+- Settings derives semantic attributes from conversation instead of showing raw
+  Q&A or approval decisions as values.
+- Shot and Character editors expose editable descriptions and prompts. Uploads
+  append `@<asset-id>` to the prompt and the server infers reference mode.
+- Results live under their Shot or Character directory with persisted final
+  selection, copy-ID, preview, and delete actions.
+- Desktop navigation, Assets, Canvas, and Agents use equal defaults and draggable
+  pane separators. Account essentials live in the profile popover.
 - Only a newly returned Agent reply uses type-on presentation. Persisted history
   and completed replies render as static text, including after a panel is
   collapsed and reopened.

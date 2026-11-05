@@ -7,10 +7,7 @@ import { routing } from "@/i18n/routing";
 import "../globals.css";
 
 export const metadata: Metadata = {
-  title: {
-    default: "VideoAgent — AI video creation studio",
-    template: "%s · VideoAgent",
-  },
+  title: { absolute: "VideoAgent" },
   description:
     "Plan, generate, review, and assemble videos with an AI creative director.",
   icons: {

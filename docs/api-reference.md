@@ -406,6 +406,9 @@ rejected before an Asset record is created.
 | `GET` | `/assets` | List the current user's assets |
 | `GET` | `/projects/{project_id}/assets` | List assets for one owned project |
 | `POST` | `/projects/{project_id}/assets` | Upload image, video, or audio media |
+| `PATCH` | `/assets/{asset_id}` | Rename an owned asset |
+| `DELETE` | `/assets/{asset_id}` | Soft-delete an owned asset |
+| `GET/PUT` | `/projects/{project_id}/asset-selections` | Read or update final asset choices |
 | `GET` | `/assets/{asset_id}/content` | Download or preview a private asset |
 | `POST` | `/projects/{project_id}/exports` | Compose and export the current film |
 | `POST` | `/assets/{asset_id}/share` | Create a time-limited share link |
@@ -419,6 +422,9 @@ POST /projects/{project_id}/assets
 Content-Type: multipart/form-data
 file=<image, video, or audio>
 ```
+
+Project uploads accept an optional `shot_id` form field. The returned asset UUID
+is the stable ID used in prompts as `@<asset-id>`.
 
 Export request:
 

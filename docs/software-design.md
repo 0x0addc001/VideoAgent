@@ -535,6 +535,11 @@ cancelled
 - 项目工作区采用 IDE 式布局：可压缩历史导航、`Direction` / `Vision` 资源树、中央编辑画布和右侧审批式 Agents。
 - Assets 与 Agents 侧栏可折叠为带标签的窄轨；展开宽度使用响应式比例，适配不同桌面尺寸。
 - `Direction` 包含 `Settings`、`Outlines`、`Scripts`；`Vision` 包含 `Characters`、`Shots`、`Final Cut`。角色保留描述页与生成页，每个 Shot 使用一个合并页面；空目录不显示等待文案。
+- Settings 从对话中提炼 `属性 / 值`，不直接展示原始问答或批准消息。
+- Shot 与 Character 页面可直接编辑描述和 Prompt；上传素材自动追加 `@<asset-id>`，
+  服务端根据 ID 选择参考生成。
+- Shot/Character 结果位于对应目录下，支持最终选用、复制 ID、预览和删除。
+- 导航、Assets、Canvas、Agents 默认等宽并支持拖拽调整；账号下拉集中语言、通知和积分。
 - 项目目录将展开按钮放在蓝色目录图标左侧；被收纳的对话从 Recents 移入对应目录，并以缩进子项显示。
 - 品牌与浏览器标签页图标统一使用蓝色播放键；激活导航图标采用填充/线框反转。
 - 管理后台使用独立控制台布局，与用户创作界面隔离。

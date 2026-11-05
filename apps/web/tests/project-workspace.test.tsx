@@ -32,6 +32,9 @@ describe("ProjectWorkspace", () => {
     window.history.replaceState({}, "", "/en#conversation/project-1?start=1");
     const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
+      if (url.endsWith("/projects/project-1/asset-selections")) {
+        return Promise.resolve(Response.json({ items: [] }));
+      }
       if (url.endsWith("/projects/project-1/progress")) {
         return Promise.resolve(
           Response.json({
@@ -310,8 +313,8 @@ describe("ProjectWorkspace", () => {
     expect(screen.getByRole("button", { name: "Vision" })).toBeVisible();
     expect(screen.getByRole("button", { name: "Characters" })).toBeVisible();
     expect(screen.getByText("Maya")).toBeVisible();
-    expect(screen.getAllByRole("button", { name: "Description" }).length).toBe(1);
-    expect(screen.getAllByRole("button", { name: "Generation" }).length).toBe(1);
+    expect(screen.queryByRole("button", { name: "Description" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Generation" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Shots" })).toBeVisible();
     expect(screen.getByRole("button", { name: "Shot 1" })).toBeVisible();
     expect(screen.getByRole("button", { name: "Final Cut" })).toBeVisible();
@@ -334,7 +337,7 @@ describe("ProjectWorkspace", () => {
     expect(document.querySelector(".max-h-64")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Settings" }));
     expect(screen.getByText("Attributes")).toBeVisible();
-    expect(screen.getByText("Director input")).toBeVisible();
+    expect(screen.getByText("Creative brief")).toBeVisible();
     expect(screen.queryByText("Agent prompt")).not.toBeInTheDocument();
     expect(screen.queryByText("Director answer")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Outlines" }));
@@ -346,12 +349,12 @@ describe("ProjectWorkspace", () => {
       document.querySelector('[data-document-mode="script"]'),
     ).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Shot 1" }));
-    expect(screen.getByText("Upload asset")).toBeVisible();
+    expect(screen.getByText("Upload")).toBeVisible();
     expect(screen.getByText("Prompt")).toBeVisible();
     expect(
       screen.queryByRole("button", { name: "Review" }),
     ).not.toBeInTheDocument();
-    expect(screen.getByRole("progressbar", { name: "Production progress" }))
+    expect(screen.getByRole("progressbar", { name: "Progress" }))
       .toHaveAttribute("aria-valuenow", "85");
     fireEvent.click(screen.getByRole("button", { name: "final-cut.mp4" }));
     expect(await screen.findByText("Final Cut review")).toBeVisible();
@@ -366,6 +369,9 @@ describe("ProjectWorkspace", () => {
     window.history.replaceState({}, "", "/en/projects/project-approval");
     const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
+      if (url.endsWith("/projects/project-approval/asset-selections")) {
+        return Promise.resolve(Response.json({ items: [] }));
+      }
       if (url.endsWith("/projects/project-approval/progress")) {
         return Promise.resolve(
           Response.json({

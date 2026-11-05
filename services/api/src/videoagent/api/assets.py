@@ -1,8 +1,8 @@
 from datetime import UTC, datetime
-from typing import Annotated
+from typing import Annotated, cast
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, UploadFile
+from fastapi import APIRouter, Depends, File, Form, UploadFile
 from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,12 +10,25 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from videoagent.api.dependencies import get_current_user, get_session, get_settings
 from videoagent.config import Settings
 from videoagent.errors import AppError
-from videoagent.models import Asset, ShareLink, User
+from videoagent.models import (
+    Asset,
+    Character,
+    ResourceSelection,
+    ShareLink,
+    Shot,
+    Storyboard,
+    User,
+)
 from videoagent.schemas import (
     AssetList,
     AssetRead,
+    AssetUpdate,
     ExportRequest,
     ExportResponse,
+    ResourceSelectionList,
+    ResourceSelectionRead,
+    ResourceSelectionUpdate,
+    ResourceType,
     ShareLinkCreate,
     ShareLinkRead,
 )
@@ -90,16 +103,164 @@ async def upload_project_asset(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
     settings: Annotated[Settings, Depends(get_settings)],
+    shot_id: Annotated[UUID | None, Form()] = None,
 ) -> AssetRead:
     await owned_project_or_404(session, project_id, user.id)
+    if shot_id is not None:
+        owned_shot = await session.scalar(
+            select(Shot.id)
+            .join(Storyboard, Storyboard.id == Shot.storyboard_id)
+            .where(Shot.id == shot_id, Storyboard.project_id == project_id)
+        )
+        if owned_shot is None:
+            raise AppError(
+                status_code=404,
+                code="SHOT_NOT_FOUND",
+                message="The shot was not found.",
+            )
     asset = await save_upload(
         session,
         owner_id=user.id,
         project_id=project_id,
+        shot_id=shot_id,
         upload=file,
         settings=settings,
     )
     return asset_read(asset)
+
+
+@router.patch("/assets/{asset_id}", response_model=AssetRead)
+async def rename_asset(
+    asset_id: UUID,
+    payload: AssetUpdate,
+    user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> AssetRead:
+    asset = await owned_asset_or_404(session, asset_id, user.id)
+    asset.filename = payload.filename.strip()
+    await session.commit()
+    await session.refresh(asset)
+    return asset_read(asset)
+
+
+@router.delete("/assets/{asset_id}", status_code=204)
+async def delete_asset(
+    asset_id: UUID,
+    user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> None:
+    asset = await owned_asset_or_404(session, asset_id, user.id)
+    asset.deleted_at = datetime.now(UTC)
+    for selection in (
+        await session.scalars(
+            select(ResourceSelection).where(ResourceSelection.asset_id == asset.id)
+        )
+    ).all():
+        await session.delete(selection)
+    await session.commit()
+
+
+@router.get(
+    "/projects/{project_id}/asset-selections",
+    response_model=ResourceSelectionList,
+)
+async def list_asset_selections(
+    project_id: UUID,
+    user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> ResourceSelectionList:
+    await owned_project_or_404(session, project_id, user.id)
+    selections = (
+        await session.scalars(
+            select(ResourceSelection).where(
+                ResourceSelection.project_id == project_id,
+                ResourceSelection.owner_id == user.id,
+            )
+        )
+    ).all()
+    return ResourceSelectionList(
+        items=[
+            ResourceSelectionRead(
+                resource_type=cast(ResourceType, selection.resource_type),
+                resource_id=selection.resource_id,
+                asset_id=selection.asset_id,
+            )
+            for selection in selections
+        ]
+    )
+
+
+@router.put(
+    "/projects/{project_id}/asset-selections",
+    response_model=ResourceSelectionList,
+)
+async def update_asset_selection(
+    project_id: UUID,
+    payload: ResourceSelectionUpdate,
+    user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> ResourceSelectionList:
+    await owned_project_or_404(session, project_id, user.id)
+    if payload.resource_type == "shot":
+        resource = await session.scalar(
+            select(Shot.id)
+            .join(Storyboard, Storyboard.id == Shot.storyboard_id)
+            .where(Shot.id == payload.resource_id, Storyboard.project_id == project_id)
+        )
+    else:
+        resource = await session.scalar(
+            select(Character.id)
+            .join(Storyboard, Storyboard.id == Character.storyboard_id)
+            .where(
+                Character.id == payload.resource_id,
+                Storyboard.project_id == project_id,
+            )
+        )
+    if resource is None:
+        raise AppError(
+            status_code=404,
+            code="RESOURCE_NOT_FOUND",
+            message="The selected production resource was not found.",
+        )
+    selection = await session.scalar(
+        select(ResourceSelection).where(
+            ResourceSelection.resource_type == payload.resource_type,
+            ResourceSelection.resource_id == payload.resource_id,
+            ResourceSelection.project_id == project_id,
+            ResourceSelection.owner_id == user.id,
+        )
+    )
+    if payload.asset_id is None:
+        if selection is not None:
+            await session.delete(selection)
+    else:
+        asset = await session.scalar(
+            select(Asset).where(
+                Asset.id == payload.asset_id,
+                Asset.project_id == project_id,
+                Asset.owner_id == user.id,
+                Asset.deleted_at.is_(None),
+            )
+        )
+        if asset is None:
+            raise AppError(
+                status_code=404,
+                code="ASSET_NOT_FOUND",
+                message="The selected asset was not found.",
+            )
+        if selection is None:
+            selection = ResourceSelection(
+                owner_id=user.id,
+                project_id=project_id,
+                resource_type=payload.resource_type,
+                resource_id=payload.resource_id,
+                asset_id=asset.id,
+            )
+            session.add(selection)
+        else:
+            selection.asset_id = asset.id
+    await session.commit()
+    return await list_asset_selections(project_id, user, session)
 
 
 @router.get("/assets/{asset_id}/content")

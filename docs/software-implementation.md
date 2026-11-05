@@ -432,7 +432,7 @@ task reference    → query-result   → JobStatus + result URL
 | GET | `/projects` | 当前用户项目列表 |
 | POST | `/projects` | 创建项目 |
 | GET | `/projects/{id}` | 读取项目 |
-| PATCH | `/projects/{id}` | 重命名项目 |
+| PATCH | `/projects/{id}` | 编辑项目名称或 Direction Brief |
 | DELETE | `/projects/{id}` | 归档项目 |
 | GET | `/projects/{id}/messages` | 对话历史 |
 | POST | `/projects/{id}/messages` | Agent 生成故事板并保存对话 |
@@ -449,6 +449,8 @@ task reference    → query-result   → JobStatus + result URL
 | GET | `/projects/{id}/storyboard` | 获取故事板 |
 | PUT | `/projects/{id}/storyboard` | 整体替换故事板 |
 | PATCH | `/projects/{id}/storyboard/order` | 调整镜头顺序并保留 Shot ID 与资产 |
+| PATCH | `/projects/{id}/storyboard/shots/{shot_id}` | 编辑单个 Shot |
+| PATCH | `/projects/{id}/storyboard/characters/{character_id}` | 编辑单个 Character |
 | POST | `/shots/{id}/estimate` | 查询积分估算 |
 | POST | `/shots/{id}/generate` | 提交生成任务 |
 | GET | `/jobs/{id}` | 查询并刷新任务状态 |
@@ -459,6 +461,8 @@ task reference    → query-result   → JobStatus + result URL
 | GET | `/credits` | 当前用户 VideoAgent 积分余额 |
 | GET | `/assets` | 当前用户资产列表 |
 | GET/POST | `/projects/{id}/assets` | 项目资产列表与上传 |
+| PATCH/DELETE | `/assets/{id}` | 重命名或软删除素材 |
+| GET/PUT | `/projects/{id}/asset-selections` | 读取或更新资源最终选用素材 |
 | GET | `/assets/{id}/content` | 读取私有资产 |
 | POST | `/projects/{id}/exports` | 合成与交付版本导出 |
 | POST | `/assets/{id}/share` | 创建限时分享 |

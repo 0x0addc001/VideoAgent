@@ -29,7 +29,7 @@ export type LandingModel = {
 export const landingContent = {
   en: {
     localeLabel: "English",
-    documentTitle: "VideoAgent — You Are the Director",
+    documentTitle: "VideoAgent",
     nav: {
       agents: "Agents",
       skills: "Skills",
@@ -627,7 +627,7 @@ export const landingContent = {
   },
   "zh-CN": {
     localeLabel: "简体中文",
-    documentTitle: "VideoAgent — 把脑海里的画面拍出来",
+    documentTitle: "VideoAgent",
     nav: {
       agents: "Agents",
       skills: "Skills",

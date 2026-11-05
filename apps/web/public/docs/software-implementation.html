@@ -564,6 +564,14 @@ Chinese: product-requirements.zh.html</code></pre>
 <td><code>/projects/{id}/storyboard/order</code></td>
 </tr>
 <tr>
+<td><code>PATCH</code></td>
+<td><code>/projects/{id}/storyboard/shots/{shot_id}</code></td>
+</tr>
+<tr>
+<td><code>PATCH</code></td>
+<td><code>/projects/{id}/storyboard/characters/{character_id}</code></td>
+</tr>
+<tr>
 <td><code>GET</code></td>
 <td><code>/projects/{id}/progress</code></td>
 </tr>
@@ -602,6 +610,14 @@ Chinese: product-requirements.zh.html</code></pre>
 <tr>
 <td><code>GET/POST</code></td>
 <td><code>/projects/{id}/assets</code></td>
+</tr>
+<tr>
+<td><code>PATCH/DELETE</code></td>
+<td><code>/assets/{id}</code></td>
+</tr>
+<tr>
+<td><code>GET/PUT</code></td>
+<td><code>/projects/{id}/asset-selections</code></td>
 </tr>
 <tr>
 <td><code>GET</code></td>
@@ -704,7 +720,7 @@ pnpm --dir apps/web typecheck
 pnpm --dir apps/web build
 pnpm test:e2e
 python scripts\build_pages.py</code></pre>
-<p>Backend coverage currently consists of 69 tests, frontend coverage consists of 30 Vitest tests, and Playwright contains seven no-fee browser flows. Playwright uses the Mock Provider for generation and therefore never consumes real Provider credits.</p></article>
+<p>Backend coverage currently consists of 71 tests, frontend coverage consists of 30 Vitest tests, and Playwright contains seven no-fee browser flows. Playwright uses the Mock Provider for generation and therefore never consumes real Provider credits.</p></article>
     </main>
     <script src="../docs.js?v=32"></script>
   </body>

@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
 
 SupportedLocale = Literal["en", "zh-CN"]
 
@@ -159,7 +159,14 @@ class ProjectCreate(BaseModel):
 
 
 class ProjectUpdate(BaseModel):
-    title: str = Field(min_length=1, max_length=200)
+    title: str | None = Field(default=None, min_length=1, max_length=200)
+    brief: str | None = Field(default=None, max_length=20_000)
+
+    @model_validator(mode="after")
+    def at_least_one_field(self) -> "ProjectUpdate":
+        if self.title is None and self.brief is None:
+            raise ValueError("At least one project field must be provided")
+        return self
 
 
 class ProjectRead(BaseModel):
@@ -276,11 +283,39 @@ class ShotInput(BaseModel):
     generation_mode: GenerationMode = "text_to_video"
 
 
+class ShotUpdate(BaseModel):
+    description: str | None = Field(default=None, min_length=1, max_length=500)
+    prompt_en: str | None = Field(default=None, min_length=1, max_length=4000)
+    prompt_zh: str | None = Field(default=None, max_length=4000)
+    duration_seconds: int | None = Field(default=None, ge=1, le=15)
+    aspect_ratio: AspectRatio | None = None
+    generation_mode: GenerationMode | None = None
+
+    @model_validator(mode="after")
+    def at_least_one_field(self) -> "ShotUpdate":
+        if not self.model_fields_set:
+            raise ValueError("At least one shot field must be provided")
+        return self
+
+
 class CharacterInput(BaseModel):
     name: str = Field(min_length=1, max_length=120)
     description: str = Field(min_length=1, max_length=2000)
     prompt_en: str = Field(min_length=1, max_length=4000)
     prompt_zh: str | None = Field(default=None, max_length=4000)
+
+
+class CharacterUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=120)
+    description: str | None = Field(default=None, min_length=1, max_length=2000)
+    prompt_en: str | None = Field(default=None, min_length=1, max_length=4000)
+    prompt_zh: str | None = Field(default=None, max_length=4000)
+
+    @model_validator(mode="after")
+    def at_least_one_field(self) -> "CharacterUpdate":
+        if not self.model_fields_set:
+            raise ValueError("At least one character field must be provided")
+        return self
 
 
 class StoryboardReplace(BaseModel):
@@ -439,6 +474,29 @@ class AssetRead(BaseModel):
 
 class AssetList(BaseModel):
     items: list[AssetRead]
+
+
+class AssetUpdate(BaseModel):
+    filename: str = Field(min_length=1, max_length=256)
+
+
+ResourceType = Literal["shot", "character"]
+
+
+class ResourceSelectionUpdate(BaseModel):
+    resource_type: ResourceType
+    resource_id: UUID
+    asset_id: UUID | None = None
+
+
+class ResourceSelectionRead(BaseModel):
+    resource_type: ResourceType
+    resource_id: UUID
+    asset_id: UUID
+
+
+class ResourceSelectionList(BaseModel):
+    items: list[ResourceSelectionRead]
 
 
 class ShareLinkCreate(BaseModel):

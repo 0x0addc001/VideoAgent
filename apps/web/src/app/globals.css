@@ -279,8 +279,8 @@ select {
 
 @media (min-width: 1280px) {
   .workspace-grid {
-    --assets-pane-width: 280px;
-    --agent-pane-width: 360px;
+    --assets-pane-width: 25vw;
+    --agent-pane-width: 25vw;
     grid-template-columns:
       var(--assets-pane-width)
       minmax(0, 1fr)
@@ -293,13 +293,6 @@ select {
 
   .workspace-grid.agent-collapsed {
     --agent-pane-width: 58px;
-  }
-}
-
-@media (min-width: 1440px) {
-  .workspace-grid {
-    --assets-pane-width: clamp(300px, 24vw, 430px);
-    --agent-pane-width: clamp(400px, 31vw, 520px);
   }
 }
 

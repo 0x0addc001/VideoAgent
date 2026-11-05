@@ -96,7 +96,10 @@ async def rename_project(
             code="PROJECT_NOT_FOUND",
             message="The project was not found.",
         )
-    project.title = payload.title.strip()
+    if payload.title is not None:
+        project.title = payload.title.strip()
+    if payload.brief is not None:
+        project.brief = payload.brief.strip()
     session.add(project)
     await session.commit()
     await session.refresh(project)

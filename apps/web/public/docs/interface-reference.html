@@ -438,6 +438,21 @@ http://localhost:8000/openapi.json</code></pre>
 <td>Upload image, video, or audio media</td>
 </tr>
 <tr>
+<td><code>PATCH</code></td>
+<td><code>/assets/{asset_id}</code></td>
+<td>Rename an owned asset</td>
+</tr>
+<tr>
+<td><code>DELETE</code></td>
+<td><code>/assets/{asset_id}</code></td>
+<td>Soft-delete an owned asset</td>
+</tr>
+<tr>
+<td><code>GET/PUT</code></td>
+<td><code>/projects/{project_id}/asset-selections</code></td>
+<td>Read or update final asset choices</td>
+</tr>
+<tr>
 <td><code>GET</code></td>
 <td><code>/assets/{asset_id}/content</code></td>
 <td>Download or preview a private asset</td>
@@ -467,6 +482,7 @@ http://localhost:8000/openapi.json</code></pre>
 <pre><code class="language-text">POST /projects/{project_id}/assets
 Content-Type: multipart/form-data
 file=&lt;image, video, or audio&gt;</code></pre>
+<p>Project uploads accept an optional <code>shot_id</code> form field. The returned asset UUID is the stable ID used in prompts as <code>@&lt;asset-id&gt;</code>.</p>
 <p>Export request:</p>
 <pre><code class="language-json">{
   &quot;aspect_ratios&quot;: [&quot;16:9&quot;, &quot;9:16&quot;, &quot;1:1&quot;],

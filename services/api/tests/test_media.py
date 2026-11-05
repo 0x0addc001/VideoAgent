@@ -79,3 +79,39 @@ async def test_mock_generation_export_and_share(client):
     assert revoked.status_code == 204
     unavailable = await client.get(share["share_url"])
     assert unavailable.status_code == 404
+
+
+@pytest.mark.api
+async def test_shot_asset_upload_selection_rename_and_delete(client):
+    project, shot = await project_with_shot(client)
+    uploaded = await client.post(
+        f"/api/v1/projects/{project['id']}/assets",
+        data={"shot_id": shot["id"]},
+        files={"file": ("reference.png", b"\x89PNG\r\n\x1a\ncontent", "image/png")},
+    )
+    assert uploaded.status_code == 201
+    asset = uploaded.json()
+    assert asset["shot_id"] == shot["id"]
+
+    selected = await client.put(
+        f"/api/v1/projects/{project['id']}/asset-selections",
+        json={
+            "resource_type": "shot",
+            "resource_id": shot["id"],
+            "asset_id": asset["id"],
+        },
+    )
+    assert selected.status_code == 200
+    assert selected.json()["items"][0]["asset_id"] == asset["id"]
+
+    renamed = await client.patch(
+        f"/api/v1/assets/{asset['id']}",
+        json={"filename": "opening-reference.png"},
+    )
+    assert renamed.status_code == 200
+    assert renamed.json()["filename"] == "opening-reference.png"
+
+    deleted = await client.delete(f"/api/v1/assets/{asset['id']}")
+    assert deleted.status_code == 204
+    assets = await client.get(f"/api/v1/projects/{project['id']}/assets")
+    assert all(item["id"] != asset["id"] for item in assets.json()["items"])

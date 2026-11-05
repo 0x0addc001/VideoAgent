@@ -75,12 +75,7 @@ Skills
 Hots
 Assets
 Docs</code></pre>
-<p>The account controls are fixed at the bottom of the left navigation in this order:</p>
-<pre><code class="language-text">Language
-Notifications
-Credits
-Avatar</code></pre>
-<p>The account-control container has no outer border. Search, language, notifications, credits, and avatar controls use translucent surfaces. Desktop account menus open upward and use the same treatment.</p>
+<p>The left navigation bottom shows the avatar and username in one profile trigger. Language, notifications, and credits live inside its popover instead of using separate bottom controls. All surfaces are translucent and open upward.</p>
 <p>The avatar opens login and registration when signed out. When signed in, it shows the account email and a sign-out action.</p>
 <h2 id="4-agents">4. Agents</h2>
 <ul>
@@ -174,8 +169,8 @@ video_agent/agent_handoff</code></pre>
 <ul>
 <li>The resource tree groups <code>Settings</code>, <code>Outlines</code>, and <code>Scripts</code> under</li>
 <p><code>Direction</code>, and <code>Characters</code>, <code>Shots</code>, and <code>Final Cut</code> under <code>Vision</code>.</p>
-<li>Settings combines production attributes and Agent-director Q&amp;A in one</li>
-<p>attribute table. Empty directories remain quiet and do not display waiting copy.</p>
+<li>Settings combines production attributes and extracted Agent-director clues in</li>
+<p>one <code>Attribute / Value</code> table. Q&amp;A is reduced to semantic keys and values; approval messages are not treated as attributes.</p>
 <li>Agents create a directory for every recurring character and shot. Characters</li>
 <p>expose Description and Generation pages; each Shot opens one combined Description and Generation page.</p>
 <li>While Agents are planning, the conversation shows durable execution steps for</li>
@@ -186,6 +181,14 @@ video_agent/agent_handoff</code></pre>
 <p>stage and completed Shots. It polls every three seconds and does not present readiness as visual quality.</p>
 <li>Final Cut provides optional publish-time visual review. Users choose a</li>
 <p>configured vision evaluator and metrics such as character consistency, style consistency, prompt alignment, and temporal stability.</p>
+<li>Settings, Outlines, Scripts, Characters, Shots, and Final Cut metadata are</li>
+<p>editable in place.</p>
+<li>Uploads receive a stable asset ID and append <code>@&lt;asset-id&gt;</code> to the active</li>
+<p>Prompt. Shots and Characters infer reference generation from that ID.</p>
+<li>Shot and Character results are grouped under their resource directory. Each</li>
+<p>result supports final-selection checkbox, ID copy, preview, and deletion.</p>
+<li>Navigation, Assets, Canvas, and Agents default to equal desktop widths and</li>
+<p>provide draggable separators.</p>
 <li>Character and shot Generation pages support an uploaded image, reference-image</li>
 <p>generation, or direct text generation where the selected model supports the mode. Generated media can be downloaded.</p>
 <li>Uploads must pass content-type, file-signature, and size validation.</li>

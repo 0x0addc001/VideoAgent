@@ -34,19 +34,9 @@ Assets
 Docs
 ```
 
-The account controls are fixed at the bottom of the left navigation in this
-order:
-
-```text
-Language
-Notifications
-Credits
-Avatar
-```
-
-The account-control container has no outer border.
-Search, language, notifications, credits, and avatar controls use translucent
-surfaces. Desktop account menus open upward and use the same treatment.
+The left navigation bottom shows the avatar and username in one profile trigger.
+Language, notifications, and credits live inside its popover instead of using
+separate bottom controls. All surfaces are translucent and open upward.
 
 The avatar opens login and registration when signed out. When signed in, it
 shows the account email and a sign-out action.
@@ -157,9 +147,9 @@ Assets contains the current user's finished and in-progress work.
 
 - The resource tree groups `Settings`, `Outlines`, and `Scripts` under
   `Direction`, and `Characters`, `Shots`, and `Final Cut` under `Vision`.
-- Settings combines production attributes and Agent-director Q&A in one
-  attribute table. Empty directories remain quiet and do not display waiting
-  copy.
+- Settings combines production attributes and extracted Agent-director clues in
+  one `Attribute / Value` table. Q&A is reduced to semantic keys and values;
+  approval messages are not treated as attributes.
 - Agents create a directory for every recurring character and shot. Characters
   expose Description and Generation pages; each Shot opens one combined
   Description and Generation page.
@@ -174,6 +164,14 @@ Assets contains the current user's finished and in-progress work.
 - Final Cut provides optional publish-time visual review. Users choose a
   configured vision evaluator and metrics such as character consistency, style
   consistency, prompt alignment, and temporal stability.
+- Settings, Outlines, Scripts, Characters, Shots, and Final Cut metadata are
+  editable in place.
+- Uploads receive a stable asset ID and append `@<asset-id>` to the active
+  Prompt. Shots and Characters infer reference generation from that ID.
+- Shot and Character results are grouped under their resource directory. Each
+  result supports final-selection checkbox, ID copy, preview, and deletion.
+- Navigation, Assets, Canvas, and Agents default to equal desktop widths and
+  provide draggable separators.
 - Character and shot Generation pages support an uploaded image, reference-image
   generation, or direct text generation where the selected model supports the
   mode. Generated media can be downloaded.

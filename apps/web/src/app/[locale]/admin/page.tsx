@@ -2,7 +2,7 @@ import { setRequestLocale } from "next-intl/server";
 import { AdminDashboard } from "@/components/admin-dashboard";
 
 export const metadata = {
-  title: "Administration",
+  title: { absolute: "VideoAgent" },
 };
 
 export default async function AdminPage({
