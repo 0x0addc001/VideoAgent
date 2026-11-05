@@ -1514,15 +1514,12 @@ export function LandingPage({
         </nav>
         {mode === "app" && accountEmail ? (
           <div className="sidebar-history">
-            <div className="sidebar-history-heading">
-              <span>{content.nav.projects}</span>
-              <small>{workspaceFolders.length}</small>
-            </div>
-            <div className="sidebar-project-list">
-              {workspaceFolders.length === 0 ? (
-                <p className="sidebar-history-empty">{content.nav.recentEmpty}</p>
-              ) : (
-                workspaceFolders.map((folder) => {
+            <details className="sidebar-history-section" open>
+              <summary className="sidebar-history-heading">
+                <span>{content.nav.projects}</span>
+              </summary>
+              <div className="sidebar-project-list">
+                {workspaceFolders.map((folder) => {
                   const threads = recentConversations.filter(
                     (item) => item.folderId === folder.id,
                   );
@@ -1543,7 +1540,6 @@ export function LandingPage({
                     >
                       <summary>
                         <span>{folder.name}</span>
-                        <small>{threads.length}</small>
                       </summary>
                       {threads.map((thread) => (
                         <a
@@ -1561,11 +1557,12 @@ export function LandingPage({
                       ))}
                     </details>
                   );
-                })
-              )}
-            </div>
-            <div
-              className="sidebar-history-heading sidebar-recents-heading"
+                })}
+              </div>
+            </details>
+            <details
+              className="sidebar-history-section"
+              open
               onDragOver={(event) => event.preventDefault()}
               onDrop={(event) => {
                 event.preventDefault();
@@ -1575,28 +1572,26 @@ export function LandingPage({
                 if (projectId) void moveConversation(projectId, null);
               }}
             >
-              <span>{content.nav.recents}</span>
-              <small>{recentConversations.length}</small>
-            </div>
-            <div className="sidebar-recent-list">
-              {recentConversations.map((thread) => (
-                <a
-                  className="sidebar-thread"
-                  draggable
-                  href={`/${locale}/projects/${thread.id}`}
-                  key={thread.id}
-                  onDragStart={(event) => {
-                    setDraggingConversationId(thread.id);
-                    event.dataTransfer.setData("text/plain", thread.id);
-                  }}
-                >
-                  <span>{thread.title}</span>
-                  <time dateTime={thread.updatedAt}>
-                    {thread.updatedAt.slice(5, 10)}
-                  </time>
-                </a>
-              ))}
-            </div>
+              <summary className="sidebar-history-heading">
+                <span>{content.nav.recents}</span>
+              </summary>
+              <div className="sidebar-recent-list">
+                {recentConversations.map((thread) => (
+                  <a
+                    className="sidebar-thread"
+                    draggable
+                    href={`/${locale}/projects/${thread.id}`}
+                    key={thread.id}
+                    onDragStart={(event) => {
+                      setDraggingConversationId(thread.id);
+                      event.dataTransfer.setData("text/plain", thread.id);
+                    }}
+                  >
+                    {thread.title}
+                  </a>
+                ))}
+              </div>
+            </details>
           </div>
         ) : null}
         {mode === "app" ? (

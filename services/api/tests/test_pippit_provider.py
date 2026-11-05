@@ -99,3 +99,41 @@ async def test_pippit_request_model_overrides_provider_default(monkeypatch):
             "720p",
         )
     ]
+
+
+@pytest.mark.unit
+async def test_pippit_clamps_short_shots_to_the_model_minimum(monkeypatch):
+    client = provider()
+    calls: list[tuple[str, ...]] = []
+
+    async def capture(*args: str) -> dict[str, str]:
+        calls.append(args)
+        return {"thread_id": "thread-test-1", "run_id": "run-test-1"}
+
+    monkeypatch.setattr(client, "_run_json", capture)
+    short_request = request().model_copy(update={"duration_seconds": 3})
+    estimate = await client.estimate(short_request)
+    await client.submit(short_request)
+
+    assert estimate.duration_seconds == 4
+    assert estimate.credits == 4
+    assert calls[0][calls[0].index("--duration") + 1] == "4"
+
+
+@pytest.mark.unit
+async def test_pippit_auto_model_uses_the_draft_default(monkeypatch):
+    client = PippitVideoProvider(
+        command=(sys.executable, str(FAKE_CLI)),
+        model=None,
+        resolution="720p",
+    )
+    calls: list[tuple[str, ...]] = []
+
+    async def capture(*args: str) -> dict[str, str]:
+        calls.append(args)
+        return {"thread_id": "thread-test-1", "run_id": "run-test-1"}
+
+    monkeypatch.setattr(client, "_run_json", capture)
+    await client.submit(request())
+
+    assert calls[0][calls[0].index("--model") + 1] == "Seedance_2.5_draft"

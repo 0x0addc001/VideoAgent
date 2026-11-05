@@ -45,6 +45,20 @@ class DelayedProvider:
         )
 
 
+class FailingProvider:
+    name = "failing"
+
+    async def estimate(self, request: GenerationRequest) -> CostEstimate:
+        return CostEstimate(
+            provider=self.name,
+            credits=request.duration_seconds,
+            duration_seconds=request.duration_seconds,
+        )
+
+    async def submit(self, request: GenerationRequest) -> ProviderJob:
+        raise RuntimeError("Provider rejected the duration")
+
+
 async def project_with_shot(client) -> tuple[dict, dict]:
     assert (await register(client)).status_code == 201
     project_response = await client.post(
@@ -83,6 +97,24 @@ async def test_generation_rejects_missing_approval(client):
 
     assert response.status_code == 403
     assert response.json()["error"]["code"] == "GENERATION_APPROVAL_REQUIRED"
+
+
+@pytest.mark.api
+async def test_provider_submission_error_returns_502_and_refunds(app, client):
+    app.state.video_provider = FailingProvider()
+    _, shot = await project_with_shot(client)
+
+    response = await client.post(
+        f"/api/v1/shots/{shot['id']}/generate",
+        headers={"Idempotency-Key": "provider-failure"},
+        json={"approved": True},
+    )
+
+    assert response.status_code == 502
+    assert response.json()["error"]["code"] == "PROVIDER_SUBMISSION_FAILED"
+    assert "rejected the duration" in response.json()["error"]["message"]
+    credits = await client.get("/api/v1/credits")
+    assert credits.json()["credits"] == 100
 
 
 @pytest.mark.api

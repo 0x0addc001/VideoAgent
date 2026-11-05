@@ -197,6 +197,9 @@ async def generate_shot(
     request = provider_request(shot, model=model)
     job_id = uuid4()
     estimate = await selected_provider.estimate(request)
+    if estimate.duration_seconds != request.duration_seconds:
+        request = request.model_copy(update={"duration_seconds": estimate.duration_seconds})
+        shot.duration_seconds = estimate.duration_seconds
     await reserve_credits(
         session,
         user_id=user.id,
@@ -206,14 +209,18 @@ async def generate_shot(
     )
     try:
         provider_job = await selected_provider.submit(request)
-    except Exception:
+    except Exception as exc:
         await refund_credits(
             session,
             user_id=user.id,
             reference_id=str(job_id),
             settings=settings,
         )
-        raise
+        raise AppError(
+            status_code=502,
+            code="PROVIDER_SUBMISSION_FAILED",
+            message=str(exc)[:1200] or "The video provider rejected the request.",
+        ) from exc
     job = GenerationJob(
         id=job_id,
         project_id=project.id,

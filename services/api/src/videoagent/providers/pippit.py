@@ -130,7 +130,9 @@ class PippitVideoProvider:
             error_text = stderr.decode("utf-8", errors="replace").lower()
             if "login" in error_text or "登录" in error_text:
                 raise PippitNotAuthenticated("Pippit CLI is not authenticated.")
-            raise PippitCLIError(f"Pippit CLI exited with status {process.returncode}.")
+            detail = stderr.decode("utf-8", errors="replace").strip()
+            suffix = f": {detail[-1000:]}" if detail else ""
+            raise PippitCLIError(f"Pippit CLI exited with status {process.returncode}{suffix}")
 
         try:
             payload = json.loads(stdout.decode("utf-8-sig").strip())
@@ -141,29 +143,30 @@ class PippitVideoProvider:
         return payload
 
     async def estimate(self, request: GenerationRequest) -> CostEstimate:
+        duration = min(30, max(4, request.duration_seconds))
         return CostEstimate(
             provider=self.name,
-            credits=max(1, request.duration_seconds),
-            duration_seconds=request.duration_seconds,
+            credits=duration,
+            duration_seconds=duration,
         )
 
     async def submit(self, request: GenerationRequest) -> ProviderJob:
         if request.generation_mode != "text_to_video":
             raise ValueError("Pippit currently supports text-to-video generation only.")
+        duration = min(30, max(4, request.duration_seconds))
         args = [
             "generate-video",
             "--prompt",
             request.prompt,
             "--duration",
-            str(request.duration_seconds),
+            str(duration),
             "--ratio",
             request.aspect_ratio,
             "--source",
             "videoagent",
         ]
-        model = request.model or self._model
-        if model:
-            args.extend(["--model", model])
+        model = request.model or self._model or "Seedance_2.5_draft"
+        args.extend(["--model", model])
         if self._resolution:
             args.extend(["--resolution", self._resolution])
         payload = await self._run_json(*args)

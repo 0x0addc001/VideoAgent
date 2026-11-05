@@ -146,6 +146,8 @@ Component tests cover:
 - Workflow approvals advance immediately, and Agent language follows the
   project brief and user prompt.
 - Login and registration use the same dark visual language as the product.
+- Pippit normalizes sub-four-second requests and surfaces provider failures
+  while refunding reserved credits.
 - Search, language, notifications, credits, and avatar controls use
   translucent surfaces.
 - Avatar opens login and registration when signed out and sign-out when signed in.

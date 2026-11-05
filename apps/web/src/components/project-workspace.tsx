@@ -15,6 +15,7 @@ import {
   Flame,
   Folder,
   FolderOpen,
+  Gem,
   GripVertical,
   Image,
   Layers3,
@@ -383,10 +384,10 @@ function WorkspaceHistory({
   onToggleFolder,
 }: WorkspaceHistoryProps) {
   const copy = workspaceCopy(locale);
-  const dateFormatter = new Intl.DateTimeFormat(
-    locale.startsWith("zh") ? "zh-CN" : "en",
-    { month: "short", day: "numeric" },
-  );
+  const [historySections, setHistorySections] = useState({
+    projects: true,
+    recents: true,
+  });
   const primaryNavItems = [
     { href: "/#agents", icon: Clapperboard, label: "Agents" },
     { href: "/#skills", icon: Video, label: "Skills" },
@@ -397,18 +398,10 @@ function WorkspaceHistory({
 
   if (collapsed) {
     return (
-      <aside className="flex w-[76px] min-h-0 shrink-0 flex-col items-center border-r border-white/[0.07] bg-[#0d0c0a] py-3">
+      <aside className="flex w-[76px] min-h-0 shrink-0 flex-col items-center border-white/[0.07] bg-[#0d0c0a] py-3 xl:my-5 xl:ml-5 xl:rounded-[26px] xl:border">
         <span className="grid size-10 place-items-center rounded-xl bg-[#1677ff] text-white">
           <Clapperboard className="h-5 w-5" />
         </span>
-        <button
-          aria-label={copy.expand}
-          className="mt-4 grid size-9 place-items-center rounded-xl text-white/50 hover:bg-white/[0.06] hover:text-white"
-          onClick={onToggleCollapsed}
-          type="button"
-        >
-          <PanelLeftOpen className="h-4 w-4" />
-        </button>
         <nav className="mt-5 grid gap-2" aria-label="Main navigation">
           {primaryNavItems.map(({ href, icon: Icon, label }) => (
             <Link
@@ -425,17 +418,25 @@ function WorkspaceHistory({
         <div className="mt-4 grid gap-2 border-t border-white/10 pt-4">
           <span
             className="grid size-10 place-items-center rounded-xl text-white/35"
-            title={`${copy.projects}: ${workspace.folders.length}`}
+            title={copy.projects}
           >
             <Folder className="h-[18px] w-[18px]" />
           </span>
           <span
             className="grid size-10 place-items-center rounded-xl text-white/35"
-            title={`${copy.recent}: ${workspace.recents.length}`}
+            title={copy.recent}
           >
             <MessageSquareText className="h-[18px] w-[18px]" />
           </span>
         </div>
+        <button
+          aria-label={copy.expand}
+          className="mt-auto grid size-10 place-items-center rounded-xl text-white/50 hover:bg-white/[0.06] hover:text-white"
+          onClick={onToggleCollapsed}
+          type="button"
+        >
+          <PanelLeftOpen className="h-4 w-4" />
+        </button>
       </aside>
     );
   }
@@ -456,7 +457,7 @@ function WorkspaceHistory({
         className={cn(
           "group relative block rounded-xl border px-3 py-2.5 transition",
           thread.id === activeProjectId
-            ? "border-[#1677ff]/35 bg-[#1677ff]/10"
+            ? "border-transparent bg-[#1677ff]/[0.14] text-[#8fdcff]"
             : "border-transparent hover:border-white/[0.08] hover:bg-white/[0.035]",
         )}
         draggable
@@ -465,21 +466,29 @@ function WorkspaceHistory({
         onDragStart={(event) => onBeginDrag(event, thread.id)}
       >
         <span className="flex items-start gap-2.5">
-          <GripVertical className="mt-0.5 h-3.5 w-3.5 shrink-0 text-white/15 group-hover:text-white/35" />
+          <GripVertical
+            className={cn(
+              "mt-0.5 h-3.5 w-3.5 shrink-0",
+              thread.id === activeProjectId
+                ? "text-[#4facff]"
+                : "text-white/15 group-hover:text-white/35",
+            )}
+          />
           <span className="min-w-0 flex-1">
             <span className="flex items-center gap-2">
-              <strong className="truncate text-[13px] font-medium text-white/78">
+              <strong
+                className={cn(
+                  "truncate text-[16px] font-medium",
+                  thread.id === activeProjectId
+                    ? "text-[#8fdcff]"
+                    : "text-white/78",
+                )}
+              >
                 {thread.title}
               </strong>
-              {thread.status === "awaiting_approval" ? (
-                <span className="ml-auto size-1.5 shrink-0 rounded-full bg-[#1677ff]" />
-              ) : null}
             </span>
             <span className="mt-1 line-clamp-1 text-[12px] leading-5 text-white/32">
               {thread.preview || thread.brief}
-            </span>
-            <span className="mt-1 block text-[11px] text-white/22">
-              {dateFormatter.format(new Date(thread.updated_at))}
             </span>
           </span>
         </span>
@@ -488,34 +497,23 @@ function WorkspaceHistory({
   }
 
   return (
-    <aside className="flex w-[252px] min-h-0 shrink-0 flex-col border-r border-white/[0.07] bg-[#0d0c0a]">
-      <div className="flex h-14 items-center justify-between border-b border-white/[0.07] px-4">
-        <Link className="flex items-center gap-2.5 text-[15px] font-semibold" href="/">
+    <aside className="flex w-[208px] min-h-0 shrink-0 flex-col border-white/[0.07] bg-[#0d0c0a] xl:my-5 xl:ml-5 xl:rounded-[26px] xl:border">
+      <div className="flex h-14 items-center px-4">
+        <Link className="flex items-center gap-2.5 text-[16px] font-semibold" href="/">
           <span className="grid size-8 place-items-center rounded-lg bg-[#1677ff] text-white">
             <PlayIcon />
           </span>
           VideoAgent
         </Link>
-        <button
-          aria-label={copy.collapse}
-          className="grid size-8 place-items-center rounded-lg text-white/40 hover:bg-white/[0.06] hover:text-white"
-          onClick={onToggleCollapsed}
-          type="button"
-        >
-          <PanelLeftClose className="h-4 w-4" />
-        </button>
       </div>
 
-      <nav className="grid gap-1 px-3 py-4" aria-label="Main navigation">
+      <nav
+        className="grid gap-1 border-t border-white/10 px-3 py-3"
+        aria-label="Main navigation"
+      >
         {primaryNavItems.map(({ href, icon: Icon, label }) => (
           <Link
-            aria-current={label === "Agents" ? "page" : undefined}
-            className={cn(
-              "flex min-h-10 items-center gap-3 rounded-xl px-3 text-[13px] transition",
-              label === "Agents"
-                ? "bg-[#1677ff]/10 text-[#8fd3ff]"
-                : "text-white/48 hover:bg-white/[0.04] hover:text-white",
-            )}
+            className="flex min-h-10 items-center gap-3 rounded-xl px-3 text-[16px] text-white/48 transition hover:bg-white/[0.04] hover:text-white"
             href={href}
             key={label}
           >
@@ -525,11 +523,20 @@ function WorkspaceHistory({
         ))}
       </nav>
 
-      <div className="min-h-0 flex-1 overflow-y-auto border-t border-white/15 px-3 py-4">
+      <div className="min-h-0 flex-1 overflow-y-auto border-t border-white/10 px-3 py-3">
         <div className="flex items-center justify-between px-2">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/32">
+          <button
+            className="text-[16px] font-medium text-white/42 hover:text-white/72"
+            onClick={() =>
+              setHistorySections((current) => ({
+                ...current,
+                projects: !current.projects,
+              }))
+            }
+            type="button"
+          >
             {copy.projects}
-          </p>
+          </button>
           <button
             aria-label={copy.newFolder}
             className="grid size-7 place-items-center rounded-lg text-white/35 hover:bg-white/[0.06] hover:text-white"
@@ -539,7 +546,8 @@ function WorkspaceHistory({
             <Plus className="h-4 w-4" />
           </button>
         </div>
-        <div className="mt-2 space-y-1">
+        {historySections.projects ? (
+          <div className="mt-2 space-y-1">
           {workspace.folders.length === 0 ? (
             <button
               className="w-full rounded-xl border border-dashed border-white/[0.09] px-3 py-3 text-left text-[12px] text-white/28 hover:border-[#1677ff]/30"
@@ -564,7 +572,7 @@ function WorkspaceHistory({
               >
                 <div className="group flex items-center">
                   <button
-                    className="flex min-w-0 flex-1 items-center gap-2 px-2 py-2 text-left text-[13px] text-white/62"
+                    className="flex min-w-0 flex-1 items-center gap-2 px-2 py-2 text-left text-[16px] text-white/62"
                     onClick={() => onToggleFolder(folder.id)}
                     type="button"
                   >
@@ -579,9 +587,6 @@ function WorkspaceHistory({
                       <Folder className="h-4 w-4 text-[#6eb8ff]" />
                     )}
                     <span className="truncate">{folder.name}</span>
-                    <span className="ml-auto text-[11px] text-white/24">
-                      {folderThreads.length}
-                    </span>
                   </button>
                   <button
                     aria-label={copy.rename}
@@ -614,28 +619,44 @@ function WorkspaceHistory({
               </div>
             );
           })}
-        </div>
+          </div>
+        ) : null}
 
         <div
-          className="mt-6"
+          className="mt-4"
           onDragOver={(event) => event.preventDefault()}
           onDrop={(event) => onDrop(event, null)}
         >
           <div className="flex items-center justify-between px-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/32">
+            <button
+              className="text-[16px] font-medium text-white/42 hover:text-white/72"
+              onClick={() =>
+                setHistorySections((current) => ({
+                  ...current,
+                  recents: !current.recents,
+                }))
+              }
+              type="button"
+            >
               {copy.recent}
-            </p>
-            <span className="text-[11px] text-white/22">{recentThreads.length}</span>
+            </button>
           </div>
-          <p className="mt-1 px-2 text-[11px] text-white/18">{copy.leaveFolder}</p>
-          <div className="mt-2 space-y-1">
-            {recentThreads.length === 0 ? (
-              <p className="px-3 py-4 text-[12px] text-white/25">{copy.conversations}</p>
-            ) : (
-              recentThreads.map(threadRow)
-            )}
-          </div>
+          {historySections.recents ? (
+            <div className="mt-2 space-y-1">
+              {recentThreads.map(threadRow)}
+            </div>
+          ) : null}
         </div>
+      </div>
+      <div className="border-t border-white/10 p-3">
+        <button
+          aria-label={copy.collapse}
+          className="grid h-10 w-full place-items-center rounded-xl text-white/40 hover:bg-white/[0.06] hover:text-white"
+          onClick={onToggleCollapsed}
+          type="button"
+        >
+          <PanelLeftClose className="h-4 w-4" />
+        </button>
       </div>
     </aside>
   );
@@ -712,7 +733,12 @@ function ApprovalCard({
             }
             type="button"
           >
-            {option.label}
+            {option.choice === "approve" ? (
+              <Check className="h-3.5 w-3.5 text-[#73c5ff]" />
+            ) : (
+              <Sparkles className="h-3.5 w-3.5 text-[#73c5ff]" />
+            )}
+            <span className="flex-1">{option.label}</span>
             <ChevronRight className="h-3.5 w-3.5 text-white/25" />
           </button>
         ))}
@@ -726,8 +752,8 @@ function ApprovalCard({
           onClick={onCustomOpen}
           type="button"
         >
-          {copy.custom}
           <Pencil className="h-3.5 w-3.5" />
+          <span className="flex-1">{copy.custom}</span>
         </button>
         {customOpen ? (
           <div className="rounded-xl border border-white/[0.09] bg-black/20 p-2">
@@ -792,7 +818,7 @@ function AssetsTree({
   ) {
     return (
       <button
-        className="flex w-full items-center gap-2 px-2 py-2 text-left text-[11px] font-semibold uppercase tracking-[0.13em] text-white/30 hover:text-white/55"
+        className="flex w-full items-center gap-2 px-2 py-2 text-left text-[12px] font-semibold text-white/30 hover:text-white/55"
         onClick={() =>
           setSections((current) => ({ ...current, [key]: !current[key] }))
         }
@@ -1007,6 +1033,9 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
   const [isWorking, setIsWorking] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [generationErrorOpen, setGenerationErrorOpen] = useState(false);
+  const [generationErrorMessage, setGenerationErrorMessage] = useState<string | null>(
+    null,
+  );
   const [activeJob, setActiveJob] = useState<GenerationJob | null>(null);
   const [evaluation, setEvaluation] = useState<Evaluation | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
@@ -1470,7 +1499,12 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
       },
       body: JSON.stringify({ approved: true }),
     });
-    if (!response.ok) throw new Error("generation-failed");
+    if (!response.ok) {
+      const body = (await response.json().catch(() => null)) as
+        | { error?: { message?: string } }
+        | null;
+      throw new Error(body?.error?.message || "generation-failed");
+    }
     const job = (await response.json()) as GenerationJob;
     setStoryboard((current) =>
       current
@@ -1510,7 +1544,12 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
         setEstimate((await estimateResponse.json()) as CostEstimate);
       }
       await submitGeneration(selectedShot);
-    } catch {
+    } catch (error) {
+      setGenerationErrorMessage(
+        error instanceof Error && error.message !== "generation-failed"
+          ? error.message
+          : t("generationError"),
+      );
       setGenerationErrorOpen(true);
     } finally {
       setIsWorking(false);
@@ -1548,7 +1587,12 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
         },
       ]);
       setMobilePanel("canvas");
-    } catch {
+    } catch (error) {
+      setGenerationErrorMessage(
+        error instanceof Error && error.message !== "generation-failed"
+          ? error.message
+          : t("generationError"),
+      );
       setGenerationErrorOpen(true);
     } finally {
       setIsWorking(false);
@@ -1720,7 +1764,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
 
   return (
     <main className="project-workspace-shell flex h-screen min-h-[680px] overflow-hidden bg-[#080807] text-white">
-      <div className="hidden xl:flex">
+      <div className="hidden xl:mr-3 xl:flex">
         <WorkspaceHistory
           activeProjectId={project.id}
           collapsed={historyCollapsed}
@@ -1847,13 +1891,13 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
             <div className="min-h-0 flex-1 overflow-y-auto">
               {selectedCanvas.kind === "brief" ? (
                 <article className="mx-auto max-w-4xl px-6 py-10 sm:px-10">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6eb8ff]">
+                  <p className="text-[12px] font-semibold text-[#6eb8ff]">
                     {copy.brief}
                   </p>
                   <h2 className="mt-4 max-w-3xl font-display text-4xl leading-tight text-white/90">
                     {project.title}
                   </h2>
-                  <p className="mt-7 whitespace-pre-wrap text-[15px] leading-8 text-white/52">
+                  <p className="mt-7 whitespace-pre-wrap text-[16px] leading-8 text-white/52">
                     {creativeBrief(project.brief)}
                   </p>
                   <div className="mt-10 grid gap-3 sm:grid-cols-3">
@@ -1868,7 +1912,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
                           )}
                           key={stage}
                         >
-                          <span className="text-[10px] uppercase tracking-[0.15em] text-white/25">
+                          <span className="text-[12px] text-white/25">
                             0{index + 1}
                           </span>
                           <p className="mt-2 text-[13px] text-white/65">{stageLabels[stage]}</p>
@@ -1884,7 +1928,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
                 <article className="mx-auto max-w-4xl px-6 py-8 sm:px-10">
                   <div className="flex items-start justify-between gap-5 border-b border-white/[0.07] pb-6">
                     <div>
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#6eb8ff]">
+                      <p className="text-[12px] font-semibold text-[#6eb8ff]">
                         {selectedCanvas.kind === "document"
                           ? copy[selectedCanvas.document]
                           : copy.storyboard}
@@ -1920,10 +1964,10 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
                               {shot.duration_seconds}s · {shot.aspect_ratio}
                             </span>
                           </div>
-                          <h3 className="mt-3 text-[15px] font-medium leading-7 text-white/78">
+                          <h3 className="mt-3 text-[17px] font-medium leading-8 text-white/82">
                             {shot.description}
                           </h3>
-                          <p className="mt-2 line-clamp-2 text-[12px] leading-6 text-white/32">
+                          <p className="mt-3 line-clamp-3 text-[14px] leading-7 text-white/38">
                             {locale.startsWith("zh") && shot.prompt_zh
                               ? shot.prompt_zh
                               : shot.prompt_en}
@@ -1975,10 +2019,10 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
 
                   <div className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_260px]">
                     <div className="rounded-2xl border border-white/[0.07] p-5">
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/28">
+                      <p className="text-[12px] font-semibold text-white/28">
                         Prompt
                       </p>
-                      <p className="mt-3 whitespace-pre-wrap text-[13px] leading-7 text-white/48">
+                      <p className="mt-3 whitespace-pre-wrap text-[15px] leading-8 text-white/52">
                         {locale.startsWith("zh") && canvasShot.prompt_zh
                           ? canvasShot.prompt_zh
                           : canvasShot.prompt_en}
@@ -2005,15 +2049,16 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
                         </p>
                       ) : null}
                       <button
-                        className="w-full rounded-xl border border-white/[0.09] px-4 py-2.5 text-[12px] text-white/58 hover:border-white/20 hover:text-white disabled:opacity-35"
+                        className="flex w-full items-center justify-center gap-2 rounded-xl border border-white/[0.09] px-4 py-2.5 text-[12px] text-white/58 hover:border-white/20 hover:text-white disabled:opacity-35"
                         disabled={isWorking}
                         onClick={() => void estimateShot()}
                         type="button"
                       >
+                        <Gem className="h-3.5 w-3.5" />
                         {copy.estimate}
                       </button>
                       <button
-                        className="w-full rounded-xl bg-[#1677ff] px-4 py-2.5 text-[12px] font-semibold text-white disabled:opacity-35"
+                        className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#1677ff] px-4 py-2.5 text-[12px] font-semibold text-white disabled:opacity-35"
                         disabled={
                           isWorking ||
                           canvasShot.status === "completed" ||
@@ -2022,6 +2067,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
                         onClick={() => void generateShot()}
                         type="button"
                       >
+                        <Clapperboard className="h-3.5 w-3.5" />
                         {isWorking
                           ? copy.generating
                           : canvasShot.status === "completed"
@@ -2400,12 +2446,17 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
             className="w-full max-w-md rounded-2xl border border-white/[0.12] bg-[#15120e] p-6"
             role="dialog"
           >
-            <p className="text-[10px] uppercase tracking-[0.16em] text-[#5cc8ff]">
+            <p className="text-[12px] text-[#5cc8ff]">
               VideoAgent
             </p>
             <h2 id="generation-error-title" className="mt-3 text-xl font-semibold">
               {t("generationError")}
             </h2>
+            {generationErrorMessage ? (
+              <p className="mt-3 whitespace-pre-wrap text-[12px] leading-6 text-white/48">
+                {generationErrorMessage}
+              </p>
+            ) : null}
             <button
               autoFocus
               className="mt-6 rounded-lg bg-[#1677ff] px-5 py-2.5 text-[12px] font-semibold text-white"
@@ -2433,7 +2484,7 @@ export function ProjectWorkspace({ projectId }: { projectId: string }) {
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-[10px] uppercase tracking-[0.16em] text-[#5cc8ff]">
+                <p className="text-[12px] text-[#5cc8ff]">
                   VideoAgent
                 </p>
                 <h2 id="review-title" className="mt-2 text-xl font-semibold">
