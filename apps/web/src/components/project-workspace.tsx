@@ -2319,6 +2319,9 @@ export function ProjectWorkspace({
     selectedCanvas.kind === "shot"
       ? storyboard?.shots.find((shot) => shot.id === selectedCanvas.shotId) ?? null
       : null;
+  const hasVisionObjects =
+    (storyboard?.characters?.length ?? 0) > 0 &&
+    (storyboard?.scenes?.length ?? 0) > 0;
   const selectedCharacter =
     selectedCanvas.kind === "character"
       ? storyboard?.characters?.find(
@@ -3039,6 +3042,10 @@ export function ProjectWorkspace({
       showBackendError(t("noShot"));
       return;
     }
+    if (!hasVisionObjects) {
+      showBackendError(t("visionObjectsRequired"));
+      return;
+    }
     setIsWorking(true);
     setActionError(null);
     try {
@@ -3128,6 +3135,10 @@ export function ProjectWorkspace({
       showBackendError(t("noShot"));
       return;
     }
+    if (!hasVisionObjects) {
+      showBackendError(t("visionObjectsRequired"));
+      return;
+    }
     setIsWorking(true);
     setActionError(null);
     try {
@@ -3165,6 +3176,10 @@ export function ProjectWorkspace({
   async function generateFromAgent() {
     const shot = canvasShot ?? selectedShot;
     if (!shot || shot.status === "completed") return;
+    if (!hasVisionObjects) {
+      showBackendError(t("visionObjectsRequired"));
+      return;
+    }
     setIsWorking(true);
     setActionError(null);
     try {
@@ -5435,13 +5450,13 @@ export function ProjectWorkspace({
                   id="backend-error-title"
                 >
                   {locale.startsWith("zh")
-                    ? "服务暂时不可用"
-                    : "Service temporarily unavailable"}
+                    ? "无法继续"
+                    : "Unable to continue"}
                 </h2>
                 <p className="mt-2 text-[13px] leading-6 text-white/48">
                   {locale.startsWith("zh")
-                    ? "请求没有完成，你的输入和项目内容都已保留。你可以重试，或关闭弹窗稍后再试。"
-                    : "The request did not complete. Your input and project remain saved. Retry now or close this dialog and try again later."}
+                    ? "操作没有完成。请根据下方提示调整项目后重试。"
+                    : "The action did not complete. Follow the message below, adjust the project, and try again."}
                 </p>
               </div>
             </div>

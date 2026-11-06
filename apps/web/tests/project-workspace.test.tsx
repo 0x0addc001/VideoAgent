@@ -51,6 +51,85 @@ describe("ProjectWorkspace", () => {
     ).toEqual([]);
   });
 
+  it("explains missing character and scene objects in a modal", async () => {
+    window.history.replaceState({}, "", "/en#conversation/project-missing");
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.endsWith("/projects/project-missing")) {
+        return Promise.resolve(
+          Response.json({
+            id: "project-missing",
+            title: "Missing vision objects",
+            brief: "A short film",
+            state: "draft",
+            created_at: "2026-11-06T00:00:00Z",
+            updated_at: "2026-11-06T00:00:00Z",
+          }),
+        );
+      }
+      if (url.endsWith("/projects/project-missing/storyboard")) {
+        return Promise.resolve(
+          Response.json({
+            id: "storyboard-missing",
+            project_id: "project-missing",
+            version: 1,
+            characters: [],
+            scenes: [],
+            shots: [
+              {
+                id: "shot-missing",
+                index: 0,
+                description: "Opening shot",
+                prompt_en: "Opening shot",
+                prompt_zh: null,
+                duration_seconds: 5,
+                aspect_ratio: "16:9",
+                generation_mode: "text_to_video",
+                status: "ready",
+              },
+            ],
+          }),
+        );
+      }
+      if (url.endsWith("/projects/project-missing/workflow")) {
+        return Promise.resolve(
+          Response.json({
+            project_id: "project-missing",
+            stage: "ready",
+            status: "approved",
+            updated_at: "2026-11-06T00:00:00Z",
+          }),
+        );
+      }
+      if (url.endsWith("/workspace")) {
+        return Promise.resolve(Response.json({ folders: [], recents: [] }));
+      }
+      return Promise.resolve(Response.json({ items: [] }));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <NextIntlClientProvider locale="en" messages={en}>
+        <ProjectWorkspace projectId="project-missing" />
+      </NextIntlClientProvider>,
+    );
+
+    fireEvent.click(
+      await screen.findByRole("button", { name: "Shot 1" }),
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Generate" }));
+    expect(
+      await screen.findByRole("dialog", { name: "Unable to continue" }),
+    ).toHaveTextContent(
+      "Add at least one Character and one Scene",
+    );
+    expect(
+      fetchMock.mock.calls.some(([input]) =>
+        /\/shots\/shot-missing\/(estimate|generate)$/.test(String(input)),
+      ),
+    ).toBe(false);
+  });
+
   it(
     "starts the first agent turn from a newly created project brief",
     async () => {
@@ -1036,7 +1115,7 @@ describe("ProjectWorkspace", () => {
 
     expect(
       await screen.findByRole("dialog", {
-        name: "Service temporarily unavailable",
+        name: "Unable to continue",
       }),
     ).toBeVisible();
     expect(screen.getByText("Planner unavailable")).toBeVisible();
@@ -1044,7 +1123,7 @@ describe("ProjectWorkspace", () => {
     await waitFor(() => expect(messageAttempts).toBe(2));
     expect(
       await screen.findByRole("dialog", {
-        name: "Service temporarily unavailable",
+        name: "Unable to continue",
       }),
     ).toBeVisible();
   }, 20_000);

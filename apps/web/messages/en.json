@@ -56,6 +56,7 @@
     "estimatedCredits": "Estimated credits",
     "estimate": "Estimate cost",
     "estimateError": "Credits could not be estimated. Check the selected model and try again.",
+    "visionObjectsRequired": "Add at least one Character and one Scene before estimating or generating a Shot. Ask the Agent to complete them first.",
     "generate": "Generate shot",
     "agentGenerate": "Generate current video",
     "agentAdjust": "Adjust shot",

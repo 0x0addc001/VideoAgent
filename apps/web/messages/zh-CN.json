@@ -56,6 +56,7 @@
     "estimatedCredits": "预计积分",
     "estimate": "估算积分",
     "estimateError": "暂时无法估算积分，请检查所选模型后重试。",
+    "visionObjectsRequired": "估算或生成镜头前，请先让小秘补齐至少一个角色和一个场地。",
     "generate": "生成镜头",
     "agentGenerate": "生成当前视频",
     "agentAdjust": "调整镜头",
