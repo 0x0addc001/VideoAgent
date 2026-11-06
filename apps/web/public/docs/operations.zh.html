@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="VideoAgent Ops" />
-    <title>Ops · VideoAgent</title>
+    <meta name="description" content="视频小秘 Ops" />
+    <title>Ops · 视频小秘</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
     <link rel="stylesheet" href="../docs.css?v=33" />
   </head>
@@ -25,7 +25,7 @@
         </button>
         <nav class="toc-panel" id="toc-panel" aria-label="目录">
           <p class="toc-kicker">目录</p>
-          <a class="toc-link toc-level-1" href="#videoagent-运营策略">VideoAgent 运营策略</a>
+          <a class="toc-link toc-level-1" href="#视频小秘运营策略">视频小秘运营策略</a>
 <a class="toc-link toc-level-2" href="#1-运营模型">1. 运营模型</a>
 <a class="toc-link toc-level-2" href="#2-发布准备">2. 发布准备</a>
 <a class="toc-link toc-level-2" href="#3-官方-skill-运营">3. 官方 Skill 运营</a>
@@ -40,7 +40,7 @@
 <a class="toc-link toc-level-2" href="#10-成功指标">10. 成功指标</a>
         </nav>
       </aside>
-      <article class="document"><h1 id="videoagent-运营策略">VideoAgent 运营策略</h1>
+      <article class="document"><h1 id="视频小秘运营策略">视频小秘运营策略</h1>
 <div class="table-wrap"><table><thead><tr>
 <th>属性</th>
 <th>内容</th>
@@ -59,7 +59,7 @@
 </tr>
 </tbody></table></div>
 <h2 id="1-运营模型">1. 运营模型</h2>
-<p>VideoAgent 按三层内容运营：</p>
+<p>视频小秘按三层内容运营：</p>
 <ol>
 <li>原厂商 Skill 与跨 Provider 工作流，分别使用 <code>kling</code>、<code>pippit</code> 或</li>
 <p><code>video_agent</code> 命名空间。</p>
@@ -87,7 +87,7 @@
 <li>Skill 变更同步更新 PRD、策略、Arch 和 Test。</li>
 <li>废弃 Skill 至少保留一个版本并给出迁移说明。</li>
 <li>场景策略引用有效 Skill，并与创作框字段保持一致。</li>
-<li>外部 Agent 接力使用明确的 MCP 或 CLI 契约。</li>
+<li>外部小秘接力使用明确的 MCP 或 CLI 契约。</li>
 </ul>
 <h3 id="3-1-skill-与-videos-榜单">3.1 Skill 与 Videos 榜单</h3>
 <ul>
@@ -121,7 +121,7 @@
 <li>计费生成必须获得用户明确批准。</li>
 <li>Provider 提交使用数据库幂等键。</li>
 <li>积分和 Provider 状态由服务端读取。</li>
-<li>产品界面展示用户独立 VideoAgent 配额，不直接暴露共享 Provider 积分池。</li>
+<li>产品界面展示用户独立视频小秘配额，不直接暴露共享 Provider 积分池。</li>
 <li>生成成功前预扣用户配额；提交失败、生成失败或取消时执行幂等退款。</li>
 <li>监控 Provider 错误率、超时率、不确定提交和重复提交拦截。</li>
 <li>保留 Provider Task Reference 以支持对账。</li>

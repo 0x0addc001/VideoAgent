@@ -1,4 +1,4 @@
-# VideoAgent 软件实现说明
+# 视频小秘软件实现说明
 
 | 属性 | 内容 |
 | --- | --- |
@@ -10,12 +10,12 @@
 
 ## 1. 文档目的
 
-本文档面向参与 VideoAgent 开发的前端、后端、Agent、测试和运维人员，说明代码组织、核心流程、模块协作和工程边界。
+本文档面向参与视频小秘开发的前端、后端、小秘、测试和运维人员，说明代码组织、核心流程、模块协作和工程边界。
 
 ## 2. 系统范围
 
 - Next.js App Router Web 界面。
-- 左侧 Agents、Skills、Videos、Assets、Docs 导航和独立视图切换。
+- 左侧 小秘、Skills、Videos、Assets、Docs 导航和独立视图切换。
 - 蓝色播放键品牌、无框标签页图标和激活图标填充/线框反转。
 - 首页连续视频轮播、流式主标语、Skill/Hook 选择器、场景策略、自定义透明下拉和 Action 生成入口。
 - 创作输入框根据 `scrollHeight` 自动增高，并在输入非空时隐藏示例灵感；策略保持可用，重复点击当前项会恢复应用前草稿。
@@ -30,7 +30,7 @@
 - 用户级项目创建、列表、读取、重命名和归档。
 - 用户数据所有权隔离。
 - 多镜头故事板创建、读取和版本化替换。
-- LangGraph 单节点 Agent 编排。
+- LangGraph 单节点小秘编排。
 - 无模型密钥时的确定性本地故事板规划器。
 - 配置 OpenAI-compatible 模型后的结构化故事板规划器。
 - 积分估算和显式生成审批。
@@ -57,7 +57,7 @@
 ## 3. 仓库结构
 
 ```text
-VideoAgent/
+视频小秘/
 ├── apps/web/
 │   ├── messages/                   # en.json、zh-CN.json
 │   ├── src/app/[locale]/           # 国际化页面
@@ -158,7 +158,7 @@ https://example.com/api/   → FastAPI
 3. 根据请求顺序重建 Character 和 Shot。
 4. 两类资源的 `index` 均从 0 开始连续分配。
 
-### 5.3 Agent 对话
+### 5.3 小秘对话
 
 ```text
 POST /projects/{project_id}/messages
@@ -177,14 +177,14 @@ POST /projects/{project_id}/messages
   → 返回两条 Message 和最新 Storyboard
 ```
 
-Agent 图只有一个节点：
+小秘图只有一个节点：
 
 ```text
 START → plan_storyboard → END
 ```
 
 前端以 350ms 轮询
-`GET /projects/{project_id}/agent-activity/{run_id}`，把真实 Agent step 渲染为
+`GET /projects/{project_id}/agent-activity/{run_id}`，把真实小秘 step 渲染为
 等待时间线。Context Builder 位于 `services/agent_context.py`，活动持久化位于
 `services/agent_activity.py`。
 
@@ -237,14 +237,14 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 | `config.py` | 环境变量配置 |
 | `db.py` | Async SQLAlchemy Engine、Session 和基础建表 |
 | `models.py` | ORM 模型 |
-| `schemas.py` | API 和 Agent 的 Pydantic 模型 |
+| `schemas.py` | API 和小秘的 Pydantic 模型 |
 | `errors.py` | 统一业务错误响应 |
 | `security.py` | 密码哈希、Session Token、AES-GCM 加解密 |
 | `api/auth.py` | 注册、登录、登出和用户设置 |
 | `api/projects.py` | 项目列表、创建和读取 |
 | `api/storyboards.py` | 故事板读取和替换 |
 | `api/agent.py` | 对话和消息持久化 |
-| `api/agent_activity.py` | 查询单次 Agent run 的可观测步骤 |
+| `api/agent_activity.py` | 查询单次小秘 run 的可观测步骤 |
 | `api/workspace.py` | 历史对话、项目目录、拖拽归档和逐层审批 |
 | `api/generation.py` | 积分估算、生成提交和任务查询 |
 | `api/evaluation.py` | 制作进度与 Final Cut 视觉评估 |
@@ -257,7 +257,7 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 | `middleware.py` | 同源写请求校验与请求限流 |
 | `services/storyboards.py` | 故事板领域操作 |
 | `services/agent_context.py` | 有界对话、故事板与 Skill Context 构建 |
-| `services/agent_activity.py` | Agent run 活动事件持久化 |
+| `services/agent_activity.py` | 小秘 run 活动事件持久化 |
 | `services/workflow.py` | Concept、Outline、Script、Ready 状态迁移 |
 | `services/skill_optimizer.py` | 将粗略想法整理为结构化 Skill 契约 |
 | `services/generation_jobs.py` | Job 刷新和 Shot 状态联动 |
@@ -287,7 +287,7 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 | `packages/landing` | 左侧导航、共享品牌、视频主视觉、创作框、Videos 和 Docs |
 | `locale-switcher.tsx` | 中英文切换 |
 | `auth-form.tsx` | 注册/登录请求 |
-| `project-workspace.tsx` | 自动开始首轮 Agent 对话、故事板、镜头设置和生成 |
+| `project-workspace.tsx` | 自动开始首轮小秘对话、故事板、镜头设置和生成 |
 | `lib/api.ts` | 根据浏览器 Host 解析 API 地址，避免 localhost/127.0.0.1 跨站校验失败 |
 | `scripts/build_pages.py` | 生成文档 HTML、目录与静态资源 |
 
@@ -323,7 +323,7 @@ zh-CN
 - 后端返回稳定错误码，不在数据库保存前端展示文案。
 - 新增内部翻译 Key 时同时维护中英文资源。
 - Docs 语言直接跟随当前应用语言状态，不使用独立的文档语言缓存。
-- Agent 输出语言来自 `User.locale`。
+- 小秘输出语言来自 `User.locale`。
 - 视频模型 Prompt 使用 `prompt_en`，中文解释保存在 `prompt_zh`。
 
 ## 9. 数据模型
@@ -446,8 +446,8 @@ task reference    → query-result   → JobStatus + result URL
 | PATCH | `/projects/{id}` | 编辑项目名称或 Direction Brief |
 | DELETE | `/projects/{id}` | 归档项目 |
 | GET | `/projects/{id}/messages` | 对话历史 |
-| POST | `/projects/{id}/messages` | Agent 生成故事板并保存对话 |
-| GET | `/projects/{id}/agent-activity/{run_id}` | 查询 Agent 实际执行步骤 |
+| POST | `/projects/{id}/messages` | 小秘生成故事板并保存对话 |
+| GET | `/projects/{id}/agent-activity/{run_id}` | 查询小秘实际执行步骤 |
 | GET | `/workspace` | 项目目录与全部历史对话 |
 | POST/PATCH/DELETE | `/workspace/folders` | 管理项目目录 |
 | PUT | `/workspace/threads/{id}/folder` | 收纳或移出历史对话 |
@@ -474,7 +474,7 @@ task reference    → query-result   → JobStatus + result URL
 | GET/POST | `/projects/{id}/visual-review/models`、`/visual-review` | Final Cut 视觉评估 |
 | GET | `/providers/pippit` | 服务端 Pippit 登录状态 |
 | GET | `/providers/pippit/credits` | Pippit 积分余额 |
-| GET | `/credits` | 当前用户 VideoAgent 积分余额 |
+| GET | `/credits` | 当前用户视频小秘积分余额 |
 | GET | `/assets` | 当前用户资产列表 |
 | GET/POST | `/projects/{id}/assets` | 项目资产列表与上传 |
 | PATCH/DELETE | `/assets/{id}` | 重命名或软删除素材 |
@@ -542,7 +542,7 @@ Idempotency-Key: <unique-client-generated-key>
 ### 13.1 启动 API
 
 ```powershell
-cd D:\_Science\Agent\VideoAgent
+cd D:\_Science\小秘\视频小秘
 .\scripts\dev-api.ps1
 ```
 
@@ -557,7 +557,7 @@ services/api/.data/videoagent.db
 ### 13.2 启动 Web
 
 ```powershell
-cd D:\_Science\Agent\VideoAgent
+cd D:\_Science\小秘\视频小秘
 .\scripts\dev-web.ps1
 ```
 
@@ -665,7 +665,7 @@ pnpm --dir apps/web build
 - Kling Provider 测试使用 Fake MCP client，不触发付费生成。
 - 前端测试覆盖共享首页、导航、文档加载、自定义下拉、Videos 发布、创作提交、历史目录、逐层审批、Skill AI 优化、持久化发布、分类榜单和点赞状态。
 - 工作流批准使用本地即时阶段推进；显式调整和自定义修改才调用远程规划器，减少选项点击等待。
-- Agent 语言由项目 Brief 和当前用户 Prompt 自动检测，不直接沿用账户语言。
+- 小秘语言由项目 Brief 和当前用户 Prompt 自动检测，不直接沿用账户语言。
 - Pippit 会将低于模型下限的镜头时长提升到 4 秒并同步估算；Provider 拒绝时返回可读的 `502` 错误并幂等退款。
 - Playwright 使用 Mock Provider 验证审批、生成、导出、分享、Skill 优化，以及 Videos 视频上传和 Assets 详情，不访问付费 Provider。
 - 管理测试覆盖白名单权限、积分调整、账号停用、邀请码、注册关闭和生成开关。
@@ -690,10 +690,10 @@ pnpm --dir apps/web build
 - 不能把 Pippit Access Key 或 CLI 登录文件写入日志。
 - 新查询必须包含用户所有权条件。
 
-### 16.2 Agent
+### 16.2 小秘
 
 - LLM 输出必须使用 Pydantic 结构化模型。
-- 不在 Agent 中直接执行删除、支付或账号操作。
+- 不在小秘中直接执行删除、支付或账号操作。
 - 外部生成操作必须经过明确的计费审批。
 - Prompt 中上传内容和用户文本均视为不可信。
 - 本地规划器必须保持可用，确保无模型环境可以开发。
@@ -725,7 +725,7 @@ pnpm --dir apps/web build
 4. 在 Provider Resolver 中增加选择逻辑。
 5. 增加前端能力展示和积分字段。
 
-### 新增 Agent 节点
+### 新增小秘节点
 
 1. 在 `AgentState` 中增加类型化状态。
 2. 为该状态迁移编写单元测试。

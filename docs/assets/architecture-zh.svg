@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1500" height="820" viewBox="0 0 1500 820" role="img" aria-labelledby="title desc">
-  <title id="title">VideoAgent 技术架构</title>
-  <desc id="desc">Five-stage architecture: director workspace, FastAPI control 规划e, Agent and domain services, asynchronous generation and providers, then durable data and final-cut delivery.</desc>
+  <title id="title">视频小秘技术架构</title>
+  <desc id="desc">五阶段架构：导演工作台、FastAPI 控制面、小秘与领域服务、异步生成与模型服务，以及持久化数据和最终交付。</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#060a12"/>
@@ -52,9 +52,9 @@
   <g transform="translate(58 36)">
     <rect width="52" height="52" rx="14" fill="#0c1930" stroke="#2b67a3"/>
     <path d="M16 13L40 26L16 39Z" fill="url(#logo)"/>
-    <text x="70" y="13" class="kicker">VIDEOAGENT / TECHNICAL ARCHITECTURE</text>
+    <text x="70" y="13" class="kicker">视频小秘 / 技术架构</text>
     <text x="70" y="45" class="brand">从灵感到成片，一条受控路径</text>
-    <text x="0" y="77" class="subtitle">导演确定方向，Agent 负责规划，服务执行控制，持久化存储保留每个结果。</text>
+    <text x="0" y="77" class="subtitle">导演确定方向，小秘负责规划，服务执行控制，持久化存储保留每个结果。</text>
   </g>
 
   <!-- Stage 1 -->
@@ -68,7 +68,7 @@
       <text x="12" y="20" class="chip-title">浏览器 / Next.js</text>
       <text x="12" y="37" class="chip-copy">响应式产品应用</text>
       <rect y="62" width="216" height="52" rx="10" class="chip"/>
-      <text x="12" y="82" class="chip-title">Agent 对话与审批</text>
+      <text x="12" y="82" class="chip-title">小秘对话与审批</text>
       <text x="12" y="99" class="chip-copy">实时执行轨迹</text>
       <rect y="124" width="216" height="52" rx="10" class="chip"/>
       <text x="12" y="144" class="chip-title">故事板画布</text>
@@ -111,7 +111,7 @@
   <g transform="translate(618 160)" filter="url(#shadow)">
     <rect width="244" height="544" rx="20" class="card" stroke="#2b6ca6"/>
     <text x="18" y="29" class="step">03 / 智能层</text>
-    <text x="18" y="58" class="column">Agent 与领域服务</text>
+    <text x="18" y="58" class="column">小秘与领域服务</text>
     <text x="18" y="79" class="column-sub">规划与业务策略</text>
     <g transform="translate(14 104)">
       <rect width="216" height="52" rx="10" class="chip"/>
@@ -146,7 +146,7 @@
       <text x="12" y="82" class="chip-title">轮询兜底</text>
       <text x="12" y="99" class="chip-copy">队列故障时任务仍可恢复</text>
       <rect y="124" width="216" height="52" rx="10" class="chip"/>
-      <text x="12" y="144" class="chip-title">模型服务路由</text>
+      <text x="12" y="144" class="chip-title">Provider Resolver</text>
       <text x="12" y="161" class="chip-copy">能力、模型、任务类型</text>
       <rect y="186" width="216" height="52" rx="10" class="chip"/>
       <text x="12" y="206" class="chip-title">Pippit CLI</text>
@@ -155,7 +155,7 @@
       <text x="12" y="268" class="chip-title">可灵 CLI / MCP</text>
       <text x="12" y="285" class="chip-copy">文生视频 · 图生视频 · 全能参考 · 编辑</text>
       <rect y="310" width="216" height="52" rx="10" class="chip"/>
-      <text x="12" y="330" class="chip-title">Mock 服务</text>
+      <text x="12" y="330" class="chip-title">Mock Provider</text>
       <text x="12" y="347" class="chip-copy">无付费积分测试</text>
     </g>
   </g>
@@ -199,9 +199,9 @@
   <rect x="58" y="733" width="1384" height="1" fill="#1b3046"/>
   <text x="58" y="755" class="footer">同步</text>
   <text x="108" y="755" class="footer">浏览器 ↔ FastAPI</text>
-  <text x="330" y="755" class="footer">A同步</text>
-  <text x="380" y="755" class="footer">FastAPI → Redis/Celery → 模型服务</text>
+  <text x="330" y="755" class="footer">异步</text>
+  <text x="380" y="755" class="footer">FastAPI → Redis/Celery → Provider</text>
   <text x="720" y="755" class="footer">持久化</text>
   <text x="782" y="755" class="footer">数据库与媒体是唯一事实来源</text>
-  <text x="58" y="785" class="footer">跨层能力  ·  服务端凭据  ·  用户与项目隔离  ·  显式审批  ·  幂等  ·  可观测 Agent 活动</text>
+  <text x="58" y="785" class="footer">跨层能力  ·  服务端凭据  ·  用户与项目隔离  ·  显式审批  ·  幂等  ·  可观测小秘活动</text>
 </svg>

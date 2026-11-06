@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="VideoAgent Test" />
-    <title>Test · VideoAgent</title>
+    <meta name="description" content="视频小秘 Test" />
+    <title>Test · 视频小秘</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
     <link rel="stylesheet" href="../docs.css?v=33" />
   </head>
@@ -25,7 +25,7 @@
         </button>
         <nav class="toc-panel" id="toc-panel" aria-label="目录">
           <p class="toc-kicker">目录</p>
-          <a class="toc-link toc-level-1" href="#videoagent-软件测试与-tdd-规范">VideoAgent 软件测试与 TDD 规范</a>
+          <a class="toc-link toc-level-1" href="#视频小秘软件测试与-tdd-规范">视频小秘软件测试与 TDD 规范</a>
 <a class="toc-link toc-level-2" href="#1-目的">1. 目的</a>
 <a class="toc-link toc-level-2" href="#2-tdd-规则">2. TDD 规则</a>
 <a class="toc-link toc-level-2" href="#3-测试分层">3. 测试分层</a>
@@ -41,7 +41,7 @@
 <a class="toc-link toc-level-2" href="#11-完成定义">11. 完成定义</a>
         </nav>
       </aside>
-      <article class="document"><h1 id="videoagent-软件测试与-tdd-规范">VideoAgent 软件测试与 TDD 规范</h1>
+      <article class="document"><h1 id="视频小秘软件测试与-tdd-规范">视频小秘软件测试与 TDD 规范</h1>
 <div class="table-wrap"><table><thead><tr>
 <th>属性</th>
 <th>内容</th>
@@ -60,7 +60,7 @@
 </tr>
 </tbody></table></div>
 <h2 id="1-目的">1. 目的</h2>
-<p>本文档定义 VideoAgent 的自动化测试策略、契约、质量门禁与验收检查。</p>
+<p>本文档定义视频小秘的自动化测试策略、契约、质量门禁与验收检查。</p>
 <h2 id="2-tdd-规则">2. TDD 规则</h2>
 <ol>
 <li>先编写一个失败的行为测试。</li>
@@ -81,7 +81,7 @@
 <li>密码哈希与会话行为。</li>
 <li>项目所有权、重命名和归档。</li>
 <li>故事板替换与版本。</li>
-<li>确定性 Planner 与 Fake LLM 的 Agent 规划。</li>
+<li>确定性 Planner 与 Fake LLM 的小秘规划。</li>
 <li>Mock、Pippit 和 Kling Provider 契约。</li>
 <li>积分估算、审批、幂等和任务状态。</li>
 <li>Provider 状态与积分。</li>
@@ -137,7 +137,7 @@
 <li>幂等行为。</li>
 <li>故事板替换后的镜头顺序。</li>
 <li>镜头排序后 Shot ID、生成资产和历史保持不变。</li>
-<li>Agent 消息持久化。</li>
+<li>小秘消息持久化。</li>
 <li>评估结果结构。</li>
 <li>响应不包含 Provider 凭据。</li>
 </ul>
@@ -153,7 +153,7 @@
 <li>Skills 使用 <code>user_id/skill_id</code> 的单一搜索目录，原厂商能力使用厂商命名空间。</li>
 <li>策略正确填充提示词、Skill、Hook、风格、画幅、时长和审核设置。</li>
 <li>再次点击当前策略会恢复应用前状态。</li>
-<li>Videos 场景卡片进入 Agents 时选中对应 Skill 和提示词。</li>
+<li>Videos 场景卡片进入 小秘 时选中对应 Skill 和提示词。</li>
 <li>输入框随多行内容增高，输入非空时隐藏示例灵感。</li>
 <li>Model 目录包含全部 Kling 与 Pippit 视频模型，并显示为 <code>服务商/模型</code>。</li>
 <li>Docs 标签为 <code>PRD</code>、<code>策略</code>、<code>Arch</code>、<code>API</code>、<code>Dev</code>、<code>Test</code>、<code>Ops</code>、<code>FAQ</code>、<code>TODO</code>。</li>
@@ -180,8 +180,8 @@
 <li>上传和生成结果位于对应目录，支持最终选用、复制 ID、预览和删除。</li>
 <li>桌面端四栏默认等宽并支持拖拽调整；头像下拉包含语言、通知和积分，语言选项纵向排列；</li>
 <p>账号操作带图标，齿轮位于头像行内部。</p>
-<li>浏览器标题统一为 <code>VideoAgent</code>；管理后台运行环境标签为 <code>Pippit China</code>。</li>
-<li>Assets 与 Agents 可独立折叠，并通过带标签的窄轨恢复。</li>
+<li>浏览器标题统一为 <code>视频小秘</code>；管理后台运行环境标签为 <code>Pippit China</code>。</li>
+<li>Assets 与 小秘 可独立折叠，并通过带标签的窄轨恢复。</li>
 <li>编辑区顶部不显示制作进度条，也不显示故事板 Review 分数按钮。</li>
 <li>Final Cut 视觉评估只对导出资产开放，用户可选择已配置的视觉模型和一致性指标；未配置模型时明确不可用。</li>
 <li>全部故事板 Shot 均生成后才可导出成片。</li>
@@ -192,15 +192,15 @@
 <li>已导出成片可直接发布到 Videos，无需再次上传文件。</li>
 <li>Videos 在所有入口统一使用胶卷图标，Skills 统一使用摄像机图标。</li>
 <li>镜头生成在工作流批准前显示明确提示。</li>
-<li>历史 Agent 消息静态渲染；仅新返回的回复执行一次流式显示，Agents 折叠后重新展开不会重复播放。</li>
-<li>Agent 请求等待回复时显示实时执行轨迹；事件到达前的短暂空档保留紧凑的</li>
+<li>历史小秘消息静态渲染；仅新返回的回复执行一次流式显示，小秘 折叠后重新展开不会重复播放。</li>
+<li>小秘请求等待回复时显示实时执行轨迹；事件到达前的短暂空档保留紧凑的</li>
 <p><code>Thinking</code> 加载状态。</p>
-<li>Agent 请求按客户端 <code>run_id</code> 持久化 <code>context</code>、<code>memory</code>、<code>skill</code>、<code>planning</code>、</li>
+<li>小秘请求按客户端 <code>run_id</code> 持久化 <code>context</code>、<code>memory</code>、<code>skill</code>、<code>planning</code>、</li>
 <p><code>validation</code>、<code>state</code> 和 <code>reply</code> 有序事件。</p>
-<li>Agents 面板将事件显示为实时执行轨迹；未发生的 Skill 或 MCP 调用不得显示为已执行。</li>
+<li>小秘 面板将事件显示为实时执行轨迹；未发生的 Skill 或 MCP 调用不得显示为已执行。</li>
 <li>Context Builder 最多读取 8 条历史消息，每条截断至 600 字符，排除当前请求，</li>
 <p>故事板上下文最多包含 20 个 Shot。</p>
-<li>Agent 逐层展示整体设定、分集/分镜大纲和逐场剧本审批选项，自定义意见保持当前阶段。</li>
+<li>小秘逐层展示整体设定、分集/分镜大纲和逐场剧本审批选项，自定义意见保持当前阶段。</li>
 <li>只有剧本批准后才允许估算和生成镜头。</li>
 <li>Character 与 Scene 生成页支持上传、参考图生图和文字生图；生成图片持久化为</li>
 <p>可下载的项目资产。</p>
@@ -210,16 +210,16 @@
 <li>Skill 发布表单包含用途、执行规范、质量门禁、启动提示词和输入输出契约。</li>
 <li>AI 优化按钮能把粗略想法整理为结构化 Skill，保存后从服务端恢复。</li>
 <li>内置 <code>video_agent/skill_synthesis</code> 直接打开 Skill Studio。</li>
-<li>App 左侧导航可收起为仅图标，登录后 Agents 首页显示最近对话。</li>
+<li>App 左侧导航可收起为仅图标，登录后 小秘 首页显示最近对话。</li>
 <li>Videos 发布必须选择 MP4，上传成功后出现在社区和作者 Assets。</li>
 <li>Skills 与 Videos 在分类筛选后保持榜单顺序，点赞按钮正确切换状态并更新计数；卡片只</li>
 <p>在标题后显示分类，不显示排名或获得积分。</p>
 <li>Assets 的视频与 Skill 卡片可点击打开详情，视频详情可播放。</li>
-<li>工作流批准立即推进；Agent 回复语言跟随项目 Brief 和用户 Prompt。</li>
+<li>工作流批准立即推进；小秘回复语言跟随项目 Brief 和用户 Prompt。</li>
 <li>长 Brief 拆分为多个导演属性；英文界面不显示中文例句，<code>Creative brief</code> 和</li>
 <p><code>Director direction</code> 不再作为兜底属性。</p>
 <li>登录、注册与主产品使用一致的深色视觉语言。</li>
-<li>Projects 的加号打开项目表单；Recents 的加号进入 Agents；两组都可展开和收起。</li>
+<li>Projects 的加号打开项目表单；Recents 的加号进入 小秘；两组都可展开和收起。</li>
 <li>Pippit 低于 4 秒的请求会被规范化，Provider 拒绝会显示原始失败原因并返还预留积分。</li>
 <li>搜索、语言、通知、积分和头像使用半透明表面。</li>
 <li>Docs 位于固定导航右侧，文档 iframe 正常加载且不会被装饰或背景层遮挡。</li>

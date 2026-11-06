@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="VideoAgent FAQ" />
-    <title>FAQ · VideoAgent</title>
+    <meta name="description" content="视频小秘 FAQ" />
+    <title>FAQ · 视频小秘</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
     <link rel="stylesheet" href="../docs.css?v=33" />
   </head>
@@ -25,59 +25,59 @@
         </button>
         <nav class="toc-panel" id="toc-panel" aria-label="目录">
           <p class="toc-kicker">目录</p>
-          <a class="toc-link toc-level-1" href="#videoagent-客服-faq">VideoAgent 客服 FAQ</a>
-<a class="toc-link toc-level-2" href="#q1-videoagent-的主编排应怎样设计">Q1. VideoAgent 的主编排应怎样设计？</a>
+          <a class="toc-link toc-level-1" href="#视频小秘客服-faq">视频小秘客服 FAQ</a>
+<a class="toc-link toc-level-2" href="#q1-视频小秘的主编排应怎样设计">Q1. 视频小秘的主编排应怎样设计？</a>
 <a class="toc-link toc-level-2" href="#q2-用户说-只改第三镜-其他不要动-系统应如何实现">Q2. 用户说“只改第三镜，其他不要动”，系统应如何实现？</a>
 <a class="toc-link toc-level-2" href="#q3-一个可生成的专业镜头-至少需要哪些字段">Q3. 一个可生成的专业镜头，至少需要哪些字段？</a>
 <a class="toc-link toc-level-2" href="#q4-如何让-llm-输出真正可执行">Q4. 如何让 LLM 输出真正可执行？</a>
 <a class="toc-link toc-level-2" href="#q5-mcp-模型上下文协议-和-cli-命令行接口-应该怎么选">Q5. MCP（模型上下文协议）和 CLI（命令行接口）应该怎么选？</a>
 <a class="toc-link toc-level-2" href="#q6-生成任务超时后怎么办">Q6. 生成任务超时后怎么办？</a>
-<a class="toc-link toc-level-2" href="#q7-videoagent-的评测应该怎么做">Q7. VideoAgent 的评测应该怎么做？</a>
+<a class="toc-link toc-level-2" href="#q7-视频小秘的评测应该怎么做">Q7. 视频小秘的评测应该怎么做？</a>
 <a class="toc-link toc-level-2" href="#q8-如何保证多镜头的人物与场景一致性">Q8. 如何保证多镜头的人物与场景一致性？</a>
 <a class="toc-link toc-level-2" href="#q9-如何控制积分成本和用户预期">Q9. 如何控制积分成本和用户预期？</a>
 <a class="toc-link toc-level-2" href="#q10-如果线上生成成功率突然下降-如何定位问题">Q10. 如果线上生成成功率突然下降，如何定位问题？</a>
-<a class="toc-link toc-level-2" href="#q11-为什么不用一个无限自主的-agent-完成所有事情">Q11. 为什么不用一个无限自主的 Agent 完成所有事情？</a>
-<a class="toc-link toc-level-2" href="#q12-videoagent-最关键的工程原则是什么">Q12. VideoAgent 最关键的工程原则是什么？</a>
-<a class="toc-link toc-level-2" href="#q13-videoagent-的主要技术权衡是什么">Q13. VideoAgent 的主要技术权衡是什么？</a>
+<a class="toc-link toc-level-2" href="#q11-为什么不用一个无限自主的小秘完成所有事情">Q11. 为什么不用一个无限自主的小秘完成所有事情？</a>
+<a class="toc-link toc-level-2" href="#q12-视频小秘最关键的工程原则是什么">Q12. 视频小秘最关键的工程原则是什么？</a>
+<a class="toc-link toc-level-2" href="#q13-视频小秘的主要技术权衡是什么">Q13. 视频小秘的主要技术权衡是什么？</a>
 <a class="toc-link toc-level-2" href="#q14-视频生成系统如何支撑高并发">Q14. 视频生成系统如何支撑高并发？</a>
-<a class="toc-link toc-level-2" href="#q15-videoagent-如何设计高可用">Q15. VideoAgent 如何设计高可用？</a>
+<a class="toc-link toc-level-2" href="#q15-视频小秘如何设计高可用">Q15. 视频小秘如何设计高可用？</a>
 <a class="toc-link toc-level-2" href="#q16-视频生成链路应怎样设计兜底策略">Q16. 视频生成链路应怎样设计兜底策略？</a>
-<a class="toc-link toc-level-2" href="#q17-videoagent-的-agent-loop-是什么">Q17. VideoAgent 的 Agent Loop 是什么？</a>
-<a class="toc-link toc-level-2" href="#q18-videoagent-的-context-和-memory-怎么设计和管理">Q18. VideoAgent 的 Context 和 Memory 怎么设计和管理？</a>
-<a class="toc-link toc-level-2" href="#q19-videoagent-的-skill-mcp-subagent-是怎么调用的">Q19. VideoAgent 的 Skill、MCP、SubAgent 是怎么调用的？</a>
-<a class="toc-link toc-level-2" href="#q20-videoagent-的-agent-hook-是什么-目前怎么用">Q20. VideoAgent 的 Agent Hook 是什么，目前怎么用？</a>
-<a class="toc-link toc-level-2" href="#q21-videoagent-如何在同一个-skill-有多个-provider-时选择模型">Q21. VideoAgent 如何在同一个 Skill 有多个 Provider 时选择模型？</a>
-<a class="toc-link toc-level-2" href="#q22-videoagent-现在支持哪些多模态制作能力">Q22. VideoAgent 现在支持哪些多模态制作能力？</a>
-<a class="toc-link toc-level-2" href="#q23-celery-和-redis-在-videoagent-中如何配合">Q23. Celery 和 Redis 在 VideoAgent 中如何配合？</a>
-<a class="toc-link toc-level-2" href="#q24-videoagent-的-agent-核心代码在哪里">Q24. VideoAgent 的 Agent 核心代码在哪里？</a>
+<a class="toc-link toc-level-2" href="#q17-视频小秘的-loop-是什么">Q17. 视频小秘的 Loop 是什么？</a>
+<a class="toc-link toc-level-2" href="#q18-视频小秘的-context-和-memory-怎么设计和管理">Q18. 视频小秘的 Context 和 Memory 怎么设计和管理？</a>
+<a class="toc-link toc-level-2" href="#q19-视频小秘的-skill-mcp-subagent-是怎么调用的">Q19. 视频小秘的 Skill、MCP、SubAgent 是怎么调用的？</a>
+<a class="toc-link toc-level-2" href="#q20-视频小秘中的-hook-是什么-目前怎么用">Q20. 视频小秘中的 Hook 是什么，目前怎么用？</a>
+<a class="toc-link toc-level-2" href="#q21-视频小秘如何在同一个-skill-有多个-provider-时选择模型">Q21. 视频小秘如何在同一个 Skill 有多个 Provider 时选择模型？</a>
+<a class="toc-link toc-level-2" href="#q22-视频小秘现在支持哪些多模态制作能力">Q22. 视频小秘现在支持哪些多模态制作能力？</a>
+<a class="toc-link toc-level-2" href="#q23-celery-和-redis-在视频小秘中如何配合">Q23. Celery 和 Redis 在视频小秘中如何配合？</a>
+<a class="toc-link toc-level-2" href="#q24-视频小秘的核心代码在哪里">Q24. 视频小秘的核心代码在哪里？</a>
         </nav>
       </aside>
-      <article class="document"><h1 id="videoagent-客服-faq">VideoAgent 客服 FAQ</h1>
+      <article class="document"><h1 id="视频小秘客服-faq">视频小秘客服 FAQ</h1>
 <div class="table-wrap"><table><thead><tr>
 <th>属性</th>
 <th>内容</th>
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v2.6</td>
+<td>v2.7</td>
 </tr>
 <tr>
 <td>更新日期</td>
 <td>2026-11-06</td>
 </tr>
 </tbody></table></div>
-<h2 id="q1-videoagent-的主编排应怎样设计">Q1. VideoAgent 的主编排应怎样设计？</h2>
+<h2 id="q1-视频小秘的主编排应怎样设计">Q1. 视频小秘的主编排应怎样设计？</h2>
 <p><strong>答案</strong></p>
-<p>VideoAgent 采用确定性工作流：Brief（创作需求简报）、创作诊断、 Treatment（创作阐述）、Script/Beats（剧本与叙事节拍）、 Storyboard（故事板）、连续性校验、预演、生成、镜头 QC（质量检查）、粗剪和交付。故事方向、预算和 成片方向设置人工确认点，模型负责创意，代码负责状态、权限和成本边界。</p>
-<p><strong>追问：</strong> 为什么不直接使用多个自由 Agent？</p>
+<p>视频小秘采用确定性工作流：Brief（创作需求简报）、创作诊断、 Treatment（创作阐述）、Script/Beats（剧本与叙事节拍）、 Storyboard（故事板）、连续性校验、预演、生成、镜头 QC（质量检查）、粗剪和交付。故事方向、预算和 成片方向设置人工确认点，模型负责创意，代码负责状态、权限和成本边界。</p>
+<p><strong>追问：</strong> 为什么不直接使用多个自由小秘？</p>
 <p><strong>答案</strong></p>
-<p>职责共享同一上下文时，单 Agent 配明确工具和状态更稳定。只有剧本、视觉、 制片和审片具有真正独立的工具、上下文和验收标准时，才拆成受限子 Agent， 由父流程协调。</p>
+<p>职责共享同一上下文时，单小秘配明确工具和状态更稳定。只有剧本、视觉、 制片和审片具有真正独立的工具、上下文和验收标准时，才拆成受限子小秘， 由父流程协调。</p>
 <p><strong>扩展：</strong> LangGraph（图式工作流编排框架）</p>
 <p><strong>答案</strong></p>
 <p>使用 StateGraph（状态图）表达阶段和条件边，checkpoint（可恢复的流程快照） 保存状态，human-in-the-loop（人工介入确认）负责关键确认， tool allowlist（工具白名单）限制能力边界，结构化输出 保证节点间契约稳定。</p>
 <h2 id="q2-用户说-只改第三镜-其他不要动-系统应如何实现">Q2. 用户说“只改第三镜，其他不要动”，系统应如何实现？</h2>
 <p><strong>答案</strong></p>
-<p>先识别意图，再把修改落到稳定的 shot id（镜头唯一标识）上。 Agent 输出局部 shot patch（单镜头局部修改补丁）， 记录版本和操作日志，其他镜头及其审批状态保持不变。</p>
+<p>先识别意图，再把修改落到稳定的 shot id（镜头唯一标识）上。 小秘输出局部 shot patch（单镜头局部修改补丁）， 记录版本和操作日志，其他镜头及其审批状态保持不变。</p>
 <p><strong>追问：</strong> 如果用户只是问“这个分镜怎么样”，也应该重写故事板吗？</p>
 <p><strong>答案</strong></p>
 <p>不应该。只评估请求进入 review（评估）分支，返回问题和建议，不产生写操作。</p>
@@ -104,7 +104,7 @@
 <p>允许有限次结构化修复；修复预算耗尽后返回稳定错误码，不进入计费链路，也不把 异常文本直接交给下一个工具。</p>
 <h2 id="q5-mcp-模型上下文协议-和-cli-命令行接口-应该怎么选">Q5. MCP（模型上下文协议）和 CLI（命令行接口）应该怎么选？</h2>
 <p><strong>答案</strong></p>
-<p>按运行边界选择。服务端批处理和稳定部署使用 CLI；跨 Agent、个人 Agent 和 工具发现场景使用 MCP。两种协议都收敛到统一 Provider（模型服务商）契约。</p>
+<p>按运行边界选择。服务端批处理和稳定部署使用 CLI；跨小秘、个人小秘和 工具发现场景使用 MCP。两种协议都收敛到统一 Provider（模型服务商）契约。</p>
 <p><strong>追问：</strong> 两者同时存在会不会重复建设？</p>
 <p><strong>答案</strong></p>
 <p>不会。重复的是底层能力，不重复的应是接口。传输层分别适配 CLI 和 MCP， 业务层只依赖 estimate（估算）、submit（提交）、status（查询）、 cancel（取消）和统一错误模型。</p>
@@ -120,7 +120,7 @@
 <p><strong>扩展：</strong> 怎样防止重复扣费？</p>
 <p><strong>答案</strong></p>
 <p>数据库唯一幂等键、提交状态机（状态及合法迁移规则）、 Provider Task Reference（服务商任务编号）和人工可解释的对账流程 共同保证 at-least-once（至少一次投递）不会变成重复计费。</p>
-<h2 id="q7-videoagent-的评测应该怎么做">Q7. VideoAgent 的评测应该怎么做？</h2>
+<h2 id="q7-视频小秘的评测应该怎么做">Q7. 视频小秘的评测应该怎么做？</h2>
 <p><strong>答案</strong></p>
 <p>按阶段评测。剧本看欲望、冲突、转折和结尾；故事板看覆盖、连续性和可生成性； 镜头看人物、Prompt 匹配和技术瑕疵；成片看节奏、声音和观看留存。</p>
 <p><strong>追问：</strong> 故事板阶段需要视觉质量分数吗？</p>
@@ -156,30 +156,30 @@
 <p><strong>扩展：</strong> 怎样设计观测体系？</p>
 <p><strong>答案</strong></p>
 <p>用 trace（调用链追踪）串起 project（项目）、shot（镜头）、job（任务）和 provider task（服务商任务），记录结构化日志、SLI/SLO（服务质量指标与目标）、 延迟、成功率、幂等拦截和积分消耗，并配置 canary（灰度发布）、 feature flag（功能开关）和 kill switch（紧急停用开关）。</p>
-<h2 id="q11-为什么不用一个无限自主的-agent-完成所有事情">Q11. 为什么不用一个无限自主的 Agent 完成所有事情？</h2>
+<h2 id="q11-为什么不用一个无限自主的小秘完成所有事情">Q11. 为什么不用一个无限自主的小秘完成所有事情？</h2>
 <p><strong>答案</strong></p>
 <p>视频创作同时包含创意不确定性和不可逆成本。无限自主会让权限、预算、状态恢复 和审计难以证明，应采用“高自主创意、强约束生产”。</p>
 <p><strong>追问：</strong> 自主性越高不是越智能吗？</p>
 <p><strong>答案</strong></p>
-<p>自主性提高的是可行动空间，不等于决策质量。生产 Agent 需要边界、确认门和 可回放状态，才能把能力转化为稳定交付。</p>
+<p>自主性提高的是可行动空间，不等于决策质量。生产小秘需要边界、确认门和 可回放状态，才能把能力转化为稳定交付。</p>
 <p><strong>扩展：</strong> 哪些动作必须人工确认？</p>
 <p><strong>答案</strong></p>
 <p>计费生成、批量重做、删除资产、公开发布、修改权限和改变预算必须走白名单工具 与人工确认。</p>
-<h2 id="q12-videoagent-最关键的工程原则是什么">Q12. VideoAgent 最关键的工程原则是什么？</h2>
+<h2 id="q12-视频小秘最关键的工程原则是什么">Q12. 视频小秘最关键的工程原则是什么？</h2>
 <p><strong>答案</strong></p>
-<p>把创意决策表示为可校验、可追踪、可局部修改的结构化数据，让 Agent 的推理结果 能够进入可靠的生产状态机。</p>
-<p><strong>追问：</strong> 为什么这个原则比增加更多 Agent 更重要？</p>
+<p>把创意决策表示为可校验、可追踪、可局部修改的结构化数据，让小秘的推理结果 能够进入可靠的生产状态机。</p>
+<p><strong>追问：</strong> 为什么这个原则比增加更多小秘更重要？</p>
 <p><strong>答案</strong></p>
-<p>没有稳定数据契约，更多 Agent 只会放大上下文漂移和状态不一致。结构化数据让 分工、恢复、评估和局部重做成为可验证行为。</p>
+<p>没有稳定数据契约，更多小秘只会放大上下文漂移和状态不一致。结构化数据让 分工、恢复、评估和局部重做成为可验证行为。</p>
 <p><strong>扩展：</strong> 最重要的基础字段是什么？</p>
 <p><strong>答案</strong></p>
 <p>scene、beat、story function、镜头语言、主体动作、连续性引用和生成能力要求。 这些字段共同连接预演、生成、评估与剪辑。</p>
-<h2 id="q13-videoagent-的主要技术权衡是什么">Q13. VideoAgent 的主要技术权衡是什么？</h2>
+<h2 id="q13-视频小秘的主要技术权衡是什么">Q13. 视频小秘的主要技术权衡是什么？</h2>
 <p><strong>答案</strong></p>
-<p>核心权衡包括延迟、质量和成本，自主性与可控性，一致性与创作灵活性， 单 Agent 与多 Agent，轮询与实时推送。架构选择应服务于当前瓶颈，而不是追求 概念上的“更智能”或“更分布式”。</p>
-<p><strong>追问：</strong> 什么时候应从单 Agent 拆成多 Agent？</p>
+<p>核心权衡包括延迟、质量和成本，自主性与可控性，一致性与创作灵活性， 单小秘与多小秘，轮询与实时推送。架构选择应服务于当前瓶颈，而不是追求 概念上的“更智能”或“更分布式”。</p>
+<p><strong>追问：</strong> 什么时候应从单小秘拆成多小秘？</p>
 <p><strong>答案</strong></p>
-<p>当子任务具有独立工具、上下文、评估标准和扩缩容需求时再拆分。仅靠增加 Agent 无法解决上下文漂移，反而会增加协调、追踪和一致性成本。</p>
+<p>当子任务具有独立工具、上下文、评估标准和扩缩容需求时再拆分。仅靠增加小秘无法解决上下文漂移，反而会增加协调、追踪和一致性成本。</p>
 <p><strong>扩展：</strong> 如何避免架构过度设计？</p>
 <p><strong>答案</strong></p>
 <p>先量化瓶颈来自创意质量、Provider（模型服务商）延迟、队列积压还是数据库竞争，再选择最小 改动。每次扩展都要求可观测指标证明收益大于运维复杂度。</p>
@@ -192,7 +192,7 @@
 <p><strong>扩展：</strong> 如何实现优雅过载？</p>
 <p><strong>答案</strong></p>
 <p>使用有界队列、load shedding（主动丢弃超载请求）、circuit breaker（熔断） 和降级预览；优先保护已受理任务， 明确拒绝超出容量的新请求，并暴露队列深度、等待时间和拒绝率。</p>
-<h2 id="q15-videoagent-如何设计高可用">Q15. VideoAgent 如何设计高可用？</h2>
+<h2 id="q15-视频小秘如何设计高可用">Q15. 视频小秘如何设计高可用？</h2>
 <p><strong>答案</strong></p>
 <p>API（应用程序接口）保持无状态并多实例部署，数据库保存业务事实， Redis（内存数据结构存储）只承担缓存、队列和 协调。服务提供健康检查、滚动发布、超时和熔断；Provider 通过统一适配器支持 受控切换。</p>
 <p><strong>追问：</strong> 数据库或 Redis 故障时如何降级？</p>
@@ -210,7 +210,7 @@
 <p><strong>扩展：</strong> 兜底策略的优先级如何确定？</p>
 <p><strong>答案</strong></p>
 <p>依次考虑数据安全、费用一致性、结果可用性、质量和延迟。降级必须可观测、可 解释、可撤销，并受用户预算和内容策略约束。</p>
-<h2 id="q17-videoagent-的-agent-loop-是什么">Q17. VideoAgent 的 Agent Loop 是什么？</h2>
+<h2 id="q17-视频小秘的-loop-是什么">Q17. 视频小秘的 Loop 是什么？</h2>
 <p><strong>答案</strong></p>
 <p>当前是受控的单次规划 Run，不是无限自主的 ReAct 循环。FastAPI 接收用户消息后， 依次保存 <code>run_id</code>、构建有界 Context、读取 Memory 和当前项目资源、解析可选 Skill， 再执行 LangGraph 的单个 <code>plan_storyboard</code> 节点。Planner 输出 <code>StoryboardPlan</code>，经 Pydantic 校验后写入工作流、Message、Character 和 Shot 状态， 最后生成导演回复。</p>
 <p><strong>追问：</strong> 为什么还能在等待界面看到很多步骤？</p>
@@ -218,8 +218,8 @@
 <p>每一步都会写入 <code>agent_activities</code>，前端按 <code>run_id</code> 轮询并显示 <code>context → memory → skill → planning → validation → state → reply</code> 的真实事件。 它不是用假动画模拟工具执行；没有发生的 MCP 或 Skill 调用不会显示为已完成。</p>
 <p><strong>扩展：</strong> 什么时候才需要真正的多轮 Loop？</p>
 <p><strong>答案</strong></p>
-<p>当 Agent 需要根据工具结果决定下一步，例如自动读取素材、调用视觉评估、根据失败原因 重试或请求用户补充信息时，才需要把单节点图扩展为有预算、有终止条件、有审批门和 可恢复 Checkpoint 的多节点循环。</p>
-<h2 id="q18-videoagent-的-context-和-memory-怎么设计和管理">Q18. VideoAgent 的 Context 和 Memory 怎么设计和管理？</h2>
+<p>当小秘需要根据工具结果决定下一步，例如自动读取素材、调用视觉评估、根据失败原因 重试或请求用户补充信息时，才需要把单节点图扩展为有预算、有终止条件、有审批门和 可恢复 Checkpoint 的多节点循环。</p>
+<h2 id="q18-视频小秘的-context-和-memory-怎么设计和管理">Q18. 视频小秘的 Context 和 Memory 怎么设计和管理？</h2>
 <p><strong>答案</strong></p>
 <p>Context 是单次规划调用的有界输入，包含项目标题、Brief、当前请求、Locale、 工作流阶段/状态、当前 Character/Shot 摘要、最近对话和可选 Skill 指令。短期 Memory 只读取最近 8 条历史消息，每条截断到 600 字符，并排除当前请求；故事板上下文最多 读取 20 个 Shot。</p>
 <p><strong>追问：</strong> 长期 Memory 存在哪里？</p>
@@ -228,41 +228,41 @@
 <p><strong>扩展：</strong> 以后增加向量 Memory 要注意什么？</p>
 <p><strong>答案</strong></p>
 <p>必须有用户和项目级隔离、写入去重、TTL、删除传播、权限校验和可解释召回；召回内容 只能作为有界 Context 的一部分，不能取代数据库状态或审批记录。</p>
-<h2 id="q19-videoagent-的-skill-mcp-subagent-是怎么调用的">Q19. VideoAgent 的 Skill、MCP、SubAgent 是怎么调用的？</h2>
+<h2 id="q19-视频小秘的-skill-mcp-subagent-是怎么调用的">Q19. 视频小秘的 Skill、MCP、SubAgent 是怎么调用的？</h2>
 <p><strong>答案</strong></p>
 <p>Skill 当前不是工具执行。Composer 把 Skill ID 写入项目 <code>Production settings</code>； Context Builder 会在当前用户已发布的 Skill 中查找它，并把持久化的 instructions 和 starter prompt 加入 Planner Context。内置 Skill 没有数据库指令时，只传入 Skill ID 作为创作约束。</p>
-<p><strong>追问：</strong> Storyboard Agent 会直接调用 MCP 吗？</p>
+<p><strong>追问：</strong> Storyboard 小秘会直接调用 MCP 吗？</p>
 <p><strong>答案</strong></p>
-<p>不会。MCP 位于付费生成 Provider 边界之后。用户明确批准生成后，Generation API 才解析 Provider；当 Kling 使用 MCP Backend 时，Provider Resolver 使用当前用户的 OAuth Token 创建 <code>StreamableHTTPToolClient</code>，再由 <code>KlingVideoProvider</code> 调用 <code>text_to_video</code>、<code>image_to_video</code> 或 <code>query_tasks</code>。默认国内版路径使用受控 CLI 子进程。这样可以阻止规划 Agent 自行产生计费副作用。</p>
+<p>不会。MCP 位于付费生成 Provider 边界之后。用户明确批准生成后，Generation API 才解析 Provider；当 Kling 使用 MCP Backend 时，Provider Resolver 使用当前用户的 OAuth Token 创建 <code>StreamableHTTPToolClient</code>，再由 <code>KlingVideoProvider</code> 调用 <code>text_to_video</code>、<code>image_to_video</code> 或 <code>query_tasks</code>。默认国内版路径使用受控 CLI 子进程。这样可以阻止规划小秘自行产生计费副作用。</p>
 <p><strong>扩展：</strong> 现在有 SubAgent 吗？</p>
 <p><strong>答案</strong></p>
 <p>没有。当前只有 LangGraph 的单个 <code>plan_storyboard</code> 节点，没有独立 SubAgent 运行时、委派协议或并行子图。只有在剧本、视觉、评估或制片任务具备独立工具、 上下文、验收标准和扩缩容需求时才应拆分；拆分后每个 SubAgent 仍需共享可追踪 <code>run_id</code>、预算和审批边界。</p>
-<h2 id="q20-videoagent-的-agent-hook-是什么-目前怎么用">Q20. VideoAgent 的 Agent Hook 是什么，目前怎么用？</h2>
+<h2 id="q20-视频小秘中的-hook-是什么-目前怎么用">Q20. 视频小秘中的 Hook 是什么，目前怎么用？</h2>
 <p><strong>答案</strong></p>
-<p>Agent Hook 是 Agent 执行生命周期上的拦截点，用于在指定阶段注入 Context、执行策略 校验、记录审计、阻断不安全操作或触发外部自动化。它约束的是 Agent 如何运行，不是 视频开场如何吸引观众；创作框里的视觉冲击、口播开场等属于 Opening Hook，两者不是 同一个概念。</p>
-<p>当前 VideoAgent 在 Agent Run 内提供可观测的阶段 Hook：<code>context</code>、<code>memory</code>、 <code>skill</code>、<code>planning</code>、<code>validation</code>、<code>state</code> 和 <code>reply</code>。这些事件由 <code>AgentActivityRecorder</code> 按 <code>run_id</code> 持久化，前端用它们展示真实的执行轨迹。模型调用 本身仍是单个 LangGraph <code>plan_storyboard</code> 节点；生成工具位于审批边界之后，不会由 规划 Agent 直接触发。</p>
-<p><strong>追问：</strong> Agent Hook 和 Skill、MCP 有什么区别？</p>
+<p>小秘 Hook 是小秘执行生命周期上的拦截点，用于在指定阶段注入 Context、执行策略 校验、记录审计、阻断不安全操作或触发外部自动化。</p>
+<p>当前视频小秘在小秘 Run 内提供可观测的阶段 Hook：<code>context</code>、<code>memory</code>、 <code>skill</code>、<code>planning</code>、<code>validation</code>、<code>state</code> 和 <code>reply</code>。这些事件由 <code>AgentActivityRecorder</code> 按 <code>run_id</code> 持久化，前端用它们展示真实的执行轨迹。模型调用 本身仍是单个 LangGraph <code>plan_storyboard</code> 节点；生成工具位于审批边界之后，不会由 规划小秘直接触发。</p>
+<p><strong>追问：</strong> 小秘 Hook 和 Skill、MCP 有什么区别？</p>
 <p><strong>答案</strong></p>
-<p>Skill 定义 Agent 要完成什么任务以及执行规范；MCP 连接可调用的外部工具和数据源； Agent Hook 则挂在执行阶段边界上，决定某一步前后需要额外执行什么治理逻辑。Hook 不会替代 Skill 的创作指令，也不会直接变成一个生成工具。</p>
+<p>Skill 定义小秘要完成什么任务以及执行规范；MCP 连接可调用的外部工具和数据源； 小秘 Hook 则挂在执行阶段边界上，决定某一步前后需要额外执行什么治理逻辑。Hook 不会替代 Skill 的创作指令，也不会直接变成一个生成工具。</p>
 <p><strong>扩展：</strong> 为什么不能把所有步骤都做成无限 Hook？</p>
 <p><strong>答案</strong></p>
 <p>Hook 越多，延迟、循环调用、状态一致性和故障传播越难控制。每个 Hook 都应有明确的 触发阶段、超时、幂等语义、错误策略和审计记录；计费工具仍必须经过显式审批，不能借 Hook 绕过预算和 Provider 边界。</p>
-<h2 id="q21-videoagent-如何在同一个-skill-有多个-provider-时选择模型">Q21. VideoAgent 如何在同一个 Skill 有多个 Provider 时选择模型？</h2>
+<h2 id="q21-视频小秘如何在同一个-skill-有多个-provider-时选择模型">Q21. 视频小秘如何在同一个 Skill 有多个 Provider 时选择模型？</h2>
 <p><strong>答案</strong></p>
-<p>Agent 按任务与能力整理候选：文生文、文生图、图生图、文生视频或图生视频；图片、 视频、主体、关键帧和音频引用；时长、画幅、语言、声音、输出质量、Provider 可用性与 预计积分。项目默认模型会被预选，但不会永久锁死。如果两个 Provider 都能完成同一 Skill，任务页会展示可选的 <code>服务商/模型</code>，用户通过估算或生成进行确认，系统不会静默 切换服务商。</p>
+<p>小秘按任务与能力整理候选：文生文、文生图、图生图、文生视频或图生视频；图片、 视频、主体、关键帧和音频引用；时长、画幅、语言、声音、输出质量、Provider 可用性与 预计积分。项目默认模型会被预选，但不会永久锁死。如果两个 Provider 都能完成同一 Skill，任务页会展示可选的 <code>服务商/模型</code>，用户通过估算或生成进行确认，系统不会静默 切换服务商。</p>
 <p><strong>追问：</strong> 项目开始后还能更换模型吗？</p>
 <p><strong>答案</strong></p>
 <p>可以。Character 和 Scene 提供图片模型选择，Shot 提供视频模型选择，文生视频和图生视频 都使用当前选择。“Project default”继承初始设置；显式切换只影响下一次生成，并使旧积分 估算失效。计费任务一旦被 Provider 接受，不会在用户不知情时切换 Provider。</p>
 <p><strong>扩展：</strong> 文生文规划模型也能切换吗？</p>
 <p><strong>答案</strong></p>
 <p>规划模型也遵循相同的任务路由原则，但当前部署只开放管理员配置的 Planner。若以后配置 多个规划模型，应在 Settings 中展示推理能力、Context、延迟和价格差异。一个模型生成的 内容不能描述成另一个模型的产出。</p>
-<h2 id="q22-videoagent-现在支持哪些多模态制作能力">Q22. VideoAgent 现在支持哪些多模态制作能力？</h2>
+<h2 id="q22-视频小秘现在支持哪些多模态制作能力">Q22. 视频小秘现在支持哪些多模态制作能力？</h2>
 <p><strong>答案</strong></p>
-<p>VideoAgent 支持有顺序的图片、视频和音频参考；Character 与 Scene 的文生图和图生图； Shot 的文生视频和图生视频；Kling 4.0 最长 30 秒，以及 21:9、16:9、9:16、1:1 输出。 已安装的 Kling 4.0 CLI 声明 10 个图片槽、5 个视频槽和 3 个音频槽，合计最多 15 个 参考素材。Agent 只提交所选模型实际支持的参考组合。</p>
+<p>视频小秘支持有顺序的图片、视频和音频参考；Character 与 Scene 的文生图和图生图； Shot 的文生视频和图生视频；Kling 4.0 最长 30 秒，以及 21:9、16:9、9:16、1:1 输出。 已安装的 Kling 4.0 CLI 声明 10 个图片槽、5 个视频槽和 3 个音频槽，合计最多 15 个 参考素材。小秘只提交所选模型实际支持的参考组合。</p>
 <p><strong>追问：</strong> 关键帧如何排序？</p>
 <p><strong>答案</strong></p>
 <p>参考素材按 Shot Prompt 中 <code>@asset-id</code> 的出现顺序传递，界面与 Provider 边界都会保留 该顺序。关键帧槽位映射取决于模型：支持关键帧的图生视频模型接收首帧、中间帧和尾帧， 全能参考模型则接收有顺序的图片、视频和音频输入。</p>
-<h2 id="q23-celery-和-redis-在-videoagent-中如何配合">Q23. Celery 和 Redis 在 VideoAgent 中如何配合？</h2>
+<h2 id="q23-celery-和-redis-在视频小秘中如何配合">Q23. Celery 和 Redis 在视频小秘中如何配合？</h2>
 <p><strong>答案</strong></p>
 <p>生成接口先在关系数据库创建或恢复 <code>GenerationJob</code>、预扣积分并调用 Provider 提交任务， 提交成功后提交数据库事务。随后 API 通过 <code>poll_generation_job.delay(job_id)</code> 把任务 放入 Celery；Celery 使用 Redis DB 0 作为 Broker 传递任务，使用 Redis DB 1 作为 Result Backend。Worker 消费任务后创建独立数据库 Session，调用 <code>refresh_generation_job</code> 查询一次 Provider；未结束时通过 <code>self.retry</code> 延迟重试，间隔按 <code>5 × 2^retries</code> 增长并封顶 120 秒，直到任务成功、失败或取消。</p>
 <p>Redis 只承担“任务传递”和“执行结果回传”，<code>GenerationJob</code>、Shot 状态、积分流水和 素材归属仍以关系数据库为唯一事实来源。Celery 配置了延迟确认、Worker 丢失后重新投递、 单任务预取和启动连接重试，避免 Worker 异常时任务被提前确认。</p>
@@ -272,7 +272,7 @@
 <p><strong>追问：</strong> 为什么不直接在 FastAPI 请求线程里轮询？</p>
 <p><strong>答案</strong></p>
 <p>视频生成可能持续数分钟，占用 Web 请求会耗尽连接和工作线程，也无法在进程重启后继续。 后台 Worker 把长任务与 API 解耦，可以独立扩缩容、限制 Provider 并发并统一重试。</p>
-<h2 id="q24-videoagent-的-agent-核心代码在哪里">Q24. VideoAgent 的 Agent 核心代码在哪里？</h2>
+<h2 id="q24-视频小秘的核心代码在哪里">Q24. 视频小秘的核心代码在哪里？</h2>
 <p><strong>答案</strong></p>
 <ul>
 <li><code>services/api/src/videoagent/api/agent.py</code>：消息入口、意图路由、Context/Activity</li>
@@ -283,9 +283,9 @@
 <p>OpenAI-compatible/DeepSeek Planner、JSON 兼容回退和远程超时后的本地兜底。</p>
 <li><code>services/api/src/videoagent/services/agent_context.py</code>：项目 Brief、对话、</li>
 <p>Storyboard、Skill 等有界 Context 的组装。</p>
-<li><code>services/api/src/videoagent/services/agent_activity.py</code>：把真实 Agent 执行阶段</li>
+<li><code>services/api/src/videoagent/services/agent_activity.py</code>：把真实小秘执行阶段</li>
 <p>持久化为前端可观测事件。</p>
-<li><code>apps/web/src/components/project-workspace.tsx</code>：Agent 对话、审批、执行轨迹、</li>
+<li><code>apps/web/src/components/project-workspace.tsx</code>：小秘对话、审批、执行轨迹、</li>
 <p>错误弹窗和项目画布交互。</p>
 </ul>
 <p>主链路是：接收消息 → 构建 Context → 解析 Skill → LangGraph 规划 → 校验 <code>StoryboardPlan</code> → 持久化 Direction/Vision 状态 → 返回可流式展示的回复。远程 Planner 超时或返回不可解析结果时，服务端明确提示本次使用本地 Planner 兜底，不会让请求无限等待。</p></article>

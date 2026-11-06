@@ -2,24 +2,24 @@
   "auth": {
     "registerTitle": "创建你的创作空间",
     "loginTitle": "欢迎回来",
-    "registerSubtitle": "与过程透明的 Agent 一起创作、审核和导出视频。",
+    "registerSubtitle": "与过程透明的小秘一起创作、审核和导出视频。",
     "loginSubtitle": "登录后继续你的项目。",
     "email": "邮箱",
     "password": "密码",
     "createAccount": "创建账户",
     "signIn": "登录",
     "switchToLogin": "已有账户？",
-    "switchToRegister": "第一次使用 VideoAgent？",
+    "switchToRegister": "第一次使用视频小秘？",
     "loading": "处理中……",
     "genericError": "请求未能完成。"
   },
   "projects": {
-    "title": "VideoAgent Studio",
+    "title": "视频小秘 Studio",
     "newProject": "新建项目",
     "projectTitle": "项目名称",
     "brief": "我们要创作什么？",
     "create": "创建项目",
-    "empty": "还没有项目。先描述一个创意，让 VideoAgent 起草第一版方案。",
+    "empty": "还没有项目。先描述一个创意，让视频小秘起草第一版方案。",
     "open": "打开项目",
     "renameProject": "重命名项目",
     "renameTitle": "重命名这个项目",
@@ -34,7 +34,7 @@
     "loadError": "项目列表加载失败。"
   },
   "workspace": {
-    "agent": "Agents",
+    "agent": "小秘",
     "canvas": "画布",
     "inspector": "检查器",
     "emptyCanvas": "故事板将在这里出现。",
@@ -42,7 +42,7 @@
     "back": "资产",
     "notFound": "未找到项目",
     "shotCount": "{count} 个镜头",
-    "agentIntro": "告诉 VideoAgent 你想创作什么。故事板在每一步都可以编辑。",
+    "agentIntro": "告诉视频小秘你想创作什么。故事板在每一步都可以编辑。",
     "agentPlaceholder": "我们要做什么视频？",
     "send": "发送",
     "shotInspector": "镜头设置",
@@ -86,7 +86,7 @@
     "uploadError": "参考素材上传失败。",
     "folderError": "项目目录更新失败。",
     "deleteFolderConfirm": "删除这个项目目录？对话不会被删除。",
-    "decisionError": "Agent 未能完成这一步，请重试。",
+    "decisionError": "小秘未能完成这一步，请重试。",
     "close": "关闭"
   },
   "common": {

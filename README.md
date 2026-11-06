@@ -143,7 +143,7 @@ FFmpeg delivery, review, sharing, and collaboration.*
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/architecture-zh.svg">
-  <img src="docs/assets/architecture-zh-light.svg" alt="VideoAgent 技术架构中文版">
+  <img src="docs/assets/architecture-zh-light.svg" alt="视频小秘技术架构中文版">
 </picture>
 
 [深色 SVG](docs/assets/architecture-zh.svg) · [浅色 SVG](docs/assets/architecture-zh-light.svg)

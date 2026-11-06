@@ -264,7 +264,8 @@ def document_page(
     toc: list[TocEntry],
     lang: str,
 ) -> str:
-    document_title = f"{title} · VideoAgent"
+    brand = "视频小秘" if lang == "zh-CN" else "VideoAgent"
+    document_title = f"{title} · {brand}"
     contents_label = "目录" if lang == "zh-CN" else "Contents"
     contents_kicker = "目录" if lang == "zh-CN" else "CONTENTS"
     return f"""<!doctype html>
@@ -272,7 +273,7 @@ def document_page(
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="VideoAgent {html.escape(title)}" />
+    <meta name="description" content="{brand} {html.escape(title)}" />
     <title>{document_title}</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
     <link rel="stylesheet" href="../docs.css?v={DOCS_ASSET_VERSION}" />
