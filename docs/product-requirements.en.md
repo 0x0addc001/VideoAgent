@@ -56,10 +56,10 @@ shows the account email and a sign-out action.
   video-model selection for both text-to-video and image-to-video. “Project
   default” inherits the initial choice, and changing a model invalidates the
   prior estimate.
-- When one Skill has multiple viable Provider implementations, the Agent ranks
-  by modality, references, duration, frame, audio, language, quality,
-  availability, and cost, then asks the user to confirm rather than silently
-  switching providers.
+- When one Skill has multiple Provider implementations, task editors expose the
+  known `Provider/Model` choices while the project default remains preselected.
+  Providers are not switched silently; estimation and generation confirm the
+  current selection.
 - The prompt editor grows downward as wrapped text or line count increases.
 - Idea prompts are visible only when the prompt is empty; production playbooks
   remain available for switching.

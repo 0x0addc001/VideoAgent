@@ -521,19 +521,19 @@ a performance guarantee.
 
 **Answer**
 
-The Agent first filters candidates by task and capability: text, image, or
-video; text/image/video references; duration; aspect ratio; audio and language;
-output quality; provider availability; and estimated credits. It prefers the
-project default only when that model satisfies every requirement. If two
-providers can complete the same Skill, the Agent shows the viable choices with
-a recommended default, provider/model name, key capability differences, and
-cost instead of silently routing to one.
+The Agent resolves candidates by task and capability: text, image, or video;
+text/image/video references; duration; aspect ratio; audio and language; output
+quality; provider availability; and estimated credits. The project default is
+preselected, but it is not treated as a permanent lock. If two providers can
+complete the same Skill, the task editor exposes the available
+`Provider/Model` choices and the user confirms by estimating or generating
+instead of the system silently switching providers.
 
 **Follow-up:** Can the user change the model after the project has started?
 
 **Answer**
 
-Yes. Character and Scene generation exposes an image-model selector, and Shot
+Yes. Character generation exposes an image-model selector, and Shot
 generation exposes a video-model selector for both text-to-video and
 image-to-video. “Project default” inherits the initial choice; an explicit
 override applies to the next generation and invalidates the previous estimate.

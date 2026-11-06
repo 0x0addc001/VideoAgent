@@ -86,8 +86,8 @@ Docs</code></pre>
 <p><code>Provider/Model</code>.</p>
 <li>Character and Scene pages expose image-model selection; Shot pages expose</li>
 <p>video-model selection for both text-to-video and image-to-video. “Project default” inherits the initial choice, and changing a model invalidates the prior estimate.</p>
-<li>When one Skill has multiple viable Provider implementations, the Agent ranks</li>
-<p>by modality, references, duration, frame, audio, language, quality, availability, and cost, then asks the user to confirm rather than silently switching providers.</p>
+<li>When one Skill has multiple Provider implementations, task editors expose the</li>
+<p>known <code>Provider/Model</code> choices while the project default remains preselected. Providers are not switched silently; estimation and generation confirm the current selection.</p>
 <li>The prompt editor grows downward as wrapped text or line count increases.</li>
 <li>Idea prompts are visible only when the prompt is empty; production playbooks</li>
 <p>remain available for switching.</p>
