@@ -2,8 +2,8 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v2.2 |
-| Updated | 2026-11-05 |
+| Document version | v2.4 |
+| Updated | 2026-11-06 |
 
 ## Q1. How should a video Agent be orchestrated?
 
@@ -482,40 +482,40 @@ when writing, visual, review, or production work has independent tools,
 context, acceptance criteria, and scaling needs. Every SubAgent would still
 share the traceable `run_id`, budget, and approval boundary.
 
-## Q20. How are VideoAgent Hooks used?
+## Q20. What is a VideoAgent Agent Hook, and how is it used today?
 
 **Answer**
 
-A Hook is a directing constraint for the opening seconds that establishes
-attention. It is not a webhook or runtime event. The composer offers Auto,
-visual impact, narrative twist, spoken hook, sound cue, and proof-first
-openings. VideoAgent writes the selected Hook into the project brief and uses
-it while planning the creative direction, first narrative beat, and opening
-shot. Auto lets the Agent choose according to subject, audience, and platform.
+An Agent Hook is an interception point in the Agent lifecycle. It can inject
+context, enforce policy, write an audit record, block an unsafe operation, or
+trigger external automation at a defined stage. It governs how the Agent runs,
+not how a video opening earns attention. Visual impact, spoken openings, and
+other composer choices are Opening Hooks and are a separate concept.
 
-To use a Hook, select one in the composer or apply a Playbook with a default
-Hook, describe the subject and desired response, approve the direction, then
-ask for a targeted change such as “make the opening more proof-led” if the first
-beat does not match. Hook selection remains visible in Settings and can be
-changed before any billable generation.
+VideoAgent currently exposes observable stage Hooks for `context`, `memory`,
+`skill`, `planning`, `validation`, `state`, and `reply`. `AgentActivityRecorder`
+persists these events under a `run_id`, and the client uses them to display the
+real execution trace. The model call remains one LangGraph `plan_storyboard`
+node; generation tools remain behind an approval boundary and are not invoked
+directly by the planning Agent.
 
-**Follow-up:** How is a Hook different from a Playbook?
-
-**Answer**
-
-A Playbook is a complete reusable starting strategy containing a prompt, Skill,
-Hook, style, frame, duration, model, and review mode. A Hook defines only how
-the opening earns attention. One Playbook can use different Hooks, and one Hook
-can appear in multiple Playbooks.
-
-**Extension:** Does a Hook guarantee performance?
+**Follow-up:** How is an Agent Hook different from a Skill or MCP?
 
 **Answer**
 
-No. It constrains intent, while results still depend on writing, shots,
-performance, editing, and audience. Use batch variants to compare several
-openings against completion and engagement data rather than treating a Hook as
-a performance guarantee.
+A Skill defines the task and execution rules, while MCP connects callable tools
+and data sources. An Agent Hook attaches governance logic before or after a
+lifecycle stage. It does not replace a Skill instruction or become a generation
+tool itself.
+
+**Extension:** Why not attach unlimited Hooks to every step?
+
+**Answer**
+
+Hook chains increase latency, recursion, state-consistency, and failure
+propagation risks. Every Hook needs a defined stage, timeout, idempotency
+semantics, error policy, and audit record. Billable tools still require explicit
+approval and cannot bypass budget or provider boundaries through a Hook.
 
 ## Q21. How does VideoAgent choose a model when a Skill has multiple Provider implementations?
 
@@ -533,7 +533,7 @@ instead of the system silently switching providers.
 
 **Answer**
 
-Yes. Character generation exposes an image-model selector, and Shot
+Yes. Character and Scene generation expose image-model selectors, and Shot
 generation exposes a video-model selector for both text-to-video and
 image-to-video. “Project default” inherits the initial choice; an explicit
 override applies to the next generation and invalidates the previous estimate.
@@ -548,4 +548,87 @@ deployment exposes the planner configured by the administrator. If multiple
 planning models are configured, the selector should live in Settings and show
 their reasoning, context, latency, and price trade-offs. Generated content from
 one model is never described as if another model produced it.
+
+## Q22. Which multimodal production capabilities are available?
+
+**Answer**
+
+VideoAgent supports ordered image, video, and audio references; text-to-image
+and image-to-image references for Characters and Scenes; text-to-video and
+image-to-video Shots; and up to 30-second Kling 4.0 Shots with 21:9, 16:9, 9:16,
+or 1:1 output. For Kling 4.0, the installed CLI declares ten image slots, five
+video slots, and three audio slots, with a combined reference limit of fifteen.
+The Agent submits only a reference set supported by the selected model.
+
+**Follow-up:** How are keyframes ordered?
+
+**Answer**
+
+References are sent in the order of their `@asset-id` occurrences in the Shot
+prompt. The UI and provider boundary preserve that order. Keyframe slot mapping
+remains model-dependent: a keyframe-capable image-to-video model maps first,
+middle, and tail frames, while an omni-reference model receives ordered image,
+video, and audio inputs.
+
+## Q23. How do Celery and Redis work together in VideoAgent?
+
+**Answer**
+
+The generation endpoint first creates or restores a `GenerationJob`, reserves
+credits, submits the Provider task, and commits the database transaction. The
+API then calls `poll_generation_job.delay(job_id)`. Celery uses Redis DB 0 as
+the Broker for task delivery and Redis DB 1 as the Result Backend. A Worker
+consumes the task, opens its own database Session, and calls
+`refresh_generation_job` once. If the Provider is still running, the task calls
+`self.retry` with `5 × 2^retries` seconds of backoff capped at 120 seconds until
+the job succeeds, fails, or is cancelled.
+
+Redis carries task messages and execution results only. `GenerationJob`, Shot
+state, credit entries, and asset ownership remain in the relational database as
+the source of truth. Celery uses late acknowledgement, re-delivery after a lost
+Worker, one-task prefetch, and broker reconnect at startup.
+
+**Follow-up:** What happens when Redis or Celery is unavailable?
+
+**Answer**
+
+An already accepted Provider task is not discarded. The API persists the Job
+before attempting Celery enqueue. If Redis is unavailable, the endpoint still
+returns the persisted Job, and the client can poll `GET /jobs/{id}` directly.
+After Redis recovers, durable Jobs can be reconciled or re-enqueued instead of
+treating the volatile queue as the source of truth.
+
+**Follow-up:** Why not poll inside the FastAPI request?
+
+**Answer**
+
+Video generation can take minutes. Holding the request consumes Web
+connections and workers and cannot survive a process restart. Background
+Workers isolate long-running work, scale independently, limit Provider
+concurrency, and apply one retry policy.
+
+## Q24. Where is the Agent's core code?
+
+**Answer**
+
+- `services/api/src/videoagent/api/agent.py`: message entry point, intent
+  routing, Context and Activity recording, final-cut readiness checks, and
+  persisted responses.
+- `services/api/src/videoagent/agent/graph.py`: the LangGraph definition. It
+  currently runs one `plan_storyboard` node and reports activity.
+- `services/api/src/videoagent/agent/planner.py`: deterministic local planner,
+  OpenAI-compatible/DeepSeek planner, schema fallback, and local fallback after
+  remote timeout.
+- `services/api/src/videoagent/services/agent_context.py`: bounded Context
+  assembly from brief, conversation, storyboard, and Skill instructions.
+- `services/api/src/videoagent/services/agent_activity.py`: durable,
+  user-visible Agent lifecycle events.
+- `apps/web/src/components/project-workspace.tsx`: Agent chat, approvals,
+  execution trace, error dialogs, and workspace interactions.
+
+The primary path is message ingestion → Context assembly → Skill resolution →
+LangGraph planning → `StoryboardPlan` validation → Direction/Vision state
+persistence → streamable reply. If the remote planner times out or returns
+unparseable output, the response explicitly states that the local planner was
+used; the request never waits indefinitely.
 

@@ -2,11 +2,11 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v2.0 |
-| Updated | 2026-11-04 |
+| Document version | v2.1 |
+| Updated | 2026-11-06 |
 | Backend framework | Python + FastAPI |
 | Frontend framework | Next.js + TypeScript |
-| Model | Pippit/Seedance 2.5 Draft, Pippit/Seedance 2.5, Pippit/Seedance 2.0 Fast VIP, Pippit/Seedance 2.0 VIP, Pippit/Seedance 2.0 Mini Preview, Pippit/Seedance 2.0 Mini, Pippit/Wan 3.0, Pippit/HappyHorse 1.1, Kling/Kling Video 2.5, Kling/Kling Video 2.6, Kling/Kling Video O1, Kling/Kling Video 3.0, Kling/Kling Video 3.0 Omni, Kling/Kling Video 3.0 Turbo, Kling/Kling Video 4.0, Kling/Kling 2.6 Motion Control, Kling/Kling 3.0 Motion Control, Kling/Kling Image 3.0 Omni, Kling/Kling Image O1, Kling/Kling Image 3.0, Kling/Kling Image 2.1 |
+| Model | Pippit/Seedance 2.5 Draft, Pippit/Seedance 2.5, Pippit/Seedance 2.0 Fast VIP, Pippit/Seedance 2.0 VIP, Pippit/Seedance 2.0 Mini Preview, Pippit/Seedance 2.0 Mini, Pippit/Wan 3.0, Pippit/HappyHorse 1.1, Kling/Kling Video 2.5, Kling/Kling Video 2.6, Kling/Kling Video O1, Kling/Kling Video 3.0, Kling/Kling Video 3.0 Omni, Kling/Kling Video 3.0 Turbo, Kling/Kling Video 4.0, Kling/Kling Video 4.0 Flash, Kling/Kling 2.6 Motion Control, Kling/Kling 3.0 Motion Control, Kling/Kling Image 3.0 Omni, Kling/Kling Image O1, Kling/Kling Image 3.0, Kling/Kling Image 2.1 |
 
 ## 1. Purpose
 
@@ -341,6 +341,7 @@ locale state.
 | `PATCH` | `/projects/{id}/storyboard/characters/{character_id}` |
 | `PATCH` | `/projects/{id}/storyboard/scenes/{scene_id}` |
 | `POST` | `/scenes/{id}/assets` |
+| `POST` | `/scenes/{id}/estimate`, `/scenes/{id}/generate` |
 | `GET` | `/projects/{id}/progress` |
 | `GET/POST` | `/projects/{id}/visual-review/models`, `/visual-review` |
 | `POST` | `/shots/{id}/estimate` |

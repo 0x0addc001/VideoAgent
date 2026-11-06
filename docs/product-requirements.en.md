@@ -2,8 +2,8 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.6 |
-| Updated | 2026-11-04 |
+| Document version | v1.7 |
+| Updated | 2026-11-06 |
 
 ## 1. Product Goal
 
@@ -190,6 +190,8 @@ Assets contains the current user's finished and in-progress work.
   defined Scene, so every Shot is organized against reusable production objects.
 - Characters and Scenes own their uploaded references. Each object directory
   groups its images and selected reference. Scenes retain a physical location.
+- Character and Scene pages support text-to-image and image-to-image generation
+  with task-level image-model selection.
 - While Agents are planning, the conversation shows durable execution steps for
   context assembly, memory loading, Skill resolution, planning, validation,
   project-state updates, and reply composition.
@@ -209,16 +211,23 @@ Assets contains the current user's finished and in-progress work.
 - Character and shot Generation pages support an uploaded image, reference-image
   generation, or direct text generation where the selected model supports the
   mode. Generated media can be downloaded.
+- Shot references may combine ordered image, video, and audio assets up to the
+  selected model's declared limit.
+- The Shot page can override model, task type, audio, and output resolution.
+  Task types include `Auto`, reference remake, edit, and extend. Overrides apply
+  only to the current Shot and participate in credit estimation.
 - Uploads must pass content-type, file-signature, and size validation.
 - Users can inspect estimated credits and explicitly approve generation.
 - A final cut can be composed only after every storyboard Shot has a generated
   result. Deliveries support 21:9, 16:9, 9:16, and 1:1 formats.
 - Shot duration may extend to 30 seconds when the selected model supports it;
   the provider capability remains authoritative.
-- Final-cut composition is requested in conversation, for example “Render the
-  final cut”; the editor does not expose a separate render button.
-- Export supports captions, an uploaded soundtrack, an automatic cover, and
-  private or public permission.
+- Final-cut composition is normally requested in conversation, for example
+  “Render the final cut”. An existing version can also adjust its frames,
+  soundtrack or voice-over, and line-by-line captions before creating a new
+  delivery version.
+- Export supports 21:9, 16:9, 9:16, and 1:1, captions, an uploaded soundtrack,
+  an automatic cover, and private or public permission.
 - Each delivery can be downloaded, shared through an expiring asset link, or
   published to Videos.
 - Project sharing creates a collaboration link with view or edit permission.

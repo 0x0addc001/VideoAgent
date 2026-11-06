@@ -34,6 +34,7 @@ import {
   Send,
   Share2,
   Sparkles,
+  TriangleAlert,
   Trash2,
   Upload,
   Video,
@@ -330,6 +331,15 @@ function selectedModelRoute(modelId: string) {
     provider: option.provider.toLowerCase() as "kling" | "pippit",
     model: option.id,
   };
+}
+
+function taskTypeForBrief(brief: string): "auto" | "reference" | "edit" | "extend" {
+  if (/video_extend|extend\s+video/i.test(brief)) return "extend";
+  if (/video_edit|product_edit|video\s+edit/i.test(brief)) return "edit";
+  if (/reference_remake|reference_to_video|motion_control/i.test(brief)) {
+    return "reference";
+  }
+  return "auto";
 }
 
 function creativeBrief(brief: string) {
@@ -1624,6 +1634,15 @@ export function ProjectWorkspace({
   const [estimate, setEstimate] = useState<CostEstimate | null>(null);
   const [shotDraft, setShotDraft] = useState<ShotDraft | null>(null);
   const [shotGenerationModel, setShotGenerationModel] = useState("project");
+  const [shotTaskType, setShotTaskType] = useState<
+    "auto" | "reference" | "edit" | "extend"
+  >("auto");
+  const [shotAudioMode, setShotAudioMode] = useState<"auto" | "on" | "off">(
+    "auto",
+  );
+  const [shotResolution, setShotResolution] = useState<
+    "auto" | "720p" | "1080p" | "4k"
+  >("auto");
   const [characterDraft, setCharacterDraft] = useState<CharacterDraft | null>(
     null,
   );
@@ -1631,6 +1650,10 @@ export function ProjectWorkspace({
     IMAGE_MODEL_OPTIONS[0].id,
   );
   const [sceneDraft, setSceneDraft] = useState<SceneDraft | null>(null);
+  const [sceneGenerationModel, setSceneGenerationModel] = useState<string>(
+    IMAGE_MODEL_OPTIONS[0].id,
+  );
+  const [sceneEstimate, setSceneEstimate] = useState<CostEstimate | null>(null);
   const [characterEstimate, setCharacterEstimate] = useState<CostEstimate | null>(
     null,
   );
@@ -1641,6 +1664,11 @@ export function ProjectWorkspace({
   const [generationErrorMessage, setGenerationErrorMessage] = useState<string | null>(
     null,
   );
+  const [backendErrorOpen, setBackendErrorOpen] = useState(false);
+  const [backendErrorMessage, setBackendErrorMessage] = useState<string | null>(
+    null,
+  );
+  const backendRetryRef = useRef<(() => void) | null>(null);
   const [activeJob, setActiveJob] = useState<GenerationJob | null>(null);
   const [visualReviewModels, setVisualReviewModels] = useState<
     VisualReviewModel[]
@@ -1676,6 +1704,11 @@ export function ProjectWorkspace({
   const [publishTitleDraft, setPublishTitleDraft] = useState("");
   const [publishPromptDraft, setPublishPromptDraft] = useState("");
   const [publishMessage, setPublishMessage] = useState<string | null>(null);
+  const [deliveryAspectRatios, setDeliveryAspectRatios] = useState<
+    Shot["aspect_ratio"][]
+  >(["21:9", "16:9", "9:16", "1:1"]);
+  const [deliverySoundtrackId, setDeliverySoundtrackId] = useState("");
+  const [deliveryCaptions, setDeliveryCaptions] = useState("");
   const [isExporting, setIsExporting] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [assetsPanelCollapsed, setAssetsPanelCollapsed] = useState(false);
@@ -1996,13 +2029,33 @@ export function ProjectWorkspace({
   }, [activeJob, t]);
 
   useEffect(() => {
-    if (!generationErrorOpen) return;
+    if (!generationErrorOpen && !backendErrorOpen) return;
     function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") setGenerationErrorOpen(false);
+      if (event.key === "Escape") {
+        setGenerationErrorOpen(false);
+        setBackendErrorOpen(false);
+      }
     }
     document.addEventListener("keydown", closeOnEscape);
     return () => document.removeEventListener("keydown", closeOnEscape);
-  }, [generationErrorOpen]);
+  }, [backendErrorOpen, generationErrorOpen]);
+
+  function showBackendError(message: string, retry?: () => void) {
+    setBackendErrorMessage(message);
+    backendRetryRef.current = retry ?? null;
+    setBackendErrorOpen(true);
+  }
+
+  function dismissBackendError() {
+    setBackendErrorOpen(false);
+    backendRetryRef.current = null;
+  }
+
+  function retryBackendRequest() {
+    const retry = backendRetryRef.current;
+    dismissBackendError();
+    retry?.();
+  }
 
   const selectedShot = useMemo(
     () => storyboard?.shots.find((shot) => shot.id === selectedShotId) ?? null,
@@ -2263,13 +2316,23 @@ export function ProjectWorkspace({
     prompt: string,
     contentPrefix: string,
   ): Asset | null {
-    return (
-      assets.find(
+    return referencedAssets(prompt, contentPrefix)[0] ?? null;
+  }
+
+  function referencedAssets(
+    prompt: string,
+    contentPrefix?: string,
+  ): Asset[] {
+    return assets
+      .filter(
         (asset) =>
-          asset.content_type.startsWith(contentPrefix) &&
+          (!contentPrefix || asset.content_type.startsWith(contentPrefix)) &&
           prompt.includes(`@${asset.id}`),
-      ) ?? null
-    );
+      )
+      .sort(
+        (left, right) =>
+          prompt.indexOf(`@${left.id}`) - prompt.indexOf(`@${right.id}`),
+      );
   }
 
   async function setSelectedAsset(
@@ -2468,7 +2531,12 @@ export function ProjectWorkspace({
           body: JSON.stringify({ choice, instruction, run_id: runId }),
         },
       );
-      if (!response.ok) throw new Error("workflow-decision-failed");
+      if (!response.ok) {
+        const body = (await response.json().catch(() => null)) as
+          | { error?: { message?: string } }
+          | null;
+        throw new Error(body?.error?.message || "workflow-decision-failed");
+      }
       const decision = (await response.json()) as WorkflowDecisionResponse;
       beginAssistantStream(decision.assistant_message);
       setMessages((current) => [
@@ -2488,8 +2556,14 @@ export function ProjectWorkspace({
       setCustomDecisionOpen(false);
       await settleAgentRun(runId);
       await refreshWorkspace();
-    } catch {
-      setActionError(t("decisionError"));
+    } catch (error) {
+      const message =
+        error instanceof Error && error.message !== "workflow-decision-failed"
+          ? error.message
+          : t("decisionError");
+      showBackendError(message, () =>
+        void decideWorkflow(choice, instruction),
+      );
     } finally {
       setIsWorking(false);
       setPendingDecision(null);
@@ -2532,8 +2606,8 @@ export function ProjectWorkspace({
     }
   }
 
-  async function sendMessage() {
-    const content = messageDraft.trim();
+  async function sendMessage(contentOverride?: string) {
+    const content = (contentOverride ?? messageDraft).trim();
     if (!project || !content || isWorking) return;
     const runId = beginAgentRun();
     setIsWorking(true);
@@ -2572,11 +2646,11 @@ export function ProjectWorkspace({
       await settleAgentRun(runId);
       await refreshWorkspace();
     } catch (error) {
-      setActionError(
+      const message =
         error instanceof Error && error.message !== "agent-message-failed"
           ? error.message
-          : t("agentIntro"),
-      );
+          : t("agentIntro");
+      showBackendError(message, () => void sendMessage(content));
     } finally {
       setIsWorking(false);
       setPendingDecision(null);
@@ -2609,7 +2683,10 @@ export function ProjectWorkspace({
     shot: Shot,
     prompt: string = shot.prompt_en,
   ) {
-    const reference = referencedAsset(prompt, "image/");
+    const references = referencedAssets(prompt).slice(0, 15);
+    const reference = references.find((asset) =>
+      asset.content_type.startsWith("image/"),
+    );
     const response = await fetch(`${API_BASE_URL}/shots/${shot.id}/generate`, {
       method: "POST",
       credentials: "include",
@@ -2621,6 +2698,14 @@ export function ProjectWorkspace({
         approved: true,
         generation_mode: reference ? "image_to_video" : "text_to_video",
         reference_asset_id: reference?.id ?? null,
+        reference_asset_ids: references.map((asset) => asset.id),
+        task_type:
+          shotTaskType === "auto"
+            ? taskTypeForBrief(project?.brief ?? "")
+            : shotTaskType,
+        audio_enabled:
+          shotAudioMode === "auto" ? null : shotAudioMode === "on",
+        resolution: shotResolution === "auto" ? null : shotResolution,
         ...selectedModelRoute(shotGenerationModel),
       }),
     });
@@ -2918,6 +3003,65 @@ export function ProjectWorkspace({
     }
   }
 
+  async function estimateScene(scene: Scene) {
+    if (isWorking) return;
+    setIsWorking(true);
+    setActionError(null);
+    try {
+      const saved = await saveSceneDraft(scene);
+      if (!saved) return;
+      const response = await fetch(`${API_BASE_URL}/scenes/${scene.id}/estimate`, {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!response.ok) throw new Error("scene-estimate-failed");
+      setSceneEstimate((await response.json()) as CostEstimate);
+    } catch {
+      setActionError(t("noShot"));
+    } finally {
+      setIsWorking(false);
+    }
+  }
+
+  async function generateScene(scene: Scene) {
+    if (isWorking) return;
+    setIsWorking(true);
+    setActionError(null);
+    try {
+      const saved = await saveSceneDraft(scene);
+      if (!saved) return;
+      const reference = referencedAsset(saved.prompt_en, "image/");
+      const response = await fetch(`${API_BASE_URL}/scenes/${scene.id}/generate`, {
+        method: "POST",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          approved: true,
+          generation_mode: reference ? "image_to_image" : "text_to_image",
+          reference_asset_id: reference?.id ?? null,
+          ...selectedModelRoute(sceneGenerationModel),
+        }),
+      });
+      if (!response.ok) {
+        const body = (await response.json().catch(() => null)) as
+          | { error?: { message?: string } }
+          | null;
+        throw new Error(body?.error?.message || "scene-generation-failed");
+      }
+      const asset = (await response.json()) as Asset;
+      setAssets((current) => [asset, ...current]);
+    } catch (error) {
+      setGenerationErrorMessage(
+        error instanceof Error && error.message !== "scene-generation-failed"
+          ? error.message
+          : t("generationError"),
+      );
+      setGenerationErrorOpen(true);
+    } finally {
+      setIsWorking(false);
+    }
+  }
+
   async function estimateCharacter(character: Character) {
     if (isWorking) return;
     setIsWorking(true);
@@ -2983,8 +3127,16 @@ export function ProjectWorkspace({
     }
   }
 
-  async function exportProject(): Promise<Asset[]> {
+  async function exportProject(
+    options: {
+      aspectRatios?: Shot["aspect_ratio"][];
+      soundtrackAssetId?: string | null;
+      captions?: string;
+    } = {},
+  ): Promise<Asset[]> {
     if (!project || isExporting) return [];
+    const aspectRatios = options.aspectRatios ?? deliveryAspectRatios;
+    if (aspectRatios.length === 0) return [];
     setIsExporting(true);
     setActionError(null);
     try {
@@ -2993,7 +3145,9 @@ export function ProjectWorkspace({
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          aspect_ratios: ["16:9", "9:16", "1:1"],
+          aspect_ratios: aspectRatios,
+          soundtrack_asset_id: options.soundtrackAssetId || null,
+          captions: options.captions?.trim() || null,
           permission: "private",
         }),
       });
@@ -3700,7 +3854,19 @@ export function ProjectWorkspace({
                         value={sceneDraft?.prompt_en ?? ""}
                       />
                     </label>
-                    <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.06] pt-4">
+                    <div className="mt-4">
+                      <WorkspaceModelSelect
+                        allowProjectDefault={false}
+                        label="Image model"
+                        onChange={(value) => {
+                          setSceneGenerationModel(value);
+                          setSceneEstimate(null);
+                        }}
+                        options={IMAGE_MODEL_OPTIONS}
+                        value={sceneGenerationModel}
+                      />
+                    </div>
+                    <div className="mt-4 grid grid-cols-3 gap-2 border-t border-white/[0.06] pt-4">
                       <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/[0.09] px-3 py-2.5 text-[12px] text-white/60 hover:border-[#1677ff]/35 hover:text-white">
                         <Upload className="h-3.5 w-3.5 text-[#4facff]" />
                         Upload
@@ -3719,6 +3885,24 @@ export function ProjectWorkspace({
                         />
                       </label>
                       <button
+                        className="rounded-xl border border-white/[0.09] px-3 py-2.5 text-[12px] text-white/60 hover:text-white disabled:opacity-35"
+                        disabled={isWorking}
+                        onClick={() => void estimateScene(selectedScene)}
+                        type="button"
+                      >
+                        {copy.estimate}
+                      </button>
+                      <button
+                        className="rounded-xl bg-[#1677ff] px-3 py-2.5 text-[12px] font-semibold text-white disabled:opacity-35"
+                        disabled={!canEdit || isWorking}
+                        onClick={() => void generateScene(selectedScene)}
+                        type="button"
+                      >
+                        {isWorking ? copy.generating : "Generate"}
+                      </button>
+                    </div>
+                    <div className="mt-3 flex justify-end">
+                      <button
                         className="rounded-lg border border-white/[0.09] px-3 py-2 text-[12px] text-white/58 hover:text-white disabled:opacity-35"
                         disabled={!canEdit || isWorking}
                         onClick={() => void saveSceneDraft(selectedScene)}
@@ -3727,6 +3911,12 @@ export function ProjectWorkspace({
                         Save scene
                       </button>
                     </div>
+                    {sceneEstimate ? (
+                      <p className="mt-3 rounded-lg bg-[#1677ff]/[0.08] px-3 py-2 text-[12px] text-[#a8ddff]">
+                        {t("estimatedCredits")}: {sceneEstimate.credits} ·{" "}
+                        {sceneEstimate.provider}
+                      </p>
+                    ) : null}
                   </div>
                   <section className="mt-5 rounded-2xl border border-white/[0.07] p-4">
                     <p className="mb-3 text-[12px] font-semibold text-white/38">
@@ -3858,6 +4048,74 @@ export function ProjectWorkspace({
                         options={VIDEO_MODEL_OPTIONS}
                         value={shotGenerationModel}
                       />
+                      <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                        <label className="text-[12px] text-white/38">
+                          <span>Task type</span>
+                          <select
+                            aria-label="Task type"
+                            className="mt-2 w-full rounded-xl border border-white/[0.09] bg-[#11100d] px-3 py-2 text-[13px] text-white/72 outline-none"
+                            onChange={(event) =>
+                              setShotTaskType(
+                                event.target.value as
+                                  | "auto"
+                                  | "reference"
+                                  | "edit"
+                                  | "extend",
+                              )
+                            }
+                            value={shotTaskType}
+                          >
+                            <option value="auto">Auto</option>
+                            <option value="reference">Reference remake</option>
+                            <option value="edit">Edit</option>
+                            <option value="extend">Extend</option>
+                          </select>
+                        </label>
+                        <label className="text-[12px] text-white/38">
+                          <span>Audio</span>
+                          <select
+                            aria-label="Shot audio"
+                            className="mt-2 w-full rounded-xl border border-white/[0.09] bg-[#11100d] px-3 py-2 text-[13px] text-white/72 outline-none"
+                            onChange={(event) =>
+                              setShotAudioMode(
+                                event.target.value as "auto" | "on" | "off",
+                              )
+                            }
+                            value={shotAudioMode}
+                          >
+                            <option value="auto">Auto</option>
+                            <option value="on">On</option>
+                            <option value="off">Off</option>
+                          </select>
+                        </label>
+                        <label className="text-[12px] text-white/38">
+                          <span>Resolution</span>
+                          <select
+                            aria-label="Shot resolution"
+                            className="mt-2 w-full rounded-xl border border-white/[0.09] bg-[#11100d] px-3 py-2 text-[13px] text-white/72 outline-none"
+                            onChange={(event) =>
+                              setShotResolution(
+                                event.target.value as
+                                  | "auto"
+                                  | "720p"
+                                  | "1080p"
+                                  | "4k",
+                              )
+                            }
+                            value={shotResolution}
+                          >
+                            <option value="auto">Auto</option>
+                            <option value="720p">720p</option>
+                            <option value="1080p">1080p</option>
+                            <option value="4k">4K</option>
+                          </select>
+                        </label>
+                      </div>
+                      <p className="mt-2 text-[12px] leading-5 text-white/32">
+                        References follow their `@asset-id` order in the prompt.
+                        Up to 15 image, video, or audio references can be passed
+                        to a capable Agent model.
+                      </p>
                     </div>
                     <label className="mt-4 block text-[12px] text-white/38">
                       <span>Prompt</span>
@@ -3888,7 +4146,7 @@ export function ProjectWorkspace({
                         <Upload className="h-3.5 w-3.5 text-[#4facff]" />
                         Upload
                         <input
-                          accept="image/*"
+                          accept="image/*,video/*,audio/*"
                           aria-label="Upload shot reference"
                           className="sr-only"
                           onChange={(event) => {
@@ -4052,6 +4310,160 @@ export function ProjectWorkspace({
                       </button>
                     </div>
                   </div>
+                  {selectedAsset.kind === "export" ? (
+                    <section className="mt-5 rounded-2xl border border-white/[0.07] bg-white/[0.018] p-5">
+                      <div className="flex items-start justify-between gap-4">
+                        <div>
+                          <p className="text-[12px] font-semibold text-[#6eb8ff]">
+                            {locale.startsWith("zh")
+                              ? "交付版本"
+                              : "Delivery version"}
+                          </p>
+                          <p className="mt-2 max-w-2xl text-[13px] leading-6 text-white/40">
+                            {locale.startsWith("zh")
+                              ? "选择输出画幅，添加配音或配乐与逐行字幕，再生成新的成片版本。"
+                              : "Choose output frames, add a soundtrack or voice-over and line-by-line captions, then create a new cut."}
+                          </p>
+                        </div>
+                        <Film className="h-5 w-5 shrink-0 text-[#4facff]" />
+                      </div>
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {(["21:9", "16:9", "9:16", "1:1"] as const).map(
+                          (ratio) => {
+                            const selected =
+                              deliveryAspectRatios.includes(ratio);
+                            return (
+                              <button
+                                aria-pressed={selected}
+                                className={cn(
+                                  "rounded-lg border px-3 py-2 text-[12px] transition",
+                                  selected
+                                    ? "border-[#1677ff]/30 bg-[#1677ff]/[0.08] text-[#9bdcff]"
+                                    : "border-white/[0.08] text-white/38 hover:text-white/68",
+                                )}
+                                key={ratio}
+                                onClick={() =>
+                                  setDeliveryAspectRatios((current) =>
+                                    current.includes(ratio)
+                                      ? current.filter(
+                                          (value) => value !== ratio,
+                                        )
+                                      : [...current, ratio],
+                                  )
+                                }
+                                type="button"
+                              >
+                                {ratio}
+                              </button>
+                            );
+                          },
+                        )}
+                      </div>
+                      <div className="mt-4 grid gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+                        <label className="text-[12px] text-white/38">
+                          <span>
+                            {locale.startsWith("zh")
+                              ? "配乐 / 配音"
+                              : "Soundtrack / voice-over"}
+                          </span>
+                          <select
+                            aria-label={
+                              locale.startsWith("zh")
+                                ? "配乐或配音素材"
+                                : "Soundtrack or voice-over"
+                            }
+                            className="mt-2 w-full rounded-xl border border-white/[0.09] bg-[#11100d] px-3 py-2 text-[13px] text-white/72 outline-none"
+                            onChange={(event) =>
+                              setDeliverySoundtrackId(event.target.value)
+                            }
+                            value={deliverySoundtrackId}
+                          >
+                            <option value="">
+                              {locale.startsWith("zh")
+                                ? "无配乐 / 配音"
+                                : "No soundtrack or voice-over"}
+                            </option>
+                            {assets
+                              .filter(
+                                (asset) =>
+                                  asset.content_type.startsWith("audio/") &&
+                                  asset.kind !== "export",
+                              )
+                              .map((asset) => (
+                                <option key={asset.id} value={asset.id}>
+                                  {asset.filename}
+                                </option>
+                              ))}
+                          </select>
+                        </label>
+                        <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/[0.09] px-3 py-2.5 text-[12px] text-white/60 hover:border-[#1677ff]/35 hover:text-white">
+                          <Upload className="h-3.5 w-3.5 text-[#4facff]" />
+                          {locale.startsWith("zh") ? "上传音频" : "Upload audio"}
+                          <input
+                            accept="audio/mpeg,audio/wav"
+                            aria-label={
+                              locale.startsWith("zh")
+                                ? "上传配乐或配音"
+                                : "Upload soundtrack or voice-over"
+                            }
+                            className="sr-only"
+                            onChange={(event) => {
+                              const file = event.target.files?.[0];
+                              event.currentTarget.value = "";
+                              if (!file) return;
+                              void uploadVisionAsset(file).then((asset) => {
+                                if (asset) setDeliverySoundtrackId(asset.id);
+                              });
+                            }}
+                            type="file"
+                          />
+                        </label>
+                      </div>
+                      <label className="mt-3 block text-[12px] text-white/38">
+                        <span>{locale.startsWith("zh") ? "字幕" : "Captions"}</span>
+                        <textarea
+                          aria-label={
+                            locale.startsWith("zh") ? "逐行字幕" : "Captions"
+                          }
+                          className="mt-2 min-h-24 w-full resize-y rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-3 text-[13px] leading-6 text-white/70 outline-none focus:border-[#1677ff]/40"
+                          onChange={(event) =>
+                            setDeliveryCaptions(event.target.value)
+                          }
+                          placeholder={
+                            locale.startsWith("zh")
+                              ? "每一行会按成片时长均匀分配为一条字幕。"
+                              : "Each line becomes a caption segment, timed evenly across the cut."
+                          }
+                          value={deliveryCaptions}
+                        />
+                      </label>
+                      <div className="mt-3 flex justify-end">
+                        <button
+                          className="rounded-xl bg-[#1677ff] px-4 py-2.5 text-[13px] font-semibold text-white disabled:opacity-35"
+                          disabled={
+                            isExporting || deliveryAspectRatios.length === 0
+                          }
+                          onClick={() =>
+                            void exportProject({
+                              aspectRatios: deliveryAspectRatios,
+                              soundtrackAssetId:
+                                deliverySoundtrackId || null,
+                              captions: deliveryCaptions,
+                            })
+                          }
+                          type="button"
+                        >
+                          {isExporting
+                            ? locale.startsWith("zh")
+                              ? "生成中"
+                              : "Creating"
+                            : locale.startsWith("zh")
+                              ? "生成版本"
+                              : "Create version"}
+                        </button>
+                      </div>
+                    </section>
+                  ) : null}
                   {selectedAsset.kind === "export" ? (
                     <section className="mt-5 rounded-2xl border border-white/[0.07] bg-white/[0.018] p-5">
                       <div className="flex items-start justify-between gap-4">
@@ -4549,6 +4961,67 @@ export function ProjectWorkspace({
               {copy.save}
             </button>
           </form>
+        </div>
+      ) : null}
+
+      {backendErrorOpen ? (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-5 backdrop-blur-sm"
+          onPointerDown={(event) => {
+            if (event.target === event.currentTarget) dismissBackendError();
+          }}
+        >
+          <div
+            aria-labelledby="backend-error-title"
+            aria-modal="true"
+            className="w-full max-w-md rounded-2xl border border-[#1677ff]/25 bg-[#15120e] p-6 shadow-[0_28px_90px_rgba(0,0,0,0.55)]"
+            role="dialog"
+          >
+            <div className="flex items-start gap-3">
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#1677ff]/12 text-[#7bc6ff]">
+                <TriangleAlert className="h-5 w-5" />
+              </span>
+              <div>
+                <h2
+                  className="text-xl font-semibold text-white"
+                  id="backend-error-title"
+                >
+                  {locale.startsWith("zh")
+                    ? "服务暂时不可用"
+                    : "Service temporarily unavailable"}
+                </h2>
+                <p className="mt-2 text-[13px] leading-6 text-white/48">
+                  {locale.startsWith("zh")
+                    ? "请求没有完成，你的输入和项目内容都已保留。你可以重试，或关闭弹窗稍后再试。"
+                    : "The request did not complete. Your input and project remain saved. Retry now or close this dialog and try again later."}
+                </p>
+              </div>
+            </div>
+            {backendErrorMessage ? (
+              <p className="mt-4 whitespace-pre-wrap rounded-xl border border-white/[0.07] bg-black/20 px-3 py-3 text-[12px] leading-6 text-white/58">
+                {backendErrorMessage}
+              </p>
+            ) : null}
+            <div className="mt-6 flex justify-end gap-2">
+              <button
+                className="rounded-lg border border-white/[0.1] px-4 py-2.5 text-[12px] font-medium text-white/58 hover:text-white"
+                onClick={dismissBackendError}
+                type="button"
+              >
+                {t("dismiss")}
+              </button>
+              {backendRetryRef.current ? (
+                <button
+                  autoFocus
+                  className="rounded-lg bg-[#1677ff] px-4 py-2.5 text-[12px] font-semibold text-white"
+                  onClick={retryBackendRequest}
+                  type="button"
+                >
+                  {locale.startsWith("zh") ? "重试" : "Try again"}
+                </button>
+              ) : null}
+            </div>
+          </div>
         </div>
       ) : null}
 

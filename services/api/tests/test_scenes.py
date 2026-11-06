@@ -49,6 +49,22 @@ async def test_scene_is_editable_and_owns_uploaded_reference_images(client):
     assert upload.status_code == 201
     assert upload.json()["filename"].startswith(f"scene-{scene['id']}-")
 
+    estimate = await client.post(f"/api/v1/scenes/{scene['id']}/estimate")
+    assert estimate.status_code == 200
+    assert estimate.json()["credits"] == 2
+    generated = await client.post(
+        f"/api/v1/scenes/{scene['id']}/generate",
+        json={
+            "approved": True,
+            "generation_mode": "image_to_image",
+            "reference_asset_id": upload.json()["id"],
+            "provider": "kling",
+            "model": "kling-image-v3_0",
+        },
+    )
+    assert generated.status_code == 201
+    assert generated.json()["filename"].startswith(f"scene-{scene['id']}-")
+
     selection = await client.put(
         f"/api/v1/projects/{project['id']}/asset-selections",
         json={

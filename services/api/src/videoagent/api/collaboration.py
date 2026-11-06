@@ -55,9 +55,7 @@ async def create_collaboration(
         project_id=project.id,
         permission=cast(CollaborationPermission, collaboration.permission),
         collaborator_email=collaboration.collaborator_email,
-        share_url=(
-            f"{settings.frontend_base_url.rstrip('/')}/en/collaboration/{token}"
-        ),
+        share_url=(f"{settings.frontend_base_url.rstrip('/')}/en/collaboration/{token}"),
         expires_at=collaboration.expires_at,
         created_at=collaboration.created_at,
     )
@@ -98,9 +96,7 @@ async def inspect_collaboration(
         project_id=collaboration.project_id,
         permission=cast(CollaborationPermission, collaboration.permission),
         collaborator_email=collaboration.collaborator_email,
-        share_url=(
-            f"{settings.frontend_base_url.rstrip('/')}/en/collaboration/{token}"
-        ),
+        share_url=(f"{settings.frontend_base_url.rstrip('/')}/en/collaboration/{token}"),
         expires_at=collaboration.expires_at,
         created_at=collaboration.created_at,
     )

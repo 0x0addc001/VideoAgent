@@ -1,5 +1,6 @@
+import logging
 import re
-from typing import Annotated
+from typing import Annotated, Literal
 from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, Header, Response, status
@@ -28,6 +29,7 @@ from videoagent.services.provider_resolver import resolve_video_provider
 from videoagent.services.storyboards import load_storyboard, owned_project_or_404
 
 router = APIRouter(tags=["generation"])
+logger = logging.getLogger(__name__)
 
 
 async def owned_shot_or_404(
@@ -63,14 +65,14 @@ async def require_vision_objects(
             status_code=409,
             code="VISION_OBJECTS_REQUIRED",
             message=(
-                "Create at least one Character and one Scene before arranging "
-                "and generating Shots."
+                "Create at least one Character and one Scene before arranging and generating Shots."
             ),
         )
 
 
 KLING_MODEL_ALIASES = {
     "Kling Video 4.0": "kling-video-v4_0",
+    "Kling Video 4.0 Flash": "kling-video-v4_0_flash",
     "Kling Video 3.0 Omni": "kling-video-v3_0_omni",
     "Kling Video 3.0": "kling-video-v3_0",
     "Kling Video 3.0 Turbo": "kling-video-v3_0_turbo",
@@ -96,6 +98,12 @@ def provider_request(
     model: str | None = None,
     generation_mode: str | None = None,
     reference_image_path: str | None = None,
+    reference_image_paths: list[str] | None = None,
+    reference_video_paths: list[str] | None = None,
+    reference_audio_paths: list[str] | None = None,
+    audio_enabled: bool | None = None,
+    resolution: str | None = None,
+    task_type: Literal["auto", "reference", "edit", "extend"] = "auto",
 ) -> GenerationRequest:
     return GenerationRequest(
         shot_id=shot.id,
@@ -105,6 +113,12 @@ def provider_request(
         generation_mode=generation_mode or shot.generation_mode,
         model=model,
         reference_image_path=reference_image_path,
+        reference_image_paths=reference_image_paths or [],
+        reference_video_paths=reference_video_paths or [],
+        reference_audio_paths=reference_audio_paths or [],
+        audio_enabled=audio_enabled,
+        resolution=resolution,
+        task_type=task_type,
     )
 
 
@@ -245,41 +259,84 @@ async def generate_shot(
         provider_override=payload.provider,
         model_override=payload.model,
     )
-    reference_image_path: str | None = None
-    if payload.generation_mode == "image_to_video":
-        if payload.reference_asset_id is None:
-            raise AppError(
-                status_code=422,
-                code="REFERENCE_REQUIRED",
-                message="Image-to-video generation requires a reference image.",
-            )
-        reference_asset = await session.scalar(
-            select(Asset).where(
-                Asset.id == payload.reference_asset_id,
-                Asset.project_id == project.id,
-                Asset.deleted_at.is_(None),
-            )
+    reference_ids = list(
+        dict.fromkeys(
+            [
+                *payload.reference_asset_ids,
+                *([payload.reference_asset_id] if payload.reference_asset_id else []),
+            ]
         )
-        if reference_asset is None or not reference_asset.content_type.startswith("image/"):
+    )
+    reference_image_paths: list[str] = []
+    reference_video_paths: list[str] = []
+    reference_audio_paths: list[str] = []
+    if reference_ids:
+        reference_assets = (
+            await session.scalars(
+                select(Asset).where(
+                    Asset.id.in_(reference_ids),
+                    Asset.project_id == project.id,
+                    Asset.deleted_at.is_(None),
+                )
+            )
+        ).all()
+        assets_by_id = {asset.id: asset for asset in reference_assets}
+        if len(assets_by_id) != len(reference_ids):
             raise AppError(
                 status_code=422,
                 code="REFERENCE_INVALID",
-                message="The selected reference is not an image in this project.",
+                message="One or more references are not available in this project.",
             )
-        reference_file = asset_path(reference_asset, settings)
-        if not reference_file.exists():
-            raise AppError(
-                status_code=404,
-                code="REFERENCE_FILE_NOT_FOUND",
-                message="The selected reference image file is unavailable.",
-            )
-        reference_image_path = str(reference_file)
+        for reference_id in reference_ids:
+            reference_asset = assets_by_id[reference_id]
+            reference_file = asset_path(reference_asset, settings)
+            if not reference_file.exists():
+                raise AppError(
+                    status_code=404,
+                    code="REFERENCE_FILE_NOT_FOUND",
+                    message="A selected reference file is unavailable.",
+                )
+            if reference_asset.content_type.startswith("image/"):
+                reference_image_paths.append(str(reference_file))
+            elif reference_asset.content_type.startswith("video/"):
+                reference_video_paths.append(str(reference_file))
+            elif reference_asset.content_type.startswith("audio/"):
+                reference_audio_paths.append(str(reference_file))
+            else:
+                raise AppError(
+                    status_code=422,
+                    code="REFERENCE_INVALID",
+                    message="A selected reference has an unsupported media type.",
+                )
+    if payload.generation_mode == "image_to_video" and not reference_image_paths:
+        raise AppError(
+            status_code=422,
+            code="REFERENCE_REQUIRED",
+            message="Image-to-video generation requires a reference image.",
+        )
+    audio_match = re.search(r"Audio\s+(on|off|auto)", project.brief, re.IGNORECASE)
+    audio_enabled = payload.audio_enabled
+    if audio_enabled is None and audio_match:
+        if audio_match.group(1).lower() == "on":
+            audio_enabled = True
+        elif audio_match.group(1).lower() == "off":
+            audio_enabled = False
+    resolution_match = re.search(r"\b(720p|1080p|4k)\b", project.brief, re.IGNORECASE)
+    resolution = payload.resolution or (
+        resolution_match.group(1).lower() if resolution_match else None
+    )
 
     request = provider_request(
         shot,
         model=model,
         generation_mode=payload.generation_mode,
-        reference_image_path=reference_image_path,
+        reference_image_path=reference_image_paths[0] if reference_image_paths else None,
+        reference_image_paths=reference_image_paths,
+        reference_video_paths=reference_video_paths,
+        reference_audio_paths=reference_audio_paths,
+        audio_enabled=audio_enabled,
+        resolution=resolution,
+        task_type=payload.task_type,
     )
     job_id = uuid4()
     estimate = await selected_provider.estimate(request)
@@ -336,7 +393,15 @@ async def generate_shot(
     if settings.celery_enabled and job.status not in {"succeeded", "failed", "cancelled"}:
         from videoagent.workers.tasks import poll_generation_job
 
-        poll_generation_job.delay(str(job.id))
+        try:
+            poll_generation_job.delay(str(job.id))
+        except Exception as exc:
+            logger.warning(
+                "Celery enqueue failed for generation job %s; "
+                "the persisted job remains available to client polling: %s",
+                job.id,
+                exc,
+            )
     return GenerationJobRead.model_validate(job)
 
 

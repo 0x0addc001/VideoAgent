@@ -70,11 +70,11 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v1.5</td>
+<td>v1.6</td>
 </tr>
 <tr>
 <td>Updated</td>
-<td>2026-11-04</td>
+<td>2026-11-06</td>
 </tr>
 <tr>
 <td>Base path</td>
@@ -313,10 +313,17 @@ http://localhost:8000/openapi.json</code></pre>
   &quot;approved&quot;: true,
   &quot;generation_mode&quot;: &quot;image_to_video&quot;,
   &quot;reference_asset_id&quot;: &quot;00000000-0000-0000-0000-000000000010&quot;,
+  &quot;reference_asset_ids&quot;: [
+    &quot;00000000-0000-0000-0000-000000000010&quot;,
+    &quot;00000000-0000-0000-0000-000000000011&quot;
+  ],
   &quot;provider&quot;: &quot;kling&quot;,
-  &quot;model&quot;: &quot;kling-video-v4_0&quot;
+  &quot;model&quot;: &quot;kling-video-v4_0&quot;,
+  &quot;resolution&quot;: &quot;1080p&quot;,
+  &quot;audio_enabled&quot;: true,
+  &quot;task_type&quot;: &quot;reference&quot;
 }</code></pre>
-<p><code>generation_mode</code> is <code>text_to_video</code> or <code>image_to_video</code>. Image-to-video requires a project-owned image asset that belongs to the current user. Estimation and generation return <code>409 VISION_OBJECTS_REQUIRED</code> until the storyboard contains at least one Character and one Scene. <code>provider</code> and <code>model</code> are optional per-task overrides. Omit both to use the project default. Changing the override invalidates the previous estimate.</p>
+<p><code>generation_mode</code> is <code>text_to_video</code> or <code>image_to_video</code>. Image-to-video requires a project-owned image asset that belongs to the current user. Estimation and generation return <code>409 VISION_OBJECTS_REQUIRED</code> until the storyboard contains at least one Character and one Scene. <code>provider</code> and <code>model</code> are optional per-task overrides. Omit both to use the project default. Changing the override invalidates the previous estimate. <code>reference_asset_ids</code> accepts up to 15 ordered project image, video, or audio assets. Image-to-video also accepts the legacy <code>reference_asset_id</code> field. Providers that support multimodal references receive the ordered media set; <code>task_type</code> is <code>auto</code>, <code>reference</code>, <code>edit</code>, or <code>extend</code>.</p>
 <h3 id="character-image-generation">Character Image Generation</h3>
 <div class="table-wrap"><table><thead><tr>
 <th>Method</th>
@@ -350,6 +357,7 @@ http://localhost:8000/openapi.json</code></pre>
 <p><code>generation_mode</code> is <code>text_to_image</code> or <code>image_to_image</code>. A successful request returns an <code>AssetRead</code> whose content can be previewed and downloaded through <code>content_url</code>.</p>
 <h3 id="scene-editing-and-references">Scene Editing and References</h3>
 <p><code>PATCH /projects/{project_id}/storyboard/scenes/{scene_id}</code> updates name, location, description, or prompts. <code>POST /scenes/{scene_id}/assets</code> uploads a scene reference image. The returned asset filename is namespaced to the scene so the workspace can keep it under that Scene directory.</p>
+<p><code>POST /scenes/{scene_id}/estimate</code> and <code>POST /scenes/{scene_id}/generate</code> run scene text-to-image or image-to-image generation. The request accepts the same <code>provider</code> and <code>model</code> overrides as Character generation.</p>
 <h3 id="job-status">Job Status</h3>
 <p><code>GET /jobs/{job_id}</code></p>
 <p>Possible statuses include <code>submitted</code>, <code>queued</code>, <code>running</code>, <code>succeeded</code>, <code>failed</code>, and <code>cancelled</code>.</p>
@@ -540,12 +548,12 @@ file=&lt;image, video, or audio&gt;</code></pre>
 <p>Project uploads accept an optional <code>shot_id</code> form field. The returned asset UUID is the stable ID used in prompts as <code>@&lt;asset-id&gt;</code>.</p>
 <p>Export request:</p>
 <pre><code class="language-json">{
-  &quot;aspect_ratios&quot;: [&quot;16:9&quot;, &quot;9:16&quot;, &quot;1:1&quot;],
+  &quot;aspect_ratios&quot;: [&quot;21:9&quot;, &quot;16:9&quot;, &quot;9:16&quot;, &quot;1:1&quot;],
   &quot;soundtrack_asset_id&quot;: null,
   &quot;captions&quot;: &quot;A generated product story&quot;,
   &quot;permission&quot;: &quot;private&quot;
 }</code></pre>
-<p>The export response contains delivery Assets and a generated cover. Export requires every storyboard Shot to have a generated result. The current implementation composes those generated shots with FFmpeg, normalizes each delivery ratio, applies a short crossfade between shots, and optionally includes captions and an uploaded soundtrack.</p>
+<p>The export response contains delivery Assets and a generated cover. Export requires every storyboard Shot to have a generated result. The current implementation composes those generated shots with FFmpeg, normalizes each delivery ratio, applies a short crossfade between shots, and optionally includes captions and an uploaded soundtrack. One request may return up to four delivery variants; each non-empty caption line is timed evenly across the assembled cut.</p>
 <p>Share request:</p>
 <pre><code class="language-json">{
   &quot;expires_in_hours&quot;: 24

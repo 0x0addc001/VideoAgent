@@ -1,5 +1,5 @@
 from datetime import UTC, datetime
-from typing import Annotated, cast
+from typing import Annotated, Literal, cast
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
@@ -51,7 +51,7 @@ async def owned_asset_or_404(
     asset_id: UUID,
     user_id: UUID,
     *,
-    required_permission: str = "view",
+    required_permission: Literal["view", "edit", "owner"] = "view",
 ) -> Asset:
     asset = await session.get(Asset, asset_id)
     if asset is None or asset.deleted_at is not None:

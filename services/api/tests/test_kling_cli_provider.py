@@ -70,6 +70,63 @@ async def test_kling_cli_maps_completed_result(monkeypatch):
 
 
 @pytest.mark.unit
+async def test_kling_cli_uses_omni_reference_for_multimodal_inputs(monkeypatch):
+    provider = KlingCLIVideoProvider(command=("kling",))
+    calls: list[tuple[str, ...]] = []
+
+    async def capture(*args: str) -> dict[str, object]:
+        calls.append(args)
+        return {
+            "generationId": "omni-generation-1",
+            "status": "submitted",
+        }
+
+    monkeypatch.setattr(provider, "_run_json", capture)
+    base = request().model_copy(
+        update={
+            "duration_seconds": 10,
+            "aspect_ratio": "21:9",
+            "generation_mode": "image_to_video",
+            "reference_image_paths": ["C:/media/a.png", "C:/media/b.png"],
+            "reference_video_paths": ["C:/media/motion.mp4"],
+            "reference_audio_paths": ["C:/media/voice.mp3"],
+            "audio_enabled": True,
+            "resolution": "1080p",
+            "task_type": "reference",
+        }
+    )
+
+    job = await provider.submit(base)
+
+    assert job.task_id == "omni-generation-1"
+    assert calls == [
+        (
+            "--quiet",
+            "omni_ref_video",
+            "--model",
+            "kling-video-v4_0",
+            "--duration",
+            "10",
+            "--aspect_ratio",
+            "21:9",
+            "--resolution",
+            "1080p",
+            "--enable_audio",
+            "true",
+            "--image",
+            "C:/media/a.png",
+            "--image",
+            "C:/media/b.png",
+            "--video",
+            "C:/media/motion.mp4",
+            "--audio",
+            "C:/media/voice.mp3",
+            "A cinematic Shanghai morning",
+        )
+    ]
+
+
+@pytest.mark.unit
 async def test_kling_cli_reports_domestic_identity_and_credits(monkeypatch):
     provider = KlingCLIVideoProvider(command=("kling",))
 

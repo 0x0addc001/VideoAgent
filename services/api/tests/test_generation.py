@@ -93,7 +93,7 @@ async def project_with_shot(client) -> tuple[dict, dict]:
                     "aspect_ratio": "16:9",
                     "generation_mode": "text_to_video",
                 }
-            ]
+            ],
         },
     )
     assert storyboard_response.status_code == 200
@@ -103,9 +103,7 @@ async def project_with_shot(client) -> tuple[dict, dict]:
 @pytest.mark.api
 async def test_generation_requires_character_and_scene_objects(client):
     assert (await register(client, email="vision-gate@example.com")).status_code == 201
-    project = (
-        await client.post("/api/v1/projects", json={"title": "Vision gate"})
-    ).json()
+    project = (await client.post("/api/v1/projects", json={"title": "Vision gate"})).json()
     storyboard = await client.put(
         f"/api/v1/projects/{project['id']}/storyboard",
         json={
@@ -125,7 +123,7 @@ async def test_generation_requires_character_and_scene_objects(client):
 
 @pytest.mark.api
 async def test_generation_rejects_missing_approval(client):
-    project, shot = await project_with_shot(client)
+    _, shot = await project_with_shot(client)
 
     response = await client.post(
         f"/api/v1/shots/{shot['id']}/generate",
@@ -135,6 +133,35 @@ async def test_generation_rejects_missing_approval(client):
 
     assert response.status_code == 403
     assert response.json()["error"]["code"] == "GENERATION_APPROVAL_REQUIRED"
+
+
+@pytest.mark.api
+async def test_generation_survives_celery_enqueue_failure(
+    client,
+    app,
+    monkeypatch,
+):
+    _, shot = await project_with_shot(client)
+    app.state.settings.celery_enabled = True
+
+    from videoagent.workers.tasks import poll_generation_job
+
+    def unavailable(_job_id: str) -> None:
+        raise RuntimeError("redis unavailable")
+
+    monkeypatch.setattr(poll_generation_job, "delay", unavailable)
+    response = await client.post(
+        f"/api/v1/shots/{shot['id']}/generate",
+        headers={"Idempotency-Key": "celery-enqueue-fallback"},
+        json={"approved": True},
+    )
+
+    assert response.status_code == 201
+    job = response.json()
+    assert job["shot_id"] == shot["id"]
+    completed = await client.get(f"/api/v1/jobs/{job['id']}")
+    assert completed.status_code == 200
+    assert completed.json()["status"] == "succeeded"
 
 
 @pytest.mark.api

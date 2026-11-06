@@ -48,11 +48,11 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v2.5</td>
+<td>v2.6</td>
 </tr>
 <tr>
 <td>Updated</td>
-<td>2026-11-05</td>
+<td>2026-11-06</td>
 </tr>
 <tr>
 <td>Frameworks</td>
@@ -189,6 +189,8 @@
 <p>changes through their project or resource endpoints.</p>
 <li>Uploads append <code>@&lt;asset-id&gt;</code> to the active Prompt; generation infers</li>
 <p>image-to-video or image-to-image from that reference.</p>
+<li>Shots may override task type, audio, and resolution, and requests preserve</li>
+<p>the Prompt order of multiple <code>@asset-id</code> references.</p>
 <li>Uploaded and generated results appear under their directory with a persisted</li>
 <p>final-selection checkbox, copy-ID, preview, and delete action.</p>
 <li>Desktop panes default to equal widths and expose draggable separators.</li>
@@ -199,11 +201,15 @@
 <li>Assets and Agents collapse independently and restore from their labeled rails.</li>
 <li>The editor header renders no production progress bar and no storyboard</li>
 <p>“Review” score button.</p>
+<li>Character and Scene pages support uploaded, reference-image, and text image</li>
+<p>generation, with generated images stored as downloadable project assets.</p>
 <li>Final Cut review is available only for exported assets, lets the user choose a</li>
 <p>configured vision evaluator and consistency metrics, and is unavailable when no evaluator is configured.</p>
 <li>Export is blocked until every storyboard Shot has a generated result.</li>
 <li>A conversational instruction such as “Render the final cut” triggers delivery</li>
 <p>generation; no separate render button is exposed in the editor.</p>
+<li>Existing deliveries can create a new 21:9, 16:9, 9:16, or 1:1 version with a</li>
+<p>soundtrack or voice-over and line-by-line captions.</p>
 <li>Shot estimation and generation return <code>409 VISION_OBJECTS_REQUIRED</code> until the</li>
 <p>storyboard has at least one Character and one Scene.</p>
 <li>Model selectors appear on Character and Shot pages, default to the project</li>

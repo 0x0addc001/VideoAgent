@@ -218,6 +218,11 @@ export const landingContent = {
         { id: "auto", label: "Auto", provider: "" },
         { id: "kling-video-v4_0", label: "Kling/Kling Video 4.0", provider: "Kling" },
         {
+          id: "kling-video-v4_0_flash",
+          label: "Kling/Kling Video 4.0 Flash",
+          provider: "Kling",
+        },
+        {
           id: "kling-video-v3_0_omni",
           label: "Kling/Kling Video 3.0 Omni",
           provider: "Kling",
@@ -908,6 +913,11 @@ export const landingContent = {
       models: [
         { id: "auto", label: "自动", provider: "" },
         { id: "kling-video-v4_0", label: "Kling/Kling Video 4.0", provider: "Kling" },
+        {
+          id: "kling-video-v4_0_flash",
+          label: "Kling/Kling Video 4.0 Flash",
+          provider: "Kling",
+        },
         {
           id: "kling-video-v3_0_omni",
           label: "Kling/Kling Video 3.0 Omni",

@@ -129,9 +129,7 @@ async def list_skills(
                 user,
                 likes=like_counts.get(f"{user_namespace(owner.email)}/{skill.skill_id}", 0),
                 uses=use_counts.get(f"{user_namespace(owner.email)}/{skill.skill_id}", 0),
-                is_liked=(
-                    f"{user_namespace(owner.email)}/{skill.skill_id}" in liked_skill_keys
-                ),
+                is_liked=(f"{user_namespace(owner.email)}/{skill.skill_id}" in liked_skill_keys),
             )
             for skill, owner in ordered_rows
         ]

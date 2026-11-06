@@ -43,12 +43,8 @@ async def test_project_collaboration_link_grants_editor_access(client):
     assert (await client.get(f"/api/v1/projects/{project['id']}")).status_code == 200
     workspace = await client.get("/api/v1/workspace")
     assert workspace.status_code == 200
-    assert project["id"] in {
-        item["id"] for item in workspace.json()["recents"]
-    }
-    assert (
-        await client.get(f"/api/v1/projects/{project['id']}/storyboard")
-    ).status_code == 200
+    assert project["id"] in {item["id"] for item in workspace.json()["recents"]}
+    assert (await client.get(f"/api/v1/projects/{project['id']}/storyboard")).status_code == 200
     shot_id = storyboard["shots"][0]["id"]
     edited = await client.patch(
         f"/api/v1/projects/{project['id']}/storyboard/shots/{shot_id}",
@@ -61,9 +57,7 @@ async def test_project_collaboration_link_grants_editor_access(client):
 @pytest.mark.api
 async def test_collaboration_email_and_view_permissions_are_enforced(client):
     assert (await register(client, email="owner@example.com")).status_code == 201
-    project = (
-        await client.post("/api/v1/projects", json={"title": "Review cut"})
-    ).json()
+    project = (await client.post("/api/v1/projects", json={"title": "Review cut"})).json()
     invitation = await client.post(
         f"/api/v1/projects/{project['id']}/collaborations",
         json={

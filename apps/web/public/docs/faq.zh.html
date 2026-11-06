@@ -45,8 +45,11 @@
 <a class="toc-link toc-level-2" href="#q17-videoagent-的-agent-loop-是什么">Q17. VideoAgent 的 Agent Loop 是什么？</a>
 <a class="toc-link toc-level-2" href="#q18-videoagent-的-context-和-memory-怎么设计和管理">Q18. VideoAgent 的 Context 和 Memory 怎么设计和管理？</a>
 <a class="toc-link toc-level-2" href="#q19-videoagent-的-skill-mcp-subagent-是怎么调用的">Q19. VideoAgent 的 Skill、MCP、SubAgent 是怎么调用的？</a>
-<a class="toc-link toc-level-2" href="#q20-videoagent-的-hook-是怎么用的">Q20. VideoAgent 的 Hook 是怎么用的？</a>
+<a class="toc-link toc-level-2" href="#q20-videoagent-的-agent-hook-是什么-目前怎么用">Q20. VideoAgent 的 Agent Hook 是什么，目前怎么用？</a>
 <a class="toc-link toc-level-2" href="#q21-videoagent-如何在同一个-skill-有多个-provider-时选择模型">Q21. VideoAgent 如何在同一个 Skill 有多个 Provider 时选择模型？</a>
+<a class="toc-link toc-level-2" href="#q22-videoagent-现在支持哪些多模态制作能力">Q22. VideoAgent 现在支持哪些多模态制作能力？</a>
+<a class="toc-link toc-level-2" href="#q23-celery-和-redis-在-videoagent-中如何配合">Q23. Celery 和 Redis 在 VideoAgent 中如何配合？</a>
+<a class="toc-link toc-level-2" href="#q24-videoagent-的-agent-核心代码在哪里">Q24. VideoAgent 的 Agent 核心代码在哪里？</a>
         </nav>
       </aside>
       <article class="document"><h1 id="videoagent-客服-faq">VideoAgent 客服 FAQ</h1>
@@ -56,11 +59,11 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v2.4</td>
+<td>v2.6</td>
 </tr>
 <tr>
 <td>更新日期</td>
-<td>2026-11-05</td>
+<td>2026-11-06</td>
 </tr>
 </tbody></table></div>
 <h2 id="q1-videoagent-的主编排应怎样设计">Q1. VideoAgent 的主编排应怎样设计？</h2>
@@ -234,25 +237,58 @@
 <p><strong>扩展：</strong> 现在有 SubAgent 吗？</p>
 <p><strong>答案</strong></p>
 <p>没有。当前只有 LangGraph 的单个 <code>plan_storyboard</code> 节点，没有独立 SubAgent 运行时、委派协议或并行子图。只有在剧本、视觉、评估或制片任务具备独立工具、 上下文、验收标准和扩缩容需求时才应拆分；拆分后每个 SubAgent 仍需共享可追踪 <code>run_id</code>、预算和审批边界。</p>
-<h2 id="q20-videoagent-的-hook-是怎么用的">Q20. VideoAgent 的 Hook 是怎么用的？</h2>
+<h2 id="q20-videoagent-的-agent-hook-是什么-目前怎么用">Q20. VideoAgent 的 Agent Hook 是什么，目前怎么用？</h2>
 <p><strong>答案</strong></p>
-<p>Hook 是成片开头用于抓住注意力的创作约束，不是 Webhook 或运行时事件。用户在创作框 选择自动、视觉冲击、叙事反转、口播开场、声音开场或效果实证后，VideoAgent 会把这个 选择写入项目 Brief，并在整体设定、首个叙事节拍和开场镜头规划中使用它。选择“自动” 时，由 Agent 根据题材、受众和发布平台决定开场方式。</p>
-<p>实际使用时，可以选择一个 Hook，或应用一个带默认 Hook 的策略；描述主题与希望激发的 反应后批准整体方向。如果首个节拍不符合预期，可以直接说“开场改成效果实证”等具体修改， Hook 会保留在 Settings 中，并可在产生计费生成前继续调整。</p>
-<p><strong>追问：</strong> Hook 和策略有什么区别？</p>
+<p>Agent Hook 是 Agent 执行生命周期上的拦截点，用于在指定阶段注入 Context、执行策略 校验、记录审计、阻断不安全操作或触发外部自动化。它约束的是 Agent 如何运行，不是 视频开场如何吸引观众；创作框里的视觉冲击、口播开场等属于 Opening Hook，两者不是 同一个概念。</p>
+<p>当前 VideoAgent 在 Agent Run 内提供可观测的阶段 Hook：<code>context</code>、<code>memory</code>、 <code>skill</code>、<code>planning</code>、<code>validation</code>、<code>state</code> 和 <code>reply</code>。这些事件由 <code>AgentActivityRecorder</code> 按 <code>run_id</code> 持久化，前端用它们展示真实的执行轨迹。模型调用 本身仍是单个 LangGraph <code>plan_storyboard</code> 节点；生成工具位于审批边界之后，不会由 规划 Agent 直接触发。</p>
+<p><strong>追问：</strong> Agent Hook 和 Skill、MCP 有什么区别？</p>
 <p><strong>答案</strong></p>
-<p>策略是一套完整创作起点，包含提示词、Skill、Hook、风格、画幅、时长、模型和审核方式； Hook 只描述开头如何建立注意力。一个策略可以选择不同的 Hook，同一个 Hook 也可以用于 多个策略。</p>
-<p><strong>扩展：</strong> Hook 是否能保证视频效果？</p>
+<p>Skill 定义 Agent 要完成什么任务以及执行规范；MCP 连接可调用的外部工具和数据源； Agent Hook 则挂在执行阶段边界上，决定某一步前后需要额外执行什么治理逻辑。Hook 不会替代 Skill 的创作指令，也不会直接变成一个生成工具。</p>
+<p><strong>扩展：</strong> 为什么不能把所有步骤都做成无限 Hook？</p>
 <p><strong>答案</strong></p>
-<p>不能。Hook 只约束开场意图，实际效果仍取决于脚本、镜头、表演、剪辑和平台受众。建议 用批量变体生成多个开场版本并比较完播与互动数据，不应把 Hook 选择当作效果保证。</p>
+<p>Hook 越多，延迟、循环调用、状态一致性和故障传播越难控制。每个 Hook 都应有明确的 触发阶段、超时、幂等语义、错误策略和审计记录；计费工具仍必须经过显式审批，不能借 Hook 绕过预算和 Provider 边界。</p>
 <h2 id="q21-videoagent-如何在同一个-skill-有多个-provider-时选择模型">Q21. VideoAgent 如何在同一个 Skill 有多个 Provider 时选择模型？</h2>
 <p><strong>答案</strong></p>
 <p>Agent 按任务与能力整理候选：文生文、文生图、图生图、文生视频或图生视频；图片、 视频、主体、关键帧和音频引用；时长、画幅、语言、声音、输出质量、Provider 可用性与 预计积分。项目默认模型会被预选，但不会永久锁死。如果两个 Provider 都能完成同一 Skill，任务页会展示可选的 <code>服务商/模型</code>，用户通过估算或生成进行确认，系统不会静默 切换服务商。</p>
 <p><strong>追问：</strong> 项目开始后还能更换模型吗？</p>
 <p><strong>答案</strong></p>
-<p>可以。Character 提供图片模型选择，Shot 提供视频模型选择，文生视频和图生视频 都使用当前选择。“Project default”继承初始设置；显式切换只影响下一次生成，并使旧积分 估算失效。计费任务一旦被 Provider 接受，不会在用户不知情时切换 Provider。</p>
+<p>可以。Character 和 Scene 提供图片模型选择，Shot 提供视频模型选择，文生视频和图生视频 都使用当前选择。“Project default”继承初始设置；显式切换只影响下一次生成，并使旧积分 估算失效。计费任务一旦被 Provider 接受，不会在用户不知情时切换 Provider。</p>
 <p><strong>扩展：</strong> 文生文规划模型也能切换吗？</p>
 <p><strong>答案</strong></p>
-<p>规划模型也遵循相同的任务路由原则，但当前部署只开放管理员配置的 Planner。若以后配置 多个规划模型，应在 Settings 中展示推理能力、Context、延迟和价格差异。一个模型生成的 内容不能描述成另一个模型的产出。</p></article>
+<p>规划模型也遵循相同的任务路由原则，但当前部署只开放管理员配置的 Planner。若以后配置 多个规划模型，应在 Settings 中展示推理能力、Context、延迟和价格差异。一个模型生成的 内容不能描述成另一个模型的产出。</p>
+<h2 id="q22-videoagent-现在支持哪些多模态制作能力">Q22. VideoAgent 现在支持哪些多模态制作能力？</h2>
+<p><strong>答案</strong></p>
+<p>VideoAgent 支持有顺序的图片、视频和音频参考；Character 与 Scene 的文生图和图生图； Shot 的文生视频和图生视频；Kling 4.0 最长 30 秒，以及 21:9、16:9、9:16、1:1 输出。 已安装的 Kling 4.0 CLI 声明 10 个图片槽、5 个视频槽和 3 个音频槽，合计最多 15 个 参考素材。Agent 只提交所选模型实际支持的参考组合。</p>
+<p><strong>追问：</strong> 关键帧如何排序？</p>
+<p><strong>答案</strong></p>
+<p>参考素材按 Shot Prompt 中 <code>@asset-id</code> 的出现顺序传递，界面与 Provider 边界都会保留 该顺序。关键帧槽位映射取决于模型：支持关键帧的图生视频模型接收首帧、中间帧和尾帧， 全能参考模型则接收有顺序的图片、视频和音频输入。</p>
+<h2 id="q23-celery-和-redis-在-videoagent-中如何配合">Q23. Celery 和 Redis 在 VideoAgent 中如何配合？</h2>
+<p><strong>答案</strong></p>
+<p>生成接口先在关系数据库创建或恢复 <code>GenerationJob</code>、预扣积分并调用 Provider 提交任务， 提交成功后提交数据库事务。随后 API 通过 <code>poll_generation_job.delay(job_id)</code> 把任务 放入 Celery；Celery 使用 Redis DB 0 作为 Broker 传递任务，使用 Redis DB 1 作为 Result Backend。Worker 消费任务后创建独立数据库 Session，调用 <code>refresh_generation_job</code> 查询一次 Provider；未结束时通过 <code>self.retry</code> 延迟重试，间隔按 <code>5 × 2^retries</code> 增长并封顶 120 秒，直到任务成功、失败或取消。</p>
+<p>Redis 只承担“任务传递”和“执行结果回传”，<code>GenerationJob</code>、Shot 状态、积分流水和 素材归属仍以关系数据库为唯一事实来源。Celery 配置了延迟确认、Worker 丢失后重新投递、 单任务预取和启动连接重试，避免 Worker 异常时任务被提前确认。</p>
+<p><strong>追问：</strong> Redis 或 Celery 暂时不可用时会不会卡死？</p>
+<p><strong>答案</strong></p>
+<p>不会把已提交的生成任务丢掉。API 在提交 Provider 后先持久化 Job，再尝试投递 Celery； 即使 Redis 入队失败，接口仍返回已持久化的 Job，前端可通过 <code>GET /jobs/{id}</code> 直接轮询 Provider 状态。Redis 恢复后再根据持久化任务做补偿，而不是相信内存队列是唯一事实源。</p>
+<p><strong>追问：</strong> 为什么不直接在 FastAPI 请求线程里轮询？</p>
+<p><strong>答案</strong></p>
+<p>视频生成可能持续数分钟，占用 Web 请求会耗尽连接和工作线程，也无法在进程重启后继续。 后台 Worker 把长任务与 API 解耦，可以独立扩缩容、限制 Provider 并发并统一重试。</p>
+<h2 id="q24-videoagent-的-agent-核心代码在哪里">Q24. VideoAgent 的 Agent 核心代码在哪里？</h2>
+<p><strong>答案</strong></p>
+<ul>
+<li><code>services/api/src/videoagent/api/agent.py</code>：消息入口、意图路由、Context/Activity</li>
+<p>记录、最终成片就绪检查和响应持久化。</p>
+<li><code>services/api/src/videoagent/agent/graph.py</code>：LangGraph 图定义，当前执行单个</li>
+<p><code>plan_storyboard</code> 节点，并负责活动状态和结构化结果校验。</p>
+<li><code>services/api/src/videoagent/agent/planner.py</code>：本地确定性 Planner、</li>
+<p>OpenAI-compatible/DeepSeek Planner、JSON 兼容回退和远程超时后的本地兜底。</p>
+<li><code>services/api/src/videoagent/services/agent_context.py</code>：项目 Brief、对话、</li>
+<p>Storyboard、Skill 等有界 Context 的组装。</p>
+<li><code>services/api/src/videoagent/services/agent_activity.py</code>：把真实 Agent 执行阶段</li>
+<p>持久化为前端可观测事件。</p>
+<li><code>apps/web/src/components/project-workspace.tsx</code>：Agent 对话、审批、执行轨迹、</li>
+<p>错误弹窗和项目画布交互。</p>
+</ul>
+<p>主链路是：接收消息 → 构建 Context → 解析 Skill → LangGraph 规划 → 校验 <code>StoryboardPlan</code> → 持久化 Direction/Vision 状态 → 返回可流式展示的回复。远程 Planner 超时或返回不可解析结果时，服务端明确提示本次使用本地 Planner 兜底，不会让请求无限等待。</p></article>
     </main>
     <script src="../docs.js?v=33"></script>
   </body>

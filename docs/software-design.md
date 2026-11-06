@@ -2,11 +2,11 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v2.0 |
-| 更新日期 | 2026-11-04 |
+| 文档版本 | v2.1 |
+| 更新日期 | 2026-11-06 |
 | 后端框架 | Python + FastAPI |
 | 前端框架 | Next.js + TypeScript |
-| 模型 | Pippit/Seedance 2.5 Draft、Pippit/Seedance 2.5、Pippit/Seedance 2.0 Fast VIP、Pippit/Seedance 2.0 VIP、Pippit/Seedance 2.0 Mini 体验版、Pippit/Seedance 2.0 Mini、Pippit/Wan 3.0、Pippit/HappyHorse 1.1、Kling/Kling Video 2.5、Kling/Kling Video 2.6、Kling/Kling Video O1、Kling/Kling Video 3.0、Kling/Kling Video 3.0 Omni、Kling/Kling Video 3.0 Turbo、Kling/Kling Video 4.0、Kling/Kling 2.6 Motion Control、Kling/Kling 3.0 Motion Control、Kling/Kling Image 3.0 Omni、Kling/Kling Image O1、Kling/Kling Image 3.0、Kling/Kling Image 2.1 |
+| 模型 | Pippit/Seedance 2.5 Draft、Pippit/Seedance 2.5、Pippit/Seedance 2.0 Fast VIP、Pippit/Seedance 2.0 VIP、Pippit/Seedance 2.0 Mini 体验版、Pippit/Seedance 2.0 Mini、Pippit/Wan 3.0、Pippit/HappyHorse 1.1、Kling/Kling Video 2.5、Kling/Kling Video 2.6、Kling/Kling Video O1、Kling/Kling Video 3.0、Kling/Kling Video 3.0 Omni、Kling/Kling Video 3.0 Turbo、Kling/Kling Video 4.0、Kling/Kling Video 4.0 Flash、Kling/Kling 2.6 Motion Control、Kling/Kling 3.0 Motion Control、Kling/Kling Image 3.0 Omni、Kling/Kling Image O1、Kling/Kling Image 3.0、Kling/Kling Image 2.1 |
 
 VideoAgent 通过统一 Provider 边界集成 Pippit CLI 与 Kling 国内版 CLI。Pippit 提供视频提交、任务查询和积分能力，Kling CLI 通过国内站 MCP 提供文本生成视频、任务查询、动作控制和多模态参考能力。
 
@@ -34,7 +34,7 @@ VideoAgent 是一个面向内容创作者、营销人员和普通用户的 AI �
 
 - 首页采用左侧导航、连续视频背景、居中创作框、场景策略、Hook 控制和自定义透明下拉控件。
 - 创作输入框随内容行数自动向下增高；示例灵感仅在输入为空时显示，策略保持可切换。
-- 模型选择器使用实时核验目录：Kling 7 个视频模型、Pippit 8 个视频模型，另有 Auto；选项统一使用 `服务商/模型` 格式。
+- 模型选择器使用实时核验目录：Kling 8 个视频模型、Pippit 8 个视频模型，另有 Auto；选项统一使用 `服务商/模型` 格式。
 - 搜索、语言、通知、积分和头像使用半透明表面；头像菜单左右边缘对齐导航栏的 13px 内边距，并沿用导航字号。菜单包含语言、通知、积分与带图标的账户操作，通知行带向右展开图标，齿轮位于头像行右端；语言行使用向右图标，点击后在头像菜单右侧独立打开浮层并纵向排列 English 与中文。
 - Videos 展示作者与喜欢数，并支持发布。
 - 支持项目创建、编辑、恢复和删除。
@@ -42,7 +42,7 @@ VideoAgent 是一个面向内容创作者、营销人员和普通用户的 AI �
 - 支持镜头参数编辑和积分成本估算。
 - 支持 Final Cut 发布前的视觉模型评估。
 - 支持项目级图片、视频和音频素材上传，并校验 MIME、文件头和大小。
-- 支持 FFmpeg 合成、16:9/9:16/1:1 交付版本、封面、字幕和音轨。
+- 支持 FFmpeg 合成、21:9/16:9/9:16/1:1 交付版本、封面、字幕和音轨。
 - 支持限时分享链接、公开/私有权限、过期和撤销。
 - 支持用户独立积分账户与预扣、退款流水，隔离共享 Provider 账户的计费风险。
 - 支持管理员控制台、用户状态、积分调整、邀请码、生成开关和审计日志。
@@ -238,6 +238,9 @@ START
 
 `plan_storyboard` 接收项目标题、Brief、用户消息、Locale、工作流阶段与状态，
 输出 `assistant_message` 和经 Pydantic 校验的 Character/Shot 计划，并同步持久化消息和故事板。
+远程 Planner 受 `VIDEOAGENT_LLM_TIMEOUT_SECONDS` 限制；超时、网络失败或结构化结果
+无法解析时，本次规划明确回退到本地确定性 Planner，并在回复中提示用户。兜底结果仍经过
+同一套 Schema 校验和审批流程，前端遇到未恢复的 API 错误则显示可重试弹窗。
 
 ### 9.2 Context 与 Memory
 
@@ -348,6 +351,7 @@ Kling 通过 `@klingai/cli-cn` 的国内站内置 MCP 端点暴露视频能力�
 - 图生视频与首尾帧。
 - 动作控制。
 - Omni-Ref 多模态参考。
+- Kling 4.0 的 3 至 30 秒时长、720p/1080p 输出与最多 10 图片、5 视频、3 音频的组合参考。
 - 任务查询和结果 URL 解析。
 
 CLI 负责国内站 OAuth、MCP 传输和工具参数。Provider 适配器将 Kling 的
@@ -496,6 +500,7 @@ cancelled
 | POST | `/characters/{id}/estimate`、`/assets`、`/generate` | 角色图片估算、上传与生成 |
 | PATCH | `/projects/{id}/storyboard/scenes/{scene_id}` | 编辑 Scene 名称、地点和 Prompt |
 | POST | `/scenes/{id}/assets` | 上传 Scene 参考图 |
+| POST | `/scenes/{id}/estimate`、`/generate` | Scene 图片估算与文生图/图生图生成 |
 | POST | `/projects/{id}/collaborations` | 创建查看或编辑协作链接 |
 | POST | `/collaborations/{token}/accept` | 接受邀请并加入项目 |
 | GET | `/projects/{id}/progress` | 实时制作进度 |
@@ -556,9 +561,10 @@ cancelled
 - Settings 从对话中提炼 `属性 / 值`，不直接展示原始问答或批准消息。
 - 属性抽取先排除语言纠错等元指令，再识别结构化的时长、形式、产品、开场、发展、结尾、
   基调和视觉方向；英文界面对可识别的中文术语做英文归一化，翻译不确定的内容不展示。
-- Shot 与 Character 页面可直接编辑描述和 Prompt；上传素材自动追加 `@<asset-id>`，
-  服务端根据 ID 选择参考生成。
-- Shot/Character 结果位于对应目录下，支持最终选用、复制 ID、预览和删除。
+- Shot、Character 与 Scene 页面可直接编辑描述和 Prompt；上传素材自动追加
+  `@<asset-id>`，多个参考按 Prompt 中出现顺序提交。Shot 可覆盖模型、任务类型、
+  音频与分辨率。
+- Shot/Character/Scene 结果位于对应目录下，支持最终选用、复制 ID、预览和删除。
 - 导航、Assets、Canvas、Agents 默认等宽并支持拖拽调整；账号下拉集中语言、通知、积分和账户操作。
 - 项目目录将展开按钮放在蓝色目录图标左侧；被收纳的对话从 Recents 移入对应目录，并以缩进子项显示。
 - 品牌与浏览器标签页图标统一使用蓝色播放键；激活导航图标采用填充/线框反转。
@@ -703,6 +709,7 @@ VIDEOAGENT_CELERY_RESULT_BACKEND
 VIDEOAGENT_LLM_BASE_URL
 VIDEOAGENT_LLM_API_KEY
 VIDEOAGENT_LLM_MODEL
+VIDEOAGENT_LLM_TIMEOUT_SECONDS
 VIDEOAGENT_MEDIA_DIR
 VIDEOAGENT_MAX_UPLOAD_BYTES
 VIDEOAGENT_FFMPEG_COMMAND

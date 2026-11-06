@@ -2,8 +2,8 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.1 |
-| Updated | 2026-11-04 |
+| Document version | v1.2 |
+| Updated | 2026-11-06 |
 | Policy | Track undelivered capabilities, new requirements, and follow-up enhancements; remove completed items |
 
 ## 1. Product and Frontend
@@ -12,7 +12,6 @@
 | --- | --- | --- | --- |
 | TODO-UI-001 | Add bilingual controls to the product UI | Navigation, composer, workspace, and feedback are fully localized | P1 |
 | TODO-UI-002 | Expand production playbooks by industry | Each template defines prompt, Skill, Hook, frame, duration, and review | P1 |
-| TODO-UI-003 | Video and audio reference wiring | Pass uploaded video and audio references into the matching Provider generation request | P0 |
 
 ## 2. Agent and Directing Workflow
 

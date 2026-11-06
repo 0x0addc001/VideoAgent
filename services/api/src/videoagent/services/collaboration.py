@@ -31,9 +31,7 @@ async def create_project_collaboration(
         project_id=project.id,
         owner_id=owner_id,
         collaborator_email=(
-            str(payload.collaborator_email).strip().lower()
-            if payload.collaborator_email
-            else None
+            str(payload.collaborator_email).strip().lower() if payload.collaborator_email else None
         ),
         permission=payload.permission,
         token_hash=_token_hash(token),
@@ -50,9 +48,7 @@ async def resolve_project_collaboration(
     token: str,
 ) -> ProjectCollaboration:
     collaboration = await session.scalar(
-        select(ProjectCollaboration).where(
-            ProjectCollaboration.token_hash == _token_hash(token)
-        )
+        select(ProjectCollaboration).where(ProjectCollaboration.token_hash == _token_hash(token))
     )
     if (
         collaboration is None

@@ -1,7 +1,7 @@
 from typing import Literal, Protocol
 from uuid import UUID
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 JobStatus = Literal[
     "pending",
@@ -23,6 +23,12 @@ class GenerationRequest(BaseModel):
     generation_mode: str
     model: str | None = None
     reference_image_path: str | None = None
+    reference_image_paths: list[str] = Field(default_factory=list)
+    reference_video_paths: list[str] = Field(default_factory=list)
+    reference_audio_paths: list[str] = Field(default_factory=list)
+    audio_enabled: bool | None = None
+    resolution: str | None = None
+    task_type: Literal["auto", "reference", "edit", "extend"] = "auto"
 
 
 class CostEstimate(BaseModel):

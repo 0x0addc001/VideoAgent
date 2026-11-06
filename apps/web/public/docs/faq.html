@@ -45,8 +45,11 @@
 <a class="toc-link toc-level-2" href="#q17-what-is-the-videoagent-agent-loop">Q17. What is the VideoAgent Agent Loop?</a>
 <a class="toc-link toc-level-2" href="#q18-how-are-videoagent-context-and-memory-designed-and-managed">Q18. How are VideoAgent Context and Memory designed and managed?</a>
 <a class="toc-link toc-level-2" href="#q19-how-are-videoagent-skills-mcp-and-subagents-invoked">Q19. How are VideoAgent Skills, MCP, and SubAgents invoked?</a>
-<a class="toc-link toc-level-2" href="#q20-how-are-videoagent-hooks-used">Q20. How are VideoAgent Hooks used?</a>
+<a class="toc-link toc-level-2" href="#q20-what-is-a-videoagent-agent-hook-and-how-is-it-used-today">Q20. What is a VideoAgent Agent Hook, and how is it used today?</a>
 <a class="toc-link toc-level-2" href="#q21-how-does-videoagent-choose-a-model-when-a-skill-has-multiple-provider-implementations">Q21. How does VideoAgent choose a model when a Skill has multiple Provider implementations?</a>
+<a class="toc-link toc-level-2" href="#q22-which-multimodal-production-capabilities-are-available">Q22. Which multimodal production capabilities are available?</a>
+<a class="toc-link toc-level-2" href="#q23-how-do-celery-and-redis-work-together-in-videoagent">Q23. How do Celery and Redis work together in VideoAgent?</a>
+<a class="toc-link toc-level-2" href="#q24-where-is-the-agent-s-core-code">Q24. Where is the Agent's core code?</a>
         </nav>
       </aside>
       <article class="document"><h1 id="videoagent-faq">VideoAgent FAQ</h1>
@@ -56,11 +59,11 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v2.2</td>
+<td>v2.4</td>
 </tr>
 <tr>
 <td>Updated</td>
-<td>2026-11-05</td>
+<td>2026-11-06</td>
 </tr>
 </tbody></table></div>
 <h2 id="q1-how-should-a-video-agent-be-orchestrated">Q1. How should a video Agent be orchestrated?</h2>
@@ -234,25 +237,58 @@
 <p><strong>Extension:</strong> Are there SubAgents today?</p>
 <p><strong>Answer</strong></p>
 <p>No. There is currently one LangGraph <code>plan_storyboard</code> node and no SubAgent runtime, delegation protocol, or parallel subgraph. Split responsibilities only when writing, visual, review, or production work has independent tools, context, acceptance criteria, and scaling needs. Every SubAgent would still share the traceable <code>run_id</code>, budget, and approval boundary.</p>
-<h2 id="q20-how-are-videoagent-hooks-used">Q20. How are VideoAgent Hooks used?</h2>
+<h2 id="q20-what-is-a-videoagent-agent-hook-and-how-is-it-used-today">Q20. What is a VideoAgent Agent Hook, and how is it used today?</h2>
 <p><strong>Answer</strong></p>
-<p>A Hook is a directing constraint for the opening seconds that establishes attention. It is not a webhook or runtime event. The composer offers Auto, visual impact, narrative twist, spoken hook, sound cue, and proof-first openings. VideoAgent writes the selected Hook into the project brief and uses it while planning the creative direction, first narrative beat, and opening shot. Auto lets the Agent choose according to subject, audience, and platform.</p>
-<p>To use a Hook, select one in the composer or apply a Playbook with a default Hook, describe the subject and desired response, approve the direction, then ask for a targeted change such as “make the opening more proof-led” if the first beat does not match. Hook selection remains visible in Settings and can be changed before any billable generation.</p>
-<p><strong>Follow-up:</strong> How is a Hook different from a Playbook?</p>
+<p>An Agent Hook is an interception point in the Agent lifecycle. It can inject context, enforce policy, write an audit record, block an unsafe operation, or trigger external automation at a defined stage. It governs how the Agent runs, not how a video opening earns attention. Visual impact, spoken openings, and other composer choices are Opening Hooks and are a separate concept.</p>
+<p>VideoAgent currently exposes observable stage Hooks for <code>context</code>, <code>memory</code>, <code>skill</code>, <code>planning</code>, <code>validation</code>, <code>state</code>, and <code>reply</code>. <code>AgentActivityRecorder</code> persists these events under a <code>run_id</code>, and the client uses them to display the real execution trace. The model call remains one LangGraph <code>plan_storyboard</code> node; generation tools remain behind an approval boundary and are not invoked directly by the planning Agent.</p>
+<p><strong>Follow-up:</strong> How is an Agent Hook different from a Skill or MCP?</p>
 <p><strong>Answer</strong></p>
-<p>A Playbook is a complete reusable starting strategy containing a prompt, Skill, Hook, style, frame, duration, model, and review mode. A Hook defines only how the opening earns attention. One Playbook can use different Hooks, and one Hook can appear in multiple Playbooks.</p>
-<p><strong>Extension:</strong> Does a Hook guarantee performance?</p>
+<p>A Skill defines the task and execution rules, while MCP connects callable tools and data sources. An Agent Hook attaches governance logic before or after a lifecycle stage. It does not replace a Skill instruction or become a generation tool itself.</p>
+<p><strong>Extension:</strong> Why not attach unlimited Hooks to every step?</p>
 <p><strong>Answer</strong></p>
-<p>No. It constrains intent, while results still depend on writing, shots, performance, editing, and audience. Use batch variants to compare several openings against completion and engagement data rather than treating a Hook as a performance guarantee.</p>
+<p>Hook chains increase latency, recursion, state-consistency, and failure propagation risks. Every Hook needs a defined stage, timeout, idempotency semantics, error policy, and audit record. Billable tools still require explicit approval and cannot bypass budget or provider boundaries through a Hook.</p>
 <h2 id="q21-how-does-videoagent-choose-a-model-when-a-skill-has-multiple-provider-implementations">Q21. How does VideoAgent choose a model when a Skill has multiple Provider implementations?</h2>
 <p><strong>Answer</strong></p>
 <p>The Agent resolves candidates by task and capability: text, image, or video; text/image/video references; duration; aspect ratio; audio and language; output quality; provider availability; and estimated credits. The project default is preselected, but it is not treated as a permanent lock. If two providers can complete the same Skill, the task editor exposes the available <code>Provider/Model</code> choices and the user confirms by estimating or generating instead of the system silently switching providers.</p>
 <p><strong>Follow-up:</strong> Can the user change the model after the project has started?</p>
 <p><strong>Answer</strong></p>
-<p>Yes. Character generation exposes an image-model selector, and Shot generation exposes a video-model selector for both text-to-video and image-to-video. “Project default” inherits the initial choice; an explicit override applies to the next generation and invalidates the previous estimate. Provider switching never happens silently after a paid task has been accepted.</p>
+<p>Yes. Character and Scene generation expose image-model selectors, and Shot generation exposes a video-model selector for both text-to-video and image-to-video. “Project default” inherits the initial choice; an explicit override applies to the next generation and invalidates the previous estimate. Provider switching never happens silently after a paid task has been accepted.</p>
 <p><strong>Extension:</strong> Can the user change the text-planning model too?</p>
 <p><strong>Answer</strong></p>
-<p>Planning-model choice belongs to the same task-routing rule, but the current deployment exposes the planner configured by the administrator. If multiple planning models are configured, the selector should live in Settings and show their reasoning, context, latency, and price trade-offs. Generated content from one model is never described as if another model produced it.</p></article>
+<p>Planning-model choice belongs to the same task-routing rule, but the current deployment exposes the planner configured by the administrator. If multiple planning models are configured, the selector should live in Settings and show their reasoning, context, latency, and price trade-offs. Generated content from one model is never described as if another model produced it.</p>
+<h2 id="q22-which-multimodal-production-capabilities-are-available">Q22. Which multimodal production capabilities are available?</h2>
+<p><strong>Answer</strong></p>
+<p>VideoAgent supports ordered image, video, and audio references; text-to-image and image-to-image references for Characters and Scenes; text-to-video and image-to-video Shots; and up to 30-second Kling 4.0 Shots with 21:9, 16:9, 9:16, or 1:1 output. For Kling 4.0, the installed CLI declares ten image slots, five video slots, and three audio slots, with a combined reference limit of fifteen. The Agent submits only a reference set supported by the selected model.</p>
+<p><strong>Follow-up:</strong> How are keyframes ordered?</p>
+<p><strong>Answer</strong></p>
+<p>References are sent in the order of their <code>@asset-id</code> occurrences in the Shot prompt. The UI and provider boundary preserve that order. Keyframe slot mapping remains model-dependent: a keyframe-capable image-to-video model maps first, middle, and tail frames, while an omni-reference model receives ordered image, video, and audio inputs.</p>
+<h2 id="q23-how-do-celery-and-redis-work-together-in-videoagent">Q23. How do Celery and Redis work together in VideoAgent?</h2>
+<p><strong>Answer</strong></p>
+<p>The generation endpoint first creates or restores a <code>GenerationJob</code>, reserves credits, submits the Provider task, and commits the database transaction. The API then calls <code>poll_generation_job.delay(job_id)</code>. Celery uses Redis DB 0 as the Broker for task delivery and Redis DB 1 as the Result Backend. A Worker consumes the task, opens its own database Session, and calls <code>refresh_generation_job</code> once. If the Provider is still running, the task calls <code>self.retry</code> with <code>5 × 2^retries</code> seconds of backoff capped at 120 seconds until the job succeeds, fails, or is cancelled.</p>
+<p>Redis carries task messages and execution results only. <code>GenerationJob</code>, Shot state, credit entries, and asset ownership remain in the relational database as the source of truth. Celery uses late acknowledgement, re-delivery after a lost Worker, one-task prefetch, and broker reconnect at startup.</p>
+<p><strong>Follow-up:</strong> What happens when Redis or Celery is unavailable?</p>
+<p><strong>Answer</strong></p>
+<p>An already accepted Provider task is not discarded. The API persists the Job before attempting Celery enqueue. If Redis is unavailable, the endpoint still returns the persisted Job, and the client can poll <code>GET /jobs/{id}</code> directly. After Redis recovers, durable Jobs can be reconciled or re-enqueued instead of treating the volatile queue as the source of truth.</p>
+<p><strong>Follow-up:</strong> Why not poll inside the FastAPI request?</p>
+<p><strong>Answer</strong></p>
+<p>Video generation can take minutes. Holding the request consumes Web connections and workers and cannot survive a process restart. Background Workers isolate long-running work, scale independently, limit Provider concurrency, and apply one retry policy.</p>
+<h2 id="q24-where-is-the-agent-s-core-code">Q24. Where is the Agent's core code?</h2>
+<p><strong>Answer</strong></p>
+<ul>
+<li><code>services/api/src/videoagent/api/agent.py</code>: message entry point, intent</li>
+<p>routing, Context and Activity recording, final-cut readiness checks, and persisted responses.</p>
+<li><code>services/api/src/videoagent/agent/graph.py</code>: the LangGraph definition. It</li>
+<p>currently runs one <code>plan_storyboard</code> node and reports activity.</p>
+<li><code>services/api/src/videoagent/agent/planner.py</code>: deterministic local planner,</li>
+<p>OpenAI-compatible/DeepSeek planner, schema fallback, and local fallback after remote timeout.</p>
+<li><code>services/api/src/videoagent/services/agent_context.py</code>: bounded Context</li>
+<p>assembly from brief, conversation, storyboard, and Skill instructions.</p>
+<li><code>services/api/src/videoagent/services/agent_activity.py</code>: durable,</li>
+<p>user-visible Agent lifecycle events.</p>
+<li><code>apps/web/src/components/project-workspace.tsx</code>: Agent chat, approvals,</li>
+<p>execution trace, error dialogs, and workspace interactions.</p>
+</ul>
+<p>The primary path is message ingestion → Context assembly → Skill resolution → LangGraph planning → <code>StoryboardPlan</code> validation → Direction/Vision state persistence → streamable reply. If the remote planner times out or returns unparseable output, the response explicitly states that the local planner was used; the request never waits indefinitely.</p></article>
     </main>
     <script src="../docs.js?v=33"></script>
   </body>

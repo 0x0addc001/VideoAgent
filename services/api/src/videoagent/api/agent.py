@@ -15,7 +15,7 @@ from videoagent.api.dependencies import (
     get_storyboard_agent,
 )
 from videoagent.config import Settings
-from videoagent.models import Conversation, Message, User
+from videoagent.models import Asset, Conversation, Message, User
 from videoagent.schemas import (
     AgentMessageCreate,
     AgentTurnResponse,
@@ -47,6 +47,82 @@ FINAL_CUT_REQUEST = re.compile(
     r")",
     re.IGNORECASE,
 )
+FINAL_CUT_QUESTION = re.compile(
+    r"(?:"
+    r"(?:can|could|should|what|how|why|when|is|are)\b.*"
+    r"(?:final\s+cut|film)"
+    r"|(?:final\s+cut|film).*\b(?:ready|possible|missing|required)\b"
+    r"|(?:可以|能否|能不能|是否|还差|需要什么|怎么|如何|为什么|什么时候).*"
+    r"(?:成片|最终视频)"
+    r"|(?:成片|最终视频).*(?:可以吗|能吗|还差|需要什么|怎么样)"
+    r")",
+    re.IGNORECASE,
+)
+
+
+def is_final_cut_request(content: str) -> bool:
+    return bool(FINAL_CUT_REQUEST.search(content)) and not bool(FINAL_CUT_QUESTION.search(content))
+
+
+async def final_cut_readiness(
+    session: AsyncSession,
+    *,
+    project_id: UUID,
+    storyboard: StoryboardRead,
+) -> tuple[int, int, list[int]]:
+    shot_ids = [shot.id for shot in storyboard.shots]
+    generated_ids: set[UUID] = set()
+    if shot_ids:
+        generated_shot_ids = (
+            await session.scalars(
+                select(Asset.shot_id).where(
+                    Asset.project_id == project_id,
+                    Asset.shot_id.in_(shot_ids),
+                    Asset.kind == "generated",
+                    Asset.deleted_at.is_(None),
+                )
+            )
+        ).all()
+        generated_ids = {shot_id for shot_id in generated_shot_ids if shot_id is not None}
+    missing = [shot.index + 1 for shot in storyboard.shots if shot.id not in generated_ids]
+    return len(shot_ids), len(shot_ids) - len(missing), missing
+
+
+def final_cut_readiness_message(
+    *,
+    locale: str,
+    total: int,
+    missing: list[int],
+) -> str:
+    if total == 0:
+        return (
+            "当前还没有可合成的镜头。请先完成故事板并生成镜头。"
+            if locale == "zh-CN"
+            else (
+                "There are no Shots to assemble yet. "
+                "Finish the storyboard and generate the Shots first."
+            )
+        )
+    if not missing:
+        return (
+            "全部镜头都已生成，可以合成成片。请明确回复“生成成片”开始合成。"
+            if locale == "zh-CN"
+            else (
+                "Every Shot is generated and the final cut is ready to assemble. "
+                "Reply with “Render the final cut” to start."
+            )
+        )
+    labels = "、".join(f"Shot {index}" for index in missing)
+    if locale == "zh-CN":
+        return (
+            f"当前还不能合成成片：{total} 个 Shot 中还有 {len(missing)} 个未生成"
+            f"（{labels}）。请先在 Shots 页完成生成，再明确回复“生成成片”。"
+        )
+    return (
+        f"The final cut is not ready: {len(missing)} of {total} Shots are still "
+        f"ungenerated ({', '.join(f'Shot {index}' for index in missing)}). "
+        "Generate them in Shots, then reply with “Render the final cut”."
+    )
 
 
 async def get_conversation(
@@ -149,14 +225,99 @@ async def create_agent_message(
             ),
         )
 
-    if FINAL_CUT_REQUEST.search(payload.content):
-        storyboard = await load_storyboard(session, project.id)
-        if storyboard is None:
-            raise RuntimeError("Workflow response is missing a storyboard")
+    storyboard = await load_storyboard(session, project.id)
+    if storyboard is not None and FINAL_CUT_QUESTION.search(payload.content):
+        storyboard_read = StoryboardRead.model_validate(storyboard)
+        total, ready, missing = await final_cut_readiness(
+            session,
+            project_id=project.id,
+            storyboard=storyboard_read,
+        )
+        await reporter.emit(
+            "state",
+            "Final-cut readiness checked",
+            f"{ready}/{total} Shots generated · missing={missing}",
+        )
+        assistant_message = Message(
+            conversation_id=conversation.id,
+            role="assistant",
+            content=final_cut_readiness_message(
+                locale=locale,
+                total=total,
+                missing=missing,
+            ),
+            metadata_json={
+                "action": "final_cut_status",
+                "ready": not missing,
+                "generated_shots": ready,
+                "total_shots": total,
+                "missing_shot_indexes": missing,
+            },
+        )
+        session.add(assistant_message)
+        await session.flush()
+        await reporter.emit(
+            "reply",
+            "Final-cut readiness reply ready",
+            "Returned the current delivery readiness without starting a render.",
+        )
+        await session.refresh(user_message)
+        await session.refresh(assistant_message)
+        return AgentTurnResponse(
+            user_message=MessageRead.model_validate(user_message),
+            assistant_message=MessageRead.model_validate(assistant_message),
+            storyboard=storyboard_read,
+            workflow=WorkflowStateRead.model_validate(workflow),
+        )
+
+    if storyboard is not None and is_final_cut_request(payload.content):
+        storyboard_read = StoryboardRead.model_validate(storyboard)
+        total, ready, missing = await final_cut_readiness(
+            session,
+            project_id=project.id,
+            storyboard=storyboard_read,
+        )
+        if missing:
+            await reporter.emit(
+                "state",
+                "Final cut needs more Shots",
+                f"{ready}/{total} Shots generated · missing={missing}",
+            )
+            assistant_message = Message(
+                conversation_id=conversation.id,
+                role="assistant",
+                content=final_cut_readiness_message(
+                    locale=locale,
+                    total=total,
+                    missing=missing,
+                ),
+                metadata_json={
+                    "action": "final_cut_blocked",
+                    "ready": False,
+                    "generated_shots": ready,
+                    "total_shots": total,
+                    "missing_shot_indexes": missing,
+                },
+            )
+            session.add(assistant_message)
+            await session.flush()
+            await reporter.emit(
+                "reply",
+                "Final-cut blocker reply ready",
+                "Returned the missing Shot list without invoking the export job.",
+            )
+            await session.refresh(user_message)
+            await session.refresh(assistant_message)
+            return AgentTurnResponse(
+                user_message=MessageRead.model_validate(user_message),
+                assistant_message=MessageRead.model_validate(assistant_message),
+                storyboard=storyboard_read,
+                workflow=WorkflowStateRead.model_validate(workflow),
+            )
         await reporter.emit(
             "state",
             "Preparing the final cut",
-            f"Assembling all {len(storyboard.shots)} completed Shots.",
+            f"Assembling all {total} completed Shots.",
             "running",
         )
         export = await export_project(
@@ -193,7 +354,7 @@ async def create_agent_message(
         return AgentTurnResponse(
             user_message=MessageRead.model_validate(user_message),
             assistant_message=MessageRead.model_validate(assistant_message),
-            storyboard=StoryboardRead.model_validate(storyboard),
+            storyboard=storyboard_read,
             workflow=WorkflowStateRead.model_validate(workflow),
         )
 

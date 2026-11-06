@@ -3146,7 +3146,7 @@ export function LandingPage({
             onClick={openPublisher}
             type="button"
           >
-            <Play aria-hidden="true" className="community-publish-icon" />
+            <Film aria-hidden="true" className="community-publish-icon" />
             <span>{content.hots.publish}</span>
           </button>
           {visibleHots.map((item, index) => (

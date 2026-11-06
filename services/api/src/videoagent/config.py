@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     llm_base_url: str | None = None
     llm_api_key: str | None = None
     llm_model: str | None = None
+    llm_timeout_seconds: int = Field(default=45, ge=5, le=300)
     vision_base_url: str | None = None
     vision_api_key: str | None = None
     vision_models: list[str] = []

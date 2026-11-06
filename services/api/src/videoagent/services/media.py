@@ -4,6 +4,7 @@ import secrets
 import shutil
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Literal
 from uuid import UUID, uuid4
 
 import httpx
@@ -195,18 +196,19 @@ def _image_media(path: Path) -> tuple[str, str]:
     )
 
 
-async def materialize_character_image(
+async def materialize_visual_image(
     session: AsyncSession,
     *,
     owner_id: UUID,
     project_id: UUID,
-    character_id: UUID,
+    resource_type: Literal["character", "scene"],
+    resource_id: UUID,
     result_url: str,
     settings: Settings,
 ) -> Asset:
     media_dir = Path(settings.media_dir).expanduser().resolve()  # noqa: ASYNC240
     media_dir.mkdir(parents=True, exist_ok=True)
-    raw_path = media_dir / f".character-{uuid4().hex}.download"
+    raw_path = media_dir / f".{resource_type}-{uuid4().hex}.download"
     try:
         if result_url.startswith("mock://"):
             source = _mock_image_source()
@@ -231,7 +233,7 @@ async def materialize_character_image(
                 message="The image provider returned no usable result URL.",
             )
         content_type, extension = _image_media(raw_path)
-        storage_key = f"character-{character_id}-{uuid4().hex}{extension}"
+        storage_key = f"{resource_type}-{resource_id}-{uuid4().hex}{extension}"
         destination = media_dir / storage_key
         raw_path.replace(destination)
     except Exception:
@@ -251,6 +253,26 @@ async def materialize_character_image(
     session.add(asset)
     await session.flush()
     return asset
+
+
+async def materialize_character_image(
+    session: AsyncSession,
+    *,
+    owner_id: UUID,
+    project_id: UUID,
+    character_id: UUID,
+    result_url: str,
+    settings: Settings,
+) -> Asset:
+    return await materialize_visual_image(
+        session,
+        owner_id=owner_id,
+        project_id=project_id,
+        resource_type="character",
+        resource_id=character_id,
+        result_url=result_url,
+        settings=settings,
+    )
 
 
 async def materialize_generation_result(

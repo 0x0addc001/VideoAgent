@@ -57,11 +57,11 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v2.0</td>
+<td>v2.1</td>
 </tr>
 <tr>
 <td>Updated</td>
-<td>2026-11-04</td>
+<td>2026-11-06</td>
 </tr>
 <tr>
 <td>Backend framework</td>
@@ -73,10 +73,10 @@
 </tr>
 <tr>
 <td>Model</td>
-<td>Pippit/Seedance 2.5 Draft, Pippit/Seedance 2.5, Pippit/Seedance 2.0 Fast VIP, Pippit/Seedance 2.0 VIP, Pippit/Seedance 2.0 Mini Preview, Pippit/Seedance 2.0 Mini, Pippit/Wan 3.0, Pippit/HappyHorse 1.1, Kling/Kling Video 2.5, Kling/Kling Video 2.6, Kling/Kling Video O1, Kling/Kling Video 3.0, Kling/Kling Video 3.0 Omni, Kling/Kling Video 3.0 Turbo, Kling/Kling Video 4.0, Kling/Kling 2.6 Motion Control, Kling/Kling 3.0 Motion Control, Kling/Kling Image 3.0 Omni, Kling/Kling Image O1, Kling/Kling Image 3.0, Kling/Kling Image 2.1</td>
+<td>Pippit/Seedance 2.5 Draft, Pippit/Seedance 2.5, Pippit/Seedance 2.0 Fast VIP, Pippit/Seedance 2.0 VIP, Pippit/Seedance 2.0 Mini Preview, Pippit/Seedance 2.0 Mini, Pippit/Wan 3.0, Pippit/HappyHorse 1.1, Kling/Kling Video 2.5, Kling/Kling Video 2.6, Kling/Kling Video O1, Kling/Kling Video 3.0, Kling/Kling Video 3.0 Omni, Kling/Kling Video 3.0 Turbo, Kling/Kling Video 4.0, Kling/Kling Video 4.0 Flash, Kling/Kling 2.6 Motion Control, Kling/Kling 3.0 Motion Control, Kling/Kling Image 3.0 Omni, Kling/Kling Image O1, Kling/Kling Image 3.0, Kling/Kling Image 2.1</td>
 </tr>
 </tbody></table></div>
-<p>VideoAgent integrates Pippit CLI and the China-region Kling CLI behind one provider boundary. Pippit provides video submission, task queries, and credits. Kling CLI provides text-to-video, image-to-video, motion control, and multimodal reference tools.</p>
+<p>VideoAgent integrates Pippit CLI and the China-region Kling CLI behind one provider boundary. Pippit provides video submission, task queries, and credits. Kling CLI provides text-to-video, image-to-video, motion control, and ordered multimodal reference tools.</p>
 <h2 id="1-purpose">1. Purpose</h2>
 <p>This document describes VideoAgent's product architecture, core modules, directing workflow, data model, API contracts, provider integrations, security, testing, and deployment.</p>
 <h2 id="2-product-overview">2. Product Overview</h2>
@@ -103,14 +103,15 @@
 <li>Storyboard replacement and versioning.</li>
 <li>Cost estimation and explicit generation approval.</li>
 <li>Pippit CLI text-to-video submission, task polling, and credit query.</li>
-<li>Kling China-region CLI text-to-video, motion control, and multimodal</li>
+<li>Kling China-region CLI text-to-video, motion control, and ordered multimodal</li>
 <p>reference capabilities.</p>
 <li>Mock Provider and Celery polling.</li>
 <li>Final Cut visual evaluation.</li>
 <li>Videos feed playback, author, likes, and publishing.</li>
 <li>English and Chinese documentation generated from paired Markdown sources.</li>
 <li>Project-level image, video, and audio uploads with MIME, signature, and size validation.</li>
-<li>FFmpeg composition with 16:9, 9:16, and 1:1 deliveries, covers, captions, and soundtracks.</li>
+<li>FFmpeg composition with 21:9, 16:9, 9:16, and 1:1 deliveries, covers,</li>
+<p>captions, and soundtracks.</p>
 <li>Time-limited share links with private/public permissions, expiry, revocation, and access counts.</li>
 <li>Per-user VideoAgent credit accounts with reservation and idempotent refunds.</li>
 <li>An administration console for users, credits, jobs, invites, launch controls,</li>
@@ -209,6 +210,8 @@ Celery Worker + Redis
 <li>OpenAI-compatible when <code>VIDEOAGENT_LLM_API_KEY</code> and</li>
 <p><code>VIDEOAGENT_LLM_MODEL</code> are configured.</p>
 <li>Deterministic and local otherwise.</li>
+<li>Remote calls use <code>VIDEOAGENT_LLM_TIMEOUT_SECONDS</code>; a timeout or invalid</li>
+<p>response switches that run to the deterministic local planner with an explicit user-visible notice.</p>
 </ul>
 <p>Project, conversation, storyboard, Character, Shot, and GenerationJob state live in the database. Approval, generation, review, and polling boundaries are coordinated through FastAPI, Celery, and the workspace client.</p>
 <h3 id="7-1-context-and-memory">7.1 Context and Memory</h3>
@@ -350,7 +353,7 @@ query-result</code></pre>
 <p>Review uses the same task-oriented card structure as other Skills.</p>
 <p>Selecting a skill preloads a concrete prompt in the Agents composer. The Agents composer also includes a Skill selector. Signed-in users can publish a skill under their own <code>&lt;user_id&gt;/&lt;skill_id&gt;</code> namespace. Public Skills are discoverable to other signed-in users.</p>
 <p>The catalogue classifies Skills as Generation, Story, Workflow, Post, Review, or Utility. Engagement is stored as one <code>skill_engagement_likes</code> row per user and stable Skill key and one <code>skill_engagement_usages</code> row per user and key. The leaderboard score combines these de-duplicated signals as <code>uses × 2 + likes × 3</code>. Videos ranks by one <code>hots_likes</code> row per user and post. Authors cannot create engagement against their own content. The UI exposes top-three reward projections; credit settlement remains an audited operating action.</p>
-<p>The Model selector uses the verified live catalogue: seven Kling video models and eight Pippit video models, plus Auto. Options use <code>Provider/Model</code> naming so users can distinguish model families.</p>
+<p>The Model selector uses the verified live catalogue: eight Kling video models and eight Pippit video models, plus Auto. Options use <code>Provider/Model</code> naming so users can distinguish model families.</p>
 <p>The Agents composer includes production playbooks for product ads, creator vlogs, micro drama, music videos, localization, and batch variants. Selecting a playbook sets the prompt, Skill, Hook, style, frame, duration, and review mode as one coherent starting point. Playbooks use toggle behavior: selecting the active playbook again restores the pre-playbook draft. Hook controls the first-three-second strategy: visual impact, narrative twist, spoken hook, sound cue, or proof first.</p>
 <h2 id="10-data-model">10. Data Model</h2>
 <div class="table-wrap"><table><thead><tr>
@@ -509,8 +512,8 @@ query-result</code></pre>
 <td><code>POST /characters/{id}/estimate</code>, <code>/assets</code>, and <code>/generate</code></td>
 </tr>
 <tr>
-<td>Scene references</td>
-<td><code>POST /scenes/{id}/assets</code>, <code>PATCH /projects/{id}/storyboard/scenes/{scene_id}</code></td>
+<td>Scene assets</td>
+<td><code>POST /scenes/{id}/estimate</code>, <code>/assets</code>, and <code>/generate</code>; <code>PATCH /projects/{id}/storyboard/scenes/{scene_id}</code></td>
 </tr>
 <tr>
 <td>Agent</td>

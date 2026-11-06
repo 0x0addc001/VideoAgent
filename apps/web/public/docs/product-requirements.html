@@ -50,11 +50,11 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v1.6</td>
+<td>v1.7</td>
 </tr>
 <tr>
 <td>Updated</td>
-<td>2026-11-04</td>
+<td>2026-11-06</td>
 </tr>
 </tbody></table></div>
 <h2 id="1-product-goal">1. Product Goal</h2>
@@ -197,6 +197,8 @@ video_agent/agent_handoff</code></pre>
 <p>defined Scene, so every Shot is organized against reusable production objects.</p>
 <li>Characters and Scenes own their uploaded references. Each object directory</li>
 <p>groups its images and selected reference. Scenes retain a physical location.</p>
+<li>Character and Scene pages support text-to-image and image-to-image generation</li>
+<p>with task-level image-model selection.</p>
 <li>While Agents are planning, the conversation shows durable execution steps for</li>
 <p>context assembly, memory loading, Skill resolution, planning, validation, project-state updates, and reply composition.</p>
 <li>The execution trace reflects completed or active work only. It must not</li>
@@ -213,16 +215,20 @@ video_agent/agent_handoff</code></pre>
 <p>provide draggable separators.</p>
 <li>Character and shot Generation pages support an uploaded image, reference-image</li>
 <p>generation, or direct text generation where the selected model supports the mode. Generated media can be downloaded.</p>
+<li>Shot references may combine ordered image, video, and audio assets up to the</li>
+<p>selected model's declared limit.</p>
+<li>The Shot page can override model, task type, audio, and output resolution.</li>
+<p>Task types include <code>Auto</code>, reference remake, edit, and extend. Overrides apply only to the current Shot and participate in credit estimation.</p>
 <li>Uploads must pass content-type, file-signature, and size validation.</li>
 <li>Users can inspect estimated credits and explicitly approve generation.</li>
 <li>A final cut can be composed only after every storyboard Shot has a generated</li>
 <p>result. Deliveries support 21:9, 16:9, 9:16, and 1:1 formats.</p>
 <li>Shot duration may extend to 30 seconds when the selected model supports it;</li>
 <p>the provider capability remains authoritative.</p>
-<li>Final-cut composition is requested in conversation, for example “Render the</li>
-<p>final cut”; the editor does not expose a separate render button.</p>
-<li>Export supports captions, an uploaded soundtrack, an automatic cover, and</li>
-<p>private or public permission.</p>
+<li>Final-cut composition is normally requested in conversation, for example</li>
+<p>“Render the final cut”. An existing version can also adjust its frames, soundtrack or voice-over, and line-by-line captions before creating a new delivery version.</p>
+<li>Export supports 21:9, 16:9, 9:16, and 1:1, captions, an uploaded soundtrack,</li>
+<p>an automatic cover, and private or public permission.</p>
 <li>Each delivery can be downloaded, shared through an expiring asset link, or</li>
 <p>published to Videos.</p>
 <li>Project sharing creates a collaboration link with view or edit permission.</li>

@@ -115,11 +115,26 @@ class KlingCLIVideoProvider:
             raise KlingCLIError(f"Unsupported Kling generation mode: {request.generation_mode}")
         if not request.model:
             raise KlingCLIError("A Kling model is required.")
-        if request.generation_mode == "image_to_video" and not request.reference_image_path:
+        image_paths = list(
+            dict.fromkeys(
+                [
+                    *request.reference_image_paths,
+                    *([request.reference_image_path] if request.reference_image_path else []),
+                ]
+            )
+        )
+        if request.generation_mode == "image_to_video" and not image_paths:
             raise KlingCLIError("Kling image-to-video requires a reference image.")
+        use_omni_reference = bool(
+            request.reference_video_paths
+            or request.reference_audio_paths
+            or len(image_paths) > 1
+            or request.task_type in {"reference", "edit", "extend"}
+        )
+        command = "omni_ref_video" if use_omni_reference else request.generation_mode
         args = [
             "--quiet",
-            request.generation_mode,
+            command,
             "--model",
             request.model,
             "--duration",
@@ -127,8 +142,16 @@ class KlingCLIVideoProvider:
             "--aspect_ratio",
             request.aspect_ratio,
         ]
-        if request.reference_image_path:
-            args.extend(["--image", request.reference_image_path])
+        if request.resolution:
+            args.extend(["--resolution", request.resolution])
+        if request.audio_enabled is not None and use_omni_reference:
+            args.extend(["--enable_audio", "true" if request.audio_enabled else "false"])
+        for path in image_paths:
+            args.extend(["--image", path])
+        for path in request.reference_video_paths:
+            args.extend(["--video", path])
+        for path in request.reference_audio_paths:
+            args.extend(["--audio", path])
         args.append(request.prompt)
         body = await self._run_json(*args)
         generation_id = body.get("generationId") or body.get("generation_id")

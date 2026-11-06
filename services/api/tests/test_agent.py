@@ -5,7 +5,9 @@ from uuid import UUID
 import pytest
 
 from tests.conftest import register
+from tests.test_generation import project_with_shot
 from videoagent.agent.planner import OpenAIStoryboardPlanner, PlanningContext
+from videoagent.api.agent import is_final_cut_request
 
 
 @pytest.mark.api
@@ -80,6 +82,54 @@ async def test_agent_rejects_empty_message(client):
     )
 
     assert response.status_code == 422
+
+
+@pytest.mark.unit
+def test_final_cut_questions_are_not_render_commands():
+    assert not is_final_cut_request("现在可以生成成片了吗，还差什么")
+    assert not is_final_cut_request("Can I render the final cut yet?")
+    assert is_final_cut_request("生成成片")
+    assert is_final_cut_request("Render the final cut")
+
+
+@pytest.mark.api
+async def test_agent_answers_final_cut_readiness_without_starting_export(client):
+    project, _shot = await project_with_shot(client)
+
+    response = await client.post(
+        f"/api/v1/projects/{project['id']}/messages",
+        json={
+            "content": "现在可以生成成片了吗，还差什么",
+            "run_id": "00000000-0000-0000-0000-000000000901",
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["assistant_message"]["metadata"] == {
+        "action": "final_cut_status",
+        "ready": False,
+        "generated_shots": 0,
+        "total_shots": 1,
+        "missing_shot_indexes": [1],
+    }
+    assert "还有 1 个未生成" in body["assistant_message"]["content"]
+
+
+@pytest.mark.api
+async def test_agent_pauses_final_cut_command_until_all_shots_exist(client):
+    project, _shot = await project_with_shot(client)
+
+    response = await client.post(
+        f"/api/v1/projects/{project['id']}/messages",
+        json={
+            "content": "生成成片",
+            "run_id": "00000000-0000-0000-0000-000000000902",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["assistant_message"]["metadata"]["action"] == ("final_cut_blocked")
 
 
 @pytest.mark.api
@@ -183,6 +233,29 @@ async def test_openai_compatible_planner_falls_back_when_json_schema_is_unsuppor
     assert result.storyboard.shots[0].prompt_en == "A cinematic product reveal"
     assert result.storyboard.characters
     assert result.storyboard.scenes
+
+
+@pytest.mark.unit
+async def test_remote_planner_timeout_uses_local_fallback():
+    class TimedOutStructuredModel:
+        async def ainvoke(self, prompt: str) -> object:
+            raise TimeoutError("planner request timed out")
+
+    planner = object.__new__(OpenAIStoryboardPlanner)
+    planner._structured = TimedOutStructuredModel()  # type: ignore[attr-defined]
+
+    result = await planner.plan(
+        PlanningContext(
+            locale="en",
+            project_title="Fallback",
+            project_brief="A product story",
+            user_message="Build the outline",
+            workflow_stage="outline",
+        )
+    )
+
+    assert result.storyboard.shots
+    assert "local planning fallback" in result.assistant_message
 
 
 @pytest.mark.api

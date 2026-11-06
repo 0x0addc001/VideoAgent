@@ -232,9 +232,7 @@ async def toggle_hots_like(
         await session.delete(existing)
     await session.flush()
     likes = (
-        await session.scalar(
-            select(func.count(HotsLike.id)).where(HotsLike.post_id == post.id)
-        )
+        await session.scalar(select(func.count(HotsLike.id)).where(HotsLike.post_id == post.id))
         or 0
     )
     is_liked = existing is None

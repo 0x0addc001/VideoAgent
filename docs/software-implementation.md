@@ -2,11 +2,11 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v2.0 |
-| 更新日期 | 2026-11-04 |
+| 文档版本 | v2.1 |
+| 更新日期 | 2026-11-06 |
 | 后端框架 | Python + FastAPI |
 | 前端框架 | Next.js + TypeScript |
-| 模型 | Pippit/Seedance 2.5 Draft、Pippit/Seedance 2.5、Pippit/Seedance 2.0 Fast VIP、Pippit/Seedance 2.0 VIP、Pippit/Seedance 2.0 Mini 体验版、Pippit/Seedance 2.0 Mini、Pippit/Wan 3.0、Pippit/HappyHorse 1.1、Kling/Kling Video 2.5、Kling/Kling Video 2.6、Kling/Kling Video O1、Kling/Kling Video 3.0、Kling/Kling Video 3.0 Omni、Kling/Kling Video 3.0 Turbo、Kling/Kling Video 4.0、Kling/Kling 2.6 Motion Control、Kling/Kling 3.0 Motion Control、Kling/Kling Image 3.0 Omni、Kling/Kling Image O1、Kling/Kling Image 3.0、Kling/Kling Image 2.1 |
+| 模型 | Pippit/Seedance 2.5 Draft、Pippit/Seedance 2.5、Pippit/Seedance 2.0 Fast VIP、Pippit/Seedance 2.0 VIP、Pippit/Seedance 2.0 Mini 体验版、Pippit/Seedance 2.0 Mini、Pippit/Wan 3.0、Pippit/HappyHorse 1.1、Kling/Kling Video 2.5、Kling/Kling Video 2.6、Kling/Kling Video O1、Kling/Kling Video 3.0、Kling/Kling Video 3.0 Omni、Kling/Kling Video 3.0 Turbo、Kling/Kling Video 4.0、Kling/Kling Video 4.0 Flash、Kling/Kling 2.6 Motion Control、Kling/Kling 3.0 Motion Control、Kling/Kling Image 3.0 Omni、Kling/Kling Image O1、Kling/Kling Image 3.0、Kling/Kling Image 2.1 |
 
 ## 1. 文档目的
 
@@ -19,7 +19,7 @@
 - 蓝色播放键品牌、无框标签页图标和激活图标填充/线框反转。
 - 首页连续视频轮播、流式主标语、Skill/Hook 选择器、场景策略、自定义透明下拉和 Action 生成入口。
 - 创作输入框根据 `scrollHeight` 自动增高，并在输入非空时隐藏示例灵感；策略保持可用，重复点击当前项会恢复应用前草稿。
-- 模型下拉框使用统一模型元数据，展示 Pippit 8 个、Kling 7 个当前可用的视频模型及 Provider。
+- 模型下拉框使用统一模型元数据，展示 Pippit 8 个、Kling 8 个当前可用的视频模型及 Provider。
 - Skills 使用单一可搜索目录，显示 `user_id/skill_id`；原厂商能力使用厂商命名空间（如 `kling`），跨 Provider 工作流使用 `video_agent`。
 - Skills 提供分类筛选、综合榜单、点赞和去重使用信号；公开 Skill 对其他登录用户可见，作者不能给自己点赞。
 - Videos 支持搜索、循环视频、作者、喜欢数、发布，以及带 Skill 的场景复用。
@@ -204,9 +204,10 @@ START → plan_storyboard → END
   → 投递 Celery 轮询任务
 ```
 
-角色图片使用 `POST /characters/{character_id}/generate`。服务端校验图片引用、
-预扣积分，再调用 Kling 国内版 CLI 的 `text_to_image` 或 `image_to_image`；
-生成文件写入项目媒体目录并作为可下载 Asset 返回。
+角色与场景图片使用 `POST /characters/{character_id}/generate` 和
+`POST /scenes/{scene_id}/generate`。服务端校验项目内图片引用、预扣积分，再调用
+Kling 国内版 CLI 的 `text_to_image` 或 `image_to_image`；生成文件写入项目媒体目录，
+并作为可下载 Asset 归属到对应资源。
 
 如果相同镜头和 `Idempotency-Key` 已经存在，接口返回已有 Job，HTTP 状态为 200，不会再次提交 Provider。
 
@@ -462,6 +463,7 @@ task reference    → query-result   → JobStatus + result URL
 | PATCH | `/projects/{id}/storyboard/characters/{character_id}` | 编辑单个 Character |
 | PATCH | `/projects/{id}/storyboard/scenes/{scene_id}` | 编辑 Scene 名称、地点与 Prompt |
 | POST | `/scenes/{id}/assets` | 上传 Scene 参考图 |
+| POST | `/scenes/{id}/estimate`、`/generate` | Scene 图片估算与文生图/图生图生成 |
 | POST | `/shots/{id}/estimate` | 查询积分估算 |
 | POST | `/shots/{id}/generate` | 提交生成任务 |
 | GET | `/jobs/{id}` | 查询并刷新任务状态 |
@@ -610,6 +612,7 @@ docker compose -f deploy/docker-compose.yml up -d
 | `VIDEOAGENT_LLM_BASE_URL` | 空 | OpenAI-compatible Endpoint |
 | `VIDEOAGENT_LLM_API_KEY` | 空 | 模型密钥 |
 | `VIDEOAGENT_LLM_MODEL` | 空 | 模型名称 |
+| `VIDEOAGENT_LLM_TIMEOUT_SECONDS` | `45` | 远程 Planner 超时；超时后使用本地 Planner |
 | `VIDEOAGENT_MEDIA_DIR` | `.data/media` | 本地媒体目录 |
 | `VIDEOAGENT_MAX_UPLOAD_BYTES` | `100 MiB` | 单文件大小上限 |
 | `VIDEOAGENT_FFMPEG_COMMAND` | `ffmpeg` | FFmpeg 命令或路径 |

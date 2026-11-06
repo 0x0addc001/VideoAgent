@@ -2,16 +2,16 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v2.0 |
-| Updated | 2026-11-04 |
+| Document version | v2.1 |
+| Updated | 2026-11-06 |
 | Backend framework | Python + FastAPI |
 | Frontend framework | Next.js + TypeScript |
-| Model | Pippit/Seedance 2.5 Draft, Pippit/Seedance 2.5, Pippit/Seedance 2.0 Fast VIP, Pippit/Seedance 2.0 VIP, Pippit/Seedance 2.0 Mini Preview, Pippit/Seedance 2.0 Mini, Pippit/Wan 3.0, Pippit/HappyHorse 1.1, Kling/Kling Video 2.5, Kling/Kling Video 2.6, Kling/Kling Video O1, Kling/Kling Video 3.0, Kling/Kling Video 3.0 Omni, Kling/Kling Video 3.0 Turbo, Kling/Kling Video 4.0, Kling/Kling 2.6 Motion Control, Kling/Kling 3.0 Motion Control, Kling/Kling Image 3.0 Omni, Kling/Kling Image O1, Kling/Kling Image 3.0, Kling/Kling Image 2.1 |
+| Model | Pippit/Seedance 2.5 Draft, Pippit/Seedance 2.5, Pippit/Seedance 2.0 Fast VIP, Pippit/Seedance 2.0 VIP, Pippit/Seedance 2.0 Mini Preview, Pippit/Seedance 2.0 Mini, Pippit/Wan 3.0, Pippit/HappyHorse 1.1, Kling/Kling Video 2.5, Kling/Kling Video 2.6, Kling/Kling Video O1, Kling/Kling Video 3.0, Kling/Kling Video 3.0 Omni, Kling/Kling Video 3.0 Turbo, Kling/Kling Video 4.0, Kling/Kling Video 4.0 Flash, Kling/Kling 2.6 Motion Control, Kling/Kling 3.0 Motion Control, Kling/Kling Image 3.0 Omni, Kling/Kling Image O1, Kling/Kling Image 3.0, Kling/Kling Image 2.1 |
 
 VideoAgent integrates Pippit CLI and the China-region Kling CLI behind one
 provider boundary. Pippit provides video submission, task queries, and credits.
-Kling CLI provides
-text-to-video, image-to-video, motion control, and multimodal reference tools.
+Kling CLI provides text-to-video, image-to-video, motion control, and ordered
+multimodal reference tools.
 
 ## 1. Purpose
 
@@ -46,14 +46,15 @@ contains five isolated views:
 - Storyboard replacement and versioning.
 - Cost estimation and explicit generation approval.
 - Pippit CLI text-to-video submission, task polling, and credit query.
-- Kling China-region CLI text-to-video, motion control, and multimodal
+- Kling China-region CLI text-to-video, motion control, and ordered multimodal
   reference capabilities.
 - Mock Provider and Celery polling.
 - Final Cut visual evaluation.
 - Videos feed playback, author, likes, and publishing.
 - English and Chinese documentation generated from paired Markdown sources.
 - Project-level image, video, and audio uploads with MIME, signature, and size validation.
-- FFmpeg composition with 16:9, 9:16, and 1:1 deliveries, covers, captions, and soundtracks.
+- FFmpeg composition with 21:9, 16:9, 9:16, and 1:1 deliveries, covers,
+  captions, and soundtracks.
 - Time-limited share links with private/public permissions, expiry, revocation, and access counts.
 - Per-user VideoAgent credit accounts with reservation and idempotent refunds.
 - An administration console for users, credits, jobs, invites, launch controls,
@@ -132,6 +133,9 @@ The planner is:
 - OpenAI-compatible when `VIDEOAGENT_LLM_API_KEY` and
   `VIDEOAGENT_LLM_MODEL` are configured.
 - Deterministic and local otherwise.
+- Remote calls use `VIDEOAGENT_LLM_TIMEOUT_SECONDS`; a timeout or invalid
+  response switches that run to the deterministic local planner with an
+  explicit user-visible notice.
 
 Project, conversation, storyboard, Character, Shot, and GenerationJob state live in the
 database. Approval, generation, review, and polling boundaries are coordinated
@@ -264,7 +268,7 @@ Authors cannot create engagement against their own content. The UI exposes
 top-three reward projections; credit settlement remains an audited operating
 action.
 
-The Model selector uses the verified live catalogue: seven Kling video models
+The Model selector uses the verified live catalogue: eight Kling video models
 and eight Pippit video models, plus Auto. Options use `Provider/Model` naming
 so users can distinguish model families.
 
@@ -323,7 +327,7 @@ Base path: `/api/v1`
 | Storyboards | `GET` and `PUT /projects/{id}/storyboard` |
 | Storyboard order | `PATCH /projects/{id}/storyboard/order` |
 | Character image | `POST /characters/{id}/estimate`, `/assets`, and `/generate` |
-| Scene references | `POST /scenes/{id}/assets`, `PATCH /projects/{id}/storyboard/scenes/{scene_id}` |
+| Scene assets | `POST /scenes/{id}/estimate`, `/assets`, and `/generate`; `PATCH /projects/{id}/storyboard/scenes/{scene_id}` |
 | Agent | Get messages, send a message, and observe a run |
 | Agent activity | `GET /projects/{id}/agent-activity/{run_id}` |
 | Workspace | Folders, recent conversations, and drag-to-file conversation organization |

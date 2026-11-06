@@ -1,4 +1,5 @@
 import json
+import logging
 import re
 from typing import Literal, Protocol
 
@@ -7,6 +8,8 @@ from pydantic import BaseModel
 
 from videoagent.config import Settings
 from videoagent.schemas import CharacterInput, SceneInput, ShotInput, StoryboardReplace
+
+logger = logging.getLogger(__name__)
 
 
 class StoryboardPlan(BaseModel):
@@ -59,7 +62,10 @@ class LocalStoryboardPlanner:
         hook = hook_match.group(1).lower() if hook_match else "auto"
         duration_match = re.search(r"·\s*(\d+)s\s*·", context.project_brief)
         duration = min(15, max(1, int(duration_match.group(1)))) if duration_match else 5
-        aspect_match = re.search(r"·\s*(16:9|9:16|1:1)\s*·", context.project_brief)
+        aspect_match = re.search(
+            r"·\s*(21:9|16:9|9:16|1:1)\s*·",
+            context.project_brief,
+        )
         aspect_ratio = aspect_match.group(1) if aspect_match else "16:9"
         hook_guidance = {
             "visual": "Open with a striking, instantly readable visual.",
@@ -213,6 +219,8 @@ class OpenAIStoryboardPlanner:
             model=settings.llm_model,
             temperature=0.4,
             max_tokens=1800,
+            timeout=settings.llm_timeout_seconds,
+            max_retries=0,
         )
         self._structured = self._chat.with_structured_output(StoryboardPlan)
         self.display_name = f"LLM/{settings.llm_model}"
@@ -289,28 +297,63 @@ class OpenAIStoryboardPlanner:
             return await self._enforce_stage_plan(result, context)
         except Exception as exc:
             if "response_format" not in str(exc).lower():
-                raise
+                return await self._fallback_to_local(context, exc)
 
         schema = json.dumps(StoryboardPlan.model_json_schema(), ensure_ascii=False)
-        fallback = await self._chat.ainvoke(
-            [
-                (
-                    "system",
-                    "Return one valid JSON object only, with no Markdown fences. "
-                    f"It must validate against this JSON Schema: {schema}",
-                ),
-                ("human", prompt),
-            ]
-        )
+        try:
+            fallback = await self._chat.ainvoke(
+                [
+                    (
+                        "system",
+                        "Return one valid JSON object only, with no Markdown fences. "
+                        f"It must validate against this JSON Schema: {schema}",
+                    ),
+                    ("human", prompt),
+                ]
+            )
+        except Exception as exc:
+            return await self._fallback_to_local(context, exc)
         content = fallback.content
         if not isinstance(content, str):
-            raise TypeError("LLM returned a non-text structured response")
+            return await self._fallback_to_local(
+                context,
+                TypeError("LLM returned a non-text structured response"),
+            )
         start = content.find("{")
         end = content.rfind("}")
         if start < 0 or end < start:
-            raise ValueError("LLM did not return a JSON object")
-        result = StoryboardPlan.model_validate_json(content[start : end + 1])
+            return await self._fallback_to_local(
+                context,
+                ValueError("LLM did not return a JSON object"),
+            )
+        try:
+            result = StoryboardPlan.model_validate_json(content[start : end + 1])
+        except Exception as exc:
+            return await self._fallback_to_local(context, exc)
         return await self._enforce_stage_plan(result, context)
+
+    async def _fallback_to_local(
+        self,
+        context: PlanningContext,
+        error: Exception,
+    ) -> StoryboardPlan:
+        logger.warning(
+            "Remote storyboard planner failed; using local fallback: %s",
+            error,
+        )
+        plan = await LocalStoryboardPlanner().plan(context)
+        notice = (
+            "远程规划服务暂时不可用，本次已使用本地规划兜底； "
+            "你可以继续审阅和修改当前方案，稍后再重试远程规划。"
+            if context.locale == "zh-CN"
+            else (
+                "The remote planner is temporarily unavailable. "
+                "A local planning fallback was used for this run; you can keep "
+                "reviewing and editing this plan and retry the remote planner later."
+            )
+        )
+        plan.assistant_message = f"{plan.assistant_message}\n\n{notice}"
+        return plan
 
 
 def build_storyboard_planner(settings: Settings) -> StoryboardPlanner:

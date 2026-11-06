@@ -2,8 +2,8 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.5 |
-| Updated | 2026-11-04 |
+| Document version | v1.6 |
+| Updated | 2026-11-06 |
 | Base path | `/api/v1` |
 | Authentication | HttpOnly Session Cookie |
 | Request format | JSON with `credentials: "include"` |
@@ -283,8 +283,15 @@ Request:
   "approved": true,
   "generation_mode": "image_to_video",
   "reference_asset_id": "00000000-0000-0000-0000-000000000010",
+  "reference_asset_ids": [
+    "00000000-0000-0000-0000-000000000010",
+    "00000000-0000-0000-0000-000000000011"
+  ],
   "provider": "kling",
-  "model": "kling-video-v4_0"
+  "model": "kling-video-v4_0",
+  "resolution": "1080p",
+  "audio_enabled": true,
+  "task_type": "reference"
 }
 ```
 
@@ -294,6 +301,10 @@ Estimation and generation return `409 VISION_OBJECTS_REQUIRED` until the
 storyboard contains at least one Character and one Scene.
 `provider` and `model` are optional per-task overrides. Omit both to use the
 project default. Changing the override invalidates the previous estimate.
+`reference_asset_ids` accepts up to 15 ordered project image, video, or audio
+assets. Image-to-video also accepts the legacy `reference_asset_id` field.
+Providers that support multimodal references receive the ordered media set;
+`task_type` is `auto`, `reference`, `edit`, or `extend`.
 
 ### Character Image Generation
 
@@ -325,6 +336,11 @@ returns an `AssetRead` whose content can be previewed and downloaded through
 location, description, or prompts. `POST /scenes/{scene_id}/assets` uploads a
 scene reference image. The returned asset filename is namespaced to the scene so
 the workspace can keep it under that Scene directory.
+
+`POST /scenes/{scene_id}/estimate` and
+`POST /scenes/{scene_id}/generate` run scene text-to-image or image-to-image
+generation. The request accepts the same `provider` and `model` overrides as
+Character generation.
 
 ### Job Status
 
@@ -475,7 +491,7 @@ Export request:
 
 ```json
 {
-  "aspect_ratios": ["16:9", "9:16", "1:1"],
+  "aspect_ratios": ["21:9", "16:9", "9:16", "1:1"],
   "soundtrack_asset_id": null,
   "captions": "A generated product story",
   "permission": "private"
@@ -486,7 +502,9 @@ The export response contains delivery Assets and a generated cover. Export
 requires every storyboard Shot to have a generated result. The current
 implementation composes those generated shots with FFmpeg,
 normalizes each delivery ratio, applies a short crossfade between shots, and
-optionally includes captions and an uploaded soundtrack.
+optionally includes captions and an uploaded soundtrack. One request may return
+up to four delivery variants; each non-empty caption line is timed evenly across
+the assembled cut.
 
 Share request:
 

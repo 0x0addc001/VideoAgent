@@ -151,8 +151,8 @@ class PippitVideoProvider:
         )
 
     async def submit(self, request: GenerationRequest) -> ProviderJob:
-        if request.generation_mode != "text_to_video":
-            raise ValueError("Pippit currently supports text-to-video generation only.")
+        if request.generation_mode not in {"text_to_video", "image_to_video"}:
+            raise ValueError(f"Unsupported Pippit generation mode: {request.generation_mode}")
         duration = min(30, max(4, request.duration_seconds))
         args = [
             "generate-video",
@@ -167,8 +167,19 @@ class PippitVideoProvider:
         ]
         model = request.model or self._model or "Seedance_2.5_draft"
         args.extend(["--model", model])
-        if self._resolution:
-            args.extend(["--resolution", self._resolution])
+        resolution = request.resolution or self._resolution
+        if resolution:
+            args.extend(["--resolution", resolution])
+        if request.task_type != "auto":
+            args.extend(["--task-type", request.task_type])
+        for path in request.reference_image_paths:
+            args.extend(["--image", path])
+        if request.reference_image_path and not request.reference_image_paths:
+            args.extend(["--image", request.reference_image_path])
+        for path in request.reference_video_paths:
+            args.extend(["--video", path])
+        for path in request.reference_audio_paths:
+            args.extend(["--audio", path])
         payload = await self._run_json(*args)
         thread_id = payload.get("thread_id")
         run_id = payload.get("run_id")

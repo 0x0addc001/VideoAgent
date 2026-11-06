@@ -99,6 +99,34 @@ describe("ProjectWorkspace", () => {
                 created_at: "2026-11-03T00:00:02Z",
                 updated_at: "2026-11-03T00:00:02Z",
               },
+              {
+                id: "ref-image-1",
+                project_id: "project-1",
+                shot_id: null,
+                kind: "upload",
+                filename: "hero-reference.png",
+                content_type: "image/png",
+                byte_size: 512,
+                checksum: "image-checksum",
+                permission: "private",
+                content_url: "/api/v1/assets/ref-image-1/content",
+                created_at: "2026-11-03T00:00:01Z",
+                updated_at: "2026-11-03T00:00:01Z",
+              },
+              {
+                id: "ref-video-1",
+                project_id: "project-1",
+                shot_id: null,
+                kind: "upload",
+                filename: "motion-reference.mp4",
+                content_type: "video/mp4",
+                byte_size: 1024,
+                checksum: "video-checksum",
+                permission: "private",
+                content_url: "/api/v1/assets/ref-video-1/content",
+                created_at: "2026-11-03T00:00:01Z",
+                updated_at: "2026-11-03T00:00:01Z",
+              },
             ],
           }),
         );
@@ -182,7 +210,8 @@ describe("ProjectWorkspace", () => {
                   id: "shot-1",
                   index: 0,
                   description: "A quiet Copenhagen morning",
-                  prompt_en: "A quiet Copenhagen morning",
+                  prompt_en:
+                    "A quiet Copenhagen morning @ref-video-1 @ref-image-1",
                   prompt_zh: null,
                   duration_seconds: 5,
                   aspect_ratio: "16:9",
@@ -258,6 +287,79 @@ describe("ProjectWorkspace", () => {
           }),
         );
       }
+      if (
+        url.endsWith("/projects/project-1/storyboard/shots/shot-1") &&
+        init?.method === "PATCH"
+      ) {
+        return Promise.resolve(
+          Response.json({
+            id: "shot-1",
+            index: 0,
+            description: "A quiet Copenhagen morning",
+            prompt_en:
+              "A quiet Copenhagen morning @ref-video-1 @ref-image-1",
+            prompt_zh: null,
+            duration_seconds: 5,
+            aspect_ratio: "16:9",
+            generation_mode: "image_to_video",
+            status: "draft",
+            ...JSON.parse(String(init.body)),
+          }),
+        );
+      }
+      if (
+        url.endsWith("/projects/project-1/storyboard/scenes/scene-1") &&
+        init?.method === "PATCH"
+      ) {
+        return Promise.resolve(
+          Response.json({
+            id: "scene-1",
+            index: 0,
+            name: "Copenhagen canal",
+            description: "A quiet canal-side location at sunrise.",
+            location: "Nyhavn",
+            prompt_en: "Cinematic Copenhagen canal at sunrise",
+            prompt_zh: null,
+            ...JSON.parse(String(init.body)),
+          }),
+        );
+      }
+      if (url.endsWith("/scenes/scene-1/estimate") && init?.method === "POST") {
+        return Promise.resolve(
+          Response.json({
+            provider: "kling",
+            credits: 2,
+            duration_seconds: 0,
+          }),
+        );
+      }
+      if (url.endsWith("/scenes/scene-1/generate") && init?.method === "POST") {
+        expect(JSON.parse(String(init.body))).toMatchObject({
+          approved: true,
+          generation_mode: "text_to_image",
+          provider: "kling",
+          model: "kling-image-v3_0",
+        });
+        return Promise.resolve(
+          Response.json(
+            {
+              id: "scene-image-1",
+              project_id: "project-1",
+              shot_id: null,
+              kind: "generated",
+              filename: "scene-scene-1-generated.png",
+              content_type: "image/png",
+              byte_size: 512,
+              checksum: "checksum",
+              permission: "private",
+              content_url: "/api/v1/assets/scene-image-1/content",
+              created_at: "2026-11-03T00:00:03Z",
+              updated_at: "2026-11-03T00:00:03Z",
+            },
+            { status: 201 },
+          ),
+        );
+      }
       if (url.endsWith("/shots/shot-1/generate") && init?.method === "POST") {
         return Promise.resolve(
           Response.json({
@@ -270,6 +372,37 @@ describe("ProjectWorkspace", () => {
             result_url: null,
             error_code: null,
             created_at: "2026-11-03T00:00:02Z",
+          }),
+        );
+      }
+      if (
+        url.endsWith("/projects/project-1/exports") &&
+        init?.method === "POST"
+      ) {
+        expect(JSON.parse(String(init.body))).toMatchObject({
+          aspect_ratios: ["21:9", "16:9", "9:16", "1:1"],
+          captions: "A new director's cut",
+          permission: "private",
+        });
+        return Promise.resolve(
+          Response.json({
+            items: [
+              {
+                id: "final-cut-2",
+                project_id: "project-1",
+                shot_id: null,
+                kind: "export",
+                filename: "directors-cut-16x9.mp4",
+                content_type: "video/mp4",
+                byte_size: 2048,
+                checksum: "directors-cut-checksum",
+                permission: "private",
+                content_url: "/api/v1/assets/final-cut-2/content",
+                created_at: "2026-11-03T00:00:04Z",
+                updated_at: "2026-11-03T00:00:04Z",
+              },
+            ],
+            cover: null,
           }),
         );
       }
@@ -401,6 +534,27 @@ describe("ProjectWorkspace", () => {
     ).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Copenhagen canal" }));
     expect(await screen.findByLabelText("Scene location")).toHaveValue("Nyhavn");
+    fireEvent.click(screen.getByRole("button", { name: "Estimate credits" }));
+    await waitFor(() => {
+      expect(
+        fetchMock.mock.calls.some(
+          ([input, init]) =>
+            String(input).endsWith("/scenes/scene-1/estimate") &&
+            init?.method === "POST",
+        ),
+      ).toBe(true);
+    });
+    expect(await screen.findByText(/Estimated credits: 2/)).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Generate" }));
+    await waitFor(() => {
+      expect(
+        fetchMock.mock.calls.some(
+          ([input, init]) =>
+            String(input).endsWith("/scenes/scene-1/generate") &&
+            init?.method === "POST",
+        ),
+      ).toBe(true);
+    });
     fireEvent.click(screen.getByRole("button", { name: "Shot 1" }));
     expect(screen.getByTestId("workspace-header-canvas")).toHaveTextContent(
       "Storyboard",
@@ -427,6 +581,34 @@ describe("ProjectWorkspace", () => {
         });
         return true;
       });
+    fireEvent.change(screen.getByLabelText("Task type"), {
+      target: { value: "reference" },
+    });
+    fireEvent.change(screen.getByLabelText("Shot audio"), {
+      target: { value: "on" },
+    });
+    fireEvent.change(screen.getByLabelText("Shot resolution"), {
+      target: { value: "1080p" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Generate" }));
+    await waitFor(() => {
+      const generationCall = fetchMock.mock.calls.find(
+        ([input, init]) =>
+          String(input).endsWith("/shots/shot-1/generate") &&
+          init?.method === "POST",
+      );
+      const body = generationCall?.[1]?.body;
+      if (!generationCall || !body) return false;
+      expect(JSON.parse(String(body))).toMatchObject({
+        approved: true,
+        task_type: "reference",
+        audio_enabled: true,
+        resolution: "1080p",
+        reference_asset_ids: ["ref-video-1", "ref-image-1"],
+        reference_asset_id: "ref-image-1",
+      });
+      return true;
+    });
     expect(
       screen.queryByRole("button", { name: "Review" }),
     ).not.toBeInTheDocument();
@@ -471,8 +653,21 @@ describe("ProjectWorkspace", () => {
     ).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: /^Publish$/ }));
     expect(await screen.findByText("Published to Videos")).toBeVisible();
+    fireEvent.change(screen.getByLabelText("Captions"), {
+      target: { value: "A new director's cut" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Create version" }));
+    await waitFor(() => {
+      expect(
+        fetchMock.mock.calls.some(
+          ([input, init]) =>
+            String(input).endsWith("/projects/project-1/exports") &&
+            init?.method === "POST",
+        ),
+      ).toBe(true);
+    });
     },
-    30_000,
+    60_000,
   );
 
   it(
@@ -642,4 +837,109 @@ describe("ProjectWorkspace", () => {
     },
     10_000,
   );
+
+  it("shows a retryable dialog when the Agent backend fails", async () => {
+    window.history.replaceState({}, "", "/en/projects/project-error");
+    let messageAttempts = 0;
+    const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.endsWith("/projects/project-error/asset-selections")) {
+        return Promise.resolve(Response.json({ items: [] }));
+      }
+      if (url.endsWith("/projects/project-error")) {
+        return Promise.resolve(
+          Response.json({
+            id: "project-error",
+            title: "Recoverable project",
+            brief: "A short recovery test",
+            state: "draft",
+            access_permission: "owner",
+            created_at: "2026-11-06T00:00:00Z",
+            updated_at: "2026-11-06T00:00:00Z",
+          }),
+        );
+      }
+      if (url.endsWith("/projects/project-error/storyboard")) {
+        return Promise.resolve(
+          Response.json({
+            id: "storyboard-error",
+            project_id: "project-error",
+            version: 1,
+            shots: [],
+            characters: [],
+            scenes: [],
+          }),
+        );
+      }
+      if (url.endsWith("/projects/project-error/messages") && !init?.method) {
+        return Promise.resolve(Response.json({ items: [] }));
+      }
+      if (url.includes("/projects/project-error/agent-activity/")) {
+        return Promise.resolve(Response.json({ items: [] }));
+      }
+      if (url.endsWith("/projects/project-error/assets")) {
+        return Promise.resolve(Response.json({ items: [] }));
+      }
+      if (url.endsWith("/workspace")) {
+        return Promise.resolve(Response.json({ folders: [], recents: [] }));
+      }
+      if (url.endsWith("/projects/project-error/workflow")) {
+        return Promise.resolve(
+          Response.json({
+            project_id: "project-error",
+            stage: "concept",
+            status: "awaiting_approval",
+            updated_at: "2026-11-06T00:00:00Z",
+          }),
+        );
+      }
+      if (
+        url.endsWith("/projects/project-error/messages") &&
+        init?.method === "POST"
+      ) {
+        messageAttempts += 1;
+        return Promise.resolve(
+          Response.json(
+            {
+              error: {
+                code: "PLANNER_UNAVAILABLE",
+                message: "Planner unavailable",
+              },
+            },
+            { status: 503 },
+          ),
+        );
+      }
+      throw new Error(`Unexpected request: ${init?.method ?? "GET"} ${url}`);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <NextIntlClientProvider locale="en" messages={en}>
+        <ProjectWorkspace projectId="project-error" />
+      </NextIntlClientProvider>,
+    );
+
+    const messageInput = await screen.findByPlaceholderText(
+      "Describe the next move or ask VideoAgent…",
+    );
+    fireEvent.change(messageInput, {
+      target: { value: "Continue the story" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Send" }));
+
+    expect(
+      await screen.findByRole("dialog", {
+        name: "Service temporarily unavailable",
+      }),
+    ).toBeVisible();
+    expect(screen.getByText("Planner unavailable")).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Try again" }));
+    await waitFor(() => expect(messageAttempts).toBe(2));
+    expect(
+      await screen.findByRole("dialog", {
+        name: "Service temporarily unavailable",
+      }),
+    ).toBeVisible();
+  }, 20_000);
 });

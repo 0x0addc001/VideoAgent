@@ -190,6 +190,9 @@ describe("LandingPage", () => {
     expect(
       container.querySelector("#skills .skill-title-icon.lucide-video"),
     ).toBeInTheDocument();
+    expect(
+      container.querySelector("#skills .skill-category-badge"),
+    ).toBeInTheDocument();
     expect(container.querySelector("#skills .skill-card-copy small")).not.toBeInTheDocument();
     expect(container.querySelector("#skills .view-search input")).toBeInTheDocument();
     expect(container.querySelector(".skill-publish-card")).toBeInTheDocument();
@@ -256,7 +259,9 @@ describe("LandingPage", () => {
     expect(container.querySelectorAll("#hots .community-card video")).toHaveLength(10);
     expect(container.querySelector("#hots video")).toHaveAttribute("autoplay");
     expect(
-      container.querySelector(".community-publish-card .community-publish-icon"),
+      container.querySelector(
+        ".community-publish-card .community-publish-icon.lucide-film",
+      ),
     ).toBeInTheDocument();
     expect(
       container.querySelector("#hots .community-title-icon.lucide-film"),
@@ -422,10 +427,11 @@ describe("LandingPage", () => {
     fireEvent.click(modelTrigger);
 
     const options = [...document.querySelectorAll(".composer-select-option")];
-    expect(options).toHaveLength(16);
+    expect(options).toHaveLength(17);
     expect(options.map((option) => option.textContent)).toEqual([
       "Auto",
       "Kling/Kling Video 4.0",
+      "Kling/Kling Video 4.0 Flash",
       "Kling/Kling Video 3.0 Omni",
       "Kling/Kling Video 3.0",
       "Kling/Kling Video 3.0 Turbo",

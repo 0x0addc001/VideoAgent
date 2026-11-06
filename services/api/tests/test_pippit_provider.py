@@ -63,11 +63,55 @@ async def test_pippit_reads_authentication_and_credit_balance():
 
 
 @pytest.mark.unit
-async def test_pippit_rejects_non_text_generation():
-    image_request = request().model_copy(update={"generation_mode": "image_to_video"})
+async def test_pippit_passes_ordered_multimodal_references(monkeypatch):
+    client = provider()
+    calls: list[tuple[str, ...]] = []
 
-    with pytest.raises(ValueError, match="text-to-video"):
-        await provider().submit(image_request)
+    async def capture(*args: str) -> dict[str, str]:
+        calls.append(args)
+        return {"thread_id": "thread-test-1", "run_id": "run-test-1"}
+
+    monkeypatch.setattr(client, "_run_json", capture)
+    image_request = request().model_copy(
+        update={
+            "generation_mode": "image_to_video",
+            "reference_image_paths": ["C:/media/a.png", "C:/media/b.png"],
+            "reference_video_paths": ["C:/media/motion.mp4"],
+            "reference_audio_paths": ["C:/media/voice.mp3"],
+            "task_type": "reference",
+            "resolution": "1080p",
+        }
+    )
+
+    await client.submit(image_request)
+
+    assert calls == [
+        (
+            "generate-video",
+            "--prompt",
+            "A creator filming a quiet vlog in a studio",
+            "--duration",
+            "5",
+            "--ratio",
+            "9:16",
+            "--source",
+            "videoagent",
+            "--model",
+            "Seedance_2.0_mini",
+            "--resolution",
+            "1080p",
+            "--task-type",
+            "reference",
+            "--image",
+            "C:/media/a.png",
+            "--image",
+            "C:/media/b.png",
+            "--video",
+            "C:/media/motion.mp4",
+            "--audio",
+            "C:/media/voice.mp3",
+        )
+    ]
 
 
 @pytest.mark.unit

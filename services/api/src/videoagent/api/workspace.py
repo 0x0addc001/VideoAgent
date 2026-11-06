@@ -128,10 +128,7 @@ async def get_workspace(
         ).all()
     )
     projects = list(
-        {
-            project.id: project
-            for project in [*owned_projects, *shared_projects]
-        }.values()
+        {project.id: project for project in [*owned_projects, *shared_projects]}.values()
     )
     projects.sort(key=lambda project: project.updated_at, reverse=True)
     project_ids = [project.id for project in projects]
@@ -439,8 +436,7 @@ async def decide_workflow(
             plan.storyboard.scenes,
         )
         shot_summary = "\n".join(
-            f"{index + 1}. {shot.description}"
-            for index, shot in enumerate(storyboard.shots)
+            f"{index + 1}. {shot.description}" for index, shot in enumerate(storyboard.shots)
         )
         assistant_content = (
             f"{plan.assistant_message}\n\n{shot_summary}".strip()

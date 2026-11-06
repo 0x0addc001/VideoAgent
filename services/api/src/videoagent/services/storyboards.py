@@ -112,67 +112,60 @@ async def replace_storyboard(
         existing_characters = list(
             (
                 await session.scalars(
-                    select(Character).where(
-                        Character.storyboard_id == storyboard.id
-                    )
+                    select(Character).where(Character.storyboard_id == storyboard.id)
                 )
             ).all()
         )
         characters_by_name = {
-            character.name.strip().casefold(): character
-            for character in existing_characters
+            character.name.strip().casefold(): character for character in existing_characters
         }
-        for position, character in enumerate(existing_characters):
-            character.index = -(position + 1)
+        for position, existing_character in enumerate(existing_characters):
+            existing_character.index = -(position + 1)
         if existing_characters:
             await session.flush()
         retained_character_ids: set[UUID] = set()
         for index, character_data in enumerate(characters):
-            character = characters_by_name.get(character_data.name.strip().casefold())
-            if character is None:
-                character = Character(storyboard_id=storyboard.id)
-                session.add(character)
+            saved_character = characters_by_name.get(character_data.name.strip().casefold())
+            if saved_character is None:
+                saved_character = Character(storyboard_id=storyboard.id)
+                session.add(saved_character)
             else:
-                retained_character_ids.add(character.id)
-            character.index = index
-            character.name = character_data.name
-            character.description = character_data.description
-            character.prompt_en = character_data.prompt_en
-            character.prompt_zh = character_data.prompt_zh
-        for character in existing_characters:
-            if character.id not in retained_character_ids:
-                await session.delete(character)
+                retained_character_ids.add(saved_character.id)
+            saved_character.index = index
+            saved_character.name = character_data.name
+            saved_character.description = character_data.description
+            saved_character.prompt_en = character_data.prompt_en
+            saved_character.prompt_zh = character_data.prompt_zh
+        for existing_character in existing_characters:
+            if existing_character.id not in retained_character_ids:
+                await session.delete(existing_character)
 
     if scenes is not None:
         existing_scenes = list(
-            (
-                await session.scalars(
-                    select(Scene).where(Scene.storyboard_id == storyboard.id)
-                )
-            ).all()
+            (await session.scalars(select(Scene).where(Scene.storyboard_id == storyboard.id))).all()
         )
         scenes_by_name = {scene.name.strip().casefold(): scene for scene in existing_scenes}
-        for position, scene in enumerate(existing_scenes):
-            scene.index = -(position + 1)
+        for position, existing_scene in enumerate(existing_scenes):
+            existing_scene.index = -(position + 1)
         if existing_scenes:
             await session.flush()
         retained_scene_ids: set[UUID] = set()
         for index, scene_data in enumerate(scenes):
-            scene = scenes_by_name.get(scene_data.name.strip().casefold())
-            if scene is None:
-                scene = Scene(storyboard_id=storyboard.id)
-                session.add(scene)
+            saved_scene = scenes_by_name.get(scene_data.name.strip().casefold())
+            if saved_scene is None:
+                saved_scene = Scene(storyboard_id=storyboard.id)
+                session.add(saved_scene)
             else:
-                retained_scene_ids.add(scene.id)
-            scene.index = index
-            scene.name = scene_data.name
-            scene.description = scene_data.description
-            scene.location = scene_data.location
-            scene.prompt_en = scene_data.prompt_en
-            scene.prompt_zh = scene_data.prompt_zh
-        for scene in existing_scenes:
-            if scene.id not in retained_scene_ids:
-                await session.delete(scene)
+                retained_scene_ids.add(saved_scene.id)
+            saved_scene.index = index
+            saved_scene.name = scene_data.name
+            saved_scene.description = scene_data.description
+            saved_scene.location = scene_data.location
+            saved_scene.prompt_en = scene_data.prompt_en
+            saved_scene.prompt_zh = scene_data.prompt_zh
+        for existing_scene in existing_scenes:
+            if existing_scene.id not in retained_scene_ids:
+                await session.delete(existing_scene)
     for index, shot_data in enumerate(shots):
         session.add(
             Shot(

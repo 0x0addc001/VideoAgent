@@ -60,7 +60,7 @@ async def test_mock_generation_export_and_share(client):
     exported = await client.post(
         f"/api/v1/projects/{project['id']}/exports",
         json={
-            "aspect_ratios": ["16:9"],
+            "aspect_ratios": ["21:9"],
             "captions": "A generated product story",
             "permission": "private",
         },
@@ -70,6 +70,7 @@ async def test_mock_generation_export_and_share(client):
     payload = exported.json()
     assert len(payload["items"]) == 1
     assert payload["items"][0]["kind"] == "export"
+    assert payload["items"][0]["filename"].endswith("-21x9.mp4")
     assert payload["cover"]["kind"] == "cover"
     download = await client.get(payload["items"][0]["content_url"])
     assert download.status_code == 200
@@ -94,9 +95,7 @@ async def test_mock_generation_export_and_share(client):
     )
     assert published.status_code == 201
     assert published.json()["asset_id"] == payload["items"][0]["id"]
-    assert (
-        await client.get(f"/api/v1/hots/{published.json()['id']}/video")
-    ).status_code == 200
+    assert (await client.get(f"/api/v1/hots/{published.json()['id']}/video")).status_code == 200
 
     revoked = await client.delete(f"/api/v1/shares/{share['id']}")
     assert revoked.status_code == 204

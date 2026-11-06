@@ -85,7 +85,7 @@ async def test_admin_switches_generation_and_registration(app):
                     "aspect_ratio": "16:9",
                     "generation_mode": "text_to_video",
                 }
-            ]
+            ],
         },
     )
     shot_id = storyboard.json()["shots"][0]["id"]

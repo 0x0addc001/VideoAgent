@@ -469,6 +469,10 @@ class GenerationApproval(ModelSelection):
     approved: bool
     generation_mode: GenerationMode = "text_to_video"
     reference_asset_id: UUID | None = None
+    reference_asset_ids: list[UUID] = Field(default_factory=list, max_length=15)
+    audio_enabled: bool | None = None
+    resolution: Literal["720p", "1080p", "4k"] | None = None
+    task_type: Literal["auto", "reference", "edit", "extend"] = "auto"
 
 
 ImageGenerationMode = Literal["text_to_image", "image_to_image"]
@@ -499,7 +503,7 @@ AssetPermission = Literal["private", "public"]
 
 
 def _default_aspect_ratios() -> list[AspectRatio]:
-    return ["16:9", "9:16", "1:1"]
+    return ["21:9", "16:9", "9:16", "1:1"]
 
 
 class AssetRead(BaseModel):
@@ -586,7 +590,7 @@ class ExportRequest(BaseModel):
     aspect_ratios: list[AspectRatio] = Field(
         default_factory=_default_aspect_ratios,
         min_length=1,
-        max_length=3,
+        max_length=4,
     )
     soundtrack_asset_id: UUID | None = None
     captions: str | None = Field(default=None, max_length=20_000)
@@ -667,9 +671,7 @@ class SkillEngagementRequest(BaseModel):
         parts = value.strip().lower().split("/")
         if len(parts) != 2:
             raise ValueError("Skill key must include a namespace")
-        normalized = "/".join(
-            re.sub(r"[^a-z0-9_]+", "_", part).strip("_") for part in parts
-        )
+        normalized = "/".join(re.sub(r"[^a-z0-9_]+", "_", part).strip("_") for part in parts)
         if len(normalized) < 3 or normalized.startswith("/"):
             raise ValueError("Skill key must include a namespace and Skill ID")
         return normalized[:240]

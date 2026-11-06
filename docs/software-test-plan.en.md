@@ -2,8 +2,8 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v2.5 |
-| Updated | 2026-11-05 |
+| Document version | v2.6 |
+| Updated | 2026-11-06 |
 | Frameworks | pytest, Vitest, Testing Library, Playwright |
 
 ## 1. Purpose
@@ -155,6 +155,8 @@ Component tests cover:
   changes through their project or resource endpoints.
 - Uploads append `@<asset-id>` to the active Prompt; generation infers
   image-to-video or image-to-image from that reference.
+- Shots may override task type, audio, and resolution, and requests preserve
+  the Prompt order of multiple `@asset-id` references.
 - Uploaded and generated results appear under their directory with a persisted
   final-selection checkbox, copy-ID, preview, and delete action.
 - Desktop panes default to equal widths and expose draggable separators.
@@ -166,12 +168,16 @@ Component tests cover:
 - Assets and Agents collapse independently and restore from their labeled rails.
 - The editor header renders no production progress bar and no storyboard
   “Review” score button.
+- Character and Scene pages support uploaded, reference-image, and text image
+  generation, with generated images stored as downloadable project assets.
 - Final Cut review is available only for exported assets, lets the user choose a
   configured vision evaluator and consistency metrics, and is unavailable when
   no evaluator is configured.
 - Export is blocked until every storyboard Shot has a generated result.
 - A conversational instruction such as “Render the final cut” triggers delivery
   generation; no separate render button is exposed in the editor.
+- Existing deliveries can create a new 21:9, 16:9, 9:16, or 1:1 version with a
+  soundtrack or voice-over and line-by-line captions.
 - Shot estimation and generation return `409 VISION_OBJECTS_REQUIRED` until the
   storyboard has at least one Character and one Scene.
 - Model selectors appear on Character and Shot pages, default to the project

@@ -2,8 +2,8 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v1.5 |
-| 更新日期 | 2026-11-04 |
+| 文档版本 | v1.6 |
+| 更新日期 | 2026-11-06 |
 | 基础路径 | `/api/v1` |
 | 认证方式 | HttpOnly Session Cookie |
 | 请求格式 | JSON，并设置 `credentials: "include"` |
@@ -300,8 +300,15 @@ Idempotency-Key: unique-request-id
   "approved": true,
   "generation_mode": "image_to_video",
   "reference_asset_id": "00000000-0000-0000-0000-000000000010",
+  "reference_asset_ids": [
+    "00000000-0000-0000-0000-000000000010",
+    "00000000-0000-0000-0000-000000000011"
+  ],
   "provider": "kling",
-  "model": "kling-video-v4_0"
+  "model": "kling-video-v4_0",
+  "resolution": "1080p",
+  "audio_enabled": true,
+  "task_type": "reference"
 }
 ```
 
@@ -312,6 +319,9 @@ Idempotency-Key: unique-request-id
 `409 VISION_OBJECTS_REQUIRED`。
 `provider` 与 `model` 是可选的任务级覆盖；同时省略时继承项目默认模型。切换模型会
 使旧积分估算失效。
+`reference_asset_ids` 最多接收 15 个有顺序的项目图片、视频或音频素材；图生视频仍兼容
+旧的单素材字段 `reference_asset_id`。支持多模态参考的 Provider 会按顺序接收素材；
+`task_type` 可取 `auto`、`reference`、`edit`、`extend`。
 
 ## 角色图片生成
 
@@ -341,6 +351,9 @@ Idempotency-Key: unique-request-id
 `PATCH /projects/{project_id}/storyboard/scenes/{scene_id}` 可更新名称、地点、
 描述和 Prompt。`POST /scenes/{scene_id}/assets` 上传场景参考图，返回素材名会绑定
 Scene ID，工作区据此把图片放在对应 Scene 目录下。
+
+`POST /scenes/{scene_id}/estimate` 和 `POST /scenes/{scene_id}/generate` 用于执行
+场景文生图或图生图；请求接受与 Character 生成相同的 `provider`、`model` 覆盖。
 
 ### 查询任务
 
@@ -462,7 +475,7 @@ Prompt 中使用的稳定 ID，格式为 `@<asset-id>`。
 
 ```json
 {
-  "aspect_ratios": ["16:9", "9:16", "1:1"],
+  "aspect_ratios": ["21:9", "16:9", "9:16", "1:1"],
   "soundtrack_asset_id": null,
   "captions": "一段产品故事",
   "permission": "private"
@@ -471,7 +484,8 @@ Prompt 中使用的稳定 ID，格式为 `@<asset-id>`。
 
 导出响应包含交付版本 Asset 与自动生成的封面。只有全部故事板 Shot 均已生成结果时才可导出。
 当前实现使用 FFmpeg 合成这些镜头，
-统一交付比例，在镜头间添加短交叉淡化，并可加入字幕和上传的音轨。
+统一交付比例，在镜头间添加短交叉淡化，并可加入字幕和上传的音轨。单次请求最多返回
+四个交付版本；字幕按非空行均匀分配到成片时长。
 
 分享请求：
 

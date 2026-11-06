@@ -2,8 +2,8 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v2.4 |
-| 更新日期 | 2026-11-05 |
+| 文档版本 | v2.6 |
+| 更新日期 | 2026-11-06 |
 
 ## Q1. VideoAgent 的主编排应怎样设计？
 
@@ -442,33 +442,36 @@ OAuth Token 创建 `StreamableHTTPToolClient`，再由 `KlingVideoProvider` 调�
 上下文、验收标准和扩缩容需求时才应拆分；拆分后每个 SubAgent 仍需共享可追踪
 `run_id`、预算和审批边界。
 
-## Q20. VideoAgent 的 Hook 是怎么用的？
+## Q20. VideoAgent 的 Agent Hook 是什么，目前怎么用？
 
 **答案**
 
-Hook 是成片开头用于抓住注意力的创作约束，不是 Webhook 或运行时事件。用户在创作框
-选择自动、视觉冲击、叙事反转、口播开场、声音开场或效果实证后，VideoAgent 会把这个
-选择写入项目 Brief，并在整体设定、首个叙事节拍和开场镜头规划中使用它。选择“自动”
-时，由 Agent 根据题材、受众和发布平台决定开场方式。
+Agent Hook 是 Agent 执行生命周期上的拦截点，用于在指定阶段注入 Context、执行策略
+校验、记录审计、阻断不安全操作或触发外部自动化。它约束的是 Agent 如何运行，不是
+视频开场如何吸引观众；创作框里的视觉冲击、口播开场等属于 Opening Hook，两者不是
+同一个概念。
 
-实际使用时，可以选择一个 Hook，或应用一个带默认 Hook 的策略；描述主题与希望激发的
-反应后批准整体方向。如果首个节拍不符合预期，可以直接说“开场改成效果实证”等具体修改，
-Hook 会保留在 Settings 中，并可在产生计费生成前继续调整。
+当前 VideoAgent 在 Agent Run 内提供可观测的阶段 Hook：`context`、`memory`、
+`skill`、`planning`、`validation`、`state` 和 `reply`。这些事件由
+`AgentActivityRecorder` 按 `run_id` 持久化，前端用它们展示真实的执行轨迹。模型调用
+本身仍是单个 LangGraph `plan_storyboard` 节点；生成工具位于审批边界之后，不会由
+规划 Agent 直接触发。
 
-**追问：** Hook 和策略有什么区别？
-
-**答案**
-
-策略是一套完整创作起点，包含提示词、Skill、Hook、风格、画幅、时长、模型和审核方式；
-Hook 只描述开头如何建立注意力。一个策略可以选择不同的 Hook，同一个 Hook 也可以用于
-多个策略。
-
-**扩展：** Hook 是否能保证视频效果？
+**追问：** Agent Hook 和 Skill、MCP 有什么区别？
 
 **答案**
 
-不能。Hook 只约束开场意图，实际效果仍取决于脚本、镜头、表演、剪辑和平台受众。建议
-用批量变体生成多个开场版本并比较完播与互动数据，不应把 Hook 选择当作效果保证。
+Skill 定义 Agent 要完成什么任务以及执行规范；MCP 连接可调用的外部工具和数据源；
+Agent Hook 则挂在执行阶段边界上，决定某一步前后需要额外执行什么治理逻辑。Hook
+不会替代 Skill 的创作指令，也不会直接变成一个生成工具。
+
+**扩展：** 为什么不能把所有步骤都做成无限 Hook？
+
+**答案**
+
+Hook 越多，延迟、循环调用、状态一致性和故障传播越难控制。每个 Hook 都应有明确的
+触发阶段、超时、幂等语义、错误策略和审计记录；计费工具仍必须经过显式审批，不能借
+Hook 绕过预算和 Provider 边界。
 
 ## Q21. VideoAgent 如何在同一个 Skill 有多个 Provider 时选择模型？
 
@@ -484,7 +487,7 @@ Skill，任务页会展示可选的 `服务商/模型`，用户通过估算或�
 
 **答案**
 
-可以。Character 提供图片模型选择，Shot 提供视频模型选择，文生视频和图生视频
+可以。Character 和 Scene 提供图片模型选择，Shot 提供视频模型选择，文生视频和图生视频
 都使用当前选择。“Project default”继承初始设置；显式切换只影响下一次生成，并使旧积分
 估算失效。计费任务一旦被 Provider 接受，不会在用户不知情时切换 Provider。
 
@@ -495,4 +498,72 @@ Skill，任务页会展示可选的 `服务商/模型`，用户通过估算或�
 规划模型也遵循相同的任务路由原则，但当前部署只开放管理员配置的 Planner。若以后配置
 多个规划模型，应在 Settings 中展示推理能力、Context、延迟和价格差异。一个模型生成的
 内容不能描述成另一个模型的产出。
+
+## Q22. VideoAgent 现在支持哪些多模态制作能力？
+
+**答案**
+
+VideoAgent 支持有顺序的图片、视频和音频参考；Character 与 Scene 的文生图和图生图；
+Shot 的文生视频和图生视频；Kling 4.0 最长 30 秒，以及 21:9、16:9、9:16、1:1 输出。
+已安装的 Kling 4.0 CLI 声明 10 个图片槽、5 个视频槽和 3 个音频槽，合计最多 15 个
+参考素材。Agent 只提交所选模型实际支持的参考组合。
+
+**追问：** 关键帧如何排序？
+
+**答案**
+
+参考素材按 Shot Prompt 中 `@asset-id` 的出现顺序传递，界面与 Provider 边界都会保留
+该顺序。关键帧槽位映射取决于模型：支持关键帧的图生视频模型接收首帧、中间帧和尾帧，
+全能参考模型则接收有顺序的图片、视频和音频输入。
+
+## Q23. Celery 和 Redis 在 VideoAgent 中如何配合？
+
+**答案**
+
+生成接口先在关系数据库创建或恢复 `GenerationJob`、预扣积分并调用 Provider 提交任务，
+提交成功后提交数据库事务。随后 API 通过 `poll_generation_job.delay(job_id)` 把任务
+放入 Celery；Celery 使用 Redis DB 0 作为 Broker 传递任务，使用 Redis DB 1 作为 Result
+Backend。Worker 消费任务后创建独立数据库 Session，调用 `refresh_generation_job`
+查询一次 Provider；未结束时通过 `self.retry` 延迟重试，间隔按
+`5 × 2^retries` 增长并封顶 120 秒，直到任务成功、失败或取消。
+
+Redis 只承担“任务传递”和“执行结果回传”，`GenerationJob`、Shot 状态、积分流水和
+素材归属仍以关系数据库为唯一事实来源。Celery 配置了延迟确认、Worker 丢失后重新投递、
+单任务预取和启动连接重试，避免 Worker 异常时任务被提前确认。
+
+**追问：** Redis 或 Celery 暂时不可用时会不会卡死？
+
+**答案**
+
+不会把已提交的生成任务丢掉。API 在提交 Provider 后先持久化 Job，再尝试投递 Celery；
+即使 Redis 入队失败，接口仍返回已持久化的 Job，前端可通过 `GET /jobs/{id}` 直接轮询
+Provider 状态。Redis 恢复后再根据持久化任务做补偿，而不是相信内存队列是唯一事实源。
+
+**追问：** 为什么不直接在 FastAPI 请求线程里轮询？
+
+**答案**
+
+视频生成可能持续数分钟，占用 Web 请求会耗尽连接和工作线程，也无法在进程重启后继续。
+后台 Worker 把长任务与 API 解耦，可以独立扩缩容、限制 Provider 并发并统一重试。
+
+## Q24. VideoAgent 的 Agent 核心代码在哪里？
+
+**答案**
+
+- `services/api/src/videoagent/api/agent.py`：消息入口、意图路由、Context/Activity
+  记录、最终成片就绪检查和响应持久化。
+- `services/api/src/videoagent/agent/graph.py`：LangGraph 图定义，当前执行单个
+  `plan_storyboard` 节点，并负责活动状态和结构化结果校验。
+- `services/api/src/videoagent/agent/planner.py`：本地确定性 Planner、
+  OpenAI-compatible/DeepSeek Planner、JSON 兼容回退和远程超时后的本地兜底。
+- `services/api/src/videoagent/services/agent_context.py`：项目 Brief、对话、
+  Storyboard、Skill 等有界 Context 的组装。
+- `services/api/src/videoagent/services/agent_activity.py`：把真实 Agent 执行阶段
+  持久化为前端可观测事件。
+- `apps/web/src/components/project-workspace.tsx`：Agent 对话、审批、执行轨迹、
+  错误弹窗和项目画布交互。
+
+主链路是：接收消息 → 构建 Context → 解析 Skill → LangGraph 规划 → 校验
+`StoryboardPlan` → 持久化 Direction/Vision 状态 → 返回可流式展示的回复。远程 Planner
+超时或返回不可解析结果时，服务端明确提示本次使用本地 Planner 兜底，不会让请求无限等待。
 
