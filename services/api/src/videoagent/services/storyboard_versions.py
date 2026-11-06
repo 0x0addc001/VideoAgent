@@ -1,3 +1,4 @@
+from datetime import UTC
 from uuid import UUID
 
 from sqlalchemy import func, select
@@ -18,6 +19,11 @@ from videoagent.services.storyboards import load_storyboard, replace_storyboard
 
 def version_read(version: StoryboardVersion) -> StoryboardVersionRead:
     snapshot = StoryboardRead.model_validate(version.snapshot)
+    created_at = (
+        version.created_at.replace(tzinfo=UTC)
+        if version.created_at.tzinfo is None
+        else version.created_at.astimezone(UTC)
+    )
     return StoryboardVersionRead(
         id=version.id,
         project_id=version.project_id,
@@ -27,7 +33,7 @@ def version_read(version: StoryboardVersion) -> StoryboardVersionRead:
         shot_count=len(snapshot.shots),
         character_count=len(snapshot.characters),
         scene_count=len(snapshot.scenes),
-        created_at=version.created_at,
+        created_at=created_at,
     )
 
 

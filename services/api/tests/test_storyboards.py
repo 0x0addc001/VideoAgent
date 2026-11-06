@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 import pytest
 
 from tests.conftest import register
@@ -221,6 +223,9 @@ async def test_storyboard_versions_can_be_saved_listed_and_restored(client):
     saved_body = saved.json()
     assert saved_body["revision"] == 1
     assert saved_body["shot_count"] == 1
+    saved_at = datetime.fromisoformat(saved_body["created_at"].replace("Z", "+00:00"))
+    assert saved_at.tzinfo is not None
+    assert abs((datetime.now(UTC) - saved_at).total_seconds()) < 30
 
     edited = await client.patch(
         f"/api/v1/projects/{project['id']}/storyboard/shots/{shot_id}",

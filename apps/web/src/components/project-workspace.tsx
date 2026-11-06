@@ -898,6 +898,20 @@ export function workspaceCopy(locale: string) {
       };
 }
 
+function formatVersionTimestamp(value: string, locale: string) {
+  const parts = new Intl.DateTimeFormat(locale, {
+    day: "2-digit",
+    hour: "2-digit",
+    hourCycle: "h23",
+    minute: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).formatToParts(new Date(value));
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((item) => item.type === type)?.value ?? "";
+  return `${part("year")}-${part("month")}-${part("day")} ${part("hour")}:${part("minute")}`;
+}
+
 type WorkspaceHistoryProps = {
   activeProjectId: string;
   collapsed: boolean;
@@ -1380,6 +1394,7 @@ type AssetsTreeProps = {
   assets: Asset[];
   collapsed: boolean;
   copy: ReturnType<typeof workspaceCopy>;
+  locale: string;
   onDeleteAsset: (asset: Asset) => void;
   onResizeStart: (event: ReactPointerEvent<HTMLButtonElement>) => void;
   onSelectAsset: (
@@ -1400,6 +1415,7 @@ function AssetsTree({
   assets,
   collapsed,
   copy,
+  locale,
   onDeleteAsset,
   onResizeStart,
   onSelectAsset,
@@ -1807,7 +1823,7 @@ function AssetsTree({
                       className="mt-0.5 block text-[10px] text-white/28"
                       dateTime={version.created_at}
                     >
-                      {version.created_at.slice(0, 16).replace("T", " ")}
+                      {formatVersionTimestamp(version.created_at, locale)}
                     </time>
                   </span>
                   <button
@@ -3018,13 +3034,17 @@ export function ProjectWorkspace({
   }
 
   async function estimateShot() {
-    if (!selectedShot) return;
+    const shot = canvasShot ?? selectedShot;
+    if (!shot) {
+      showBackendError(t("noShot"));
+      return;
+    }
     setIsWorking(true);
     setActionError(null);
     try {
-      const savedShot = await saveShotDraft(selectedShot);
+      const savedShot = await saveShotDraft(shot);
       if (!savedShot) return;
-      const response = await fetch(`${API_BASE_URL}/shots/${selectedShot.id}/estimate`, {
+      const response = await fetch(`${API_BASE_URL}/shots/${shot.id}/estimate`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
@@ -3033,10 +3053,11 @@ export function ProjectWorkspace({
       if (!response.ok) throw new Error("estimate-failed");
       setEstimate(parseCostEstimate(await response.json()));
     } catch (error) {
-      setActionError(
+      showBackendError(
         error instanceof Error && error.message !== "estimate-failed"
           ? error.message
           : t("estimateError"),
+        () => void estimateShot(),
       );
     } finally {
       setIsWorking(false);
@@ -3102,15 +3123,19 @@ export function ProjectWorkspace({
   }
 
   async function generateShot() {
-    if (!selectedShot) return;
+    const shot = canvasShot ?? selectedShot;
+    if (!shot) {
+      showBackendError(t("noShot"));
+      return;
+    }
     setIsWorking(true);
     setActionError(null);
     try {
-      const savedShot = await saveShotDraft(selectedShot);
+      const savedShot = await saveShotDraft(shot);
       if (!savedShot) return;
       if (!estimate) {
         const estimateResponse = await fetch(
-          `${API_BASE_URL}/shots/${selectedShot.id}/estimate`,
+          `${API_BASE_URL}/shots/${shot.id}/estimate`,
           {
             method: "POST",
             credentials: "include",
@@ -3138,12 +3163,13 @@ export function ProjectWorkspace({
   }
 
   async function generateFromAgent() {
-    if (!selectedShot || selectedShot.status === "completed") return;
+    const shot = canvasShot ?? selectedShot;
+    if (!shot || shot.status === "completed") return;
     setIsWorking(true);
     setActionError(null);
     try {
       const estimateResponse = await fetch(
-        `${API_BASE_URL}/shots/${selectedShot.id}/estimate`,
+        `${API_BASE_URL}/shots/${shot.id}/estimate`,
         {
           method: "POST",
           credentials: "include",
@@ -3157,14 +3183,14 @@ export function ProjectWorkspace({
       if (!window.confirm(t("agentGenerateConfirm", { credits: nextEstimate.credits }))) {
         return;
       }
-      const savedShot = await saveShotDraft(selectedShot);
+      const savedShot = await saveShotDraft(shot);
       if (!savedShot) return;
       await submitGeneration(savedShot, savedShot.prompt_en);
       const generationMessage: Message = {
         id: `generation-${crypto.randomUUID()}`,
         role: "assistant",
         content: t("agentGenerationStarted", {
-          shot: selectedShot.description,
+          shot: shot.description,
         }),
         created_at: new Date().toISOString(),
       };
@@ -3383,10 +3409,11 @@ export function ProjectWorkspace({
       if (!response.ok) throw new Error("scene-estimate-failed");
       setSceneEstimate(parseCostEstimate(await response.json()));
     } catch (error) {
-      setActionError(
+      showBackendError(
         error instanceof Error && error.message !== "scene-estimate-failed"
           ? error.message
           : t("estimateError"),
+        () => void estimateScene(scene),
       );
     } finally {
       setIsWorking(false);
@@ -3453,10 +3480,11 @@ export function ProjectWorkspace({
       if (!response.ok) throw new Error("character-estimate-failed");
       setCharacterEstimate(parseCostEstimate(await response.json()));
     } catch (error) {
-      setActionError(
+      showBackendError(
         error instanceof Error && error.message !== "character-estimate-failed"
           ? error.message
           : t("estimateError"),
+        () => void estimateCharacter(character),
       );
     } finally {
       setIsWorking(false);
@@ -3777,6 +3805,7 @@ export function ProjectWorkspace({
               assets={assets}
               collapsed={assetsPanelCollapsed}
               copy={copy}
+              locale={locale}
               onDeleteAsset={(asset) => void deleteProjectAsset(asset)}
               onResizeStart={(event) => beginPaneResize("assets", event)}
               onSelectAsset={(resourceType, resourceId, assetId) =>
