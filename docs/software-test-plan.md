@@ -2,8 +2,8 @@
 
 | 属性 | 内容 |
 | --- | --- |
-| 文档版本 | v2.4 |
-| 更新日期 | 2026-11-04 |
+| 文档版本 | v2.5 |
+| 更新日期 | 2026-11-05 |
 | 测试框架 | pytest、Vitest、Testing Library、Playwright |
 
 ## 1. 目的
@@ -52,6 +52,8 @@
 - 邀请码创建、消费、撤销和注册模式。
 - 生成 kill switch、任务退款和审计日志。
 - 国内版 Kling CLI 的提交参数、状态映射、账号身份和积分读取。
+- Skill 公开发现、点赞切换、使用去重和作者禁止自赞。
+- Videos 点赞切换、账户去重、统计持久化和取消点赞。
 
 前端：
 
@@ -59,9 +61,10 @@
 - 流式主标题和视频轮播。
 - 创作框与自定义下拉。
 - 项目创建流程。
-- Assets、Hots 和 Docs 视图切换。
+- Assets、Videos 和 Docs 视图切换。
 - Assets 权限、日期、悬浮预览与封面行为。
-- Hots 作者、喜欢数、播放和发布。
+- Videos 作者、喜欢数、播放和发布。
+- Skills 与 Videos 分类筛选、榜单顺序和点赞交互；单卡不显示排名或奖励。
 - Docs 中英文切换。
 - 项目列表、认证表单与项目工作区。
 - 项目素材上传、成片导出、MP4 下载和分享链接。
@@ -108,39 +111,48 @@ Kling 国内版另使用依赖注入测试覆盖 `text_to_video`、`query_tasks`
 - 左侧独立视图导航。
 - 自定义下拉渲染与选择。
 - Action 启用和禁用状态。
-- Hots 元数据顺序：标题在作者与喜欢数之上。
-- 每张 Hots 卡片包含自动播放、静音、循环视频。
+- Videos 元数据顺序：标题在作者与喜欢数之上。
+- 每张 Videos 卡片包含自动播放、静音、循环视频。
 - 发布入口使用蓝色播放键。
 - Skills 使用 `user_id/skill_id` 的单一搜索目录，原厂商能力使用厂商命名空间。
-- Playbook 正确填充提示词、Skill、Hook、风格、画幅、时长和审核设置。
-- 再次点击当前 Playbook 会恢复应用前状态。
-- Hots 场景卡片进入 Agents 时选中对应 Skill 和提示词。
+- 策略正确填充提示词、Skill、Hook、风格、画幅、时长和审核设置。
+- 再次点击当前策略会恢复应用前状态。
+- Videos 场景卡片进入 Agents 时选中对应 Skill 和提示词。
 - 输入框随多行内容增高，输入非空时隐藏示例灵感。
 - Model 目录包含全部 Kling 与 Pippit 视频模型，并显示为 `服务商/模型`。
-- Docs 标签为 `PRD`、`Playbook`、`Arch`、`API`、`Dev`、`Test`、`Ops`、`FAQ`、`TODO`。
+- Docs 标签为 `PRD`、`策略`、`Arch`、`API`、`Dev`、`Test`、`Ops`、`FAQ`、`TODO`。
+- Docs 每次进入默认打开 PRD；搜索框位于目录上方，左侧文档目录默认与展开导航等宽，
+  可拖拽或使用方向键调整，也可收起为图标栏。
 - Globe 控件切换 Docs 语言。
-- Skills、Hots、Assets、Docs 搜索框保持固定。
+- Skills、Videos、Assets、Docs 搜索框保持固定。
 - Assets 通过 Video/Skill 分页切换，不重复类型标签。
 - Video 悬浮预览，Skill 卡片无封面。
 - 创作框菜单不超出视口。
 - 历史导航展示 Projects 与 Recents，项目目录支持创建、重命名、删除和拖拽收纳。
 - 将 Recent 拖入项目目录后关系持久化，Recent 列表移除该项，并在目录内以缩进子项显示。
 - 点击历史对话只更新 URL 哈希并复用已挂载的应用外壳，不触发页面级导航。
-- 工作区资源树包含 `Direction > Settings / Outlines / Scripts` 与
-  `Vision > Characters / Shots / Final Cut`，不再显示 Storyboard、Media、Exports。
-  Projects、Recents 及其对话项保持纯文本。
-- Character 提供描述页与生成页；每个 Shot 直接打开合并页面，目录行不使用容器框。
+- 工作区资源树提供同级的 `Directions`、`Visions` 和 `Versions`，不再显示
+  Storyboard、Media、Exports。Projects、Recents 及其对话项保持纯文本。
+- Character 与 Scene 各自承接描述和上传参考图；每个 Shot 直接打开合并页面，目录行不使用容器框。
   空目录不显示等待文案。
 - Settings 以“问题-答案”属性行展示 Q&A，不显示旧版底部分阶段卡片。
 - Settings 从对话提炼 `属性 / 值`，排除批准消息，不直接展示原始 Q&A。
-- Shot 与 Character 的描述和 Prompt 通过资源 PATCH 接口持久化。
+- Settings、Outlines、Scripts、Shot、Character 与 Scene 的修改分别通过项目或资源接口持久化。
 - 上传素材会把 `@<asset-id>` 追加到当前 Prompt；生成时根据该 ID 自动选择参考模式。
 - 上传和生成结果位于对应目录，支持最终选用、复制 ID、预览和删除。
-- 桌面端四栏默认等宽并支持拖拽调整；账号下拉包含语言、通知和积分。
+- 桌面端四栏默认等宽并支持拖拽调整；头像下拉包含语言、通知和积分，语言选项纵向排列；
+  账号操作带图标，齿轮位于头像行内部。
 - 浏览器标题统一为 `VideoAgent`；管理后台运行环境标签为 `Pippit China`。
 - Assets 与 Agents 可独立折叠，并通过带标签的窄轨恢复。
-- 编辑区顶部显示每 3 秒轮询的制作进度条，不再显示故事板 Review 分数按钮。
+- 编辑区顶部不显示制作进度条，也不显示故事板 Review 分数按钮。
 - Final Cut 视觉评估只对导出资产开放，用户可选择已配置的视觉模型和一致性指标；未配置模型时明确不可用。
+- 全部故事板 Shot 均生成后才可导出成片。
+- 通过“生成成片”等对话指令触发交付生成；编辑区不单独暴露合成按钮。
+- 故事板缺少 Character 或 Scene 时，镜头估算与生成返回 `409 VISION_OBJECTS_REQUIRED`。
+- Character 与 Shot 页面展示模型选择器，默认继承项目配置，并能发送任务级覆盖。
+- 项目分享生成查看或编辑权限的协作链接，可限制受邀邮箱；接受后可直接打开项目。
+- 已导出成片可直接发布到 Videos，无需再次上传文件。
+- Videos 在所有入口统一使用胶卷图标，Skills 统一使用摄像机图标。
 - 镜头生成在工作流批准前显示明确提示。
 - 历史 Agent 消息静态渲染；仅新返回的回复执行一次流式显示，Agents 折叠后重新展开不会重复播放。
 - Agent 请求等待回复时显示实时执行轨迹；事件到达前的短暂空档保留紧凑的
@@ -157,9 +169,13 @@ Kling 国内版另使用依赖注入测试覆盖 `text_to_video`、`query_tasks`
 - AI 优化按钮能把粗略想法整理为结构化 Skill，保存后从服务端恢复。
 - 内置 `video_agent/skill_synthesis` 直接打开 Skill Studio。
 - App 左侧导航可收起为仅图标，登录后 Agents 首页显示最近对话。
-- Hots 发布必须选择 MP4，上传成功后出现在社区和作者 Assets。
+- Videos 发布必须选择 MP4，上传成功后出现在社区和作者 Assets。
+- Skills 与 Videos 在分类筛选后保持榜单顺序，点赞按钮正确切换状态并更新计数；卡片只
+  在标题后显示分类，不显示排名或获得积分。
 - Assets 的视频与 Skill 卡片可点击打开详情，视频详情可播放。
 - 工作流批准立即推进；Agent 回复语言跟随项目 Brief 和用户 Prompt。
+- 长 Brief 拆分为多个导演属性；英文界面不显示中文例句，`Creative brief` 和
+  `Director direction` 不再作为兜底属性。
 - 登录、注册与主产品使用一致的深色视觉语言。
 - Projects 的加号打开项目表单；Recents 的加号进入 Agents；两组都可展开和收起。
 - Pippit 低于 4 秒的请求会被规范化，Provider 拒绝会显示原始失败原因并返还预留积分。
@@ -172,8 +188,8 @@ Kling 国内版另使用依赖注入测试覆盖 `text_to_video`、`query_tasks`
 Playwright 使用真实 Next.js 页面、FastAPI、SQLite 和 Mock Provider，验证：
 
 ```text
-注册 → 首页创意 → 创建项目 → 三轮审批 → 选择镜头 → 上传素材
-→ 积分估算 → 生成 → 轮询/落地 → 合成导出 → 下载 → 分享
+注册 → 首页创意 → 创建项目 → 三轮审批 → 上传参考素材
+→ 生成全部镜头 → 创建协作链接 → 合成成片 → 下载/分享 → 发布
 ```
 
 另有一条无费用 Skill 链路：
@@ -182,10 +198,10 @@ Playwright 使用真实 Next.js 页面、FastAPI、SQLite 和 Mock Provider，�
 注册 → Skills → 输入粗略想法 → AI 优化 → 发布 → 刷新后恢复
 ```
 
-无费用 Hots / Assets 链路：
+无费用 Videos / Assets 链路：
 
 ```text
-注册 → Hots → 上传 MP4 → 发布 → Assets → 查看详情并播放
+注册 → Videos → 上传 MP4 → 发布 → Assets → 查看详情并播放
 ```
 
 该链路不调用真实付费 Provider，应作为每个 Pull Request 的必过门禁。

@@ -2,8 +2,8 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v2.1 |
-| Updated | 2026-11-04 |
+| Document version | v2.2 |
+| Updated | 2026-11-05 |
 
 ## Q1. How should a video Agent be orchestrated?
 
@@ -160,10 +160,11 @@ Cut: rhythm, sound, and retention.
 
 **Answer**
 
-No. Storyboard progress represents workflow and Shot completion only. Visual
-metrics such as character and style consistency belong to Final Cut, where a
-selected configured evaluator scores extracted frames against an explicit
-rubric. The product must not fabricate scores when no evaluator is available.
+No. Storyboard readiness is derived from the workflow and Shot completion but
+is not shown as a progress score. Visual metrics such as character and style
+consistency belong to Final Cut, where a selected configured evaluator scores
+extracted frames against an explicit rubric. The product must not fabricate
+scores when no evaluator is available.
 
 **Extension:** How can judge bias be reduced?
 
@@ -391,7 +392,7 @@ Prioritize data safety, billing consistency, result availability, quality, and
 latency in that order. Fallbacks must be observable, explainable, reversible,
 and constrained by user budget and content policy.
 
-## Q17. What is the Agent Loop here?
+## Q17. What is the VideoAgent Agent Loop?
 
 **Answer**
 
@@ -420,7 +421,7 @@ results, such as reading assets, invoking visual review, retrying from a typed
 failure, or asking for missing input. That loop requires budgets, stopping
 conditions, approval gates, and recoverable checkpoints.
 
-## Q18. How are Context and Memory designed and managed?
+## Q18. How are VideoAgent Context and Memory designed and managed?
 
 **Answer**
 
@@ -449,7 +450,7 @@ permission checks, and inspectable retrieval. Retrieved text is still a bounded
 Context input; it never replaces authoritative database state or approval
 records.
 
-## Q19. How are Skills, MCP, and SubAgents invoked?
+## Q19. How are VideoAgent Skills, MCP, and SubAgents invoked?
 
 **Answer**
 
@@ -480,4 +481,71 @@ runtime, delegation protocol, or parallel subgraph. Split responsibilities only
 when writing, visual, review, or production work has independent tools,
 context, acceptance criteria, and scaling needs. Every SubAgent would still
 share the traceable `run_id`, budget, and approval boundary.
+
+## Q20. How are VideoAgent Hooks used?
+
+**Answer**
+
+A Hook is a directing constraint for the opening seconds that establishes
+attention. It is not a webhook or runtime event. The composer offers Auto,
+visual impact, narrative twist, spoken hook, sound cue, and proof-first
+openings. VideoAgent writes the selected Hook into the project brief and uses
+it while planning the creative direction, first narrative beat, and opening
+shot. Auto lets the Agent choose according to subject, audience, and platform.
+
+To use a Hook, select one in the composer or apply a Playbook with a default
+Hook, describe the subject and desired response, approve the direction, then
+ask for a targeted change such as “make the opening more proof-led” if the first
+beat does not match. Hook selection remains visible in Settings and can be
+changed before any billable generation.
+
+**Follow-up:** How is a Hook different from a Playbook?
+
+**Answer**
+
+A Playbook is a complete reusable starting strategy containing a prompt, Skill,
+Hook, style, frame, duration, model, and review mode. A Hook defines only how
+the opening earns attention. One Playbook can use different Hooks, and one Hook
+can appear in multiple Playbooks.
+
+**Extension:** Does a Hook guarantee performance?
+
+**Answer**
+
+No. It constrains intent, while results still depend on writing, shots,
+performance, editing, and audience. Use batch variants to compare several
+openings against completion and engagement data rather than treating a Hook as
+a performance guarantee.
+
+## Q21. How does VideoAgent choose a model when a Skill has multiple Provider implementations?
+
+**Answer**
+
+The Agent first filters candidates by task and capability: text, image, or
+video; text/image/video references; duration; aspect ratio; audio and language;
+output quality; provider availability; and estimated credits. It prefers the
+project default only when that model satisfies every requirement. If two
+providers can complete the same Skill, the Agent shows the viable choices with
+a recommended default, provider/model name, key capability differences, and
+cost instead of silently routing to one.
+
+**Follow-up:** Can the user change the model after the project has started?
+
+**Answer**
+
+Yes. Character and Scene generation exposes an image-model selector, and Shot
+generation exposes a video-model selector for both text-to-video and
+image-to-video. “Project default” inherits the initial choice; an explicit
+override applies to the next generation and invalidates the previous estimate.
+Provider switching never happens silently after a paid task has been accepted.
+
+**Extension:** Can the user change the text-planning model too?
+
+**Answer**
+
+Planning-model choice belongs to the same task-routing rule, but the current
+deployment exposes the planner configured by the administrator. If multiple
+planning models are configured, the selector should live in Settings and show
+their reasoning, context, latency, and price trade-offs. Generated content from
+one model is never described as if another model produced it.
 

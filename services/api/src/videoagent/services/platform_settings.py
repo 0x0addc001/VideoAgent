@@ -1,6 +1,7 @@
 from typing import cast
 from uuid import UUID
 
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from videoagent.config import Settings
@@ -22,7 +23,13 @@ async def get_setting(
     if setting is None:
         setting = PlatformSetting(key=key, value=default)
         session.add(setting)
-        await session.commit()
+        try:
+            await session.commit()
+        except IntegrityError:
+            await session.rollback()
+            setting = await session.get(PlatformSetting, key)
+            if setting is None:
+                raise
     return setting.value
 
 

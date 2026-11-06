@@ -6,9 +6,18 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from videoagent.api.dependencies import get_current_user, get_session
-from videoagent.errors import AppError
-from videoagent.models import Project, ProjectState, ProjectWorkflow, User
+from videoagent.models import (
+    Project,
+    ProjectCollaborator,
+    ProjectState,
+    ProjectWorkflow,
+    User,
+)
 from videoagent.schemas import ProjectCreate, ProjectList, ProjectRead, ProjectUpdate
+from videoagent.services.storyboards import (
+    owned_project_or_404,
+    project_access_permission,
+)
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
@@ -23,7 +32,33 @@ async def list_projects(
         .where(Project.owner_id == user.id, Project.state != ProjectState.ARCHIVED.value)
         .order_by(Project.created_at.desc())
     )
-    return ProjectList(items=[ProjectRead.model_validate(item) for item in result.scalars()])
+    projects_by_id = {project.id: project for project in result.scalars()}
+    shared = (
+        await session.execute(
+            select(Project, ProjectCollaborator)
+            .join(ProjectCollaborator, ProjectCollaborator.project_id == Project.id)
+            .where(
+                ProjectCollaborator.user_id == user.id,
+                Project.state != ProjectState.ARCHIVED.value,
+            )
+        )
+    ).all()
+    permissions = {project_id: "owner" for project_id in projects_by_id}
+    for project, membership in shared:
+        projects_by_id[project.id] = project
+        permissions[project.id] = membership.permission
+    return ProjectList(
+        items=[
+            ProjectRead.model_validate(project).model_copy(
+                update={"access_permission": permissions[project.id]}
+            )
+            for project in sorted(
+                projects_by_id.values(),
+                key=lambda item: item.created_at,
+                reverse=True,
+            )
+        ]
+    )
 
 
 @router.post("", response_model=ProjectRead, status_code=status.HTTP_201_CREATED)
@@ -58,21 +93,16 @@ async def get_project(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> ProjectRead:
-    result = await session.execute(
-        select(Project).where(
-            Project.id == project_id,
-            Project.owner_id == user.id,
-            Project.state != ProjectState.ARCHIVED.value,
-        )
+    project = await owned_project_or_404(
+        session,
+        project_id,
+        user.id,
+        required_permission="view",
     )
-    project = result.scalar_one_or_none()
-    if project is None:
-        raise AppError(
-            status_code=404,
-            code="PROJECT_NOT_FOUND",
-            message="The project was not found.",
-        )
-    return ProjectRead.model_validate(project)
+    _, permission = await project_access_permission(session, project_id, user.id)
+    return ProjectRead.model_validate(project).model_copy(
+        update={"access_permission": permission or "view"}
+    )
 
 
 @router.patch("/{project_id}", response_model=ProjectRead)
@@ -82,20 +112,7 @@ async def rename_project(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> ProjectRead:
-    result = await session.execute(
-        select(Project).where(
-            Project.id == project_id,
-            Project.owner_id == user.id,
-            Project.state != ProjectState.ARCHIVED.value,
-        )
-    )
-    project = result.scalar_one_or_none()
-    if project is None:
-        raise AppError(
-            status_code=404,
-            code="PROJECT_NOT_FOUND",
-            message="The project was not found.",
-        )
+    project = await owned_project_or_404(session, project_id, user.id)
     if payload.title is not None:
         project.title = payload.title.strip()
     if payload.brief is not None:
@@ -112,20 +129,12 @@ async def delete_project(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> None:
-    result = await session.execute(
-        select(Project).where(
-            Project.id == project_id,
-            Project.owner_id == user.id,
-            Project.state != ProjectState.ARCHIVED.value,
-        )
+    project = await owned_project_or_404(
+        session,
+        project_id,
+        user.id,
+        required_permission="owner",
     )
-    project = result.scalar_one_or_none()
-    if project is None:
-        raise AppError(
-            status_code=404,
-            code="PROJECT_NOT_FOUND",
-            message="The project was not found.",
-        )
     project.state = ProjectState.ARCHIVED.value
     session.add(project)
     await session.commit()

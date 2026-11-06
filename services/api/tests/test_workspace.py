@@ -71,6 +71,9 @@ async def test_workflow_requires_approval_at_each_refinement_stage(client):
     )
     assert concept.status_code == 200
     assert concept.json()["workflow"]["stage"] == "outline"
+    assert concept.json()["storyboard"]["characters"]
+    assert concept.json()["storyboard"]["scenes"]
+    assert concept.json()["storyboard"]["shots"]
 
     outline = await client.post(
         f"/api/v1/projects/{project['id']}/workflow/decision",

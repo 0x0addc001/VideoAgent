@@ -18,12 +18,14 @@ from videoagent.errors import AppError
 from videoagent.models import Asset, GenerationJob, Project, Shot, Storyboard, User
 from videoagent.providers.base import CostEstimate, GenerationRequest, VideoProvider
 from videoagent.providers.oauth import KlingOAuthGateway
-from videoagent.schemas import GenerationApproval, GenerationJobRead
+from videoagent.providers.pippit import PippitVideoProvider
+from videoagent.schemas import GenerationApproval, GenerationJobRead, ModelSelection
 from videoagent.services.credits import refund_credits, reserve_credits
 from videoagent.services.generation_jobs import refresh_generation_job
 from videoagent.services.media import asset_path, materialize_generation_result
 from videoagent.services.platform_settings import generation_enabled
 from videoagent.services.provider_resolver import resolve_video_provider
+from videoagent.services.storyboards import load_storyboard, owned_project_or_404
 
 router = APIRouter(tags=["generation"])
 
@@ -37,7 +39,7 @@ async def owned_shot_or_404(
         select(Shot, Project)
         .join(Storyboard, Storyboard.id == Shot.storyboard_id)
         .join(Project, Project.id == Storyboard.project_id)
-        .where(Shot.id == shot_id, Project.owner_id == user_id)
+        .where(Shot.id == shot_id)
     )
     row = result.one_or_none()
     if row is None:
@@ -46,7 +48,25 @@ async def owned_shot_or_404(
             code="SHOT_NOT_FOUND",
             message="The shot was not found.",
         )
-    return row[0], row[1]
+    shot, project = row
+    await owned_project_or_404(session, project.id, user_id)
+    return shot, project
+
+
+async def require_vision_objects(
+    session: AsyncSession,
+    project_id: UUID,
+) -> None:
+    storyboard = await load_storyboard(session, project_id)
+    if storyboard is None or not storyboard.characters or not storyboard.scenes:
+        raise AppError(
+            status_code=409,
+            code="VISION_OBJECTS_REQUIRED",
+            message=(
+                "Create at least one Character and one Scene before arranging "
+                "and generating Shots."
+            ),
+        )
 
 
 KLING_MODEL_ALIASES = {
@@ -106,11 +126,28 @@ async def provider_for_project(
     settings: Settings,
     default_provider: VideoProvider,
     gateway: KlingOAuthGateway,
+    provider_override: str | None = None,
+    model_override: str | None = None,
 ) -> tuple[VideoProvider, str | None]:
     provider_name, model = selected_model(project)
+    if provider_override:
+        provider_name = provider_override
+    if model_override:
+        model = model_override
     if settings.video_provider.lower() == "mock":
         return default_provider, None
     if provider_name == "pippit":
+        if default_provider.name != "pippit":
+            return (
+                PippitVideoProvider(
+                    command=settings.pippit_cli_command,
+                    model=settings.pippit_video_model,
+                    resolution=settings.pippit_video_resolution,
+                    access_key=settings.pippit_access_key,
+                    timeout_seconds=settings.pippit_timeout_seconds,
+                ),
+                model,
+            )
         return default_provider, model
     if provider_name != "kling":
         return default_provider, None
@@ -132,8 +169,10 @@ async def estimate_generation(
     provider: Annotated[VideoProvider, Depends(get_video_provider)],
     gateway: Annotated[KlingOAuthGateway, Depends(get_kling_gateway)],
     settings: Annotated[Settings, Depends(get_settings)],
+    payload: ModelSelection | None = None,
 ) -> CostEstimate:
     shot, project = await owned_shot_or_404(session, shot_id, user.id)
+    await require_vision_objects(session, project.id)
     if not await generation_enabled(session, settings):
         raise AppError(
             status_code=503,
@@ -147,6 +186,8 @@ async def estimate_generation(
         settings=settings,
         default_provider=provider,
         gateway=gateway,
+        provider_override=payload.provider if payload else None,
+        model_override=payload.model if payload else None,
     )
     return await selected_provider.estimate(provider_request(shot, model=model))
 
@@ -168,6 +209,7 @@ async def generate_shot(
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> GenerationJobRead:
     shot, project = await owned_shot_or_404(session, shot_id, user.id)
+    await require_vision_objects(session, project.id)
     if not await generation_enabled(session, settings):
         raise AppError(
             status_code=503,
@@ -200,6 +242,8 @@ async def generate_shot(
         settings=settings,
         default_provider=provider,
         gateway=gateway,
+        provider_override=payload.provider,
+        model_override=payload.model,
     )
     reference_image_path: str | None = None
     if payload.generation_mode == "image_to_video":
@@ -212,7 +256,6 @@ async def generate_shot(
         reference_asset = await session.scalar(
             select(Asset).where(
                 Asset.id == payload.reference_asset_id,
-                Asset.owner_id == user.id,
                 Asset.project_id == project.id,
                 Asset.deleted_at.is_(None),
             )
@@ -309,7 +352,7 @@ async def get_job(
     result = await session.execute(
         select(GenerationJob, Project)
         .join(Project, Project.id == GenerationJob.project_id)
-        .where(GenerationJob.id == job_id, Project.owner_id == user.id)
+        .where(GenerationJob.id == job_id)
     )
     row = result.one_or_none()
     if row is None:
@@ -319,6 +362,12 @@ async def get_job(
             message="The generation job was not found.",
         )
     job, project = row
+    await owned_project_or_404(
+        session,
+        project.id,
+        user.id,
+        required_permission="view",
+    )
     if job.provider == "kling":
         selected_provider = await resolve_video_provider(
             session,

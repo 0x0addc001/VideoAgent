@@ -32,7 +32,7 @@ describe("localization resources", () => {
     expect(landingContent["zh-CN"].nav.agents).toBe("Agents");
     expect(landingContent["zh-CN"].nav.skills).toBe("Skills");
     expect(landingContent["zh-CN"].nav.assets).toBe("资产");
-    expect(landingContent["zh-CN"].nav.hots).toBe("Hots");
+    expect(landingContent["zh-CN"].nav.hots).toBe("视频");
     expect(landingContent.en.hero.eyebrow).toBe("VideoAgent");
     expect(landingContent["zh-CN"].hero.eyebrow).toBe("VideoAgent");
     expect(landingContent["zh-CN"].product.features[1].title).toBe("镜头管理");

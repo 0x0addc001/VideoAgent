@@ -55,7 +55,7 @@
 
 | ID | TODO | Acceptance | Priority |
 | --- | --- | --- | --- |
-| TODO-COMMUNITY-001 | Persist Hots | Publish, author, likes, permissions, and edit time live in the database | P1 |
+| TODO-COMMUNITY-001 | Persist Videos | Publish, author, likes, permissions, and edit time live in the database | P1 |
 | TODO-COMMUNITY-002 | Community moderation | Report, hide, restore, appeal, and audit flows | P1 |
 | TODO-COMMUNITY-003 | Persist and version Skills | User Skills can be published, updated, deprecated, and migrated | P1 |
 | TODO-COMMUNITY-004 | Data retention | Define soft delete, recovery window, and media lifecycle | P2 |

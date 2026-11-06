@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent FAQ" />
     <title>FAQ · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=32" />
+    <link rel="stylesheet" href="../docs.css?v=33" />
   </head>
   <body data-document="faq.html">
     <main class="document-shell" id="document-shell">
@@ -42,9 +42,11 @@
 <a class="toc-link toc-level-2" href="#q14-how-should-a-video-generation-system-support-high-concurrency">Q14. How should a video generation system support high concurrency?</a>
 <a class="toc-link toc-level-2" href="#q15-how-should-a-video-agent-achieve-high-availability">Q15. How should a video Agent achieve high availability?</a>
 <a class="toc-link toc-level-2" href="#q16-how-should-fallback-be-designed-for-the-video-generation-pipeline">Q16. How should fallback be designed for the video generation pipeline?</a>
-<a class="toc-link toc-level-2" href="#q17-what-is-the-agent-loop-here">Q17. What is the Agent Loop here?</a>
-<a class="toc-link toc-level-2" href="#q18-how-are-context-and-memory-designed-and-managed">Q18. How are Context and Memory designed and managed?</a>
-<a class="toc-link toc-level-2" href="#q19-how-are-skills-mcp-and-subagents-invoked">Q19. How are Skills, MCP, and SubAgents invoked?</a>
+<a class="toc-link toc-level-2" href="#q17-what-is-the-videoagent-agent-loop">Q17. What is the VideoAgent Agent Loop?</a>
+<a class="toc-link toc-level-2" href="#q18-how-are-videoagent-context-and-memory-designed-and-managed">Q18. How are VideoAgent Context and Memory designed and managed?</a>
+<a class="toc-link toc-level-2" href="#q19-how-are-videoagent-skills-mcp-and-subagents-invoked">Q19. How are VideoAgent Skills, MCP, and SubAgents invoked?</a>
+<a class="toc-link toc-level-2" href="#q20-how-are-videoagent-hooks-used">Q20. How are VideoAgent Hooks used?</a>
+<a class="toc-link toc-level-2" href="#q21-how-does-videoagent-choose-a-model-when-a-skill-has-multiple-provider-implementations">Q21. How does VideoAgent choose a model when a Skill has multiple Provider implementations?</a>
         </nav>
       </aside>
       <article class="document"><h1 id="videoagent-faq">VideoAgent FAQ</h1>
@@ -54,11 +56,11 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v2.1</td>
+<td>v2.2</td>
 </tr>
 <tr>
 <td>Updated</td>
-<td>2026-11-04</td>
+<td>2026-11-05</td>
 </tr>
 </tbody></table></div>
 <h2 id="q1-how-should-a-video-agent-be-orchestrated">Q1. How should a video Agent be orchestrated?</h2>
@@ -120,7 +122,7 @@
 <p>Evaluate by stage. Script: desire, conflict, turn, and ending. Board: coverage, continuity, and feasibility. Shot: identity, prompt alignment, and defects. Cut: rhythm, sound, and retention.</p>
 <p><strong>Follow-up:</strong> Should the storyboard phase show visual quality scores?</p>
 <p><strong>Answer</strong></p>
-<p>No. Storyboard progress represents workflow and Shot completion only. Visual metrics such as character and style consistency belong to Final Cut, where a selected configured evaluator scores extracted frames against an explicit rubric. The product must not fabricate scores when no evaluator is available.</p>
+<p>No. Storyboard readiness is derived from the workflow and Shot completion but is not shown as a progress score. Visual metrics such as character and style consistency belong to Final Cut, where a selected configured evaluator scores extracted frames against an explicit rubric. The product must not fabricate scores when no evaluator is available.</p>
 <p><strong>Extension:</strong> How can judge bias be reduced?</p>
 <p><strong>Answer</strong></p>
 <p>Use fixed rubrics, blinded model identity, pairwise comparisons, multi-rater calibration, and continuous monitoring of inter-rater agreement and gaming resistance.</p>
@@ -205,7 +207,7 @@
 <p><strong>Extension:</strong> How should fallback priority be determined?</p>
 <p><strong>Answer</strong></p>
 <p>Prioritize data safety, billing consistency, result availability, quality, and latency in that order. Fallbacks must be observable, explainable, reversible, and constrained by user budget and content policy.</p>
-<h2 id="q17-what-is-the-agent-loop-here">Q17. What is the Agent Loop here?</h2>
+<h2 id="q17-what-is-the-videoagent-agent-loop">Q17. What is the VideoAgent Agent Loop?</h2>
 <p><strong>Answer</strong></p>
 <p>It is currently a bounded planning run, not an unrestricted ReAct loop. FastAPI accepts the user message, stores a <code>run_id</code>, assembles bounded Context, loads Memory and current project resources, resolves an optional Skill, and executes the single LangGraph <code>plan_storyboard</code> node. The planner returns a <code>StoryboardPlan</code>; Pydantic validates it before workflow, Message, Character, and Shot state are persisted. The director reply is then stored and returned.</p>
 <p><strong>Follow-up:</strong> Why does the waiting UI show many steps?</p>
@@ -214,7 +216,7 @@
 <p><strong>Extension:</strong> When is a true multi-turn Loop needed?</p>
 <p><strong>Answer</strong></p>
 <p>A multi-node loop is needed when the Agent must choose its next action from tool results, such as reading assets, invoking visual review, retrying from a typed failure, or asking for missing input. That loop requires budgets, stopping conditions, approval gates, and recoverable checkpoints.</p>
-<h2 id="q18-how-are-context-and-memory-designed-and-managed">Q18. How are Context and Memory designed and managed?</h2>
+<h2 id="q18-how-are-videoagent-context-and-memory-designed-and-managed">Q18. How are VideoAgent Context and Memory designed and managed?</h2>
 <p><strong>Answer</strong></p>
 <p>Context is the bounded input for one planning call: project title, brief, current request, locale, workflow stage/status, current Character/Shot summaries, recent conversation, and optional Skill instructions. Short-term Memory reads the eight most recent historical messages, clips each to 600 characters, excludes the current request, and caps Storyboard context at 20 Shots.</p>
 <p><strong>Follow-up:</strong> Where does long-term Memory live?</p>
@@ -223,7 +225,7 @@
 <p><strong>Extension:</strong> What is required before adding vector Memory?</p>
 <p><strong>Answer</strong></p>
 <p>Add user/project isolation, deduplication, TTL, deletion propagation, permission checks, and inspectable retrieval. Retrieved text is still a bounded Context input; it never replaces authoritative database state or approval records.</p>
-<h2 id="q19-how-are-skills-mcp-and-subagents-invoked">Q19. How are Skills, MCP, and SubAgents invoked?</h2>
+<h2 id="q19-how-are-videoagent-skills-mcp-and-subagents-invoked">Q19. How are VideoAgent Skills, MCP, and SubAgents invoked?</h2>
 <p><strong>Answer</strong></p>
 <p>A Skill is not currently a tool execution. The composer writes its ID into project <code>Production settings</code>. The Context Builder looks up a Skill published by the current user and attaches persisted instructions and the starter prompt to Planner Context. A built-in Skill without database instructions contributes only its ID as a directing constraint.</p>
 <p><strong>Follow-up:</strong> Does the Storyboard Agent call MCP directly?</p>
@@ -231,8 +233,27 @@
 <p>No. MCP is behind the billable provider boundary. After explicit generation approval, the Generation API resolves a provider. With the Kling MCP backend, the Provider Resolver creates a <code>StreamableHTTPToolClient</code> with the current user's OAuth token, then <code>KlingVideoProvider</code> invokes <code>text_to_video</code>, <code>image_to_video</code>, or <code>query_tasks</code>. The default China-region path uses a controlled CLI subprocess. This prevents the planning Agent from creating unreviewed billable side effects.</p>
 <p><strong>Extension:</strong> Are there SubAgents today?</p>
 <p><strong>Answer</strong></p>
-<p>No. There is currently one LangGraph <code>plan_storyboard</code> node and no SubAgent runtime, delegation protocol, or parallel subgraph. Split responsibilities only when writing, visual, review, or production work has independent tools, context, acceptance criteria, and scaling needs. Every SubAgent would still share the traceable <code>run_id</code>, budget, and approval boundary.</p></article>
+<p>No. There is currently one LangGraph <code>plan_storyboard</code> node and no SubAgent runtime, delegation protocol, or parallel subgraph. Split responsibilities only when writing, visual, review, or production work has independent tools, context, acceptance criteria, and scaling needs. Every SubAgent would still share the traceable <code>run_id</code>, budget, and approval boundary.</p>
+<h2 id="q20-how-are-videoagent-hooks-used">Q20. How are VideoAgent Hooks used?</h2>
+<p><strong>Answer</strong></p>
+<p>A Hook is a directing constraint for the opening seconds that establishes attention. It is not a webhook or runtime event. The composer offers Auto, visual impact, narrative twist, spoken hook, sound cue, and proof-first openings. VideoAgent writes the selected Hook into the project brief and uses it while planning the creative direction, first narrative beat, and opening shot. Auto lets the Agent choose according to subject, audience, and platform.</p>
+<p>To use a Hook, select one in the composer or apply a Playbook with a default Hook, describe the subject and desired response, approve the direction, then ask for a targeted change such as “make the opening more proof-led” if the first beat does not match. Hook selection remains visible in Settings and can be changed before any billable generation.</p>
+<p><strong>Follow-up:</strong> How is a Hook different from a Playbook?</p>
+<p><strong>Answer</strong></p>
+<p>A Playbook is a complete reusable starting strategy containing a prompt, Skill, Hook, style, frame, duration, model, and review mode. A Hook defines only how the opening earns attention. One Playbook can use different Hooks, and one Hook can appear in multiple Playbooks.</p>
+<p><strong>Extension:</strong> Does a Hook guarantee performance?</p>
+<p><strong>Answer</strong></p>
+<p>No. It constrains intent, while results still depend on writing, shots, performance, editing, and audience. Use batch variants to compare several openings against completion and engagement data rather than treating a Hook as a performance guarantee.</p>
+<h2 id="q21-how-does-videoagent-choose-a-model-when-a-skill-has-multiple-provider-implementations">Q21. How does VideoAgent choose a model when a Skill has multiple Provider implementations?</h2>
+<p><strong>Answer</strong></p>
+<p>The Agent first filters candidates by task and capability: text, image, or video; text/image/video references; duration; aspect ratio; audio and language; output quality; provider availability; and estimated credits. It prefers the project default only when that model satisfies every requirement. If two providers can complete the same Skill, the Agent shows the viable choices with a recommended default, provider/model name, key capability differences, and cost instead of silently routing to one.</p>
+<p><strong>Follow-up:</strong> Can the user change the model after the project has started?</p>
+<p><strong>Answer</strong></p>
+<p>Yes. Character and Scene generation exposes an image-model selector, and Shot generation exposes a video-model selector for both text-to-video and image-to-video. “Project default” inherits the initial choice; an explicit override applies to the next generation and invalidates the previous estimate. Provider switching never happens silently after a paid task has been accepted.</p>
+<p><strong>Extension:</strong> Can the user change the text-planning model too?</p>
+<p><strong>Answer</strong></p>
+<p>Planning-model choice belongs to the same task-routing rule, but the current deployment exposes the planner configured by the administrator. If multiple planning models are configured, the selector should live in Settings and show their reasoning, context, latency, and price trade-offs. Generated content from one model is never described as if another model produced it.</p></article>
     </main>
-    <script src="../docs.js?v=32"></script>
+    <script src="../docs.js?v=33"></script>
   </body>
 </html>

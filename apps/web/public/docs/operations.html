@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Ops" />
     <title>Ops · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=32" />
+    <link rel="stylesheet" href="../docs.css?v=33" />
   </head>
   <body data-document="operations.html">
     <main class="document-shell" id="document-shell">
@@ -29,6 +29,7 @@
 <a class="toc-link toc-level-2" href="#1-operating-model">1. Operating Model</a>
 <a class="toc-link toc-level-2" href="#2-release-readiness">2. Release Readiness</a>
 <a class="toc-link toc-level-2" href="#3-official-skill-operations">3. Official Skill Operations</a>
+<a class="toc-link toc-level-3" href="#3-1-skill-and-videos-leaderboards">3.1 Skill and Videos Leaderboards</a>
 <a class="toc-link toc-level-2" href="#4-asset-operations">4. Asset Operations</a>
 <a class="toc-link toc-level-2" href="#5-provider-and-cost-operations">5. Provider and Cost Operations</a>
 <a class="toc-link toc-level-3" href="#5-1-administration-console">5.1 Administration Console</a>
@@ -46,15 +47,15 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v2.2</td>
+<td>v2.3</td>
 </tr>
 <tr>
 <td>Updated</td>
-<td>2026-11-04</td>
+<td>2026-11-05</td>
 </tr>
 <tr>
 <td>Scope</td>
-<td>Skills, Hots, Assets, providers, support, metrics</td>
+<td>Skills, Videos, Assets, providers, support, metrics</td>
 </tr>
 </tbody></table></div>
 <h2 id="1-operating-model">1. Operating Model</h2>
@@ -62,7 +63,7 @@
 <ol>
 <li>Provider-native Skills and cross-provider workflows under their respective</li>
 <p><code>kling</code>, <code>pippit</code>, or <code>video_agent</code> namespaces.</p>
-<li>User-published Skills and Hots entries.</li>
+<li>User-published Skills and Videos entries.</li>
 <li>Project outputs stored in Assets.</li>
 </ol>
 <h2 id="2-release-readiness">2. Release Readiness</h2>
@@ -94,6 +95,23 @@
 <li>Scenario playbooks reference current Skills and stay aligned with composer</li>
 <p>fields.</p>
 <li>External Agent handoff uses an explicit MCP or CLI contract.</li>
+</ul>
+<h3 id="3-1-skill-and-videos-leaderboards">3.1 Skill and Videos Leaderboards</h3>
+<ul>
+<li>Skills use six categories: Generation, Story, Workflow, Post, Review, and</li>
+<p>Utility. Videos uses Vlog, Product, Drama, Music, Localization, and Campaign.</p>
+<li>Category filters change the visible subset without changing overall rank.</li>
+<p>Skills can sort by combined signal, uses, likes, or recency; Videos can sort by likes or recency.</p>
+<li>Skill score is <code>unique account uses × 2 + unique account likes × 3</code>. Videos</li>
+<p>ranks by unique account likes. Ties compare likes, uses, then update time.</p>
+<li>One account contributes at most one like or use signal per item. Authors</li>
+<p>cannot like their own content.</p>
+<li>The Skills top three display 500, 300, and 150 credit rewards. The Videos top</li>
+<p>three display 300, 180, and 100. Campaign duration, budget, and final eligibility are configured per operating cycle.</p>
+<li>Rewards are issued through audited administrator credit adjustments. The</li>
+<p>client leaderboard is a projection and is not an authorization to pay.</p>
+<li>For suspected manipulation, pause settlement, review accounts, timestamps,</li>
+<p>devices, and publication history, remove confirmed invalid interactions, and retain the operating audit trail.</p>
 </ul>
 <h2 id="4-asset-operations">4. Asset Operations</h2>
 <ul>
@@ -184,10 +202,11 @@
 <li>Final Cut review: percentage of exported films with a completed visual evaluation.</li>
 <li>Reliability: generation jobs reaching a terminal state.</li>
 <li>Cost: credit usage per completed project.</li>
-<li>Content: official Skill reuse and community publication rate.</li>
+<li>Content: Skill category distribution, unique likes, unique uses,</li>
+<p>leaderboard conversion, Videos unique likes, and campaign reward cost.</p>
 <li>Documentation: search success and zero broken bilingual links.</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=32"></script>
+    <script src="../docs.js?v=33"></script>
   </body>
 </html>

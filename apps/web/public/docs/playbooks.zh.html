@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Playbook" />
     <title>Playbook · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=32" />
+    <link rel="stylesheet" href="../docs.css?v=33" />
   </head>
   <body data-document="playbooks.zh.html">
     <main class="document-shell" id="document-shell">
@@ -25,7 +25,7 @@
         </button>
         <nav class="toc-panel" id="toc-panel" aria-label="目录">
           <p class="toc-kicker">目录</p>
-          <a class="toc-link toc-level-1" href="#videoagent-playbook">VideoAgent Playbook</a>
+          <a class="toc-link toc-level-1" href="#videoagent-策略">VideoAgent 策略</a>
 <a class="toc-link toc-level-2" href="#1-通用结构">1. 通用结构</a>
 <a class="toc-link toc-level-2" href="#2-product-ad">2. Product Ad</a>
 <a class="toc-link toc-level-2" href="#3-creator-vlog">3. Creator Vlog</a>
@@ -33,10 +33,14 @@
 <a class="toc-link toc-level-2" href="#5-music-video">5. Music Video</a>
 <a class="toc-link toc-level-2" href="#6-localize">6. Localize</a>
 <a class="toc-link toc-level-2" href="#7-batch-test">7. Batch Test</a>
-<a class="toc-link toc-level-2" href="#8-运营规则">8. 运营规则</a>
+<a class="toc-link toc-level-2" href="#8-reference-remake">8. Reference Remake</a>
+<a class="toc-link toc-level-2" href="#9-keyframe-story">9. Keyframe Story</a>
+<a class="toc-link toc-level-2" href="#10-product-edit">10. Product Edit</a>
+<a class="toc-link toc-level-2" href="#11-模型与能力路由">11. 模型与能力路由</a>
+<a class="toc-link toc-level-2" href="#12-运营规则">12. 运营规则</a>
         </nav>
       </aside>
-      <article class="document"><h1 id="videoagent-playbook">VideoAgent Playbook</h1>
+      <article class="document"><h1 id="videoagent-策略">VideoAgent 策略</h1>
 <div class="table-wrap"><table><thead><tr>
 <th>属性</th>
 <th>内容</th>
@@ -50,9 +54,9 @@
 <td>2026-11-04</td>
 </tr>
 </tbody></table></div>
-<p>Playbook 是可复用的创作方案。它把业务场景、叙事结构、默认制作参数和审核要求 组合成一个可直接进入创作的项目起点。</p>
+<p>策略是可复用的创作方案。它把业务场景、叙事结构、默认制作参数和审核要求 组合成一个可直接进入创作的项目起点。</p>
 <h2 id="1-通用结构">1. 通用结构</h2>
-<p>每个 Playbook 包含：</p>
+<p>每个策略包含：</p>
 <ul>
 <li>场景名称与目标用户</li>
 <li>业务目标与核心信息</li>
@@ -126,14 +130,50 @@
 <li>Skill：<code>video_agent/batch_variants</code></li>
 <li>时长：5 秒</li>
 </ul>
-<h2 id="8-运营规则">8. 运营规则</h2>
+<h2 id="8-reference-remake">8. Reference Remake</h2>
+<p>适用于爆款复刻、竞品视觉拆解和跨品类迁移。</p>
 <ul>
-<li>Playbook 必须引用有效 Skill。</li>
+<li>分析参考视频的叙事节奏、镜头顺序、动作与运镜</li>
+<li>锁定可替换项：产品、人物、场景、服装和品牌信息</li>
+<li>复用节奏与构图，但不复制受保护的角色、商标或独特表达</li>
+<li>先产出一页镜头对照，再逐镜生成</li>
+<li>Skill：<code>video_agent/reference_remake</code></li>
+</ul>
+<h2 id="9-keyframe-story">9. Keyframe Story</h2>
+<p>适用于最多 30 秒的连续叙事、复杂动作与多节点转场。</p>
+<ul>
+<li>先确定 3 至 5 个关键画面，记录人物状态、场景变化和情节节点</li>
+<li>保持人物身份、空间方向、道具和光线连续</li>
+<li>用运镜连接关键帧，减少无意义硬切</li>
+<li>支持 21:9、16:9、9:16 与 1:1</li>
+<li>文生视频参考规划；已有参考图时自动切换图生视频</li>
+<li>Skill：<code>video_agent/camera_movement</code></li>
+</ul>
+<h2 id="10-product-edit">10. Product Edit</h2>
+<p>适用于已有产品素材的二次创作与商业版本改写。</p>
+<ul>
+<li>保留产品身份、动作连续性和核心信息</li>
+<li>可替换环境、光线、天气、材质、景别与视角</li>
+<li>结合图片参考锁定产品外观，结合视频参考保持动作</li>
+<li>每次只改变一组明确变量，便于比较和审核</li>
+<li>Skill：<code>video_agent/video_edit</code></li>
+</ul>
+<h2 id="11-模型与能力路由">11. 模型与能力路由</h2>
+<ul>
+<li>同一 Skill 有多个 Provider 时，先按输入模态、时长、画幅、音频、语言、质量与积分筛选。</li>
+<li>多个模型都满足时，展示推荐项、<code>服务商/模型</code>、能力差异与成本，由用户确认。</li>
+<li>Character 与 Scene 使用图片模型选择；Shot 使用视频模型选择。</li>
+<li>文生视频与图生视频都有机会在执行前覆盖项目默认模型。</li>
+<li>已计费任务不会在用户不知情时静默切换 Provider。</li>
+</ul>
+<h2 id="12-运营规则">12. 运营规则</h2>
+<ul>
+<li>策略必须引用有效 Skill。</li>
 <li>默认参数必须与创作框字段一致。</li>
 <li>模型能力不足时先降级或要求用户调整，不静默切换。</li>
 <li>版本变化需要同步 PRD、Arch 和 Test。</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=32"></script>
+    <script src="../docs.js?v=33"></script>
   </body>
 </html>

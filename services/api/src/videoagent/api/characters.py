@@ -20,6 +20,7 @@ from videoagent.services.media import (
     save_upload,
 )
 from videoagent.services.platform_settings import generation_enabled
+from videoagent.services.storyboards import owned_project_or_404
 
 router = APIRouter(prefix="/characters", tags=["characters"])
 IMAGE_GENERATION_CREDITS = 2
@@ -35,7 +36,7 @@ async def owned_character_or_404(
             select(Character, Project)
             .join(Storyboard, Storyboard.id == Character.storyboard_id)
             .join(Project, Project.id == Storyboard.project_id)
-            .where(Character.id == character_id, Project.owner_id == user_id)
+            .where(Character.id == character_id)
         )
     ).one_or_none()
     if row is None:
@@ -44,7 +45,9 @@ async def owned_character_or_404(
             code="CHARACTER_NOT_FOUND",
             message="The character was not found.",
         )
-    return row[0], row[1]
+    character, project = row
+    await owned_project_or_404(session, project.id, user_id)
+    return character, project
 
 
 @router.post("/{character_id}/estimate", response_model=CostEstimate)
@@ -119,6 +122,12 @@ async def generate_character_image(
             code="GENERATION_APPROVAL_REQUIRED",
             message="Generation requires explicit approval.",
         )
+    if payload.provider not in {None, "kling"}:
+        raise AppError(
+            status_code=422,
+            code="IMAGE_PROVIDER_UNSUPPORTED",
+            message="The selected provider does not support image generation.",
+        )
     if not await generation_enabled(session, settings):
         raise AppError(
             status_code=503,
@@ -137,7 +146,6 @@ async def generate_character_image(
         reference = await session.scalar(
             select(Asset).where(
                 Asset.id == payload.reference_asset_id,
-                Asset.owner_id == user.id,
                 Asset.project_id == project.id,
                 Asset.deleted_at.is_(None),
             )
@@ -177,6 +185,7 @@ async def generate_character_image(
                 prompt=character.prompt_en,
                 generation_mode=payload.generation_mode,
                 reference_image_path=reference_path,
+                model=payload.model or "kling-image-v3_0",
             )
         asset = await materialize_character_image(
             session,

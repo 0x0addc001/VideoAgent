@@ -62,6 +62,21 @@ async def test_admin_switches_generation_and_registration(app):
     storyboard = await admin.put(
         f"/api/v1/projects/{project['id']}/storyboard",
         json={
+            "characters": [
+                {
+                    "name": "Presenter",
+                    "description": "A product presenter.",
+                    "prompt_en": "Editorial portrait of a presenter",
+                }
+            ],
+            "scenes": [
+                {
+                    "name": "Gate set",
+                    "location": "Studio",
+                    "description": "A controlled generation test set.",
+                    "prompt_en": "Cinematic studio set",
+                }
+            ],
             "shots": [
                 {
                     "description": "Gate",

@@ -55,7 +55,7 @@
 
 | ID | 待办 | 验收结果 | 优先级 |
 | --- | --- | --- | --- |
-| TODO-COMMUNITY-001 | Hots 持久化 | 发布、作者、喜欢、权限和编辑时间进入数据库 | P1 |
+| TODO-COMMUNITY-001 | Videos 持久化 | 发布、作者、喜欢、权限和编辑时间进入数据库 | P1 |
 | TODO-COMMUNITY-002 | 社区审核 | 举报、隐藏、恢复、申诉和审计流程 | P1 |
 | TODO-COMMUNITY-003 | Skill 持久化与版本 | 用户 Skill 可公开、更新、弃用和迁移 | P1 |
 | TODO-COMMUNITY-004 | 数据保留策略 | 明确软删除、恢复窗口和媒体生命周期 | P2 |

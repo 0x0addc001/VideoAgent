@@ -176,6 +176,7 @@ class ProjectRead(BaseModel):
     title: str
     brief: str
     state: str
+    access_permission: Literal["owner", "edit", "view"] = "owner"
     created_at: datetime
     updated_at: datetime
 
@@ -260,7 +261,7 @@ class WorkflowDecisionRequest(BaseModel):
 
 
 GenerationMode = Literal["text_to_video", "image_to_video"]
-AspectRatio = Literal["16:9", "9:16", "1:1"]
+AspectRatio = Literal["21:9", "16:9", "9:16", "1:1"]
 ShotStatus = Literal["draft", "ready", "queued", "generating", "completed", "failed", "cancelled"]
 JobStatus = Literal[
     "pending",
@@ -278,7 +279,7 @@ class ShotInput(BaseModel):
     description: str = Field(min_length=1, max_length=500)
     prompt_en: str = Field(min_length=1, max_length=4000)
     prompt_zh: str | None = Field(default=None, max_length=4000)
-    duration_seconds: int = Field(default=5, ge=1, le=15)
+    duration_seconds: int = Field(default=5, ge=1, le=30)
     aspect_ratio: AspectRatio = "16:9"
     generation_mode: GenerationMode = "text_to_video"
 
@@ -287,7 +288,7 @@ class ShotUpdate(BaseModel):
     description: str | None = Field(default=None, min_length=1, max_length=500)
     prompt_en: str | None = Field(default=None, min_length=1, max_length=4000)
     prompt_zh: str | None = Field(default=None, max_length=4000)
-    duration_seconds: int | None = Field(default=None, ge=1, le=15)
+    duration_seconds: int | None = Field(default=None, ge=1, le=30)
     aspect_ratio: AspectRatio | None = None
     generation_mode: GenerationMode | None = None
 
@@ -318,9 +319,32 @@ class CharacterUpdate(BaseModel):
         return self
 
 
+class SceneInput(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    description: str = Field(min_length=1, max_length=2000)
+    location: str = Field(min_length=1, max_length=240)
+    prompt_en: str = Field(min_length=1, max_length=4000)
+    prompt_zh: str | None = Field(default=None, max_length=4000)
+
+
+class SceneUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=120)
+    description: str | None = Field(default=None, min_length=1, max_length=2000)
+    location: str | None = Field(default=None, min_length=1, max_length=240)
+    prompt_en: str | None = Field(default=None, min_length=1, max_length=4000)
+    prompt_zh: str | None = Field(default=None, max_length=4000)
+
+    @model_validator(mode="after")
+    def at_least_one_field(self) -> "SceneUpdate":
+        if not self.model_fields_set:
+            raise ValueError("At least one scene field must be provided")
+        return self
+
+
 class StoryboardReplace(BaseModel):
-    shots: list[ShotInput] = Field(min_length=1, max_length=50)
+    shots: list[ShotInput] = Field(default_factory=list, max_length=50)
     characters: list[CharacterInput] | None = Field(default=None, max_length=20)
+    scenes: list[SceneInput] | None = Field(default=None, max_length=20)
 
 
 class StoryboardReorder(BaseModel):
@@ -352,6 +376,18 @@ class CharacterRead(BaseModel):
     prompt_zh: str | None
 
 
+class SceneRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: UUID
+    index: int
+    name: str
+    description: str
+    location: str
+    prompt_en: str
+    prompt_zh: str | None
+
+
 class StoryboardRead(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -360,6 +396,7 @@ class StoryboardRead(BaseModel):
     version: int
     shots: list[ShotRead]
     characters: list[CharacterRead]
+    scenes: list[SceneRead]
     created_at: datetime
     updated_at: datetime
 
@@ -420,7 +457,15 @@ class VisualReviewModelList(BaseModel):
     items: list[VisualReviewModelRead]
 
 
-class GenerationApproval(BaseModel):
+GenerationProvider = Literal["kling", "pippit"]
+
+
+class ModelSelection(BaseModel):
+    provider: GenerationProvider | None = None
+    model: str | None = Field(default=None, min_length=1, max_length=200)
+
+
+class GenerationApproval(ModelSelection):
     approved: bool
     generation_mode: GenerationMode = "text_to_video"
     reference_asset_id: UUID | None = None
@@ -429,7 +474,7 @@ class GenerationApproval(BaseModel):
 ImageGenerationMode = Literal["text_to_image", "image_to_image"]
 
 
-class CharacterGenerationApproval(BaseModel):
+class CharacterGenerationApproval(ModelSelection):
     approved: bool
     generation_mode: ImageGenerationMode = "text_to_image"
     reference_asset_id: UUID | None = None
@@ -480,7 +525,7 @@ class AssetUpdate(BaseModel):
     filename: str = Field(min_length=1, max_length=256)
 
 
-ResourceType = Literal["shot", "character"]
+ResourceType = Literal["shot", "character", "scene"]
 
 
 class ResourceSelectionUpdate(BaseModel):
@@ -511,6 +556,30 @@ class ShareLinkRead(BaseModel):
     expires_at: datetime
     revoked_at: datetime | None
     created_at: datetime
+
+
+CollaborationPermission = Literal["view", "edit"]
+
+
+class ProjectCollaborationCreate(BaseModel):
+    permission: CollaborationPermission = "edit"
+    collaborator_email: EmailStr | None = None
+    expires_in_hours: int = Field(default=24 * 7, ge=1, le=24 * 90)
+
+
+class ProjectCollaborationRead(BaseModel):
+    id: UUID
+    project_id: UUID
+    permission: CollaborationPermission
+    collaborator_email: str | None
+    share_url: str
+    expires_at: datetime
+    created_at: datetime
+
+
+class ProjectCollaborationAcceptRead(BaseModel):
+    project_id: UUID
+    permission: CollaborationPermission
 
 
 class ExportRequest(BaseModel):
@@ -571,12 +640,47 @@ class UserSkillRead(SkillOptimizeResponse):
     id: UUID
     user_id: str
     visibility: Literal["private", "public"]
+    is_mine: bool
+    likes: int
+    uses: int
+    is_liked: bool
     created_at: datetime
     updated_at: datetime
 
 
 class UserSkillList(BaseModel):
     items: list[UserSkillRead]
+
+
+class SkillEngagementRead(BaseModel):
+    likes: int
+    uses: int
+    is_liked: bool
+
+
+class SkillEngagementRequest(BaseModel):
+    skill_key: str = Field(min_length=3, max_length=240)
+
+    @field_validator("skill_key")
+    @classmethod
+    def normalize_skill_key(cls, value: str) -> str:
+        parts = value.strip().lower().split("/")
+        if len(parts) != 2:
+            raise ValueError("Skill key must include a namespace")
+        normalized = "/".join(
+            re.sub(r"[^a-z0-9_]+", "_", part).strip("_") for part in parts
+        )
+        if len(normalized) < 3 or normalized.startswith("/"):
+            raise ValueError("Skill key must include a namespace and Skill ID")
+        return normalized[:240]
+
+
+class SkillEngagementQuery(BaseModel):
+    skill_keys: list[str] = Field(default_factory=list, max_length=100)
+
+
+class SkillEngagementList(BaseModel):
+    items: dict[str, SkillEngagementRead]
 
 
 class HotsPostRead(BaseModel):
@@ -588,11 +692,18 @@ class HotsPostRead(BaseModel):
     author: str
     likes: int
     is_mine: bool
+    is_liked: bool
     created_at: datetime
 
 
 class HotsPostList(BaseModel):
     items: list[HotsPostRead]
+
+
+class HotsPublishFromAsset(BaseModel):
+    title: str = Field(min_length=1, max_length=200)
+    prompt: str = Field(default="", max_length=20_000)
+    skill: str = Field(default="auto", max_length=120)
 
 
 class AgentMessageCreate(BaseModel):

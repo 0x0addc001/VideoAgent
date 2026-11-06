@@ -37,14 +37,23 @@ describe("LandingPage", () => {
     );
     expect(nav?.textContent).toContain("Skills");
     expect(nav?.textContent).toContain("Assets");
-    expect(nav?.textContent).toContain("Hots");
+    expect(nav?.textContent).toContain("Videos");
     expect(nav?.textContent).toContain("Docs");
     expect(
       [...(nav?.querySelectorAll("button") ?? [])].map((button) =>
         button.textContent?.trim(),
       ),
-    ).toEqual(["Agents", "Skills", "Hots", "Assets", "Docs"]);
+    ).toEqual(["Agents", "Skills", "Videos", "Assets", "Docs"]);
     expect(nav?.querySelectorAll(".nav-icon")).toHaveLength(5);
+    const navigationIcon = (label: string) =>
+      [...(nav?.querySelectorAll("button") ?? [])]
+        .find((button) => button.textContent?.trim() === label)
+        ?.querySelector("svg");
+    expect(navigationIcon("Agents")).toHaveClass("lucide-sparkles");
+    expect(navigationIcon("Skills")).toHaveClass("lucide-video");
+    expect(navigationIcon("Videos")).toHaveClass("lucide-film");
+    expect(navigationIcon("Assets")).toHaveClass("lucide-layers");
+    expect(navigationIcon("Docs")).toHaveClass("lucide-file-text");
     expect(container.querySelector(".profile-trigger")).toBeInTheDocument();
     expect(container.querySelector(".profile-menu")).toBeInTheDocument();
     expect(container.querySelector(".brand-mark .brand-play")).toBeInTheDocument();
@@ -74,11 +83,61 @@ describe("LandingPage", () => {
     expect(actionItems.map((item) => item.className)).toEqual([
       "account-switcher",
     ]);
-    expect(container.querySelector(".account-menu")).not.toBeVisible();
+    expect(container.querySelector(".profile-menu")).not.toBeVisible();
     fireEvent.click(container.querySelector(".profile-trigger")!);
-    expect(container.querySelector(".account-menu")).toBeVisible();
-    expect(container.querySelector(".account-menu")).toHaveTextContent("Log in");
-    expect(container.querySelector(".account-menu")).toHaveTextContent("Register");
+    expect(container.querySelector(".profile-menu")).toBeVisible();
+    expect(container.querySelector(".profile-menu")).toHaveTextContent(
+      "Languages",
+    );
+    expect(container.querySelector(".profile-menu")).toHaveTextContent(
+      "Notifications",
+    );
+    expect(container.querySelector(".profile-menu")).toHaveTextContent(
+      "Credits",
+    );
+    expect(container.querySelector(".profile-menu")).not.toHaveTextContent(
+      "Settings",
+    );
+    expect(container.querySelector(".profile-menu")).not.toHaveTextContent(
+      "No notifications",
+    );
+    expect(container.querySelector(".account-avatar")).not.toHaveClass(
+      "has-updates",
+    );
+    fireEvent.click(container.querySelector(".profile-language-row")!);
+    expect(
+      container.querySelector(".profile-menu .profile-language-options"),
+    ).not.toBeInTheDocument();
+    expect(
+      container.querySelector(".profile-language-flyout"),
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector(
+        ".profile-language-row .profile-row-value .lucide-chevron-right",
+      ),
+    ).toBeInTheDocument();
+    expect(container.querySelector(".profile-language-options")).toHaveTextContent(
+      "English",
+    );
+    expect(container.querySelector(".profile-language-options")).toHaveTextContent(
+      "中文",
+    );
+    expect(
+      container.querySelector(".profile-trigger .profile-settings-indicator"),
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector(
+        ".profile-menu-row .profile-notification-chevron.lucide-chevron-right",
+      ),
+    ).toBeInTheDocument();
+    expect(container.querySelector(".profile-menu")).toHaveTextContent("Log in");
+    expect(container.querySelector(".profile-menu")).toHaveTextContent("Register");
+    expect(
+      container.querySelector(".profile-menu .account-action .lucide-log-in"),
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector(".profile-menu .account-action .lucide-user-plus"),
+    ).toBeInTheDocument();
     expect(container.querySelector("footer")).not.toBeInTheDocument();
     expect(container.querySelectorAll(".hero-video-frame")).toHaveLength(6);
     const videoSources = [...container.querySelectorAll(".hero-video-frame source")].map(
@@ -118,7 +177,7 @@ describe("LandingPage", () => {
     expect(container.querySelectorAll("#skills .skill-group")).toHaveLength(0);
     expect(
       container.querySelectorAll("#skills .skill-card:not(.skill-publish-card)"),
-    ).toHaveLength(23);
+    ).toHaveLength(26);
     expect(container.querySelector("#skills")).toHaveTextContent("Search all resources");
     expect(container.querySelector("#skills")).toHaveTextContent(
       "kling/text_to_video",
@@ -128,6 +187,9 @@ describe("LandingPage", () => {
     expect(container.querySelector("#skills")).toHaveTextContent("Short drama");
     expect(container.querySelector("#skills")).toHaveTextContent("Skill synthesis");
     expect(container.querySelector("#skills")).toHaveTextContent("Storyboard review");
+    expect(
+      container.querySelector("#skills .skill-title-icon.lucide-video"),
+    ).toBeInTheDocument();
     expect(container.querySelector("#skills .skill-card-copy small")).not.toBeInTheDocument();
     expect(container.querySelector("#skills .view-search input")).toBeInTheDocument();
     expect(container.querySelector(".skill-publish-card")).toBeInTheDocument();
@@ -150,6 +212,11 @@ describe("LandingPage", () => {
     expect(assetVideo).not.toHaveAttribute("autoplay");
     expect(container.querySelector("#assets .asset-card img")).not.toBeInTheDocument();
     expect(container.querySelector("#assets .view-search input")).toBeInTheDocument();
+    expect(
+      [...container.querySelectorAll("#assets .asset-tabs button")].map(
+        (button) => button.textContent?.trim(),
+      ),
+    ).toEqual(["Videos", "Skills"]);
     const play = vi
       .spyOn(HTMLMediaElement.prototype, "play")
       .mockResolvedValue(undefined);
@@ -160,7 +227,7 @@ describe("LandingPage", () => {
     expect(pause).toHaveBeenCalled();
     fireEvent.click(
       [...container.querySelectorAll("#assets .asset-tabs button")].find(
-        (button) => button.textContent?.trim() === "Skill",
+        (button) => button.textContent?.trim() === "Skills",
       )!,
     );
     expect(container.querySelectorAll("#assets .asset-card")).toHaveLength(2);
@@ -173,7 +240,7 @@ describe("LandingPage", () => {
 
     fireEvent.click(
       [...container.querySelectorAll(".site-header button")].find(
-        (button) => button.textContent === "Hots",
+        (button) => button.textContent === "Videos",
       )!,
     );
     expect(
@@ -183,13 +250,16 @@ describe("LandingPage", () => {
       container.querySelector(
         "#hots .community-card:not(.community-publish-card) .community-card-content",
       )?.firstElementChild,
-    ).toHaveClass("community-card-title");
+    ).toHaveClass("community-card-title-line");
     expect(container.querySelector(".community-author")).toHaveTextContent("Maya Chen");
     expect(container.querySelector(".community-likes")).toHaveTextContent("128");
     expect(container.querySelectorAll("#hots .community-card video")).toHaveLength(10);
     expect(container.querySelector("#hots video")).toHaveAttribute("autoplay");
     expect(
       container.querySelector(".community-publish-card .community-publish-icon"),
+    ).toBeInTheDocument();
+    expect(
+      container.querySelector("#hots .community-title-icon.lucide-film"),
     ).toBeInTheDocument();
     expect(container.querySelector(".community-publish-card")).toHaveTextContent(
       "Publish video",
@@ -205,8 +275,22 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/product-requirements.html?v=32",
+      "/docs/product-requirements.html?v=33",
     );
+    expect(container.querySelector('[data-testid="docs-directory"]')).toBeInTheDocument();
+    expect(container.querySelector("#docs .docs-search-wrap + .docs-body")).toBeInTheDocument();
+    expect(
+      container.querySelector('[role="tablist"][aria-orientation="vertical"]'),
+    ).toBeInTheDocument();
+    fireEvent.click(
+      container.querySelector('button[aria-label="Collapse document list"]')!,
+    );
+    expect(container.querySelector("#docs .docs-body")).toHaveClass(
+      "docs-directory-collapsed",
+    );
+    expect(
+      container.querySelector('button[aria-label="Expand document list"]'),
+    ).toBeInTheDocument();
     expect(container.querySelectorAll(".docs-tab-icon")).toHaveLength(9);
     expect(
       [...container.querySelectorAll(".docs-tabs button")].map((button) =>
@@ -230,26 +314,61 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/faq.html?v=32",
+      "/docs/faq.html?v=33",
     );
 
     fireEvent.click(container.querySelector(".profile-trigger")!);
+    fireEvent.click(container.querySelector(".profile-language-row")!);
     fireEvent.click(
-      [...container.querySelectorAll(".profile-language-row button")].find(
-        (button) => button.textContent === "中",
+      [...container.querySelectorAll(".profile-language-options button")].find(
+        (button) => button.textContent === "中文",
       )!,
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/faq.zh.html?v=32",
+      "/docs/faq.zh.html?v=33",
     );
     expect(
       [...container.querySelectorAll(".docs-tabs button")].map((button) =>
         button.textContent?.trim(),
       ),
-    ).toEqual(["产品", "玩法", "架构", "接口", "开发", "测试", "运营", "客服", "待办"]);
+    ).toEqual(["产品", "策略", "架构", "接口", "开发", "测试", "运营", "客服", "待办"]);
     expect(container.querySelector(".site-header > nav")).toHaveTextContent(
       "Agents",
+    );
+  });
+
+  it("returns to the first document when Docs is reopened", () => {
+    const { container } = render(<LandingPage {...props} />);
+
+    fireEvent.click(
+      [...container.querySelectorAll(".site-header button")].find(
+        (button) => button.textContent === "Docs",
+      )!,
+    );
+    fireEvent.click(
+      [...container.querySelectorAll("#docs .docs-tabs button")].find(
+        (button) => button.textContent?.trim() === "Playbook",
+      )!,
+    );
+    expect(container.querySelector("#docs iframe")).toHaveAttribute(
+      "src",
+      "/docs/playbooks.html?v=33",
+    );
+
+    fireEvent.click(
+      [...container.querySelectorAll(".site-header button")].find(
+        (button) => button.textContent === "Skills",
+      )!,
+    );
+    fireEvent.click(
+      [...container.querySelectorAll(".site-header button")].find(
+        (button) => button.textContent === "Docs",
+      )!,
+    );
+    expect(container.querySelector("#docs iframe")).toHaveAttribute(
+      "src",
+      "/docs/product-requirements.html?v=33",
     );
   });
 
@@ -403,12 +522,15 @@ describe("LandingPage", () => {
     await waitFor(() =>
       expect(container.querySelector(".account-avatar")).toHaveTextContent("CR"),
     );
+    expect(container.querySelector(".profile-name")?.textContent).toBe(
+      "creator@example.com",
+    );
     fireEvent.click(container.querySelector(".profile-trigger")!);
-    expect(container.querySelector(".account-menu")).toHaveTextContent(
+    expect(container.querySelector(".profile-menu")).not.toHaveTextContent(
       "creator@example.com",
     );
     fireEvent.click(
-      [...container.querySelectorAll(".account-menu button")].find(
+      [...container.querySelectorAll(".profile-menu button")].find(
         (button) => button.textContent === "Sign out",
       )!,
     );
@@ -418,10 +540,10 @@ describe("LandingPage", () => {
         expect.objectContaining({ method: "POST" }),
       ),
     );
-    expect(container.querySelector(".account-menu")).toHaveTextContent("Log in");
+    expect(container.querySelector(".profile-menu")).toHaveTextContent("Log in");
   });
 
-  it("publishes a Hots post with an uploaded video", async () => {
+  it("publishes a Video post with an uploaded file", async () => {
     const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const url = String(input);
       if (url.endsWith("/hots") && init?.method === "POST") {
@@ -461,7 +583,7 @@ describe("LandingPage", () => {
 
     fireEvent.click(
       [...container.querySelectorAll(".site-header button")].find(
-        (button) => button.textContent === "Hots",
+        (button) => button.textContent === "Videos",
       )!,
     );
     fireEvent.click(container.querySelector(".community-publish-card")!);
@@ -486,14 +608,21 @@ describe("LandingPage", () => {
     );
 
     await waitFor(() =>
-      expect(
-        container.querySelector(".community-card:not(.community-publish-card)"),
-      ).toHaveTextContent("A new film from my studio"),
+      expect(container.querySelector("#hots")).toHaveTextContent(
+        "A new film from my studio",
+      ),
     );
-    expect(container.querySelector(".community-author")).toHaveTextContent(
+    const publishedCard = [
+      ...container.querySelectorAll(
+        ".community-card:not(.community-publish-card)",
+      ),
+    ].find((card) => card.textContent?.includes("A new film from my studio"))!;
+    expect(publishedCard.querySelector(".community-author")).toHaveTextContent(
       "studio_author",
     );
-    expect(container.querySelector(".community-likes")).toHaveTextContent("0");
+    expect(publishedCard.querySelector(".community-likes")).toHaveTextContent(
+      "0",
+    );
   });
 
   it("publishes a user skill with a namespaced ID", async () => {
@@ -809,7 +938,7 @@ describe("LandingPage", () => {
     expect(history?.querySelector(".sidebar-project-list svg")).toBeNull();
   });
 
-  it("searches Skills, Hots, and Assets", () => {
+  it("searches Skills, Videos, and Assets", () => {
     const { container } = render(<LandingPage {...props} />);
 
     fireEvent.click(
@@ -829,7 +958,7 @@ describe("LandingPage", () => {
 
     fireEvent.click(
       [...container.querySelectorAll(".site-header button")].find(
-        (button) => button.textContent === "Hots",
+        (button) => button.textContent === "Videos",
       )!,
     );
     fireEvent.change(container.querySelector("#hots .view-search input")!, {
@@ -846,7 +975,7 @@ describe("LandingPage", () => {
     );
     fireEvent.click(
       [...container.querySelectorAll("#assets .asset-tabs button")].find(
-        (button) => button.textContent?.trim() === "Skill",
+        (button) => button.textContent?.trim() === "Skills",
       )!,
     );
     fireEvent.change(container.querySelector("#assets .view-search input")!, {
@@ -855,6 +984,74 @@ describe("LandingPage", () => {
     expect(container.querySelectorAll("#assets .asset-card")).toHaveLength(1);
     expect(container.querySelector("#assets")).toHaveTextContent(
       "Storyboard review",
+    );
+  });
+
+  it("filters rankings and records local Skill and Video signals", () => {
+    const { container } = render(<LandingPage {...props} />);
+
+    fireEvent.click(
+      [...container.querySelectorAll(".site-header button")].find(
+        (button) => button.textContent === "Skills",
+      )!,
+    );
+    expect(container.querySelector("#skills .ranking-panel")).toHaveTextContent(
+      "Creator leaderboard",
+    );
+    expect(container.querySelector("#skills .ranking-panel")).toHaveTextContent(
+      "500",
+    );
+    expect(container.querySelector("#skills .skill-rank")).not.toBeInTheDocument();
+    fireEvent.click(
+      [...container.querySelectorAll("#skills .category-filter button")].find(
+        (button) => button.textContent === "Generation",
+      )!,
+    );
+    expect(
+      container.querySelector("#skills .skill-title-line"),
+    ).toHaveTextContent("Generation");
+    expect(
+      container.querySelectorAll("#skills .skill-card:not(.skill-publish-card)"),
+    ).toHaveLength(9);
+
+    const like = container.querySelector("#skills .skill-like")!;
+    fireEvent.click(like);
+    expect(like).toHaveAttribute("aria-pressed", "true");
+    expect(
+      container.querySelector("#skills .skill-metrics"),
+    ).toHaveTextContent("1 likes");
+
+    fireEvent.click(
+      [...container.querySelectorAll(".site-header button")].find(
+        (button) => button.textContent === "Videos",
+      )!,
+    );
+    fireEvent.click(
+      [...container.querySelectorAll("#hots .category-filter button")].find(
+        (button) => button.textContent === "Product",
+      )!,
+    );
+    expect(
+      container.querySelectorAll(
+        "#hots .community-card:not(.community-publish-card)",
+      ),
+    ).toHaveLength(1);
+    expect(container.querySelector("#hots")).toHaveTextContent("Product reveal");
+    expect(
+      container.querySelector("#hots .community-rank"),
+    ).not.toBeInTheDocument();
+    expect(
+      container.querySelector("#hots .community-reward"),
+    ).not.toBeInTheDocument();
+    expect(
+      container.querySelector("#hots .community-card-title-line"),
+    ).toHaveTextContent("Product");
+
+    const hotLike = container.querySelector("#hots .community-like-toggle")!;
+    fireEvent.click(hotLike);
+    expect(hotLike).toHaveAttribute("aria-pressed", "true");
+    expect(container.querySelector("#hots .community-likes")).toHaveTextContent(
+      "54",
     );
   });
 
@@ -921,11 +1118,11 @@ describe("LandingPage", () => {
     ).toHaveTextContent("Hook");
   });
 
-  it("opens a scenario from Hots with its skill already selected", () => {
+  it("opens a scenario from Videos with its skill already selected", () => {
     const { container } = render(<LandingPage {...props} />);
     fireEvent.click(
       [...container.querySelectorAll(".site-header button")].find(
-        (button) => button.textContent === "Hots",
+        (button) => button.textContent === "Videos",
       )!,
     );
     const scenario = [...container.querySelectorAll("#hots .community-card")].find(
@@ -978,7 +1175,7 @@ describe("LandingPage", () => {
     fireEvent.click(container.querySelector(".docs-search-results button")!);
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/operations.html?v=32",
+      "/docs/operations.html?v=33",
     );
   });
 

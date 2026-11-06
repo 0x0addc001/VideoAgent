@@ -151,6 +151,15 @@ Rename request:
       "prompt_zh": "稳定身份与自然肤质的角色定妆照"
     }
   ],
+  "scenes": [
+    {
+      "name": "Studio",
+      "location": "Downtown loft",
+      "description": "A warm production loft with large windows.",
+      "prompt_en": "Cinematic production loft with warm daylight",
+      "prompt_zh": "暖日光下的电影感制作空间"
+    }
+  ],
   "shots": [
     {
       "description": "Opening product reveal",
@@ -273,12 +282,18 @@ Request:
 {
   "approved": true,
   "generation_mode": "image_to_video",
-  "reference_asset_id": "00000000-0000-0000-0000-000000000010"
+  "reference_asset_id": "00000000-0000-0000-0000-000000000010",
+  "provider": "kling",
+  "model": "kling-video-v4_0"
 }
 ```
 
 `generation_mode` is `text_to_video` or `image_to_video`. Image-to-video
 requires a project-owned image asset that belongs to the current user.
+Estimation and generation return `409 VISION_OBJECTS_REQUIRED` until the
+storyboard contains at least one Character and one Scene.
+`provider` and `model` are optional per-task overrides. Omit both to use the
+project default. Changing the override invalidates the previous estimate.
 
 ### Character Image Generation
 
@@ -294,13 +309,22 @@ Generation request:
 {
   "approved": true,
   "generation_mode": "image_to_image",
-  "reference_asset_id": "00000000-0000-0000-0000-000000000010"
+  "reference_asset_id": "00000000-0000-0000-0000-000000000010",
+  "provider": "kling",
+  "model": "kling-image-v3_0"
 }
 ```
 
 `generation_mode` is `text_to_image` or `image_to_image`. A successful request
 returns an `AssetRead` whose content can be previewed and downloaded through
 `content_url`.
+
+### Scene Editing and References
+
+`PATCH /projects/{project_id}/storyboard/scenes/{scene_id}` updates name,
+location, description, or prompts. `POST /scenes/{scene_id}/assets` uploads a
+scene reference image. The returned asset filename is namespaced to the scene so
+the workspace can keep it under that Scene directory.
 
 ### Job Status
 
@@ -332,13 +356,29 @@ separate from the server-owned Provider account pool.
 
 | Method | Path | Purpose |
 | --- | --- | --- |
-| `GET` | `/skills` | List Skills saved by the current user |
+| `GET` | `/skills` | List public Skills and Skills owned by the current user |
 | `POST` | `/skills` | Persist a structured Skill |
 | `POST` | `/skills/optimize` | Convert a rough capability idea into a structured draft |
+| `POST` | `/skills/engagement/query` | Read signals for up to 100 stable Skill keys |
+| `POST` | `/skills/engagement/like` | Toggle a like for a stable Skill key |
+| `POST` | `/skills/engagement/use` | Record one de-duplicated use signal |
 
 The optimizer returns a stable `skill_id`, title, description, detailed
-instructions, starter prompt, and input/output JSON schemas. Saved Skills are
-scoped to the authenticated account and are loaded back into the Skills view.
+instructions, starter prompt, and input/output JSON schemas. List responses add
+`is_mine`, `likes`, `uses`, and `is_liked`. Engagement endpoints accept
+`{"skill_key":"<user_id>/<skill_id>"}`, which allows bundled and published
+Skills to share one persistent signal store. Authors cannot like their own
+Skill; repeated requests from the same account do not inflate either counter.
+
+```json
+{
+  "skill_key": "video_agent/creator_vlog"
+}
+```
+
+`POST /skills/engagement/query` accepts `{"skill_keys":["<user_id>/<skill_id>"]}`
+and returns a keyed `items` object. This lets the client hydrate engagement for
+built-in Skills that are not rows in the user Skill table.
 
 ```json
 {
@@ -348,17 +388,19 @@ scoped to the authenticated account and are loaded back into the Skills view.
 }
 ```
 
-## Hots
+## Videos
 
 | Method | Path | Purpose |
 | --- | --- | --- |
 | `GET` | `/hots` | List published community videos; `mine=true` filters to the current user |
 | `POST` | `/hots` | Upload an MP4 and publish a community post |
+| `POST` | `/hots/{post_id}/like` | Toggle the current user's like |
 | `GET` | `/hots/{post_id}/video` | Stream the public video |
 
 `POST /hots` uses `multipart/form-data` with `file`, `title`, `prompt`, and
 `skill`. The uploaded video asset is public and appears in the authenticated
-author's Assets view.
+author's Assets view. Videos responses include `is_liked`; one account contributes
+at most one like, and authors cannot like their own post.
 
 ### Production Progress
 
@@ -412,6 +454,9 @@ rejected before an Asset record is created.
 | `GET` | `/assets/{asset_id}/content` | Download or preview a private asset |
 | `POST` | `/projects/{project_id}/exports` | Compose and export the current film |
 | `POST` | `/assets/{asset_id}/share` | Create a time-limited share link |
+| `POST` | `/hots/from-asset/{asset_id}` | Publish an existing exported final cut |
+| `POST` | `/projects/{project_id}/collaborations` | Create a project collaboration link |
+| `POST` | `/collaborations/{token}/accept` | Accept an invite and join the project |
 | `DELETE` | `/shares/{share_id}` | Revoke a share link |
 | `GET` | `/shares/{token}/content` | Read a valid shared asset without a session |
 
@@ -437,8 +482,9 @@ Export request:
 }
 ```
 
-The export response contains delivery Assets and a generated cover. The
-current implementation composes available generated shots with FFmpeg,
+The export response contains delivery Assets and a generated cover. Export
+requires every storyboard Shot to have a generated result. The current
+implementation composes those generated shots with FFmpeg,
 normalizes each delivery ratio, applies a short crossfade between shots, and
 optionally includes captions and an uploaded soundtrack.
 
@@ -452,6 +498,20 @@ Share request:
 
 Share tokens are random, stored as hashes, expire after the requested period,
 and can be revoked. Access increments an audit counter.
+
+Collaboration request:
+
+```json
+{
+  "permission": "edit",
+  "collaborator_email": "editor@example.com",
+  "expires_in_hours": 168
+}
+```
+
+Collaboration links are distinct from asset-share links. They grant project
+membership after authenticated acceptance and enforce `view` or `edit`
+permission on project endpoints.
 
 ## Administration
 

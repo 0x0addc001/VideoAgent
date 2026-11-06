@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Ops" />
     <title>Ops · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=32" />
+    <link rel="stylesheet" href="../docs.css?v=33" />
   </head>
   <body data-document="operations.zh.html">
     <main class="document-shell" id="document-shell">
@@ -29,6 +29,7 @@
 <a class="toc-link toc-level-2" href="#1-运营模型">1. 运营模型</a>
 <a class="toc-link toc-level-2" href="#2-发布准备">2. 发布准备</a>
 <a class="toc-link toc-level-2" href="#3-官方-skill-运营">3. 官方 Skill 运营</a>
+<a class="toc-link toc-level-3" href="#3-1-skill-与-videos-榜单">3.1 Skill 与 Videos 榜单</a>
 <a class="toc-link toc-level-2" href="#4-assets-运营">4. Assets 运营</a>
 <a class="toc-link toc-level-2" href="#5-provider-与成本运营">5. Provider 与成本运营</a>
 <a class="toc-link toc-level-3" href="#5-1-管理后台">5.1 管理后台</a>
@@ -46,15 +47,15 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v2.2</td>
+<td>v2.3</td>
 </tr>
 <tr>
 <td>更新日期</td>
-<td>2026-11-04</td>
+<td>2026-11-05</td>
 </tr>
 <tr>
 <td>范围</td>
-<td>Skills、Hots、Assets、Provider、支持、指标</td>
+<td>Skills、Videos、Assets、Provider、支持、指标</td>
 </tr>
 </tbody></table></div>
 <h2 id="1-运营模型">1. 运营模型</h2>
@@ -62,14 +63,14 @@
 <ol>
 <li>原厂商 Skill 与跨 Provider 工作流，分别使用 <code>kling</code>、<code>pippit</code> 或</li>
 <p><code>video_agent</code> 命名空间。</p>
-<li>用户发布的 Skill 与 Hots 作品。</li>
+<li>用户发布的 Skill 与 Videos 作品。</li>
 <li>项目产出的 Assets 成品与半成品。</li>
 </ol>
 <h2 id="2-发布准备">2. 发布准备</h2>
 <ul>
 <li>完成认证和积分消耗验收。</li>
 <li>确认 Pippit CLI 授权与 Kling 国内版 CLI OAuth。</li>
-<li>发布 PRD、Playbook、Arch、API、Dev、Test、Ops、FAQ、TODO 九份文档。</li>
+<li>发布 PRD、策略、Arch、API、Dev、Test、Ops、FAQ、TODO 九份文档。</li>
 <li>验证中英文文档切换。</li>
 <li>验证项目创建、故事板规划、生成审批和任务轮询。</li>
 <li>验证上传、生成结果落地、FFmpeg 合成、下载与分享撤销。</li>
@@ -83,10 +84,26 @@
 <li>原厂商能力使用厂商 user_id（如 <code>kling</code>）；跨 Provider 工作流使用 <code>video_agent</code>。</li>
 <li>Skill ID 稳定、小写，并使用下划线分隔。</li>
 <li>每个 Skill 说明输入、输出、Provider 依赖和积分影响。</li>
-<li>Skill 变更同步更新 PRD、Playbook、Arch 和 Test。</li>
+<li>Skill 变更同步更新 PRD、策略、Arch 和 Test。</li>
 <li>废弃 Skill 至少保留一个版本并给出迁移说明。</li>
-<li>场景 Playbook 引用有效 Skill，并与创作框字段保持一致。</li>
+<li>场景策略引用有效 Skill，并与创作框字段保持一致。</li>
 <li>外部 Agent 接力使用明确的 MCP 或 CLI 契约。</li>
+</ul>
+<h3 id="3-1-skill-与-videos-榜单">3.1 Skill 与 Videos 榜单</h3>
+<ul>
+<li>Skills 固定使用六个分类：生成、叙事、工作流、后期、评估、工具；Videos 固定使用</li>
+<p>Vlog、产品、短剧、音乐、本地化、营销。</p>
+<li>分类筛选只改变当前视图，不改变总榜排名。Skills 可按综合热度、使用数、点赞数和</li>
+<p>最新发布排序；Videos 可按点赞数和发布时间排序。</p>
+<li>Skill 综合分为 <code>去重账户使用数 × 2 + 去重账户点赞数 × 3</code>；Videos 只按去重点赞数</li>
+<p>排名。分数相同时依次比较点赞数、使用数和更新时间。</p>
+<li>同一账户对同一内容最多保留一条点赞或使用记录；作者不能给自己的内容点赞。</li>
+<li>Skills 榜单前三名展示 500、300、150 积分奖励，Videos 榜单前三名展示 300、180、</li>
+<p>100 积分奖励。运营周期、预算和最终名单由当期活动配置决定。</p>
+<li>奖励发放通过管理后台逐笔调整积分并记录原因，不直接信任前端榜单结果。结算前需</li>
+<p>复核异常增长、批量账号、重复发布和内容下架状态。</p>
+<li>发现刷榜时先冻结当期结算，再结合用户、互动时间、设备与发布记录复核；确认违规</li>
+<p>后移除互动并记录运营审计。</p>
 </ul>
 <h2 id="4-assets-运营">4. Assets 运营</h2>
 <ul>
@@ -168,10 +185,11 @@
 <li>Final Cut 评估：已导出成片完成视觉评估的比例。</li>
 <li>可靠性：生成任务进入终态的比例。</li>
 <li>成本：完成项目对应的积分消耗。</li>
-<li>内容：官方 Skill 复用率和社区发布量。</li>
+<li>内容：Skill 分类分布、去重点赞、去重使用、榜单转化率、Videos 去重点赞和当期奖励</li>
+<p>发放成本。</p>
 <li>文档：搜索成功率与双语链接完整率。</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=32"></script>
+    <script src="../docs.js?v=33"></script>
   </body>
 </html>

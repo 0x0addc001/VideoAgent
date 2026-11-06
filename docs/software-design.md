@@ -16,15 +16,15 @@ VideoAgent 通过统一 Provider 边界集成 Pippit CLI 与 Kling 国内版 CLI
 
 ## 2. 产品概述
 
-VideoAgent 是一个面向内容创作者、营销人员和普通用户的 AI 视频创作平台。产品以“用户是导演”为核心，通过统一的左侧工作台进入 Agents、Skills、Hots、Assets 和 Docs；用户从首页创作框描述创意后创建项目，进入项目工作区与 VideoAgent 协作生成故事板并发起镜头生成。
+VideoAgent 是一个面向内容创作者、营销人员和普通用户的 AI 视频创作平台。产品以“用户是导演”为核心，通过统一的左侧工作台进入 Agents、Skills、Videos、Assets 和 Docs；用户从首页创作框描述创意后创建项目，进入项目工作区与 VideoAgent 协作生成故事板并发起镜头生成。
 
 系统同时提供：
 
 - **Agents：** 首页创作入口和项目内 VideoAgent 对话。
 - **Skills：** 单一可搜索 Skill 目录，使用 `user_id/skill_id` 标识，并支持用户发布。
-- **Hots：** 可搜索社区作品流，展示作者、喜欢数并支持发布。
+- **Videos：** 可搜索社区作品流，展示作者、喜欢数并支持发布。
 - **Assets：** 用户成品与半成品作品库，按 Video/Skill 分页；视频悬浮预览，Skill 不显示封面。
-- **Docs：** 九份中英文文档、全文搜索、统一深色阅读主题和左侧可折叠目录。
+- **Docs：** 九份中英文文档、全文搜索、统一深色阅读主题、默认与导航等宽且可伸缩的文档目录，以及文档内可折叠章节目录。
 
 创作范式结合对话式生成、模板化制作和多模型工作台组织方式。生成能力通过统一 Provider 契约接入，使项目、故事板、镜头和任务状态不依赖单一模型服务。
 
@@ -32,15 +32,15 @@ VideoAgent 是一个面向内容创作者、营销人员和普通用户的 AI �
 
 ### 3.1 MVP 目标
 
-- 首页采用左侧导航、连续视频背景、居中创作框、场景 Playbook、Hook 控制和自定义透明下拉控件。
-- 创作输入框随内容行数自动向下增高；示例灵感仅在输入为空时显示，Playbook 保持可切换。
+- 首页采用左侧导航、连续视频背景、居中创作框、场景策略、Hook 控制和自定义透明下拉控件。
+- 创作输入框随内容行数自动向下增高；示例灵感仅在输入为空时显示，策略保持可切换。
 - 模型选择器使用实时核验目录：Kling 7 个视频模型、Pippit 8 个视频模型，另有 Auto；选项统一使用 `服务商/模型` 格式。
-- 搜索、语言、通知、积分和头像使用半透明表面，相关菜单向下展开；创作框选项菜单根据视口空间自动向上或向下展开并限制高度；头像支持登录、注册和退出。
-- Hots 展示作者与喜欢数，并支持发布。
+- 搜索、语言、通知、积分和头像使用半透明表面；头像菜单左右边缘对齐导航栏的 13px 内边距，并沿用导航字号。菜单包含语言、通知、积分与带图标的账户操作，通知行带向右展开图标，齿轮位于头像行右端；语言行使用向右图标，点击后在头像菜单右侧独立打开浮层并纵向排列 English 与中文。
+- Videos 展示作者与喜欢数，并支持发布。
 - 支持项目创建、编辑、恢复和删除。
 - 支持 Agent 生成创意方案和多镜头故事板。
 - 支持镜头参数编辑和积分成本估算。
-- 支持基于真实制作状态的实时进度条，以及 Final Cut 发布前的视觉模型评估。
+- 支持 Final Cut 发布前的视觉模型评估。
 - 支持项目级图片、视频和音频素材上传，并校验 MIME、文件头和大小。
 - 支持 FFmpeg 合成、16:9/9:16/1:1 交付版本、封面、字幕和音轨。
 - 支持限时分享链接、公开/私有权限、过期和撤销。
@@ -377,9 +377,13 @@ CLI 负责国内站 OAuth、MCP 传输和工具参数。Provider 适配器将 Kl
 | `workspace_folder_items` | `folder_id`, `project_id` | 对话与项目目录的收纳关系 |
 | `project_workflows` | `project_id`, `stage`, `status` | 整体设定、大纲、剧本与生成审批状态 |
 | `user_skills` | `owner_id`, `skill_id`, `instructions`, `input_schema`, `output_schema` | 用户发布的结构化 Skill |
+| `skill_engagement_likes` | `skill_key`, `user_id` | 用户与任意 Skill 的唯一点赞记录 |
+| `skill_engagement_usages` | `skill_key`, `user_id` | 用户与任意 Skill 的去重使用信号 |
 | `hots_posts` | `owner_id`, `asset_id`, `title`, `prompt`, `skill_id`, `like_count` | 社区视频发布及详情 |
+| `hots_likes` | `post_id`, `user_id` | 用户与 Videos 作品的唯一点赞记录 |
 | `storyboards` | `id`, `project_id`, `version` | 每个项目唯一的当前故事板 |
 | `characters` | `id`, `storyboard_id`, `index`, `name`, prompts | 持续角色的描述与可复用图片提示词 |
+| `scenes` | `id`, `storyboard_id`, `index`, `name`, `location`, prompts | 可复用场景、场地与参考图提示词 |
 | `shots` | `id`, `storyboard_id`, `index`, `prompt_en`, `prompt_zh`, `status` | 镜头定义 |
 | `provider_connections` | `id`, `user_id`, `provider`, `encrypted_tokens` | Provider 授权信息 |
 | `oauth_flows` | `id`, `state_hash`, `provider`, `expires_at` | OAuth 事务状态 |
@@ -388,6 +392,8 @@ CLI 负责国内站 OAuth、MCP 传输和工具参数。Provider 适配器将 Kl
 | `credit_entries` | `user_id`, `amount`, `reason`, `reference_id` | 可审计的预扣与退款流水 |
 | `assets` | `owner_id`, `project_id`, `shot_id`, `kind`, `storage_key`, `permission` | 上传、生成、交付与封面资产 |
 | `share_links` | `asset_id`, `token_hash`, `expires_at`, `revoked_at`, `access_count` | 限时分享与访问计数 |
+| `project_collaborations` | `project_id`, `token_hash`, `permission`, `expires_at` | 可撤销的项目协作邀请 |
+| `project_collaborators` | `project_id`, `user_id`, `permission` | 已接受邀请的协作者与角色 |
 | `platform_settings` | `key`, `value`, `updated_by` | 生成开关与注册模式 |
 | `invite_codes` | `code_hash`, `max_uses`, `use_count`, `expires_at` | 邀请制注册 |
 | `admin_audit_logs` | `admin_id`, `action`, `target_type`, `target_id` | 管理操作审计 |
@@ -488,6 +494,10 @@ cancelled
 | PUT | `/projects/{id}/storyboard` | 整体替换故事板 |
 | PATCH | `/projects/{id}/storyboard/order` | 调整镜头顺序并保留 Shot ID |
 | POST | `/characters/{id}/estimate`、`/assets`、`/generate` | 角色图片估算、上传与生成 |
+| PATCH | `/projects/{id}/storyboard/scenes/{scene_id}` | 编辑 Scene 名称、地点和 Prompt |
+| POST | `/scenes/{id}/assets` | 上传 Scene 参考图 |
+| POST | `/projects/{id}/collaborations` | 创建查看或编辑协作链接 |
+| POST | `/collaborations/{token}/accept` | 接受邀请并加入项目 |
 | GET | `/projects/{id}/progress` | 实时制作进度 |
 | GET/POST | `/projects/{id}/visual-review/models`、`/visual-review` | Final Cut 视觉评估 |
 | POST | `/shots/{id}/estimate` | 积分估算 |
@@ -500,6 +510,7 @@ cancelled
 | GET | `/assets/{id}/content` | 读取私有资产 |
 | POST | `/projects/{id}/exports` | 合成并导出成片 |
 | POST | `/assets/{id}/share` | 创建限时分享 |
+| POST | `/hots/from-asset/{asset_id}` | 直接发布已导出的成片 |
 | DELETE | `/shares/{id}` | 撤销分享 |
 | GET | `/shares/{token}/content` | 读取分享资产 |
 | GET/PATCH | `/admin/settings` | 读取和更新生成、注册策略 |
@@ -519,27 +530,36 @@ cancelled
 - 公共入口：左侧导航、连续视频背景、居中创作框、灵感快捷项和八项生成设置。
 - App 左侧导航在 VideoAgent 品牌右侧提供折叠控制，可收起为仅图标模式，右侧内容始终填满剩余空间；Docs 下方固定为 Projects 分组和 Recents 时序历史，两个分组在未登录和空数据时也显示，默认展开且可折叠。
 - 对话只使用 `/en#conversation/{project_id}` 哈希视图，不开放独立项目详情页；对话切换保持应用外壳挂载，只高亮当前对话记录。
-- 视频轮播作为 Agents、Skills、Hots、Assets、Docs 和会话页共用的持久半透明背景。
+- 视频轮播作为 Agents、Skills、Videos、Assets、Docs 和会话页共用的持久半透明背景。
 - Projects 行提供新建项目表单入口；Recents 行提供新建对话入口并返回 Agents。两行均带展开/收起图标。
 - `Agents`：首页创作入口和 VideoAgent 对话。
 - `Skills`：统一可搜索 Skill 目录，卡片显示 `user_id/skill_id`；Kling 原生能力使用 `kling`，跨 Provider 工作流使用 `video_agent`，用户可发布 Skill。
 - Skill Studio 将用户 Skill 持久化到数据库；发布前包含用途、执行规范、质量门禁、启动提示词和输入/输出契约，并提供 AI 优化。
+- 公开 Skill 可被其他登录用户发现；目录按生成、叙事、工作流、后期、评估和工具分类。
+- Skill 点赞按用户和 Skill 唯一，使用数按用户和 Skill 唯一；榜单评分为 `使用数 × 2 + 点赞数 × 3`，作者不能给自己的 Skill 点赞。
 - 内置 `video_agent/skill_synthesis` 用于帮助用户编写和合成新的 Skill，点击后直接打开 Skill Studio。
-- `Agents`：首页提供产品广告、创作者 Vlog、微短剧、音乐 MV、视频本地化和批量测款六类 Playbook；选择后统一设置提示词、Skill、Hook、风格、画幅、时长和审核模式，再次点击当前项会恢复应用前草稿。
+- `Agents`：首页提供产品广告、创作者 Vlog、微短剧、音乐 MV、视频本地化和批量测款六类策略；选择后统一设置提示词、Skill、Hook、风格、画幅、时长和审核模式，再次点击当前项会恢复应用前草稿。
 - Skills 目录还覆盖视频本地化、批量变体、剧本助手、智能预演、运镜设计、音乐 MV、参考复刻和外部 Agent 接力。
-- `Hots`：可搜索社区瀑布流，视频自动播放，展示标题、作者、喜欢数，并支持发布。
-- Hots 发布必须上传 MP4，可填写标题、描述和 Skill；发布视频持久化并出现在作者 Assets。
+- `Videos`：可搜索社区瀑布流，视频自动播放，按 Vlog、产品、短剧、音乐、本地化和营销分类；按用户去重点赞排名，作者不能给自己的作品点赞。
+- Skills 与 Videos 前三名展示预计奖励：Skills 为 500/300/150 积分，Videos 为 300/180/100 积分；实际发放作为可审计运营操作执行。
+- Videos 发布必须上传 MP4，可填写标题、描述和 Skill；发布视频持久化并出现在作者 Assets。
 - `Assets`：通过 Video 与 Skill 两个内部分页切换，支持搜索；Video 卡片悬浮静音播放，Skill 卡片不显示封面；卡片只展示权限和 `yyyy-mm-dd` 编辑时间。
-- Assets 展示当前用户真实发布的 Hots 视频和 Skill；点击卡片打开详情，视频详情可直接播放。
-- `Docs`：按 PRD、Playbook、Arch、API、Dev、Test、Ops、FAQ、TODO 展示中英文文档，支持全文搜索。
-- 项目工作区采用 IDE 式布局：可压缩历史导航、`Direction` / `Vision` 资源树、中央编辑画布和右侧审批式 Agents。
+- Assets 展示当前用户真实发布的 Videos 和 Skill；点击卡片打开详情，视频详情可直接播放。
+- `Docs`：按 PRD、策略、Arch、API、Dev、Test、Ops、FAQ、TODO 展示中英文文档，支持全文搜索。
+- 项目工作区采用 IDE 式布局：可压缩历史导航、`Directions` / `Visions` / `Versions`
+  资源树、中央编辑画布和右侧审批式 Agents。
 - Assets 与 Agents 侧栏可折叠为带标签的窄轨；展开宽度使用响应式比例，适配不同桌面尺寸。
-- `Direction` 包含 `Settings`、`Outlines`、`Scripts`；`Vision` 包含 `Characters`、`Shots`、`Final Cut`。角色保留描述页与生成页，每个 Shot 使用一个合并页面；空目录不显示等待文案。
+- `Directions` 包含可编辑的 `Settings`、`Outlines`、`Scripts`；`Visions`
+  包含 `Characters`、`Scenes`、`Shots`；`Versions` 与二者同级，用于管理最终
+  导出视频版本及创建日期。Character 与 Scene 各自承接参考图，每个 Shot 使用一个合并页面；
+  空目录不显示等待文案。
 - Settings 从对话中提炼 `属性 / 值`，不直接展示原始问答或批准消息。
+- 属性抽取先排除语言纠错等元指令，再识别结构化的时长、形式、产品、开场、发展、结尾、
+  基调和视觉方向；英文界面对可识别的中文术语做英文归一化，翻译不确定的内容不展示。
 - Shot 与 Character 页面可直接编辑描述和 Prompt；上传素材自动追加 `@<asset-id>`，
   服务端根据 ID 选择参考生成。
 - Shot/Character 结果位于对应目录下，支持最终选用、复制 ID、预览和删除。
-- 导航、Assets、Canvas、Agents 默认等宽并支持拖拽调整；账号下拉集中语言、通知和积分。
+- 导航、Assets、Canvas、Agents 默认等宽并支持拖拽调整；账号下拉集中语言、通知、积分和账户操作。
 - 项目目录将展开按钮放在蓝色目录图标左侧；被收纳的对话从 Recents 移入对应目录，并以缩进子项显示。
 - 品牌与浏览器标签页图标统一使用蓝色播放键；激活导航图标采用填充/线框反转。
 - 管理后台使用独立控制台布局，与用户创作界面隔离。
@@ -567,14 +587,16 @@ History | Assets | Canvas | Agent
 
 镜头生成在“可生成”审批完成前保持禁用，镜头检查器会直接提示需要先在 Agents 中批准。
 
-中央编辑区使用自己的紧凑面板栏，不设置页面级项目标题栏；实时制作进度条与 Share
-固定在编辑区面板栏最右侧。进度条每 3 秒轮询。
+中央编辑区使用自己的紧凑面板栏，不设置页面级项目标题栏；标题和场记板图标固定为
+`Storyboard`，不随 Settings、文档、角色、镜头或素材变化，Share 固定在面板栏最右侧。
 
 只有本次新返回的 Agent 回复执行一次流式显示；历史消息和已完成回复直接静态展示，折叠再展开不会重新播放。
 
 Assets、中央编辑区和 Agents 的滚动条与 Projects、Recents 使用同一套细蓝色样式。
 
 Docs 使用导航栏右侧的完整内容区域，不与固定导航重叠；内嵌文档沿用全局视频背景。
+每次进入 Docs 默认打开 PRD；搜索框位于文档区域顶部，文档目录位于搜索框下方和阅读区
+左侧，默认宽度继承展开状态的导航宽度，可独立拖拽调整，也可收起为图标栏。
 
 Final Cut 页面提供视觉评估模型和指标选择。Review 只在导出的成片中运行，
 不会用故事板完整性或 Prompt 词数冒充视觉质量。工作区所有文本的最小字号不低于按钮字号。
@@ -630,6 +652,8 @@ Agent 输出支持三种 Prompt 模式：
 - 认证、生成和上传分别执行分钟级限流；分布式部署需将计数迁移到 Redis。
 - 上传同时校验声明的 MIME、文件签名和大小。
 - 分享链接只保存 Token 哈希，并支持过期、撤销和访问计数。
+- 项目协作邀请与素材分享使用独立 Token；接受邀请后写入 ProjectCollaborator，
+  服务端按 view/edit 权限限制读取和修改，邮箱邀请同时校验当前登录邮箱。
 - 管理接口使用环境变量邮箱白名单授权，普通用户访问返回 `403`。
 - 停用账号会立即删除其全部 Session。
 - 生成开关在 Provider 估算和提交前检查，暂停时不产生外部费用。
@@ -725,7 +749,7 @@ Markdown 文档在构建时生成 HTML，并复制到 `public/docs`。
 5. Pippit Access Key、CLI 登录文件和 Kling 凭据不出现在浏览器、日志或公开接口中。
 6. 生成任务不会因自动重试造成重复扣费。
 7. 制作进度条根据工作流和 Shot 完成状态实时轮询；视觉评估只作用于 Final Cut。
-8. Hots 的作者、喜欢数、发布入口和预览可用。
+8. Videos 的作者、喜欢数、发布入口和预览可用。
 9. Mock Provider、Pippit Fake CLI 和 Kling Provider 契约测试全部通过。
 10. Playwright 使用 Mock Provider 完成注册、创作、上传、生成、导出、下载和分享。
 11. 生成预扣积分，失败或取消时幂等退款。

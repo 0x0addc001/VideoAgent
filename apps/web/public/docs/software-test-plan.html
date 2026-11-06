@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Test" />
     <title>Test · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=32" />
+    <link rel="stylesheet" href="../docs.css?v=33" />
   </head>
   <body data-document="software-test-plan.html">
     <main class="document-shell" id="document-shell">
@@ -48,11 +48,11 @@
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v2.4</td>
+<td>v2.5</td>
 </tr>
 <tr>
 <td>Updated</td>
-<td>2026-11-04</td>
+<td>2026-11-05</td>
 </tr>
 <tr>
 <td>Frameworks</td>
@@ -96,6 +96,9 @@
 <li>Invite creation, consumption, revocation, and registration modes.</li>
 <li>Generation kill switch, job refunds, and audit logs.</li>
 <li>China-region Kling CLI submission, status mapping, identity, and credits.</li>
+<li>Public Skill discovery, like toggling, de-duplicated uses, and author</li>
+<p>self-like rejection.</p>
+<li>Videos like toggling, account de-duplication, persistence, and removal.</li>
 </ul>
 <p>Frontend:</p>
 <ul>
@@ -103,9 +106,11 @@
 <li>Sequenced and looping hero headline.</li>
 <li>Search composer and custom settings dropdowns.</li>
 <li>Project creation flow.</li>
-<li>Assets, Hots, and Docs view switching.</li>
+<li>Assets, Videos, and Docs view switching.</li>
 <li>Assets permission, date, hover preview, and cover behavior.</li>
-<li>Hots author, likes, playback, and publishing.</li>
+<li>Videos author, likes, playback, and publishing.</li>
+<li>Skill and Videos category filters, leaderboard order, and like interaction;</li>
+<p>individual cards show neither rank nor reward.</p>
 <li>English-to-Chinese Docs switching.</li>
 <li>Project list, authentication form, and project workspace.</li>
 <li>Project uploads, film export, MP4 download, and share-link creation.</li>
@@ -143,23 +148,25 @@
 <li>Left navigation with isolated views.</li>
 <li>Custom dropdown rendering and selection.</li>
 <li>Action button enabled and disabled states.</li>
-<li>Hots metadata order: title above author and likes.</li>
-<li>Every Hots card contains an autoplaying muted looping video.</li>
+<li>Videos metadata order: title above author and likes.</li>
+<li>Every Videos card contains an autoplaying muted looping video.</li>
 <li>Publish entry uses the blue play icon.</li>
 <li>Skills is one searchable catalogue with <code>user_id/skill_id</code> labels;</li>
 <p>provider-native capabilities use the provider namespace.</p>
 <li>Production playbooks fill the prompt and recommended Skill, Hook, style,</li>
 <p>frame, duration, and review settings.</p>
 <li>Re-clicking the active playbook restores the prior composer state.</li>
-<li>Hots scenario cards open Agents with the corresponding Skill and prompt.</li>
+<li>Videos scenario cards open Agents with the corresponding Skill and prompt.</li>
 <li>The textarea grows with multiline content, and idea suggestions disappear</li>
 <p>while the prompt contains non-whitespace text.</p>
 <li>The Model selector includes every available Kling and Pippit video model in</li>
 <p><code>Provider/Model</code> format.</p>
 <li>Docs labels are <code>PRD</code>, <code>Playbook</code>, <code>Arch</code>, <code>API</code>, <code>Dev</code>, <code>Test</code>, <code>Ops</code>, <code>FAQ</code>,</li>
 <p>and <code>TODO</code>.</p>
+<li>Docs opens PRD by default; search sits above the left document directory,</li>
+<p>which matches expanded navigation width and supports resizing or collapse.</p>
 <li>Globe control changes Docs source and language.</li>
-<li>Skills, Hots, Assets, and Docs search controls stay pinned while content</li>
+<li>Skills, Videos, Assets, and Docs search controls stay pinned while content</li>
 <p>scrolls.</p>
 <li>Assets switches between Video and Skill tabs without repeating type labels.</li>
 <li>Video assets preview on hover; Skill assets have no cover.</li>
@@ -170,30 +177,41 @@
 <p>item from Recents, and renders it as an indented folder child.</p>
 <li>Selecting a conversation updates only the URL hash and preserves the mounted</li>
 <p>application shell; no document navigation occurs.</p>
-<li>The workspace tree contains <code>Direction &gt; Settings / Outlines / Scripts</code> and</li>
-<p><code>Vision &gt; Characters / Shots / Final Cut</code>; legacy Storyboard, Media, and Exports groups are absent. Projects, Recents, and their conversation items remain text-only.</p>
-<li>Characters expose Description and Generation pages; each Shot opens one</li>
-<p>combined page. Shot rows have no container box. Empty directories do not render waiting copy.</p>
+<li>The workspace tree exposes peer <code>Directions</code>, <code>Visions</code>, and <code>Versions</code></li>
+<p>groups; legacy Storyboard, Media, and Exports groups are absent. Projects, Recents, and their conversation items remain text-only.</p>
+<li>Characters and Scenes own their descriptions and uploaded references; each</li>
+<p>Shot opens one combined page. Empty directories do not render waiting copy.</p>
 <li>Settings renders Q&amp;A as question-answer attribute rows without the retired</li>
 <p>lower stage cards.</p>
 <li>Settings extracts semantic <code>Attribute / Value</code> clues and excludes approval</li>
 <p>decisions instead of rendering raw Q&amp;A text.</p>
-<li>Shot and Character editors persist prompt/description changes through their</li>
-<p>resource PATCH endpoints.</p>
+<li>Settings, Outlines, Scripts, Shot, Character, and Scene editors persist</li>
+<p>changes through their project or resource endpoints.</p>
 <li>Uploads append <code>@&lt;asset-id&gt;</code> to the active Prompt; generation infers</li>
 <p>image-to-video or image-to-image from that reference.</p>
 <li>Uploaded and generated results appear under their directory with a persisted</li>
 <p>final-selection checkbox, copy-ID, preview, and delete action.</p>
 <li>Desktop panes default to equal widths and expose draggable separators.</li>
-<li>The left navigation profile popover contains language, notifications, and</li>
-<p>credits; the bottom trigger shows avatar and username.</p>
+<li>The profile popover contains an inline Languages row with vertically stacked</li>
+<p>options plus notifications and credits above the avatar and username trigger; account actions carry icons and the gear remains inside the avatar row.</p>
 <li>Browser titles are exactly <code>VideoAgent</code>; the administration runtime label is</li>
 <p><code>Pippit China</code>.</p>
 <li>Assets and Agents collapse independently and restore from their labeled rails.</li>
-<li>The editor header shows a readiness progress bar that polls every three</li>
-<p>seconds; no storyboard “Review” score button is rendered.</p>
+<li>The editor header renders no production progress bar and no storyboard</li>
+<p>“Review” score button.</p>
 <li>Final Cut review is available only for exported assets, lets the user choose a</li>
 <p>configured vision evaluator and consistency metrics, and is unavailable when no evaluator is configured.</p>
+<li>Export is blocked until every storyboard Shot has a generated result.</li>
+<li>A conversational instruction such as “Render the final cut” triggers delivery</li>
+<p>generation; no separate render button is exposed in the editor.</p>
+<li>Shot estimation and generation return <code>409 VISION_OBJECTS_REQUIRED</code> until the</li>
+<p>storyboard has at least one Character and one Scene.</p>
+<li>Model selectors appear on Character and Shot pages, default to the project</li>
+<p>configuration, and send explicit task-level overrides.</p>
+<li>Project sharing creates a collaboration link with view/edit access and an</li>
+<p>optional email restriction; accepted collaborators can open the project.</p>
+<li>An exported final cut can be published to Videos without uploading it again.</li>
+<li>Videos use the film-reel icon everywhere; Skills use the camera icon.</li>
 <li>Shot generation displays an approval requirement until the story workflow</li>
 <p>reaches the approved state.</p>
 <li>Persisted Agent messages render statically; only a newly returned reply uses</li>
@@ -218,10 +236,14 @@
 <li><code>video_agent/skill_synthesis</code> opens Skill Studio directly.</li>
 <li>The app navigation collapses to an icon-only rail, and signed-in Agents views</li>
 <p>list recent conversations.</p>
-<li>Hots publishing requires an MP4 and the post appears in the author's Assets.</li>
+<li>Videos publishing requires an MP4 and the post appears in the author's Assets.</li>
+<li>Skill and Videos order remains stable across category filters, and like buttons</li>
+<p>toggle state while updating the displayed count. Cards show category after the title without rank or earned-credit labels.</p>
 <li>Assets video and Skill cards open detail dialogs, with video playback.</li>
 <li>Workflow approvals advance immediately, and Agent language follows the</li>
 <p>project brief and user prompt.</p>
+<li>Long briefs are split into directing attributes; the English workspace omits</li>
+<p>Chinese examples and no longer uses <code>Creative brief</code> or <code>Director direction</code> as fallback labels.</p>
 <li>Login and registration use the same dark visual language as the product.</li>
 <li>Projects opens the project form from its plus action; Recents starts a new</li>
 <p>Agents conversation; both groups remain collapsible.</p>
@@ -236,12 +258,13 @@
 <li>FAQ and TODO have paired English and Chinese documents.</li>
 </ul>
 <p>Playwright uses the real Next.js UI, FastAPI service, SQLite, and Mock Provider to verify:</p>
-<pre><code class="language-text">register → home prompt → create project → three approvals → select shot → upload
-→ estimate → generate → poll/materialize → export → download → share</code></pre>
+<pre><code class="language-text">register → home prompt → create project → three approvals → upload references
+→ generate every shot → collaboration link → render final cut → download/share
+→ publish</code></pre>
 <p>An additional no-fee Skill flow verifies:</p>
 <pre><code class="language-text">register → Skills → rough idea → AI optimize → publish → reload</code></pre>
-<p>The no-fee Hots and Assets flow is:</p>
-<pre><code class="language-text">register → Hots → upload MP4 → publish → Assets → open details and play</code></pre>
+<p>The no-fee Videos and Assets flow is:</p>
+<pre><code class="language-text">register → Videos → upload MP4 → publish → Assets → open details and play</code></pre>
 <p>This flow never calls a paid Provider and is a required Pull Request gate.</p>
 <p>The administration E2E covers administrator sign-in, console loading, and generation pause. Backend integration tests cover non-admin <code>403</code> responses, credit adjustments, account disablement, invite registration, and audit logs.</p>
 <h2 id="8-responsive-and-accessibility-checks">8. Responsive and Accessibility Checks</h2>
@@ -295,6 +318,6 @@ secret and dependency scans</code></pre>
 <li>Paid Provider tests remain opt-in.</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=32"></script>
+    <script src="../docs.js?v=33"></script>
   </body>
 </html>

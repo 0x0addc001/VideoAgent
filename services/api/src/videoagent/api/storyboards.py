@@ -10,6 +10,8 @@ from videoagent.models import User
 from videoagent.schemas import (
     CharacterRead,
     CharacterUpdate,
+    SceneRead,
+    SceneUpdate,
     ShotRead,
     ShotUpdate,
     StoryboardRead,
@@ -32,7 +34,12 @@ async def get_storyboard(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> StoryboardRead:
-    await owned_project_or_404(session, project_id, user.id)
+    await owned_project_or_404(
+        session,
+        project_id,
+        user.id,
+        required_permission="view",
+    )
     storyboard = await load_storyboard(session, project_id)
     if storyboard is None:
         raise AppError(
@@ -56,6 +63,7 @@ async def replace_storyboard(
         project_id,
         payload.shots,
         payload.characters,
+        payload.scenes,
     )
     await session.commit()
     return StoryboardRead.model_validate(storyboard)
@@ -134,3 +142,31 @@ async def update_character(
     await session.commit()
     await session.refresh(character)
     return CharacterRead.model_validate(character)
+
+
+@router.patch("/scenes/{scene_id}", response_model=SceneRead)
+async def update_scene(
+    project_id: UUID,
+    scene_id: UUID,
+    payload: SceneUpdate,
+    user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> SceneRead:
+    await owned_project_or_404(session, project_id, user.id)
+    storyboard = await load_storyboard(session, project_id)
+    scene = (
+        next((item for item in storyboard.scenes if item.id == scene_id), None)
+        if storyboard is not None
+        else None
+    )
+    if scene is None:
+        raise AppError(
+            status_code=404,
+            code="SCENE_NOT_FOUND",
+            message="The scene was not found.",
+        )
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(scene, field, value)
+    await session.commit()
+    await session.refresh(scene)
+    return SceneRead.model_validate(scene)

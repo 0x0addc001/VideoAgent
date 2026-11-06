@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Test" />
     <title>Test · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=32" />
+    <link rel="stylesheet" href="../docs.css?v=33" />
   </head>
   <body data-document="software-test-plan.zh.html">
     <main class="document-shell" id="document-shell">
@@ -48,11 +48,11 @@
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v2.4</td>
+<td>v2.5</td>
 </tr>
 <tr>
 <td>更新日期</td>
-<td>2026-11-04</td>
+<td>2026-11-05</td>
 </tr>
 <tr>
 <td>测试框架</td>
@@ -96,6 +96,8 @@
 <li>邀请码创建、消费、撤销和注册模式。</li>
 <li>生成 kill switch、任务退款和审计日志。</li>
 <li>国内版 Kling CLI 的提交参数、状态映射、账号身份和积分读取。</li>
+<li>Skill 公开发现、点赞切换、使用去重和作者禁止自赞。</li>
+<li>Videos 点赞切换、账户去重、统计持久化和取消点赞。</li>
 </ul>
 <p>前端：</p>
 <ul>
@@ -103,9 +105,10 @@
 <li>流式主标题和视频轮播。</li>
 <li>创作框与自定义下拉。</li>
 <li>项目创建流程。</li>
-<li>Assets、Hots 和 Docs 视图切换。</li>
+<li>Assets、Videos 和 Docs 视图切换。</li>
 <li>Assets 权限、日期、悬浮预览与封面行为。</li>
-<li>Hots 作者、喜欢数、播放和发布。</li>
+<li>Videos 作者、喜欢数、播放和发布。</li>
+<li>Skills 与 Videos 分类筛选、榜单顺序和点赞交互；单卡不显示排名或奖励。</li>
 <li>Docs 中英文切换。</li>
 <li>项目列表、认证表单与项目工作区。</li>
 <li>项目素材上传、成片导出、MP4 下载和分享链接。</li>
@@ -144,38 +147,48 @@
 <li>左侧独立视图导航。</li>
 <li>自定义下拉渲染与选择。</li>
 <li>Action 启用和禁用状态。</li>
-<li>Hots 元数据顺序：标题在作者与喜欢数之上。</li>
-<li>每张 Hots 卡片包含自动播放、静音、循环视频。</li>
+<li>Videos 元数据顺序：标题在作者与喜欢数之上。</li>
+<li>每张 Videos 卡片包含自动播放、静音、循环视频。</li>
 <li>发布入口使用蓝色播放键。</li>
 <li>Skills 使用 <code>user_id/skill_id</code> 的单一搜索目录，原厂商能力使用厂商命名空间。</li>
-<li>Playbook 正确填充提示词、Skill、Hook、风格、画幅、时长和审核设置。</li>
-<li>再次点击当前 Playbook 会恢复应用前状态。</li>
-<li>Hots 场景卡片进入 Agents 时选中对应 Skill 和提示词。</li>
+<li>策略正确填充提示词、Skill、Hook、风格、画幅、时长和审核设置。</li>
+<li>再次点击当前策略会恢复应用前状态。</li>
+<li>Videos 场景卡片进入 Agents 时选中对应 Skill 和提示词。</li>
 <li>输入框随多行内容增高，输入非空时隐藏示例灵感。</li>
 <li>Model 目录包含全部 Kling 与 Pippit 视频模型，并显示为 <code>服务商/模型</code>。</li>
-<li>Docs 标签为 <code>PRD</code>、<code>Playbook</code>、<code>Arch</code>、<code>API</code>、<code>Dev</code>、<code>Test</code>、<code>Ops</code>、<code>FAQ</code>、<code>TODO</code>。</li>
+<li>Docs 标签为 <code>PRD</code>、<code>策略</code>、<code>Arch</code>、<code>API</code>、<code>Dev</code>、<code>Test</code>、<code>Ops</code>、<code>FAQ</code>、<code>TODO</code>。</li>
+<li>Docs 每次进入默认打开 PRD；搜索框位于目录上方，左侧文档目录默认与展开导航等宽，</li>
+<p>可拖拽或使用方向键调整，也可收起为图标栏。</p>
 <li>Globe 控件切换 Docs 语言。</li>
-<li>Skills、Hots、Assets、Docs 搜索框保持固定。</li>
+<li>Skills、Videos、Assets、Docs 搜索框保持固定。</li>
 <li>Assets 通过 Video/Skill 分页切换，不重复类型标签。</li>
 <li>Video 悬浮预览，Skill 卡片无封面。</li>
 <li>创作框菜单不超出视口。</li>
 <li>历史导航展示 Projects 与 Recents，项目目录支持创建、重命名、删除和拖拽收纳。</li>
 <li>将 Recent 拖入项目目录后关系持久化，Recent 列表移除该项，并在目录内以缩进子项显示。</li>
 <li>点击历史对话只更新 URL 哈希并复用已挂载的应用外壳，不触发页面级导航。</li>
-<li>工作区资源树包含 <code>Direction &gt; Settings / Outlines / Scripts</code> 与</li>
-<p><code>Vision &gt; Characters / Shots / Final Cut</code>，不再显示 Storyboard、Media、Exports。 Projects、Recents 及其对话项保持纯文本。</p>
-<li>Character 提供描述页与生成页；每个 Shot 直接打开合并页面，目录行不使用容器框。</li>
+<li>工作区资源树提供同级的 <code>Directions</code>、<code>Visions</code> 和 <code>Versions</code>，不再显示</li>
+<p>Storyboard、Media、Exports。Projects、Recents 及其对话项保持纯文本。</p>
+<li>Character 与 Scene 各自承接描述和上传参考图；每个 Shot 直接打开合并页面，目录行不使用容器框。</li>
 <p>空目录不显示等待文案。</p>
 <li>Settings 以“问题-答案”属性行展示 Q&amp;A，不显示旧版底部分阶段卡片。</li>
 <li>Settings 从对话提炼 <code>属性 / 值</code>，排除批准消息，不直接展示原始 Q&amp;A。</li>
-<li>Shot 与 Character 的描述和 Prompt 通过资源 PATCH 接口持久化。</li>
+<li>Settings、Outlines、Scripts、Shot、Character 与 Scene 的修改分别通过项目或资源接口持久化。</li>
 <li>上传素材会把 <code>@&lt;asset-id&gt;</code> 追加到当前 Prompt；生成时根据该 ID 自动选择参考模式。</li>
 <li>上传和生成结果位于对应目录，支持最终选用、复制 ID、预览和删除。</li>
-<li>桌面端四栏默认等宽并支持拖拽调整；账号下拉包含语言、通知和积分。</li>
+<li>桌面端四栏默认等宽并支持拖拽调整；头像下拉包含语言、通知和积分，语言选项纵向排列；</li>
+<p>账号操作带图标，齿轮位于头像行内部。</p>
 <li>浏览器标题统一为 <code>VideoAgent</code>；管理后台运行环境标签为 <code>Pippit China</code>。</li>
 <li>Assets 与 Agents 可独立折叠，并通过带标签的窄轨恢复。</li>
-<li>编辑区顶部显示每 3 秒轮询的制作进度条，不再显示故事板 Review 分数按钮。</li>
+<li>编辑区顶部不显示制作进度条，也不显示故事板 Review 分数按钮。</li>
 <li>Final Cut 视觉评估只对导出资产开放，用户可选择已配置的视觉模型和一致性指标；未配置模型时明确不可用。</li>
+<li>全部故事板 Shot 均生成后才可导出成片。</li>
+<li>通过“生成成片”等对话指令触发交付生成；编辑区不单独暴露合成按钮。</li>
+<li>故事板缺少 Character 或 Scene 时，镜头估算与生成返回 <code>409 VISION_OBJECTS_REQUIRED</code>。</li>
+<li>Character 与 Shot 页面展示模型选择器，默认继承项目配置，并能发送任务级覆盖。</li>
+<li>项目分享生成查看或编辑权限的协作链接，可限制受邀邮箱；接受后可直接打开项目。</li>
+<li>已导出成片可直接发布到 Videos，无需再次上传文件。</li>
+<li>Videos 在所有入口统一使用胶卷图标，Skills 统一使用摄像机图标。</li>
 <li>镜头生成在工作流批准前显示明确提示。</li>
 <li>历史 Agent 消息静态渲染；仅新返回的回复执行一次流式显示，Agents 折叠后重新展开不会重复播放。</li>
 <li>Agent 请求等待回复时显示实时执行轨迹；事件到达前的短暂空档保留紧凑的</li>
@@ -192,9 +205,13 @@
 <li>AI 优化按钮能把粗略想法整理为结构化 Skill，保存后从服务端恢复。</li>
 <li>内置 <code>video_agent/skill_synthesis</code> 直接打开 Skill Studio。</li>
 <li>App 左侧导航可收起为仅图标，登录后 Agents 首页显示最近对话。</li>
-<li>Hots 发布必须选择 MP4，上传成功后出现在社区和作者 Assets。</li>
+<li>Videos 发布必须选择 MP4，上传成功后出现在社区和作者 Assets。</li>
+<li>Skills 与 Videos 在分类筛选后保持榜单顺序，点赞按钮正确切换状态并更新计数；卡片只</li>
+<p>在标题后显示分类，不显示排名或获得积分。</p>
 <li>Assets 的视频与 Skill 卡片可点击打开详情，视频详情可播放。</li>
 <li>工作流批准立即推进；Agent 回复语言跟随项目 Brief 和用户 Prompt。</li>
+<li>长 Brief 拆分为多个导演属性；英文界面不显示中文例句，<code>Creative brief</code> 和</li>
+<p><code>Director direction</code> 不再作为兜底属性。</p>
 <li>登录、注册与主产品使用一致的深色视觉语言。</li>
 <li>Projects 的加号打开项目表单；Recents 的加号进入 Agents；两组都可展开和收起。</li>
 <li>Pippit 低于 4 秒的请求会被规范化，Provider 拒绝会显示原始失败原因并返还预留积分。</li>
@@ -205,12 +222,12 @@
 <li>FAQ 与 TODO 均有中英文版本。</li>
 </ul>
 <p>Playwright 使用真实 Next.js 页面、FastAPI、SQLite 和 Mock Provider，验证：</p>
-<pre><code class="language-text">注册 → 首页创意 → 创建项目 → 三轮审批 → 选择镜头 → 上传素材
-→ 积分估算 → 生成 → 轮询/落地 → 合成导出 → 下载 → 分享</code></pre>
+<pre><code class="language-text">注册 → 首页创意 → 创建项目 → 三轮审批 → 上传参考素材
+→ 生成全部镜头 → 创建协作链接 → 合成成片 → 下载/分享 → 发布</code></pre>
 <p>另有一条无费用 Skill 链路：</p>
 <pre><code class="language-text">注册 → Skills → 输入粗略想法 → AI 优化 → 发布 → 刷新后恢复</code></pre>
-<p>无费用 Hots / Assets 链路：</p>
-<pre><code class="language-text">注册 → Hots → 上传 MP4 → 发布 → Assets → 查看详情并播放</code></pre>
+<p>无费用 Videos / Assets 链路：</p>
+<pre><code class="language-text">注册 → Videos → 上传 MP4 → 发布 → Assets → 查看详情并播放</code></pre>
 <p>该链路不调用真实付费 Provider，应作为每个 Pull Request 的必过门禁。</p>
 <p>管理后台 E2E 验证管理员登录、控制台加载和暂停生成；后端集成测试验证普通用户 返回 <code>403</code>、积分调整、账号停用、邀请码注册和审计日志。</p>
 <h2 id="8-响应式与可访问性">8. 响应式与可访问性</h2>
@@ -263,6 +280,6 @@ Playwright + Mock Provider E2E
 <li>付费 Provider 测试保持人工开启。</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=32"></script>
+    <script src="../docs.js?v=33"></script>
   </body>
 </html>

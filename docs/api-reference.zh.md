@@ -139,6 +139,15 @@ http://localhost:8000/openapi.json
       "prompt_zh": "稳定身份与自然肤质的角色定妆照"
     }
   ],
+  "scenes": [
+    {
+      "name": "Studio",
+      "location": "Downtown loft",
+      "description": "带落地窗和暖色日光的制作空间。",
+      "prompt_en": "Cinematic production loft with warm daylight",
+      "prompt_zh": "暖日光下的电影感制作空间"
+    }
+  ],
   "shots": [
     {
       "description": "开场产品亮相",
@@ -290,13 +299,19 @@ Idempotency-Key: unique-request-id
 {
   "approved": true,
   "generation_mode": "image_to_video",
-  "reference_asset_id": "00000000-0000-0000-0000-000000000010"
+  "reference_asset_id": "00000000-0000-0000-0000-000000000010",
+  "provider": "kling",
+  "model": "kling-video-v4_0"
 }
 ```
 
 未显式批准时返回 `403`。相同镜头和幂等键重复请求会返回已有任务，不会再次提交 Provider。
 `generation_mode` 为 `text_to_video` 或 `image_to_video`；图生视频必须引用当前用户、
 当前项目中的有效图片资产。
+故事板至少包含一个 Character 和一个 Scene 后，才允许镜头估算与生成；否则返回
+`409 VISION_OBJECTS_REQUIRED`。
+`provider` 与 `model` 是可选的任务级覆盖；同时省略时继承项目默认模型。切换模型会
+使旧积分估算失效。
 
 ## 角色图片生成
 
@@ -312,12 +327,20 @@ Idempotency-Key: unique-request-id
 {
   "approved": true,
   "generation_mode": "image_to_image",
-  "reference_asset_id": "00000000-0000-0000-0000-000000000010"
+  "reference_asset_id": "00000000-0000-0000-0000-000000000010",
+  "provider": "kling",
+  "model": "kling-image-v3_0"
 }
 ```
 
 `generation_mode` 为 `text_to_image` 或 `image_to_image`。成功响应为 `AssetRead`，
 客户端可通过 `content_url` 预览和下载生成图片。
+
+### 场景编辑与参考图
+
+`PATCH /projects/{project_id}/storyboard/scenes/{scene_id}` 可更新名称、地点、
+描述和 Prompt。`POST /scenes/{scene_id}/assets` 上传场景参考图，返回素材名会绑定
+Scene ID，工作区据此把图片放在对应 Scene 目录下。
 
 ### 查询任务
 
@@ -359,12 +382,27 @@ cancelled
 
 | 方法 | 路径 | 说明 |
 | --- | --- | --- |
-| `GET` | `/skills` | 当前用户已保存的 Skill |
+| `GET` | `/skills` | 获取公开 Skill 和当前用户拥有的 Skill |
 | `POST` | `/skills` | 保存结构化 Skill |
 | `POST` | `/skills/optimize` | 将粗略能力想法整理成结构化草稿 |
+| `POST` | `/skills/engagement/query` | 批量读取最多 100 个稳定 Skill 标识的互动数据 |
+| `POST` | `/skills/engagement/like` | 切换稳定 Skill 标识的点赞状态 |
+| `POST` | `/skills/engagement/use` | 记录一次去重使用信号 |
 
 优化接口返回稳定的 `skill_id`、名称、描述、详细执行规范、启动提示词以及输入和
-输出 JSON Schema。保存后的 Skill 属于当前登录账户，并会在 Skills 页面自动恢复。
+输出 JSON Schema。列表响应增加 `is_mine`、`likes`、`uses` 和 `is_liked`。
+互动接口接收 `{"skill_key":"<user_id>/<skill_id>"}`，让内置 Skill 与用户发布
+Skill 使用同一套持久统计。作者不能给自己的 Skill 点赞；同一账户重复请求不会重复
+增加点赞数或使用数。
+
+```json
+{
+  "skill_key": "video_agent/creator_vlog"
+}
+```
+
+`POST /skills/engagement/query` 接收 `{"skill_keys":["<user_id>/<skill_id>"]}`，
+并以 `items` 对象返回对应标识的互动数据，用于加载不在用户 Skill 表中的内置 Skill。
 
 ```json
 {
@@ -374,16 +412,18 @@ cancelled
 }
 ```
 
-## Hots
+## Videos
 
 | 方法 | 路径 | 说明 |
 | --- | --- | --- |
 | `GET` | `/hots` | 获取社区视频；`mine=true` 仅返回当前用户发布 |
 | `POST` | `/hots` | 上传 MP4 并发布社区作品 |
+| `POST` | `/hots/{post_id}/like` | 切换当前用户点赞状态 |
 | `GET` | `/hots/{post_id}/video` | 播放公开视频 |
 
 `POST /hots` 使用 `multipart/form-data`，字段为 `file`、`title`、`prompt` 和
-`skill`。上传视频作为公开资产保存，并自动出现在作者的 Assets 中。
+`skill`。上传视频作为公开资产保存，并自动出现在作者的 Assets 中。Videos
+响应包含 `is_liked`；同一账户最多贡献一次点赞，作者不能给自己的作品点赞。
 
 ## 资产与媒体
 
@@ -401,6 +441,9 @@ cancelled
 | `GET` | `/assets/{asset_id}/content` | 读取私有资产内容 |
 | `POST` | `/projects/{project_id}/exports` | 合成并导出当前成片 |
 | `POST` | `/assets/{asset_id}/share` | 创建限时分享链接 |
+| `POST` | `/hots/from-asset/{asset_id}` | 直接发布已导出的成片 |
+| `POST` | `/projects/{project_id}/collaborations` | 创建项目协作链接 |
+| `POST` | `/collaborations/{token}/accept` | 接受邀请并加入项目 |
 | `DELETE` | `/shares/{share_id}` | 撤销分享链接 |
 | `GET` | `/shares/{token}/content` | 通过有效分享链接读取资产 |
 
@@ -426,7 +469,8 @@ Prompt 中使用的稳定 ID，格式为 `@<asset-id>`。
 }
 ```
 
-导出响应包含交付版本 Asset 与自动生成的封面。当前实现使用 FFmpeg 合成可用镜头，
+导出响应包含交付版本 Asset 与自动生成的封面。只有全部故事板 Shot 均已生成结果时才可导出。
+当前实现使用 FFmpeg 合成这些镜头，
 统一交付比例，在镜头间添加短交叉淡化，并可加入字幕和上传的音轨。
 
 分享请求：
@@ -438,6 +482,19 @@ Prompt 中使用的稳定 ID，格式为 `@<asset-id>`。
 ```
 
 分享 Token 随机生成且只保存哈希；链接支持过期与撤销，访问时累计审计计数。
+
+协作请求：
+
+```json
+{
+  "permission": "edit",
+  "collaborator_email": "editor@example.com",
+  "expires_in_hours": 168
+}
+```
+
+协作链接与素材分享链接分离。登录用户接受邀请后才会建立项目成员关系，服务端继续按
+`view` 或 `edit` 权限校验项目接口。
 
 ## 管理后台
 

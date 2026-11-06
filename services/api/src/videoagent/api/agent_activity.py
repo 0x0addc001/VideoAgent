@@ -23,7 +23,12 @@ async def list_agent_activity(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> AgentActivityList:
-    await owned_project_or_404(session, project_id, user.id)
+    await owned_project_or_404(
+        session,
+        project_id,
+        user.id,
+        required_permission="view",
+    )
     activities = (
         await session.scalars(
             select(AgentActivity)

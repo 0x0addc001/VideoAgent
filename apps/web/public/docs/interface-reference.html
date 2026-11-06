@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent API" />
     <title>API · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=32" />
+    <link rel="stylesheet" href="../docs.css?v=33" />
   </head>
   <body data-document="interface-reference.html">
     <main class="document-shell" id="document-shell">
@@ -49,10 +49,11 @@
 <a class="toc-link toc-level-3" href="#estimate-cost">Estimate Cost</a>
 <a class="toc-link toc-level-3" href="#generate-shot">Generate Shot</a>
 <a class="toc-link toc-level-3" href="#character-image-generation">Character Image Generation</a>
+<a class="toc-link toc-level-3" href="#scene-editing-and-references">Scene Editing and References</a>
 <a class="toc-link toc-level-3" href="#job-status">Job Status</a>
 <a class="toc-link toc-level-2" href="#credits">Credits</a>
 <a class="toc-link toc-level-2" href="#skills">Skills</a>
-<a class="toc-link toc-level-2" href="#hots">Hots</a>
+<a class="toc-link toc-level-2" href="#videos">Videos</a>
 <a class="toc-link toc-level-3" href="#production-progress">Production Progress</a>
 <a class="toc-link toc-level-3" href="#final-cut-visual-review">Final Cut Visual Review</a>
 <a class="toc-link toc-level-2" href="#assets-and-media">Assets and Media</a>
@@ -232,6 +233,15 @@ http://localhost:8000/openapi.json</code></pre>
       &quot;prompt_zh&quot;: &quot;稳定身份与自然肤质的角色定妆照&quot;
     }
   ],
+  &quot;scenes&quot;: [
+    {
+      &quot;name&quot;: &quot;Studio&quot;,
+      &quot;location&quot;: &quot;Downtown loft&quot;,
+      &quot;description&quot;: &quot;A warm production loft with large windows.&quot;,
+      &quot;prompt_en&quot;: &quot;Cinematic production loft with warm daylight&quot;,
+      &quot;prompt_zh&quot;: &quot;暖日光下的电影感制作空间&quot;
+    }
+  ],
   &quot;shots&quot;: [
     {
       &quot;description&quot;: &quot;Opening product reveal&quot;,
@@ -302,9 +312,11 @@ http://localhost:8000/openapi.json</code></pre>
 <pre><code class="language-json">{
   &quot;approved&quot;: true,
   &quot;generation_mode&quot;: &quot;image_to_video&quot;,
-  &quot;reference_asset_id&quot;: &quot;00000000-0000-0000-0000-000000000010&quot;
+  &quot;reference_asset_id&quot;: &quot;00000000-0000-0000-0000-000000000010&quot;,
+  &quot;provider&quot;: &quot;kling&quot;,
+  &quot;model&quot;: &quot;kling-video-v4_0&quot;
 }</code></pre>
-<p><code>generation_mode</code> is <code>text_to_video</code> or <code>image_to_video</code>. Image-to-video requires a project-owned image asset that belongs to the current user.</p>
+<p><code>generation_mode</code> is <code>text_to_video</code> or <code>image_to_video</code>. Image-to-video requires a project-owned image asset that belongs to the current user. Estimation and generation return <code>409 VISION_OBJECTS_REQUIRED</code> until the storyboard contains at least one Character and one Scene. <code>provider</code> and <code>model</code> are optional per-task overrides. Omit both to use the project default. Changing the override invalidates the previous estimate.</p>
 <h3 id="character-image-generation">Character Image Generation</h3>
 <div class="table-wrap"><table><thead><tr>
 <th>Method</th>
@@ -331,9 +343,13 @@ http://localhost:8000/openapi.json</code></pre>
 <pre><code class="language-json">{
   &quot;approved&quot;: true,
   &quot;generation_mode&quot;: &quot;image_to_image&quot;,
-  &quot;reference_asset_id&quot;: &quot;00000000-0000-0000-0000-000000000010&quot;
+  &quot;reference_asset_id&quot;: &quot;00000000-0000-0000-0000-000000000010&quot;,
+  &quot;provider&quot;: &quot;kling&quot;,
+  &quot;model&quot;: &quot;kling-image-v3_0&quot;
 }</code></pre>
 <p><code>generation_mode</code> is <code>text_to_image</code> or <code>image_to_image</code>. A successful request returns an <code>AssetRead</code> whose content can be previewed and downloaded through <code>content_url</code>.</p>
+<h3 id="scene-editing-and-references">Scene Editing and References</h3>
+<p><code>PATCH /projects/{project_id}/storyboard/scenes/{scene_id}</code> updates name, location, description, or prompts. <code>POST /scenes/{scene_id}/assets</code> uploads a scene reference image. The returned asset filename is namespaced to the scene so the workspace can keep it under that Scene directory.</p>
 <h3 id="job-status">Job Status</h3>
 <p><code>GET /jobs/{job_id}</code></p>
 <p>Possible statuses include <code>submitted</code>, <code>queued</code>, <code>running</code>, <code>succeeded</code>, <code>failed</code>, and <code>cancelled</code>.</p>
@@ -355,7 +371,7 @@ http://localhost:8000/openapi.json</code></pre>
 <tr>
 <td><code>GET</code></td>
 <td><code>/skills</code></td>
-<td>List Skills saved by the current user</td>
+<td>List public Skills and Skills owned by the current user</td>
 </tr>
 <tr>
 <td><code>POST</code></td>
@@ -367,14 +383,33 @@ http://localhost:8000/openapi.json</code></pre>
 <td><code>/skills/optimize</code></td>
 <td>Convert a rough capability idea into a structured draft</td>
 </tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/skills/engagement/query</code></td>
+<td>Read signals for up to 100 stable Skill keys</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/skills/engagement/like</code></td>
+<td>Toggle a like for a stable Skill key</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/skills/engagement/use</code></td>
+<td>Record one de-duplicated use signal</td>
+</tr>
 </tbody></table></div>
-<p>The optimizer returns a stable <code>skill_id</code>, title, description, detailed instructions, starter prompt, and input/output JSON schemas. Saved Skills are scoped to the authenticated account and are loaded back into the Skills view.</p>
+<p>The optimizer returns a stable <code>skill_id</code>, title, description, detailed instructions, starter prompt, and input/output JSON schemas. List responses add <code>is_mine</code>, <code>likes</code>, <code>uses</code>, and <code>is_liked</code>. Engagement endpoints accept <code>{&quot;skill_key&quot;:&quot;&lt;user_id&gt;/&lt;skill_id&gt;&quot;}</code>, which allows bundled and published Skills to share one persistent signal store. Authors cannot like their own Skill; repeated requests from the same account do not inflate either counter.</p>
+<pre><code class="language-json">{
+  &quot;skill_key&quot;: &quot;video_agent/creator_vlog&quot;
+}</code></pre>
+<p><code>POST /skills/engagement/query</code> accepts <code>{&quot;skill_keys&quot;:[&quot;&lt;user_id&gt;/&lt;skill_id&gt;&quot;]}</code> and returns a keyed <code>items</code> object. This lets the client hydrate engagement for built-in Skills that are not rows in the user Skill table.</p>
 <pre><code class="language-json">{
   &quot;idea&quot;: &quot;Turn product stills into premium campaign videos&quot;,
   &quot;title&quot;: &quot;Editorial product film&quot;,
   &quot;locale&quot;: &quot;en&quot;
 }</code></pre>
-<h2 id="hots">Hots</h2>
+<h2 id="videos">Videos</h2>
 <div class="table-wrap"><table><thead><tr>
 <th>Method</th>
 <th>Path</th>
@@ -391,12 +426,17 @@ http://localhost:8000/openapi.json</code></pre>
 <td>Upload an MP4 and publish a community post</td>
 </tr>
 <tr>
+<td><code>POST</code></td>
+<td><code>/hots/{post_id}/like</code></td>
+<td>Toggle the current user's like</td>
+</tr>
+<tr>
 <td><code>GET</code></td>
 <td><code>/hots/{post_id}/video</code></td>
 <td>Stream the public video</td>
 </tr>
 </tbody></table></div>
-<p><code>POST /hots</code> uses <code>multipart/form-data</code> with <code>file</code>, <code>title</code>, <code>prompt</code>, and <code>skill</code>. The uploaded video asset is public and appears in the authenticated author's Assets view.</p>
+<p><code>POST /hots</code> uses <code>multipart/form-data</code> with <code>file</code>, <code>title</code>, <code>prompt</code>, and <code>skill</code>. The uploaded video asset is public and appears in the authenticated author's Assets view. Videos responses include <code>is_liked</code>; one account contributes at most one like, and authors cannot like their own post.</p>
 <h3 id="production-progress">Production Progress</h3>
 <p><code>GET /projects/{project_id}/progress</code></p>
 <p>Returns the live production percentage used by the workspace progress bar. It tracks the workflow stage and completed Shots; it is readiness, not a visual quality score.</p>
@@ -468,6 +508,21 @@ http://localhost:8000/openapi.json</code></pre>
 <td>Create a time-limited share link</td>
 </tr>
 <tr>
+<td><code>POST</code></td>
+<td><code>/hots/from-asset/{asset_id}</code></td>
+<td>Publish an existing exported final cut</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/projects/{project_id}/collaborations</code></td>
+<td>Create a project collaboration link</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/collaborations/{token}/accept</code></td>
+<td>Accept an invite and join the project</td>
+</tr>
+<tr>
 <td><code>DELETE</code></td>
 <td><code>/shares/{share_id}</code></td>
 <td>Revoke a share link</td>
@@ -490,12 +545,19 @@ file=&lt;image, video, or audio&gt;</code></pre>
   &quot;captions&quot;: &quot;A generated product story&quot;,
   &quot;permission&quot;: &quot;private&quot;
 }</code></pre>
-<p>The export response contains delivery Assets and a generated cover. The current implementation composes available generated shots with FFmpeg, normalizes each delivery ratio, applies a short crossfade between shots, and optionally includes captions and an uploaded soundtrack.</p>
+<p>The export response contains delivery Assets and a generated cover. Export requires every storyboard Shot to have a generated result. The current implementation composes those generated shots with FFmpeg, normalizes each delivery ratio, applies a short crossfade between shots, and optionally includes captions and an uploaded soundtrack.</p>
 <p>Share request:</p>
 <pre><code class="language-json">{
   &quot;expires_in_hours&quot;: 24
 }</code></pre>
 <p>Share tokens are random, stored as hashes, expire after the requested period, and can be revoked. Access increments an audit counter.</p>
+<p>Collaboration request:</p>
+<pre><code class="language-json">{
+  &quot;permission&quot;: &quot;edit&quot;,
+  &quot;collaborator_email&quot;: &quot;editor@example.com&quot;,
+  &quot;expires_in_hours&quot;: 168
+}</code></pre>
+<p>Collaboration links are distinct from asset-share links. They grant project membership after authenticated acceptance and enforce <code>view</code> or <code>edit</code> permission on project endpoints.</p>
 <h2 id="administration">Administration</h2>
 <p>Administration endpoints require an authenticated account whose email appears in <code>VIDEOAGENT_ADMIN_EMAILS</code>. Other users receive <code>403 ADMIN_ACCESS_REQUIRED</code>.</p>
 <div class="table-wrap"><table><thead><tr>
@@ -660,6 +722,6 @@ file=&lt;image, video, or audio&gt;</code></pre>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=32"></script>
+    <script src="../docs.js?v=33"></script>
   </body>
 </html>

@@ -53,7 +53,8 @@ class StoryboardAgent:
                 await activity(
                     "planning",
                     "Storyboard plan ready",
-                    f"Selected {len(plan.storyboard.characters or [])} Characters "
+                    f"Selected {len(plan.storyboard.characters or [])} Characters, "
+                    f"{len(plan.storyboard.scenes or [])} Scenes, "
                     f"and {len(plan.storyboard.shots)} Shots.",
                     "completed",
                 )

@@ -6,7 +6,7 @@ from langchain_openai import ChatOpenAI
 from pydantic import BaseModel
 
 from videoagent.config import Settings
-from videoagent.schemas import CharacterInput, ShotInput, StoryboardReplace
+from videoagent.schemas import CharacterInput, SceneInput, ShotInput, StoryboardReplace
 
 
 class StoryboardPlan(BaseModel):
@@ -39,6 +39,22 @@ class LocalStoryboardPlanner:
     async def plan(self, context: PlanningContext) -> StoryboardPlan:
         subject = context.user_message or context.project_brief or context.project_title
         chinese = context.locale == "zh-CN"
+        if context.workflow_stage == "concept":
+            return StoryboardPlan(
+                assistant_message=(
+                    "我先确认整体设定，并把题材、受众、叙事目标、情绪、视觉方向、"
+                    "角色与场景需求整理到 Settings。信息足够后再生成 Outlines、"
+                    "Scenes、Characters 和 Shots。"
+                    if chinese
+                    else (
+                        "I’m collecting the creative settings first: story, audience, "
+                        "narrative goal, tone, visual direction, and the Character and "
+                        "Scene requirements. After the direction is clear, I’ll create "
+                        "the Outlines, Characters, Scenes, and Shots."
+                    )
+                ),
+                storyboard=StoryboardReplace(shots=[], characters=[], scenes=[]),
+            )
         hook_match = re.search(r"Hook\s+([a-z]+)", context.project_brief, re.IGNORECASE)
         hook = hook_match.group(1).lower() if hook_match else "auto"
         duration_match = re.search(r"·\s*(\d+)s\s*·", context.project_brief)
@@ -60,7 +76,9 @@ class LocalStoryboardPlanner:
             "proof": "以可见的产品效果或实证开场。",
         }.get(hook, "")
         opening_prompt = (
-            f"Cinematic establishing shot for {subject}, dramatic lighting. {hook_guidance}"
+            f"Cinematic establishing shot for {subject}, clear subject action, "
+            f"motivated camera movement, dramatic lighting, and ambient sound. "
+            f"{hook_guidance}"
         ).strip()
         shots = [
             ShotInput(
@@ -77,7 +95,10 @@ class LocalStoryboardPlanner:
             ),
             ShotInput(
                 description="产品细节镜头" if chinese else "Product detail shot",
-                prompt_en=f"Macro product detail shot for {subject}, shallow depth of field",
+                prompt_en=(
+                    f"Macro product detail shot for {subject}, controlled push-in, "
+                    "shallow depth of field, readable texture, and natural sound"
+                ),
                 prompt_zh=f"“{subject}”的产品细节微距镜头，浅景深" if chinese else None,
                 duration_seconds=duration,
                 aspect_ratio=aspect_ratio,
@@ -85,7 +106,10 @@ class LocalStoryboardPlanner:
             ),
             ShotInput(
                 description="品牌收尾镜头" if chinese else "Hero closing shot",
-                prompt_en=f"Hero closing shot for {subject}, elegant camera movement",
+                prompt_en=(
+                    f"Hero closing shot for {subject}, elegant camera movement, "
+                    "clear final composition, restrained sound, and stable identity"
+                ),
                 prompt_zh=f"“{subject}”的英雄收尾镜头，优雅运镜" if chinese else None,
                 duration_seconds=duration,
                 aspect_ratio=aspect_ratio,
@@ -108,6 +132,31 @@ class LocalStoryboardPlanner:
                 ),
                 prompt_zh=(
                     f"“{subject}”的电影感角色定妆照，稳定身份特征，自然肤质，成片级服装与灯光"
+                    if chinese
+                    else None
+                ),
+            )
+        ]
+        scene_name = "主场景" if chinese else "Primary set"
+        scene_location = "电影感室内创作空间" if chinese else "Cinematic interior studio"
+        scenes = [
+            SceneInput(
+                name=scene_name,
+                location=scene_location,
+                description=(
+                    f"承载“{subject}”叙事的连续空间，包含可识别的环境层次、灯光和道具关系。"
+                    if chinese
+                    else (
+                        f"A continuous story space for {subject}, with readable "
+                        "environment layers, practical light, and reusable set dressing."
+                    )
+                ),
+                prompt_en=(
+                    f"Cinematic environment plate for {subject}, consistent layout, "
+                    "production-ready lighting and set dressing"
+                ),
+                prompt_zh=(
+                    f"“{subject}”的电影感场景设定图，空间布局稳定，成片级灯光与陈设"
                     if chinese
                     else None
                 ),
@@ -146,7 +195,11 @@ class LocalStoryboardPlanner:
         }
         return StoryboardPlan(
             assistant_message=messages[context.workflow_stage],
-            storyboard=StoryboardReplace(shots=shots, characters=characters),
+            storyboard=StoryboardReplace(
+                shots=shots,
+                characters=characters,
+                scenes=scenes,
+            ),
         )
 
 
@@ -163,6 +216,25 @@ class OpenAIStoryboardPlanner:
         )
         self._structured = self._chat.with_structured_output(StoryboardPlan)
         self.display_name = f"LLM/{settings.llm_model}"
+
+    async def _enforce_stage_plan(
+        self,
+        result: StoryboardPlan,
+        context: PlanningContext,
+    ) -> StoryboardPlan:
+        if context.workflow_stage == "concept":
+            result.storyboard.shots = []
+            result.storyboard.characters = []
+            result.storyboard.scenes = []
+            return result
+        fallback = await LocalStoryboardPlanner().plan(context)
+        if not result.storyboard.shots:
+            result.storyboard.shots = fallback.storyboard.shots
+        if not result.storyboard.characters:
+            result.storyboard.characters = fallback.storyboard.characters
+        if not result.storyboard.scenes:
+            result.storyboard.scenes = fallback.storyboard.scenes
+        return result
 
     async def plan(self, context: PlanningContext) -> StoryboardPlan:
         stage_instruction = {
@@ -182,11 +254,25 @@ class OpenAIStoryboardPlanner:
         }[context.workflow_stage]
         prompt = (
             "Create a production-ready three-shot video storyboard. "
+            "At the concept stage, do not create Shots, Characters, or Scenes yet; "
+            "return empty arrays while you collect and summarize the creative settings. "
+            "After concept approval, create reusable Characters and Scenes first, then "
+            "organize Shots around those production objects. "
             "Also define one to three recurring characters with distinct names, "
             "descriptions, and reusable English image prompts when characters are "
             "relevant to the brief. "
+            "Define one to three reusable scenes with distinct names, physical "
+            "locations, descriptions, and English environment-image prompts. "
+            "Characters and scenes are production objects referenced by the shots. "
+            "When refining an existing plan, preserve Character and Scene names "
+            "unless the director explicitly requests a rename. "
+            "Each shot must specify visible action, camera movement, lighting, and "
+            "sound, while preserving character identity and scene geography across "
+            "the sequence. Use keyframes or reference roles when they materially "
+            "improve continuity. "
             "Return prompts in English and a Chinese prompt when the locale is zh-CN. "
-            "Each shot must be between 1 and 15 seconds. "
+            "Each shot must be between 3 and 30 seconds when the selected model "
+            "supports it; otherwise stay within the model's stated limit. "
             f"Workflow stage: {context.workflow_stage}. {stage_instruction} "
             f"Locale: {context.locale}. Project: {context.project_title}. "
             f"Brief: {context.project_brief}. User request: {context.user_message}. "
@@ -200,7 +286,7 @@ class OpenAIStoryboardPlanner:
             result = await self._structured.ainvoke(prompt)
             if not isinstance(result, StoryboardPlan):
                 raise TypeError("LLM returned an unexpected structured response")
-            return result
+            return await self._enforce_stage_plan(result, context)
         except Exception as exc:
             if "response_format" not in str(exc).lower():
                 raise
@@ -223,7 +309,8 @@ class OpenAIStoryboardPlanner:
         end = content.rfind("}")
         if start < 0 or end < start:
             raise ValueError("LLM did not return a JSON object")
-        return StoryboardPlan.model_validate_json(content[start : end + 1])
+        result = StoryboardPlan.model_validate_json(content[start : end + 1])
+        return await self._enforce_stage_plan(result, context)
 
 
 def build_storyboard_planner(settings: Settings) -> StoryboardPlanner:

@@ -26,6 +26,7 @@ ALLOWED_UPLOADS = {
     "audio/wav": (b"RIFF", ".wav"),
 }
 ASPECT_SIZES = {
+    "21:9": (1680, 720),
     "16:9": (1280, 720),
     "9:16": (720, 1280),
     "1:1": (720, 720),
@@ -372,6 +373,21 @@ async def export_project(
             status_code=409,
             code="NO_GENERATED_SHOTS",
             message="Generate at least one shot before exporting.",
+        )
+    project_shot_ids = list(
+        (
+            await session.scalars(
+                select(Shot.id)
+                .join(Storyboard, Storyboard.id == Shot.storyboard_id)
+                .where(Storyboard.project_id == project.id)
+            )
+        ).all()
+    )
+    if set(project_shot_ids) - set(by_shot):
+        raise AppError(
+            status_code=409,
+            code="SHOTS_NOT_READY",
+            message="Generate every shot before assembling the final cut.",
         )
     assets = [by_shot[shot_id] for shot_id in sorted(by_shot, key=lambda item: shot_order[item])]
     inputs = [asset_path(asset, settings) for asset in assets]

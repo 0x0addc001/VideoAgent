@@ -69,6 +69,21 @@ async def project_with_shot(client) -> tuple[dict, dict]:
     storyboard_response = await client.put(
         f"/api/v1/projects/{project['id']}/storyboard",
         json={
+            "characters": [
+                {
+                    "name": "Presenter",
+                    "description": "A concise product presenter.",
+                    "prompt_en": "Editorial portrait of a product presenter",
+                }
+            ],
+            "scenes": [
+                {
+                    "name": "Studio",
+                    "location": "Product studio",
+                    "description": "A warm product photography studio.",
+                    "prompt_en": "Cinematic product studio with warm light",
+                }
+            ],
             "shots": [
                 {
                     "description": "A bottle spinning in warm light",
@@ -86,6 +101,29 @@ async def project_with_shot(client) -> tuple[dict, dict]:
 
 
 @pytest.mark.api
+async def test_generation_requires_character_and_scene_objects(client):
+    assert (await register(client, email="vision-gate@example.com")).status_code == 201
+    project = (
+        await client.post("/api/v1/projects", json={"title": "Vision gate"})
+    ).json()
+    storyboard = await client.put(
+        f"/api/v1/projects/{project['id']}/storyboard",
+        json={
+            "shots": [
+                {
+                    "description": "A premature shot",
+                    "prompt_en": "A cinematic shot without production objects",
+                }
+            ]
+        },
+    )
+    shot_id = storyboard.json()["shots"][0]["id"]
+    response = await client.post(f"/api/v1/shots/{shot_id}/estimate")
+    assert response.status_code == 409
+    assert response.json()["error"]["code"] == "VISION_OBJECTS_REQUIRED"
+
+
+@pytest.mark.api
 async def test_generation_rejects_missing_approval(client):
     project, shot = await project_with_shot(client)
 
@@ -97,6 +135,28 @@ async def test_generation_rejects_missing_approval(client):
 
     assert response.status_code == 403
     assert response.json()["error"]["code"] == "GENERATION_APPROVAL_REQUIRED"
+
+
+@pytest.mark.api
+async def test_generation_accepts_per_stage_model_override(client):
+    _, shot = await project_with_shot(client)
+
+    estimate = await client.post(
+        f"/api/v1/shots/{shot['id']}/estimate",
+        json={"provider": "pippit", "model": "Seedance_2.5"},
+    )
+    assert estimate.status_code == 200
+    generated = await client.post(
+        f"/api/v1/shots/{shot['id']}/generate",
+        headers={"Idempotency-Key": "late-model-override"},
+        json={
+            "approved": True,
+            "provider": "pippit",
+            "model": "Seedance_2.5",
+            "generation_mode": "text_to_video",
+        },
+    )
+    assert generated.status_code == 201
 
 
 @pytest.mark.api

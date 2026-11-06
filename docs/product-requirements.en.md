@@ -29,14 +29,18 @@ Desktop navigation is fixed on the left in this order:
 ```text
 Agents
 Skills
-Hots
+Videos
 Assets
 Docs
 ```
 
-The left navigation bottom shows the avatar and username in one profile trigger.
-Language, notifications, and credits live inside its popover instead of using
-separate bottom controls. All surfaces are translucent and open upward.
+The left navigation bottom shows the avatar and username trigger without a
+trailing chevron. Its popover spans the navigation width minus the `13px` inner
+padding on both sides. It contains Languages, Notifications, Credits, and
+account actions. The current language is shown inline with a right-pointing
+expansion control that opens a separate right-side flyout containing English
+and Chinese vertically. Empty notification copy is
+omitted, and a green dot appears only when unread notifications exist.
 
 The avatar opens login and registration when signed out. When signed in, it
 shows the account email and a sign-out action.
@@ -48,6 +52,14 @@ shows the account email and a sign-out action.
   audio, and review settings.
 - The Model selector lists every currently available video model as
   `Provider/Model`.
+- Character and Scene pages expose image-model selection; Shot pages expose
+  video-model selection for both text-to-video and image-to-video. “Project
+  default” inherits the initial choice, and changing a model invalidates the
+  prior estimate.
+- When one Skill has multiple viable Provider implementations, the Agent ranks
+  by modality, references, duration, frame, audio, language, quality,
+  availability, and cost, then asks the user to confirm rather than silently
+  switching providers.
 - The prompt editor grows downward as wrapped text or line count increases.
 - Idea prompts are visible only when the prompt is empty; production playbooks
   remain available for switching.
@@ -107,20 +119,34 @@ video_agent/agent_handoff
 
 Review uses the same skill-card structure as other task-oriented Skills.
 
-### 5.2 Search and Publishing
+### 5.2 Search, Ranking, and Publishing
 
 - Skills has a top search field.
 - The search field stays pinned to the top while content scrolls.
 - Search matches user ID, skill ID, title, and description.
+- Category filters cover Generation, Story, Workflow, Post, Review, and
+  Utility.
+- Cards show unique likes, unique account uses, and the category immediately
+  after the title. Individual cards show neither rank nor reward.
+- The leaderboard score is `unique uses × 2 + unique likes × 3`.
+- Authors cannot like their own Skill. A user contributes at most one like and
+  one use signal to the same published Skill.
 - A user can publish a skill using the same publish interaction pattern used by
-  Hots.
+  Videos.
 - User-published IDs follow `<user_id>/<skill_id>`.
-## 6. Hots
+## 6. Videos
 
 - The top area contains a search field.
 - The search field stays pinned to the top while content scrolls.
+- Category filters cover Vlog, Product, Drama, Music, Localization, and
+  Campaign.
+- Users can sort by likes or publication time while rank remains based on
+  unique likes.
+- Each account contributes at most one like to a post, and authors cannot like
+  their own post.
 - Cards play muted looping video.
-- Each card shows the title first and author and likes below.
+- Each card shows the title with its category immediately after it, followed by
+  author and likes. Individual cards show neither rank nor earned credits.
 - Each scenario card opens Agents with its prompt and corresponding Skill.
 - Users can publish a post from the feed. Publishing requires an MP4 upload,
   title, description, and Skill.
@@ -140,35 +166,43 @@ Assets contains the current user's finished and in-progress work.
 - Duration, progress, and summary are not shown.
 - Video cards play a muted loop on hover and pause when hover ends. Skill cards
   have no cover image.
-- Assets displays the current user's real Hots videos and Skills. Every card
+- Assets displays the current user's real Videos and Skills. Every card
   opens a detail dialog, and video details support playback.
 
 ### 7.1 Project Workspace and Delivery
 
-- The resource tree groups `Settings`, `Outlines`, and `Scripts` under
-  `Direction`, and `Characters`, `Shots`, and `Final Cut` under `Vision`.
+- The resource tree has three peer groups: `Directions` contains editable
+  Settings, Outlines, and Scripts; `Visions` contains Characters, Scenes, and
+  Shots; `Versions` contains exported final video versions with their creation
+  dates.
 - Settings combines production attributes and extracted Agent-director clues in
   one `Attribute / Value` table. Q&A is reduced to semantic keys and values;
   approval messages are not treated as attributes.
-- Agents create a directory for every recurring character and shot. Characters
-  expose Description and Generation pages; each Shot opens one combined
-  Description and Generation page.
+- The English workspace does not render raw Chinese dialogue as Settings values.
+  Recognized Chinese directing terms are normalized to English, while uncertain
+  input is omitted. Long briefs are split into duration, format, product,
+  opening, development, ending, tone, visual style, and lighting attributes
+  instead of being stored as `Creative brief` or `Director direction`.
+- The approval loop fills Settings from the brief, conversation, and option
+  choices. Once the direction is sufficient, Agents produce Outlines and Scripts
+  and create reusable Character and Scene objects before organizing Shots.
+- Shot estimation and generation require at least one defined Character and one
+  defined Scene, so every Shot is organized against reusable production objects.
+- Characters and Scenes own their uploaded references. Each object directory
+  groups its images and selected reference. Scenes retain a physical location.
 - While Agents are planning, the conversation shows durable execution steps for
   context assembly, memory loading, Skill resolution, planning, validation,
   project-state updates, and reply composition.
 - The execution trace reflects completed or active work only. It must not
   display a Skill or MCP tool as executed when the Agent has not called it.
-- The editor header shows a live production-progress bar derived from workflow
-  stage and completed Shots. It polls every three seconds and does not present
-  readiness as visual quality.
 - Final Cut provides optional publish-time visual review. Users choose a
   configured vision evaluator and metrics such as character consistency, style
   consistency, prompt alignment, and temporal stability.
-- Settings, Outlines, Scripts, Characters, Shots, and Final Cut metadata are
-  editable in place.
+- Settings, Outlines, Scripts, Characters, Scenes, Shots, and version metadata
+  remain editable or inspectable in place.
 - Uploads receive a stable asset ID and append `@<asset-id>` to the active
   Prompt. Shots and Characters infer reference generation from that ID.
-- Shot and Character results are grouped under their resource directory. Each
+- Shot, Character, and Scene results are grouped under their resource directory. Each
   result supports final-selection checkbox, ID copy, preview, and deletion.
 - Navigation, Assets, Canvas, and Agents default to equal desktop widths and
   provide draggable separators.
@@ -177,10 +211,20 @@ Assets contains the current user's finished and in-progress work.
   mode. Generated media can be downloaded.
 - Uploads must pass content-type, file-signature, and size validation.
 - Users can inspect estimated credits and explicitly approve generation.
-- Generated shots can be composed into a film with 16:9, 9:16, and 1:1 deliveries.
+- A final cut can be composed only after every storyboard Shot has a generated
+  result. Deliveries support 21:9, 16:9, 9:16, and 1:1 formats.
+- Shot duration may extend to 30 seconds when the selected model supports it;
+  the provider capability remains authoritative.
+- Final-cut composition is requested in conversation, for example “Render the
+  final cut”; the editor does not expose a separate render button.
 - Export supports captions, an uploaded soundtrack, an automatic cover, and
   private or public permission.
-- Each delivery can be downloaded; share links expire and can be revoked.
+- Each delivery can be downloaded, shared through an expiring asset link, or
+  published to Videos.
+- Project sharing creates a collaboration link with view or edit permission.
+  An optional invited email restricts acceptance to that account.
+- Accepted collaborations appear in the collaborator's Projects and Recents;
+  view-only members cannot mutate project content.
 - Assets lists only uploads, generated clips, deliveries, and community posts
   available to the current user.
 
@@ -205,7 +249,7 @@ English labels and Chinese short labels:
 | English | Chinese |
 | --- | --- |
 | PRD | 产品 |
-| Playbook | 玩法 |
+| Playbook | 策略 |
 | Arch | 架构 |
 | API | 接口 |
 | Dev | 开发 |
@@ -216,6 +260,11 @@ English labels and Chinese short labels:
 
 Docs requirements:
 
+- The first document, PRD, opens by default whenever Docs is entered.
+- Search sits above the document body. The document directory is below search
+  and to the left of the reader; it can collapse to an icon rail.
+- Its default width matches the expanded VideoAgent navigation width and can
+  be resized independently.
 - A search field is available at the top.
 - The search field stays pinned to the top while content scrolls.
 - Search covers document text in both languages.
@@ -265,33 +314,38 @@ Docs requirements:
 
 ## 12. Acceptance Criteria
 
-1. Navigation order is Agents, Skills, Hots, Assets, Docs.
+1. Navigation order is Agents, Skills, Videos, Assets, Docs.
 2. Agents can choose a Skill.
 3. Skills is one searchable flat catalogue using `user_id/skill_id`.
 4. Provider-native capabilities use provider namespaces; cross-provider
    workflows use `video_agent`.
 5. Users can publish a Skill.
 6. Review appears as a normal Skill card.
-7. Hots and Assets both provide top search.
-8. Hots cards play video and show title above author and likes.
+7. Videos and Assets both provide top search.
+8. Videos cards play video and show title above author and likes.
 9. Assets uses internal Video and Skill tabs and shows permission and
     `yyyy-mm-dd` edit time.
 10. Assets uses a waterfall layout; videos preview on hover and Skill cards have no cover.
 11. Docs includes PRD, Playbook, Arch, API, Dev, Test, Ops, FAQ, and TODO in order.
-12. Docs search and bilingual switching work.
+12. Docs opens on PRD, uses a resizable left directory matching navigation
+    width by default, and supports search plus bilingual switching.
 13. Avatar provides login, registration, or sign-out based on session state.
 14. Production playbooks fill the prompt and recommended production settings.
-15. Hots scenario cards open Agents with the corresponding Skill selected.
+15. Videos scenario cards open Agents with the corresponding Skill selected.
 16. The prompt grows with its content and empty-state suggestions disappear
     while typing.
 17. Re-clicking the active playbook cancels selection and restores the previous draft.
 18. The Model selector exposes all available video models.
-19. Users can upload references, compose a film, download a delivery, and
-    create a share link.
+19. Users can upload references, generate every shot, compose a film, download a
+    delivery, share its content, and publish it.
 20. User credit reservations, refunds, and Provider-account reconciliation agree.
-21. Agents persist every recurring Character and Shot; Characters expose
-    Description and Generation, while each Shot opens one combined page.
+21. Agents persist every recurring Character, Scene, and Shot. Character and
+    Scene references remain attached to their object after planning revisions.
 22. Reordering shots does not delete or recreate existing Shots.
 23. Non-administrators cannot access administration APIs or pages.
+24. Skills expose category filters, unique likes, unique uses, sorting, and a
+    leaderboard score.
+25. Videos exposes category filters, unique likes, rank, and reward projections.
+26. Repeated likes toggle one account's contribution without inflating counts.
 24. Administrators can manage credits, accounts, invites, and generation state,
     with every action recorded in the audit log.

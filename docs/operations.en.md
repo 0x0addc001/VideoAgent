@@ -2,9 +2,9 @@
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v2.2 |
-| Updated | 2026-11-04 |
-| Scope | Skills, Hots, Assets, providers, support, metrics |
+| Document version | v2.3 |
+| Updated | 2026-11-05 |
+| Scope | Skills, Videos, Assets, providers, support, metrics |
 
 ## 1. Operating Model
 
@@ -12,7 +12,7 @@ VideoAgent operates three content layers:
 
 1. Provider-native Skills and cross-provider workflows under their respective
    `kling`, `pippit`, or `video_agent` namespaces.
-2. User-published Skills and Hots entries.
+2. User-published Skills and Videos entries.
 3. Project outputs stored in Assets.
 
 ## 2. Release Readiness
@@ -44,6 +44,26 @@ VideoAgent operates three content layers:
 - Scenario playbooks reference current Skills and stay aligned with composer
   fields.
 - External Agent handoff uses an explicit MCP or CLI contract.
+
+### 3.1 Skill and Videos Leaderboards
+
+- Skills use six categories: Generation, Story, Workflow, Post, Review, and
+  Utility. Videos uses Vlog, Product, Drama, Music, Localization, and Campaign.
+- Category filters change the visible subset without changing overall rank.
+  Skills can sort by combined signal, uses, likes, or recency; Videos can sort by
+  likes or recency.
+- Skill score is `unique account uses × 2 + unique account likes × 3`. Videos
+  ranks by unique account likes. Ties compare likes, uses, then update time.
+- One account contributes at most one like or use signal per item. Authors
+  cannot like their own content.
+- The Skills top three display 500, 300, and 150 credit rewards. The Videos top
+  three display 300, 180, and 100. Campaign duration, budget, and final
+  eligibility are configured per operating cycle.
+- Rewards are issued through audited administrator credit adjustments. The
+  client leaderboard is a projection and is not an authorization to pay.
+- For suspected manipulation, pause settlement, review accounts, timestamps,
+  devices, and publication history, remove confirmed invalid interactions, and
+  retain the operating audit trail.
 
 ## 4. Asset Operations
 
@@ -136,5 +156,6 @@ Support never asks users for access keys, cookies, or CLI session files.
 - Final Cut review: percentage of exported films with a completed visual evaluation.
 - Reliability: generation jobs reaching a terminal state.
 - Cost: credit usage per completed project.
-- Content: official Skill reuse and community publication rate.
+- Content: Skill category distribution, unique likes, unique uses,
+  leaderboard conversion, Videos unique likes, and campaign reward cost.
 - Documentation: search success and zero broken bilingual links.

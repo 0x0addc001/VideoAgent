@@ -17,6 +17,7 @@ from videoagent.models import (
     Conversation,
     Message,
     Project,
+    ProjectCollaborator,
     ProjectState,
     ProjectWorkflow,
     User,
@@ -101,7 +102,7 @@ async def get_workspace(
             )
         ).all()
     )
-    projects = list(
+    owned_projects = list(
         (
             await session.scalars(
                 select(Project)
@@ -113,6 +114,26 @@ async def get_workspace(
             )
         ).all()
     )
+    shared_projects = list(
+        (
+            await session.scalars(
+                select(Project)
+                .join(ProjectCollaborator, ProjectCollaborator.project_id == Project.id)
+                .where(
+                    ProjectCollaborator.user_id == user.id,
+                    Project.state != ProjectState.ARCHIVED.value,
+                )
+                .order_by(Project.updated_at.desc())
+            )
+        ).all()
+    )
+    projects = list(
+        {
+            project.id: project
+            for project in [*owned_projects, *shared_projects]
+        }.values()
+    )
+    projects.sort(key=lambda project: project.updated_at, reverse=True)
     project_ids = [project.id for project in projects]
     folder_assignments: dict[UUID, UUID] = {}
     if project_ids:
@@ -251,7 +272,12 @@ async def get_project_workflow(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> WorkflowStateRead:
-    await owned_project_or_404(session, project_id, user.id)
+    await owned_project_or_404(
+        session,
+        project_id,
+        user.id,
+        required_permission="view",
+    )
     workflow = await get_or_create_workflow(session, project_id=project_id)
     return WorkflowStateRead.model_validate(workflow)
 
@@ -331,7 +357,7 @@ async def decide_workflow(
     await reporter.emit(
         "memory",
         "Loaded project memory",
-        f"{context.recent_message_count} recent messages · current Characters and Shots",
+        f"{context.recent_message_count} recent messages · current Characters, Scenes, and Shots",
     )
     if context.selected_skill:
         await reporter.emit(
@@ -377,40 +403,49 @@ async def decide_workflow(
                 code="STORYBOARD_REQUIRED",
                 message="A storyboard is required before approval.",
             )
-        shot_summary = "\n".join(
-            f"{index + 1}. {shot.description}" for index, shot in enumerate(storyboard.shots)
-        )
-        if locale == "zh-CN":
-            assistant_content = (
-                "已锁定整体设定。\n\n分集与分镜大纲：\n"
-                f"{shot_summary}\n\n"
-                "请确认叙事推进、冲突升级与收束，再进入逐场剧本。"
-                if target_stage == "outline"
-                else (
-                    "逐场剧本已基于当前分镜整理完成：\n"
-                    f"{shot_summary}\n\n"
-                    "请确认动作、对白、镜头、光线与声音后批准生成。"
-                )
-            )
-        else:
-            assistant_content = (
-                "The overall direction is locked.\n\nEpisode and shot outline:\n"
-                f"{shot_summary}\n\n"
-                "Confirm the progression, escalation, and ending before moving "
-                "to the scene script."
-                if target_stage == "outline"
-                else (
-                    "The scene script is organized from the approved shot outline:\n"
-                    f"{shot_summary}\n\n"
-                    "Confirm action, dialogue, camera, light, and sound before "
-                    "approving generation."
-                )
-            )
         await reporter.emit(
             "state",
             "Advancing the directing stage",
             f"{workflow.stage} → {target_stage}",
             "running",
+        )
+        try:
+            plan = await agent.plan(
+                locale=locale,
+                project_title=project.title,
+                project_brief=project.brief,
+                user_message=f"Approve {workflow.stage} and build {target_stage}",
+                workflow_stage=cast(WorkflowStage, target_stage),
+                workflow_status="awaiting_approval",
+                conversation_context=context.conversation_context,
+                storyboard_context=context.storyboard_context,
+                selected_skill=context.selected_skill,
+                skill_instructions=context.skill_instructions,
+                activity=reporter.emit,
+            )
+        except Exception:
+            await reporter.emit(
+                "planning",
+                "Planning failed",
+                "The approved stage did not produce a valid StoryboardPlan.",
+                "failed",
+            )
+            raise
+        storyboard = await replace_storyboard(
+            session,
+            project.id,
+            plan.storyboard.shots,
+            plan.storyboard.characters,
+            plan.storyboard.scenes,
+        )
+        shot_summary = "\n".join(
+            f"{index + 1}. {shot.description}"
+            for index, shot in enumerate(storyboard.shots)
+        )
+        assistant_content = (
+            f"{plan.assistant_message}\n\n{shot_summary}".strip()
+            if shot_summary
+            else plan.assistant_message
         )
         workflow.stage = target_stage
         workflow.status = "awaiting_approval"
@@ -447,7 +482,7 @@ async def decide_workflow(
         await reporter.emit(
             "state",
             "Updating revised resources",
-            "Applying the refined Characters and Shots.",
+            "Applying the refined Characters, Scenes, and Shots.",
             "running",
         )
         storyboard = await replace_storyboard(
@@ -455,6 +490,7 @@ async def decide_workflow(
             project.id,
             plan.storyboard.shots,
             plan.storyboard.characters,
+            plan.storyboard.scenes,
         )
         assistant_content = plan.assistant_message
         workflow.stage = target_stage

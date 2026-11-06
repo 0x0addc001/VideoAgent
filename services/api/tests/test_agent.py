@@ -36,9 +36,9 @@ async def test_local_agent_turns_user_brief_into_bilingual_storyboard(client):
     assert body["assistant_message"]["role"] == "assistant"
     assert "整体设定" in body["assistant_message"]["content"]
     assert body["workflow"]["stage"] == "concept"
-    assert len(body["storyboard"]["shots"]) == 3
-    assert all(shot["prompt_en"] for shot in body["storyboard"]["shots"])
-    assert all(shot["prompt_zh"] for shot in body["storyboard"]["shots"])
+    assert body["storyboard"]["shots"] == []
+    assert body["storyboard"]["characters"] == []
+    assert body["storyboard"]["scenes"] == []
 
     activity = await client.get(f"/api/v1/projects/{project['id']}/agent-activity/{run_id}")
     assert activity.status_code == 200
@@ -55,6 +55,18 @@ async def test_local_agent_turns_user_brief_into_bilingual_storyboard(client):
     assert all(UUID(item["run_id"]) == UUID(run_id) for item in items)
     assert "Characters" in items[4]["detail"]
     assert "Shots" in items[4]["detail"]
+
+    outline = await client.post(
+        f"/api/v1/projects/{project['id']}/workflow/decision",
+        json={"choice": "approve"},
+    )
+    assert outline.status_code == 200
+    storyboard = outline.json()["storyboard"]
+    assert len(storyboard["shots"]) == 3
+    assert len(storyboard["characters"]) == 1
+    assert len(storyboard["scenes"]) == 1
+    assert all(shot["prompt_en"] for shot in storyboard["shots"])
+    assert all(shot["prompt_zh"] for shot in storyboard["shots"])
 
 
 @pytest.mark.api
@@ -113,7 +125,12 @@ async def test_local_agent_uses_hook_duration_and_aspect_settings(client):
     )
 
     assert response.status_code == 200
-    shots = response.json()["storyboard"]["shots"]
+    outline = await client.post(
+        f"/api/v1/projects/{project['id']}/workflow/decision",
+        json={"choice": "approve"},
+    )
+    assert outline.status_code == 200
+    shots = outline.json()["storyboard"]["shots"]
     assert all(shot["duration_seconds"] == 10 for shot in shots)
     assert all(shot["aspect_ratio"] == "9:16" for shot in shots)
     assert "visibly demonstrating the product result or proof" in shots[0]["prompt_en"]
@@ -158,11 +175,14 @@ async def test_openai_compatible_planner_falls_back_when_json_schema_is_unsuppor
             project_title="Fallback",
             project_brief="Product reveal",
             user_message="Create a shot",
+            workflow_stage="outline",
         )
     )
 
     assert result.assistant_message == "Storyboard ready."
     assert result.storyboard.shots[0].prompt_en == "A cinematic product reveal"
+    assert result.storyboard.characters
+    assert result.storyboard.scenes
 
 
 @pytest.mark.api

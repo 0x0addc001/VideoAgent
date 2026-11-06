@@ -16,25 +16,26 @@ and Chinese editions; product `/zh-CN` routes currently redirect to `/en`.
 
 ## Current Product
 
-- Agent-led directing workflow for concept, outline, script, characters, shots,
-  and final delivery.
+- Agent-led directing workflow for editable settings, outline, script,
+  characters, scenes, shots, final cuts, and delivery.
 - IDE-style project workspace with Direction and Vision resource trees.
-- Characters keep separate Description and Generation pages.
+- Characters and Scenes own editable descriptions and uploaded references.
 - Shots open one combined Description and Generation page with upload,
   reference-image, and direct-generation modes.
-- Live production-progress polling based on workflow stage and completed Shots.
 - Observable Agent runs with durable `context`, `memory`, `skill`, `planning`,
   `validation`, `state`, and `reply` events.
 - Project folders and chronological conversation history with drag-to-file
   organization.
-- Reusable Skills with AI-assisted authoring and persisted instructions.
-- Searchable Hots feed and an Assets library for videos and Skills.
+- Reusable Skills with AI-assisted authoring, category filters, unique likes
+  and uses, leaderboard score, and persisted reward projections.
+- Searchable Videos feed with category filters and unique-like rankings, plus an
+  Assets library for videos and Skills.
 - Pippit CLI and Kling China-region CLI video generation behind one provider
   interface, with an optional Kling MCP backend.
 - Mock generation for development and tests without paid provider calls.
 - Final Cut visual evaluation using configurable multimodal evaluator models.
-- FFmpeg delivery, captions, soundtracks, covers, downloads, and expiring share
-  links.
+- FFmpeg delivery, captions, soundtracks, covers, downloads, expiring asset
+  links, project collaboration with view/edit access, and publishing.
 - Environment-allowlisted administration console for users, credits, jobs,
   invites, provider status, runtime controls, and audit logs.
 
@@ -43,7 +44,7 @@ and Chinese editions; product `/zh-CN` routes currently redirect to `/en`.
 ### Project workspace
 
 The workspace combines project history, Direction/Vision resources, a Shot
-editor, live readiness progress, and the observable Agent trace.
+editor, sharing controls, and the observable Agent trace.
 
 ![VideoAgent project workspace](docs/assets/readme-workspace.png)
 
@@ -90,8 +91,8 @@ side effect.
   600 characters each, and excludes the current request.
 - Storyboard context is capped at 20 Shots.
 - Long-term memory is the relational source of truth: projects, conversations,
-  messages, workflows, storyboards, Characters, Shots, assets, and generation
-  jobs.
+  messages, workflows, storyboards, Characters, Scenes, Shots, assets, and
+  generation jobs.
 - No vector database or cross-project user memory is enabled.
 
 ### Skills and MCP
@@ -115,9 +116,6 @@ Character image generation currently uses the Kling China-region CLI for
 text-to-image and reference-image-to-image.
 
 ## Final Cut Review
-
-Storyboard completeness is represented by a live production-progress bar, not
-by a visual-quality score.
 
 Final Cut review is separate and runs only on an exported film. Users choose a
 configured multimodal evaluator and one or more metrics:
@@ -318,7 +316,7 @@ pnpm test:e2e
 
 Playwright starts isolated frontend and API processes with a temporary database
 and Mock video provider. It covers registration, Agent planning, observable
-activity, Shot/Character generation, polling, download, sharing, Skills, Hots,
+activity, Shot/Character generation, polling, download, sharing, Skills, Videos,
 Docs, and administration without consuming paid provider credits.
 
 Build the GitHub Pages artifact:

@@ -15,13 +15,15 @@
 ## 2. 系统范围
 
 - Next.js App Router Web 界面。
-- 左侧 Agents、Skills、Hots、Assets、Docs 导航和独立视图切换。
+- 左侧 Agents、Skills、Videos、Assets、Docs 导航和独立视图切换。
 - 蓝色播放键品牌、无框标签页图标和激活图标填充/线框反转。
-- 首页连续视频轮播、流式主标语、Skill/Hook 选择器、场景 Playbook、自定义透明下拉和 Action 生成入口。
-- 创作输入框根据 `scrollHeight` 自动增高，并在输入非空时隐藏示例灵感；Playbook 保持可用，重复点击当前项会恢复应用前草稿。
+- 首页连续视频轮播、流式主标语、Skill/Hook 选择器、场景策略、自定义透明下拉和 Action 生成入口。
+- 创作输入框根据 `scrollHeight` 自动增高，并在输入非空时隐藏示例灵感；策略保持可用，重复点击当前项会恢复应用前草稿。
 - 模型下拉框使用统一模型元数据，展示 Pippit 8 个、Kling 7 个当前可用的视频模型及 Provider。
 - Skills 使用单一可搜索目录，显示 `user_id/skill_id`；原厂商能力使用厂商命名空间（如 `kling`），跨 Provider 工作流使用 `video_agent`。
-- Hots 支持搜索、循环视频、作者、喜欢数、发布，以及带 Skill 的场景复用。
+- Skills 提供分类筛选、综合榜单、点赞和去重使用信号；公开 Skill 对其他登录用户可见，作者不能给自己点赞。
+- Videos 支持搜索、循环视频、作者、喜欢数、发布，以及带 Skill 的场景复用。
+- Videos 提供分类筛选、去重点赞排名和前三名奖励展示。
 - Assets 使用瀑布流，并通过 Video/Skill 内部分页区分类型；Video 卡片悬浮静音播放，Skill 卡片无封面并展示 private/public 和 `yyyy-mm-dd` 编辑时间。
 - 九份中英文文档、全文搜索、统一深色阅读主题、左侧可折叠目录和章节高亮。
 - 注册、登录、登出和服务端会话。
@@ -64,7 +66,7 @@ VideoAgent/
 │   ├── src/lib/                    # 前端工具函数
 │   └── tests/                      # Vitest 测试
 ├── packages/landing/
-│   ├── src/index.tsx               # 共享首页、导航、Hots、Docs
+│   ├── src/index.tsx               # 共享首页、导航、Videos、Docs
 │   ├── src/content.ts              # 英文内容与中文占位资源
 │   └── src/landing.css             # 共享视觉样式
 ├── services/api/
@@ -281,7 +283,7 @@ Worker 对已结束的 Job 直接返回，保证重复投递不会继续调用 P
 | `components/app-landing-page.tsx` | 首页创作框提交、项目创建和会话哈希视图切换 |
 | `app/[locale]/register/page.tsx` | 注册页 |
 | `app/[locale]/login/page.tsx` | 登录页 |
-| `packages/landing` | 左侧导航、共享品牌、视频主视觉、创作框、Hots 和 Docs |
+| `packages/landing` | 左侧导航、共享品牌、视频主视觉、创作框、Videos 和 Docs |
 | `locale-switcher.tsx` | 中英文切换 |
 | `auth-form.tsx` | 注册/登录请求 |
 | `project-workspace.tsx` | 自动开始首轮 Agent 对话、故事板、镜头设置和生成 |
@@ -333,6 +335,8 @@ ORM 表：
 | `sessions` | 服务端会话 Token 哈希 |
 | `projects` | 项目和所有者 |
 | `storyboards` | 每个项目唯一的当前故事板 |
+| `characters` | 可复用角色对象、描述和图片 Prompt |
+| `scenes` | 可复用场景、场地、环境描述和图片 Prompt |
 | `shots` | 镜头 Prompt、比例、时长和状态 |
 | `conversations` | 每个项目唯一的对话 |
 | `messages` | User/Assistant 消息 |
@@ -341,7 +345,10 @@ ORM 表：
 | `workspace_folder_items` | 对话与项目目录的收纳关系 |
 | `project_workflows` | 整体设定、分集/分镜大纲、逐场剧本与生成审批状态 |
 | `user_skills` | 用户 Skill 名称、说明、执行规范、提示词和输入输出契约 |
-| `hots_posts` | Hots 视频、标题、描述、Skill 和喜欢数 |
+| `skill_engagement_likes` | 用户与任意稳定 Skill 标识的唯一互动点赞记录 |
+| `skill_engagement_usages` | 用户与任意稳定 Skill 标识的唯一使用信号 |
+| `hots_posts` | Videos 视频、标题、描述、Skill 和喜欢数 |
+| `hots_likes` | 用户与 Videos 作品的唯一点赞记录 |
 | `generation_jobs` | Provider 任务、幂等键和结果 |
 | `provider_connections` | Provider 授权信息 |
 | `oauth_flows` | OAuth 事务状态 |
@@ -349,6 +356,8 @@ ORM 表：
 | `credit_entries` | 可审计且幂等的预扣、退款流水 |
 | `assets` | 上传、生成、导出版本、封面和权限 |
 | `share_links` | Token 哈希、过期、撤销和访问计数 |
+| `project_collaborations` | 项目协作邀请哈希、邮箱限制、权限与有效期 |
+| `project_collaborators` | 已接受协作的账号及查看/编辑权限 |
 | `platform_settings` | 生成开关与注册策略 |
 | `invite_codes` | 邀请码哈希、有效期和使用次数 |
 | `admin_audit_logs` | 管理员操作审计 |
@@ -356,7 +365,7 @@ ORM 表：
 关键约束：
 
 - 业务主键使用 UUID。
-- `Project.owner_id` 决定资源权限。
+- 项目权限由 `Project.owner_id` 与 `project_collaborators` 共同决定。
 - `Storyboard.project_id` 唯一。
 - `Conversation.project_id` 唯一。
 - `WorkspaceFolderItem.project_id` 唯一，一个对话只能收纳在一个项目目录中。
@@ -451,6 +460,8 @@ task reference    → query-result   → JobStatus + result URL
 | PATCH | `/projects/{id}/storyboard/order` | 调整镜头顺序并保留 Shot ID 与资产 |
 | PATCH | `/projects/{id}/storyboard/shots/{shot_id}` | 编辑单个 Shot |
 | PATCH | `/projects/{id}/storyboard/characters/{character_id}` | 编辑单个 Character |
+| PATCH | `/projects/{id}/storyboard/scenes/{scene_id}` | 编辑 Scene 名称、地点与 Prompt |
+| POST | `/scenes/{id}/assets` | 上传 Scene 参考图 |
 | POST | `/shots/{id}/estimate` | 查询积分估算 |
 | POST | `/shots/{id}/generate` | 提交生成任务 |
 | GET | `/jobs/{id}` | 查询并刷新任务状态 |
@@ -466,6 +477,9 @@ task reference    → query-result   → JobStatus + result URL
 | GET | `/assets/{id}/content` | 读取私有资产 |
 | POST | `/projects/{id}/exports` | 合成与交付版本导出 |
 | POST | `/assets/{id}/share` | 创建限时分享 |
+| POST | `/hots/from-asset/{asset_id}` | 发布已导出的成片 |
+| POST | `/projects/{id}/collaborations` | 创建项目协作邀请 |
+| POST | `/collaborations/{token}/accept` | 接受协作并写入成员关系 |
 | DELETE | `/shares/{id}` | 撤销分享 |
 | GET | `/shares/{token}/content` | 读取有效分享内容 |
 | GET/PATCH | `/admin/settings` | 读取或更新生成与注册策略 |
@@ -512,6 +526,7 @@ Idempotency-Key: <unique-client-generated-key>
 - 不安全方法校验 `Origin` 与 `Sec-Fetch-Site`。
 - 上传读取有字节上限，并校验声明的 MIME 与文件签名。
 - 分享 Token 只保存 SHA-256 哈希，过期或撤销后返回 404。
+- 协作 Token 只保存哈希；接受后写入 ProjectCollaborator，view 成员的项目写操作返回 403。
 - `VIDEOAGENT_ADMIN_EMAILS` 是管理权限的唯一引导来源。
 - 普通用户访问 `/admin/*` 返回 `403`，未登录返回 `401`。
 - 停用用户时删除其 Session；管理员不能停用自己。
@@ -642,11 +657,11 @@ pnpm --dir apps/web build
 - 后端测试使用临时 SQLite 文件。
 - Pippit 测试使用本地 Fake CLI，不访问真实生成网络。
 - Kling Provider 测试使用 Fake MCP client，不触发付费生成。
-- 前端测试覆盖共享首页、导航、文档加载、自定义下拉、Hots 发布、创作提交、历史目录、逐层审批、Skill AI 优化和持久化发布。
+- 前端测试覆盖共享首页、导航、文档加载、自定义下拉、Videos 发布、创作提交、历史目录、逐层审批、Skill AI 优化、持久化发布、分类榜单和点赞状态。
 - 工作流批准使用本地即时阶段推进；显式调整和自定义修改才调用远程规划器，减少选项点击等待。
 - Agent 语言由项目 Brief 和当前用户 Prompt 自动检测，不直接沿用账户语言。
 - Pippit 会将低于模型下限的镜头时长提升到 4 秒并同步估算；Provider 拒绝时返回可读的 `502` 错误并幂等退款。
-- Playwright 使用 Mock Provider 验证审批、生成、导出、分享、Skill 优化，以及 Hots 视频上传和 Assets 详情，不访问付费 Provider。
+- Playwright 使用 Mock Provider 验证审批、生成、导出、分享、Skill 优化，以及 Videos 视频上传和 Assets 详情，不访问付费 Provider。
 - 管理测试覆盖白名单权限、积分调整、账号停用、邀请码、注册关闭和生成开关。
 - 普通 CI 不执行付费生成。
 

@@ -8,18 +8,20 @@ import {
   ChevronDown,
   ChevronRight,
   Clapperboard,
+  Copy,
   Download,
   FileCheck2,
   FileText,
   Film,
-  Flame,
   Folder,
   FolderOpen,
   Gem,
   Image,
+  Link2,
   LoaderCircle,
   Layers3,
-  MessageCircleMore,
+  Mail,
+  MapPin,
   MessageSquareText,
   Database,
   PanelLeftClose,
@@ -29,6 +31,7 @@ import {
   Pencil,
   Plus,
   ScanSearch,
+  Send,
   Share2,
   Sparkles,
   Trash2,
@@ -38,7 +41,7 @@ import {
   Wrench,
   X,
 } from "lucide-react";
-import { StreamingText } from "@videoagent/landing";
+import { landingContent, StreamingText } from "@videoagent/landing";
 import { useLocale, useTranslations } from "next-intl";
 import {
   type CSSProperties,
@@ -53,6 +56,7 @@ import {
 } from "react";
 import { Link } from "@/i18n/navigation";
 import { resolveApiBaseUrl } from "@/lib/api";
+import { extractedConversationAttributes } from "@/lib/settings-attributes";
 import { cn } from "@/lib/utils";
 
 type Project = {
@@ -60,6 +64,7 @@ type Project = {
   title: string;
   brief: string;
   state: string;
+  access_permission: "owner" | "edit" | "view";
   created_at: string;
   updated_at: string;
 };
@@ -71,7 +76,7 @@ type Shot = {
   prompt_en: string;
   prompt_zh: string | null;
   duration_seconds: number;
-  aspect_ratio: "16:9" | "9:16" | "1:1";
+  aspect_ratio: "21:9" | "16:9" | "9:16" | "1:1";
   generation_mode: "text_to_video" | "image_to_video";
   status: string;
 };
@@ -81,6 +86,16 @@ type Character = {
   index: number;
   name: string;
   description: string;
+  prompt_en: string;
+  prompt_zh: string | null;
+};
+
+type Scene = {
+  id: string;
+  index: number;
+  name: string;
+  description: string;
+  location: string;
   prompt_en: string;
   prompt_zh: string | null;
 };
@@ -100,12 +115,18 @@ type CharacterDraft = Pick<
   "name" | "description" | "prompt_en" | "prompt_zh"
 >;
 
+type SceneDraft = Pick<
+  Scene,
+  "name" | "description" | "location" | "prompt_en" | "prompt_zh"
+>;
+
 type Storyboard = {
   id: string;
   project_id: string;
   version: number;
   shots: Shot[];
   characters: Character[];
+  scenes: Scene[];
 };
 
 type CostEstimate = {
@@ -197,6 +218,10 @@ type CanvasSelection =
       characterId: string;
     }
   | {
+      kind: "scene";
+      sceneId: string;
+    }
+  | {
       kind: "asset";
       assetId: string;
       section?: "description" | "generation";
@@ -247,13 +272,14 @@ type ShareLink = {
   created_at: string;
 };
 
-type ProjectProgress = {
-  percent: number;
-  workflow_stage: WorkflowStage;
-  workflow_status: "awaiting_approval" | "approved";
-  total_shots: number;
-  completed_shots: number;
-  updated_at: string;
+type ProjectCollaboration = {
+  id: string;
+  project_id: string;
+  permission: "view" | "edit";
+  collaborator_email: string | null;
+  share_url: string;
+  expires_at: string;
+  created_at: string;
 };
 
 type VisualReviewMetricKey =
@@ -283,6 +309,28 @@ type VisualReview = {
 
 const API_BASE_URL = resolveApiBaseUrl();
 const PRODUCTION_SETTINGS_MARKER = /\n+\s*Production settings:/i;
+const VIDEO_MODEL_OPTIONS = landingContent.en.composer.models.filter(
+  (option) => option.id !== "auto",
+);
+const IMAGE_MODEL_OPTIONS = [
+  {
+    id: "kling-image-v3_0",
+    label: "Kling/Kling Image 3.0",
+    provider: "Kling",
+  },
+] as const;
+
+function selectedModelRoute(modelId: string) {
+  if (modelId === "project") return {};
+  const option = [...VIDEO_MODEL_OPTIONS, ...IMAGE_MODEL_OPTIONS].find(
+    (item) => item.id === modelId,
+  );
+  if (!option) return {};
+  return {
+    provider: option.provider.toLowerCase() as "kling" | "pippit",
+    model: option.id,
+  };
+}
 
 function creativeBrief(brief: string) {
   return brief.split(PRODUCTION_SETTINGS_MARKER, 1)[0]?.trim() || brief.trim();
@@ -312,43 +360,38 @@ function productionSettingPairs(brief: string) {
     }));
 }
 
-function extractedConversationAttributes(
-  messages: Message[],
-): { label: string; value: string }[] {
-  const attributes: { label: string; value: string }[] = [];
-  for (const [index, message] of messages.entries()) {
-    if (message.role !== "user" || message.metadata?.workflow_choice) continue;
-    const explicit = [...message.content.matchAll(
-      /(?:^|\n)\s*([^:：\n]{2,36})[:：]\s*([^\n]+)/g,
-    )].map((match) => ({
-      label: match[1]?.trim() ?? "Direction",
-      value: match[2]?.trim() ?? "",
-    }));
-    if (explicit.length > 0) {
-      attributes.push(...explicit.filter((pair) => pair.value));
-      continue;
-    }
-    const question =
-      [...messages.slice(0, index)]
-        .reverse()
-        .find((candidate) => candidate.role === "assistant")?.content ?? "";
-    const mappings: Array<[RegExp, string]> = [
-      [/audience|受众|观众/i, "Audience"],
-      [/tone|mood|emotion|情绪|基调|风格/i, "Tone"],
-      [/conflict|冲突|矛盾/i, "Conflict"],
-      [/character|人物|角色/i, "Characters"],
-      [/scene|setting|environment|场景|环境/i, "Setting"],
-      [/style|visual|视觉|风格/i, "Visual style"],
-      [/duration|length|时长/i, "Duration"],
-      [/hook|开场|钩子/i, "Hook"],
-      [/ending|结尾|收束/i, "Ending"],
-    ];
-    const inferred = mappings.find(([pattern]) => pattern.test(question))?.[1];
-    const fallback = attributes.length === 0 ? "Creative brief" : "Director direction";
-    const value = message.content.replace(/\s+/g, " ").trim().slice(0, 240);
-    if (value) attributes.push({ label: inferred ?? fallback, value });
-  }
-  return attributes;
+function WorkspaceModelSelect({
+  allowProjectDefault = true,
+  label = "Model",
+  onChange,
+  options,
+  value,
+}: {
+  allowProjectDefault?: boolean;
+  label?: string;
+  onChange: (value: string) => void;
+  options: ReadonlyArray<{ id: string; label: string }>;
+  value: string;
+}) {
+  return (
+    <label className="block min-w-44 text-[12px] text-white/38">
+      <span>{label}</span>
+      <select
+        className="mt-2 w-full rounded-xl border border-white/[0.09] bg-[#11100d] px-3 py-2.5 text-[14px] text-white/78 outline-none transition focus:border-[#1677ff]/45"
+        onChange={(event) => onChange(event.target.value)}
+        value={value}
+      >
+        {allowProjectDefault ? (
+          <option value="project">Project default</option>
+        ) : null}
+        {options.map((option) => (
+          <option key={option.id} value={option.id}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
 }
 
 function AgentActivityTrace({
@@ -493,14 +536,17 @@ function workspaceCopy(locale: string) {
         expandAgents: "展开 Agents",
         docs: "文档",
         assets: "资产",
-        direction: "方向",
+        direction: "创作方向",
         vision: "视觉",
         settings: "设定集",
         settingAttributes: "属性",
         description: "描述",
         generation: "生成",
         character: "角色集",
-        finalCut: "终版",
+        scene: "场景集",
+        scenes: "Scenes",
+        location: "地点",
+        versions: "版本",
         thinking: "思考中",
         noAssets: "当前对话还没有资产。",
         brief: "方向",
@@ -534,6 +580,19 @@ function workspaceCopy(locale: string) {
         exportReady: "成片已就绪",
         download: "下载",
         share: "分享",
+        shareTitle: "分享与协作",
+        inviteEmail: "受邀人邮箱（可选）",
+        canEdit: "可编辑",
+        canView: "仅查看",
+        linkAccess: "链接权限",
+        createLink: "创建链接",
+        copyLink: "复制链接",
+        copied: "已复制",
+        openLink: "打开链接",
+        publish: "发布",
+        publishTitle: "发布成片",
+        publishPrompt: "描述",
+        published: "已发布到 Videos",
         shot: "镜头",
         duration: "时长",
         ratio: "画面比例",
@@ -575,14 +634,17 @@ function workspaceCopy(locale: string) {
         expandAgents: "Expand agents",
         docs: "Docs",
         assets: "Assets",
-        direction: "Direction",
-        vision: "Vision",
+        direction: "Directions",
+        vision: "Visions",
         settings: "Settings",
         settingAttributes: "Attributes",
         description: "Description",
         generation: "Generation",
         character: "Characters",
-        finalCut: "Final Cut",
+        scene: "Scenes",
+        scenes: "Scenes",
+        location: "Location",
+        versions: "Versions",
         thinking: "Thinking",
         noAssets: "No assets in this conversation yet.",
         brief: "Direction",
@@ -617,6 +679,19 @@ function workspaceCopy(locale: string) {
         exportReady: "Export ready",
         download: "Download",
         share: "Share",
+        shareTitle: "Share and collaborate",
+        inviteEmail: "Invitee email (optional)",
+        canEdit: "Can edit",
+        canView: "Can view",
+        linkAccess: "Link access",
+        createLink: "Create link",
+        copyLink: "Copy link",
+        copied: "Copied",
+        openLink: "Open link",
+        publish: "Publish",
+        publishTitle: "Publish final cut",
+        publishPrompt: "Description",
+        published: "Published to Videos",
         shot: "Shot",
         duration: "Duration",
         ratio: "Aspect ratio",
@@ -675,16 +750,16 @@ function WorkspaceHistory({
     recents: true,
   });
   const primaryNavItems = [
-    { href: "/#agents", icon: Clapperboard, label: "Agents" },
+    { href: "/#agents", icon: Sparkles, label: "Agents" },
     { href: "/#skills", icon: Video, label: "Skills" },
-    { href: "/#hots", icon: Flame, label: "Hots" },
-    { href: "/#assets", icon: Film, label: copy.assets },
+    { href: "/#hots", icon: Film, label: "Videos" },
+    { href: "/#assets", icon: Layers3, label: copy.assets },
     { href: "/#docs", icon: FileText, label: copy.docs },
   ] as const;
 
   if (collapsed) {
     return (
-      <aside className="flex w-[76px] min-h-0 shrink-0 flex-col items-center border-white/[0.07] bg-[#0d0c0a] py-3 xl:my-5 xl:ml-5 xl:rounded-[26px] xl:border">
+      <aside className="flex w-[76px] min-h-0 shrink-0 flex-col items-center border-white/[0.07] bg-[#0d0c0a] py-3 xl:mb-5 xl:ml-5 xl:rounded-[26px] xl:border">
         <span className="grid size-10 place-items-center rounded-xl bg-[#1677ff] text-white">
           <Clapperboard className="h-5 w-5" />
         </span>
@@ -755,8 +830,11 @@ function WorkspaceHistory({
   }
 
   return (
-    <aside className="flex w-[280px] min-h-0 shrink-0 flex-col border-white/[0.07] bg-[#0d0c0a] xl:my-5 xl:ml-5 xl:rounded-[26px] xl:border">
-      <div className="flex h-14 items-center justify-between px-4">
+    <aside className="flex w-[280px] min-h-0 shrink-0 flex-col border-white/[0.07] bg-[#0d0c0a] xl:mb-5 xl:ml-5 xl:rounded-[26px] xl:border">
+      <div
+        className="flex h-14 items-center justify-between px-4"
+        data-testid="workspace-header-history"
+      >
         <Link className="flex items-center gap-2.5 text-[18px] font-semibold" href="/">
           <span className="grid size-8 place-items-center rounded-lg bg-[#1677ff] text-white">
             <PlayIcon />
@@ -1081,7 +1159,7 @@ function AssetResultList({
             type="button"
           >
             {asset.content_type.startsWith("video/") ? (
-              <Video className="h-3.5 w-3.5 shrink-0 text-[#4facff]" />
+              <Film className="h-3.5 w-3.5 shrink-0 text-[#4facff]" />
             ) : (
               <Image className="h-3.5 w-3.5 shrink-0 text-[#4facff]" />
             )}
@@ -1120,7 +1198,7 @@ type AssetsTreeProps = {
   onDeleteAsset: (asset: Asset) => void;
   onResizeStart: (event: ReactPointerEvent<HTMLButtonElement>) => void;
   onSelectAsset: (
-    resourceType: "shot" | "character",
+    resourceType: "shot" | "character" | "scene",
     resourceId: string,
     assetId: string | null,
   ) => void;
@@ -1148,8 +1226,9 @@ function AssetsTree({
     direction: true,
     vision: true,
     character: true,
+    scene: true,
     shots: true,
-    finalCut: true,
+    versions: true,
   });
   const selectedClass =
     "border-[#1677ff]/30 bg-[#1677ff]/[0.08] text-white";
@@ -1159,7 +1238,10 @@ function AssetsTree({
   if (collapsed) {
     return (
       <aside className="flex w-full min-h-0 flex-col items-center border-r border-white/[0.07] bg-[#0b0a08]/[0.82] backdrop-blur-xl">
-        <div className="grid h-14 shrink-0 place-items-center border-b border-white/[0.07] bg-[#0b0a08]/[0.96]">
+        <div
+          className="grid h-[88px] shrink-0 place-items-center border-b border-white/[0.07] bg-[#0b0a08]/[0.96]"
+          data-testid="workspace-header-assets"
+        >
           <button
             aria-label={copy.expandAssets}
             className="grid size-8 place-items-center rounded-lg text-[#4facff] hover:bg-[#1677ff]/10"
@@ -1212,12 +1294,11 @@ function AssetsTree({
   }
 
   const characters = storyboard?.characters ?? [];
+  const scenes = storyboard?.scenes ?? [];
   const sourceAssets = assets.filter(
     (asset) => !["export", "cover"].includes(asset.kind),
   );
-  const finalCutAssets = assets.filter((asset) =>
-    ["export", "cover"].includes(asset.kind),
-  );
+  const versionAssets = assets.filter((asset) => asset.kind === "export");
 
   return (
     <aside className="relative flex w-full min-h-0 min-w-0 shrink-0 flex-col border-r border-white/[0.07] bg-[#0b0a08]/[0.72] backdrop-blur-lg">
@@ -1227,7 +1308,10 @@ function AssetsTree({
         onPointerDown={onResizeStart}
         type="button"
       />
-      <div className="flex h-14 items-center justify-between border-b border-white/[0.07] bg-[#0b0a08]/[0.96] px-4">
+      <div
+        className="flex h-[88px] items-center justify-between border-b border-white/[0.07] bg-[#0b0a08]/[0.96] px-4"
+        data-testid="workspace-header-assets"
+      >
         <span className="flex items-center gap-2 text-[12px] font-medium text-white/82">
           <Layers3 className="h-4 w-4 text-[#6eb8ff]" />
           {copy.assets}
@@ -1349,6 +1433,58 @@ function AssetsTree({
                 </div>
               ) : null}
 
+              {sectionButton("scene", copy.scenes, true)}
+              {sections.scene ? (
+                <div className="space-y-1 pl-7">
+                  {scenes.map((scene) => (
+                    <div className="space-y-1" key={scene.id}>
+                      <button
+                        className={cn(
+                          "flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[12px] transition",
+                          selected.kind === "scene" &&
+                            selected.sceneId === scene.id
+                            ? "bg-[#1677ff]/[0.08] text-white"
+                            : "text-white/58 hover:bg-white/[0.03] hover:text-white/78",
+                        )}
+                        onClick={() =>
+                          onSelect({
+                            kind: "scene",
+                            sceneId: scene.id,
+                          })
+                        }
+                        type="button"
+                      >
+                        <Folder className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
+                        <span className="truncate">{scene.name}</span>
+                      </button>
+                      <div className="mt-1 pl-2">
+                        <AssetResultList
+                          assets={sourceAssets.filter(
+                            (asset) =>
+                              asset.content_type.startsWith("image/") &&
+                              asset.filename.startsWith(`scene-${scene.id}-`),
+                          )}
+                          onDelete={onDeleteAsset}
+                          onOpen={(asset) =>
+                            onSelect({
+                              kind: "asset",
+                              assetId: asset.id,
+                              section: "generation",
+                            })
+                          }
+                          onSelect={(assetId) =>
+                            void onSelectAsset("scene", scene.id, assetId)
+                          }
+                          selectedAssetId={
+                            selectedResourceAssets[`scene:${scene.id}`]
+                          }
+                        />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+
               {sectionButton("shots", copy.shots, true)}
               {sections.shots ? (
                 <div className="space-y-1 pl-7">
@@ -1399,7 +1535,8 @@ function AssetsTree({
                     .filter(
                       (asset) =>
                         asset.shot_id === null &&
-                        !asset.filename.startsWith("character-"),
+                        !asset.filename.startsWith("character-") &&
+                        !asset.filename.startsWith("scene-"),
                     )
                     .map((asset) => (
                         <button
@@ -1420,34 +1557,41 @@ function AssetsTree({
                           key={asset.id}
                           type="button"
                         >
-                          <Video className="h-3.5 w-3.5 text-[#4facff]" />
+                          <Film className="h-3.5 w-3.5 text-[#4facff]" />
                           <span className="truncate">{asset.filename}</span>
                         </button>
                     ))}
                 </div>
               ) : null}
 
-              {sectionButton("finalCut", copy.finalCut, true)}
-              {sections.finalCut ? (
-                <div className="space-y-1 pl-7">
-                  {finalCutAssets.map((asset) => (
-                    <button
-                      className={cn(
-                        "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
-                        selected.kind === "asset" && selected.assetId === asset.id
-                          ? selectedClass
-                          : idleClass,
-                      )}
-                      key={asset.id}
-                      onClick={() => onSelect({ kind: "asset", assetId: asset.id })}
-                      type="button"
-                    >
-                      <Video className="h-3.5 w-3.5 text-[#4facff]" />
-                      <span className="truncate">{asset.filename}</span>
-                    </button>
-                  ))}
-                </div>
-              ) : null}
+            </div>
+          ) : null}
+
+          {sectionButton("versions", copy.versions)}
+          {sections.versions ? (
+            <div className="space-y-1 pl-3">
+              {versionAssets.map((asset) => (
+                <button
+                  className={cn(
+                    "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
+                    selected.kind === "asset" && selected.assetId === asset.id
+                      ? selectedClass
+                      : idleClass,
+                  )}
+                  key={asset.id}
+                  onClick={() => onSelect({ kind: "asset", assetId: asset.id })}
+                  type="button"
+                >
+                  <Film className="h-3.5 w-3.5 text-[#4facff]" />
+                  <span className="truncate">{asset.filename}</span>
+                  <time
+                    className="ml-auto shrink-0 text-white/28"
+                    dateTime={asset.created_at}
+                  >
+                    {asset.created_at.slice(0, 10)}
+                  </time>
+                </button>
+              ))}
             </div>
           ) : null}
         </div>
@@ -1479,9 +1623,14 @@ export function ProjectWorkspace({
   const [selectedShotId, setSelectedShotId] = useState<string | null>(null);
   const [estimate, setEstimate] = useState<CostEstimate | null>(null);
   const [shotDraft, setShotDraft] = useState<ShotDraft | null>(null);
+  const [shotGenerationModel, setShotGenerationModel] = useState("project");
   const [characterDraft, setCharacterDraft] = useState<CharacterDraft | null>(
     null,
   );
+  const [characterGenerationModel, setCharacterGenerationModel] = useState<string>(
+    IMAGE_MODEL_OPTIONS[0].id,
+  );
+  const [sceneDraft, setSceneDraft] = useState<SceneDraft | null>(null);
   const [characterEstimate, setCharacterEstimate] = useState<CostEstimate | null>(
     null,
   );
@@ -1493,9 +1642,6 @@ export function ProjectWorkspace({
     null,
   );
   const [activeJob, setActiveJob] = useState<GenerationJob | null>(null);
-  const [projectProgress, setProjectProgress] = useState<ProjectProgress | null>(
-    null,
-  );
   const [visualReviewModels, setVisualReviewModels] = useState<
     VisualReviewModel[]
   >([]);
@@ -1518,6 +1664,18 @@ export function ProjectWorkspace({
   const [exportedAssets, setExportedAssets] = useState<Asset[]>([]);
   const [exportCover, setExportCover] = useState<Asset | null>(null);
   const [shareLink, setShareLink] = useState<ShareLink | null>(null);
+  const [collaborationLink, setCollaborationLink] =
+    useState<ProjectCollaboration | null>(null);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [shareEmail, setShareEmail] = useState("");
+  const [sharePermission, setSharePermission] =
+    useState<"view" | "edit">("view");
+  const [shareCopied, setShareCopied] = useState(false);
+  const [sharePermissionOpen, setSharePermissionOpen] = useState(false);
+  const [publishAsset, setPublishAsset] = useState<Asset | null>(null);
+  const [publishTitleDraft, setPublishTitleDraft] = useState("");
+  const [publishPromptDraft, setPublishPromptDraft] = useState("");
+  const [publishMessage, setPublishMessage] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [isSharing, setIsSharing] = useState(false);
   const [assetsPanelCollapsed, setAssetsPanelCollapsed] = useState(false);
@@ -1607,7 +1765,11 @@ export function ProjectWorkspace({
           const nextStoryboard = (await storyboardResponse.json()) as Storyboard;
           setStoryboard(nextStoryboard);
           setSelectedShotId(nextStoryboard.shots[0]?.id ?? null);
-          setSelectedCanvas({ kind: "document", document: "outline" });
+          setSelectedCanvas(
+            nextStoryboard.shots.length > 0
+              ? { kind: "document", document: "outline" }
+              : { kind: "settings" },
+          );
         }
         let nextMessages: Message[] = [];
         if (messagesResponse.ok) {
@@ -1615,7 +1777,15 @@ export function ProjectWorkspace({
           setMessages(nextMessages);
         }
         if (assetsResponse.ok) {
-          setAssets(((await assetsResponse.json()) as { items: Asset[] }).items);
+          const nextAssets = ((await assetsResponse.json()) as { items: Asset[] })
+            .items;
+          setAssets(nextAssets);
+          setExportedAssets(
+            nextAssets.filter((asset) => asset.kind === "export"),
+          );
+          setExportCover(
+            nextAssets.find((asset) => asset.kind === "cover") ?? null,
+          );
         }
         if (workspaceResponse?.ok) {
           const nextWorkspace = (await workspaceResponse.json()) as WorkspaceData;
@@ -1650,7 +1820,11 @@ export function ProjectWorkspace({
             setMessages([turn.user_message, turn.assistant_message]);
             setStoryboard(turn.storyboard);
             setSelectedShotId(turn.storyboard.shots[0]?.id ?? null);
-            setSelectedCanvas({ kind: "document", document: "outline" });
+            setSelectedCanvas(
+              turn.storyboard.shots.length > 0
+                ? { kind: "document", document: "outline" }
+                : { kind: "settings" },
+            );
             if (turn.workflow) setWorkflow(turn.workflow);
             setAgentActivityRunId(runId);
             const activityResponse = await fetch(
@@ -1685,31 +1859,6 @@ export function ProjectWorkspace({
   useEffect(() => {
     if (!project) return;
     let active = true;
-    let timer: number | undefined;
-
-    async function refreshProgress() {
-      const response = await fetch(
-        `${API_BASE_URL}/projects/${project?.id}/progress`,
-        { credentials: "include" },
-      ).catch(() => null);
-      if (!active) return;
-      if (response?.ok) {
-        setProjectProgress((await response.json()) as ProjectProgress);
-      }
-      timer = window.setTimeout(() => void refreshProgress(), 3_000);
-    }
-
-    void refreshProgress();
-
-    return () => {
-      active = false;
-      if (timer !== undefined) window.clearTimeout(timer);
-    };
-  }, [project]);
-
-  useEffect(() => {
-    if (!project) return;
-    let active = true;
     fetch(`${API_BASE_URL}/projects/${project.id}/asset-selections`, {
       credentials: "include",
     })
@@ -1717,7 +1866,7 @@ export function ProjectWorkspace({
         if (!response.ok) throw new Error("selection-load-failed");
         return (await response.json()) as {
           items: Array<{
-            resource_type: "shot" | "character";
+            resource_type: "shot" | "character" | "scene";
             resource_id: string;
             asset_id: string;
           }>;
@@ -1859,9 +2008,7 @@ export function ProjectWorkspace({
     () => storyboard?.shots.find((shot) => shot.id === selectedShotId) ?? null,
     [selectedShotId, storyboard],
   );
-  const canExport = Boolean(
-    storyboard?.shots.some((shot) => shot.status === "completed"),
-  );
+  const canEdit = project?.access_permission !== "view";
   const selectedAsset =
     selectedCanvas.kind === "asset"
       ? assets.find((asset) => asset.id === selectedCanvas.assetId) ?? null
@@ -1875,6 +2022,11 @@ export function ProjectWorkspace({
       ? storyboard?.characters?.find(
           (character) => character.id === selectedCanvas.characterId,
         ) ?? null
+      : null;
+  const selectedScene =
+    selectedCanvas.kind === "scene"
+      ? storyboard?.scenes?.find((scene) => scene.id === selectedCanvas.sceneId) ??
+        null
       : null;
 
   useEffect(() => {
@@ -1905,6 +2057,20 @@ export function ProjectWorkspace({
     });
   }, [selectedCharacter]);
 
+  useEffect(() => {
+    if (!selectedScene) {
+      setSceneDraft(null);
+      return;
+    }
+    setSceneDraft({
+      name: selectedScene.name,
+      description: selectedScene.description,
+      location: selectedScene.location,
+      prompt_en: selectedScene.prompt_en,
+      prompt_zh: selectedScene.prompt_zh,
+    });
+  }, [selectedScene]);
+
   async function refreshWorkspace() {
     const response = await fetch(`${API_BASE_URL}/workspace`, {
       credentials: "include",
@@ -1921,7 +2087,14 @@ export function ProjectWorkspace({
       { credentials: "include" },
     ).catch(() => null);
     if (response?.ok) {
-      setAssets(((await response.json()) as { items: Asset[] }).items);
+      const nextAssets = ((await response.json()) as { items: Asset[] }).items;
+      setAssets(nextAssets);
+      setExportedAssets(
+        nextAssets.filter((asset) => asset.kind === "export"),
+      );
+      setExportCover(
+        nextAssets.find((asset) => asset.kind === "cover") ?? null,
+      );
     }
   }
 
@@ -1963,6 +2136,19 @@ export function ProjectWorkspace({
             ...current,
             characters: current.characters.map((character) =>
               character.id === updated.id ? updated : character,
+            ),
+          }
+        : current,
+    );
+  }
+
+  function replaceScene(updated: Scene) {
+    setStoryboard((current) =>
+      current
+        ? {
+            ...current,
+            scenes: current.scenes.map((scene) =>
+              scene.id === updated.id ? updated : scene,
             ),
           }
         : current,
@@ -2014,6 +2200,26 @@ export function ProjectWorkspace({
     return updated;
   }
 
+  async function saveSceneDraft(scene: Scene): Promise<Scene | null> {
+    if (!project || !sceneDraft) return null;
+    const response = await fetch(
+      `${API_BASE_URL}/projects/${project.id}/storyboard/scenes/${scene.id}`,
+      {
+        method: "PATCH",
+        credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(sceneDraft),
+      },
+    ).catch(() => null);
+    if (!response?.ok) {
+      setActionError("Scene changes could not be saved.");
+      return null;
+    }
+    const updated = (await response.json()) as Scene;
+    replaceScene(updated);
+    return updated;
+  }
+
   async function saveProjectBrief(brief: string) {
     if (!project) return;
     const productionSettings =
@@ -2033,6 +2239,26 @@ export function ProjectWorkspace({
     setProject((await response.json()) as Project);
   }
 
+  async function saveProjectSettings(entries: Array<{ label: string; value: string }>) {
+    if (!project || entries.length === 0) return;
+    const response = await fetch(`${API_BASE_URL}/projects/${project.id}`, {
+      method: "PATCH",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        brief: `${creativeBrief(project.brief)}\n\nProduction settings: ${entries
+          .map((entry) => entry.value.trim())
+          .filter(Boolean)
+          .join(" · ")}`,
+      }),
+    }).catch(() => null);
+    if (!response?.ok) {
+      setActionError("Settings could not be saved.");
+      return;
+    }
+    setProject((await response.json()) as Project);
+  }
+
   function referencedAsset(
     prompt: string,
     contentPrefix: string,
@@ -2047,7 +2273,7 @@ export function ProjectWorkspace({
   }
 
   async function setSelectedAsset(
-    resourceType: "shot" | "character",
+    resourceType: "shot" | "character" | "scene",
     resourceId: string,
     assetId: string | null,
   ) {
@@ -2253,7 +2479,11 @@ export function ProjectWorkspace({
       setStoryboard(decision.storyboard);
       setSelectedShotId(decision.storyboard.shots[0]?.id ?? null);
       setWorkflow(decision.workflow);
-      setSelectedCanvas({ kind: "document", document: "outline" });
+      setSelectedCanvas(
+        decision.storyboard.shots.length > 0
+          ? { kind: "document", document: "outline" }
+          : { kind: "settings" },
+      );
       setCustomDecision("");
       setCustomDecisionOpen(false);
       await settleAgentRun(runId);
@@ -2316,21 +2546,37 @@ export function ProjectWorkspace({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ content, run_id: runId }),
       });
-      if (!response.ok) throw new Error("agent-message-failed");
+      if (!response.ok) {
+        const body = (await response.json().catch(() => null)) as
+          | { error?: { message?: string } }
+          | null;
+        throw new Error(body?.error?.message || "agent-message-failed");
+      }
       const turn = (await response.json()) as AgentTurn;
       beginAssistantStream(turn.assistant_message);
       setMessages((current) => [...current, turn.user_message, turn.assistant_message]);
       setStoryboard(turn.storyboard);
       if (turn.workflow) setWorkflow(turn.workflow);
       setSelectedShotId(turn.storyboard.shots[0]?.id ?? null);
-      setSelectedCanvas({ kind: "document", document: "outline" });
+      if (turn.assistant_message.metadata?.action !== "render_final_cut") {
+        setSelectedCanvas(
+          turn.storyboard.shots.length > 0
+            ? { kind: "document", document: "outline" }
+            : { kind: "settings" },
+        );
+      }
       setEstimate(null);
       setMessageDraft("");
       setMobilePanel("canvas");
+      await refreshAssets();
       await settleAgentRun(runId);
       await refreshWorkspace();
-    } catch {
-      setActionError(t("agentIntro"));
+    } catch (error) {
+      setActionError(
+        error instanceof Error && error.message !== "agent-message-failed"
+          ? error.message
+          : t("agentIntro"),
+      );
     } finally {
       setIsWorking(false);
       setPendingDecision(null);
@@ -2347,6 +2593,8 @@ export function ProjectWorkspace({
       const response = await fetch(`${API_BASE_URL}/shots/${selectedShot.id}/estimate`, {
         method: "POST",
         credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(selectedModelRoute(shotGenerationModel)),
       });
       if (!response.ok) throw new Error("estimate-failed");
       setEstimate((await response.json()) as CostEstimate);
@@ -2373,6 +2621,7 @@ export function ProjectWorkspace({
         approved: true,
         generation_mode: reference ? "image_to_video" : "text_to_video",
         reference_asset_id: reference?.id ?? null,
+        ...selectedModelRoute(shotGenerationModel),
       }),
     });
     if (!response.ok) {
@@ -2416,6 +2665,8 @@ export function ProjectWorkspace({
           {
             method: "POST",
             credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(selectedModelRoute(shotGenerationModel)),
           },
         );
         if (!estimateResponse.ok) throw new Error("estimate-failed");
@@ -2447,6 +2698,8 @@ export function ProjectWorkspace({
         {
           method: "POST",
           credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(selectedModelRoute(shotGenerationModel)),
         },
       );
       if (!estimateResponse.ok) throw new Error("estimate-failed");
@@ -2615,6 +2868,56 @@ export function ProjectWorkspace({
     }
   }
 
+  async function uploadSceneAsset(
+    scene: Scene,
+    file: File,
+  ): Promise<Asset | null> {
+    if (!project || isWorking) return null;
+    setIsWorking(true);
+    setActionError(null);
+    const body = new FormData();
+    body.append("file", file);
+    try {
+      const response = await fetch(`${API_BASE_URL}/scenes/${scene.id}/assets`, {
+        method: "POST",
+        credentials: "include",
+        body,
+      });
+      if (!response.ok) throw new Error("scene-upload-failed");
+      const asset = (await response.json()) as Asset;
+      setAssets((current) => [asset, ...current]);
+      const nextDraft = {
+        ...(sceneDraft ?? {
+          name: scene.name,
+          description: scene.description,
+          location: scene.location,
+          prompt_en: scene.prompt_en,
+          prompt_zh: scene.prompt_zh,
+        }),
+        prompt_en: `${scene.prompt_en.trim()} @${asset.id}`.trim(),
+      };
+      setSceneDraft(nextDraft);
+      const patchResponse = await fetch(
+        `${API_BASE_URL}/projects/${project.id}/storyboard/scenes/${scene.id}`,
+        {
+          method: "PATCH",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(nextDraft),
+        },
+      ).catch(() => null);
+      if (patchResponse?.ok) {
+        replaceScene((await patchResponse.json()) as Scene);
+      }
+      return asset;
+    } catch {
+      setActionError(t("uploadError"));
+      return null;
+    } finally {
+      setIsWorking(false);
+    }
+  }
+
   async function estimateCharacter(character: Character) {
     if (isWorking) return;
     setIsWorking(true);
@@ -2656,6 +2959,7 @@ export function ProjectWorkspace({
             approved: true,
             generation_mode: reference ? "image_to_image" : "text_to_image",
             reference_asset_id: reference?.id ?? null,
+            ...selectedModelRoute(characterGenerationModel),
           }),
         },
       );
@@ -2735,12 +3039,85 @@ export function ProjectWorkspace({
   }
 
   async function shareProject() {
-    if (!project || isExporting || isSharing) return;
-    const targets =
-      exportedAssets.length > 0 ? exportedAssets : await exportProject();
-    const target = targets[0];
-    if (target) {
-      await shareExport(target);
+    if (!project) return;
+    setShareDialogOpen(true);
+    setCollaborationLink(null);
+    setShareCopied(false);
+    setSharePermission("view");
+    setSharePermissionOpen(false);
+  }
+
+  async function createCollaborationLink() {
+    if (!project || isSharing) return;
+    setSharePermissionOpen(false);
+    setIsSharing(true);
+    setActionError(null);
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/projects/${project.id}/collaborations`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            permission: sharePermission,
+            collaborator_email: shareEmail.trim() || null,
+            expires_in_hours: 24 * 7,
+          }),
+        },
+      );
+      if (!response.ok) throw new Error("collaboration-create-failed");
+      setCollaborationLink((await response.json()) as ProjectCollaboration);
+      setShareCopied(false);
+    } catch {
+      setActionError(t("shareError"));
+    } finally {
+      setIsSharing(false);
+    }
+  }
+
+  async function copyCollaborationLink() {
+    if (!collaborationLink) return;
+    try {
+      await navigator.clipboard.writeText(collaborationLink.share_url);
+      setShareCopied(true);
+    } catch {
+      setActionError(t("shareError"));
+    }
+  }
+
+  function openPublishDialog(asset: Asset) {
+    setPublishAsset(asset);
+    setPublishTitleDraft(project?.title ?? "VideoAgent film");
+    setPublishPromptDraft(creativeBrief(project?.brief ?? ""));
+    setPublishMessage(null);
+  }
+
+  async function publishFinalCut(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (!publishAsset || isWorking) return;
+    setIsWorking(true);
+    setActionError(null);
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/hots/from-asset/${publishAsset.id}`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: publishTitleDraft,
+            prompt: publishPromptDraft,
+            skill: "auto",
+          }),
+        },
+      );
+      if (!response.ok) throw new Error("publish-failed");
+      setPublishMessage(copy.published);
+    } catch {
+      setActionError("The final cut could not be published.");
+    } finally {
+      setIsWorking(false);
     }
   }
 
@@ -2776,21 +3153,12 @@ export function ProjectWorkspace({
   }
 
   const copy = workspaceCopy(locale);
-  const canvasTitle =
-    selectedCanvas.kind === "settings"
-      ? copy.settings
-        : selectedCanvas.kind === "document"
-          ? copy[selectedCanvas.document]
-          : selectedCanvas.kind === "character"
-            ? selectedCharacter?.name ?? copy.character
-          : selectedCanvas.kind === "shot"
-            ? canvasShot?.description ?? copy.shot
-            : selectedAsset?.filename ?? copy.vision;
+  const canvasTitle = copy.storyboard;
   const activeDocumentMode =
     selectedCanvas.kind === "document" ? selectedCanvas.document : null;
   const settingPairs = [
     ...(project ? productionSettingPairs(project.brief) : []),
-    ...extractedConversationAttributes(messages),
+    ...extractedConversationAttributes(messages, locale),
   ];
 
   function selectShot(shot: Shot) {
@@ -2899,64 +3267,25 @@ export function ProjectWorkspace({
               mobilePanel === "canvas" ? "flex" : "hidden",
             )}
           >
-            <div className="flex h-14 shrink-0 items-center justify-between gap-3 border-b border-white/[0.07] bg-[#0b0a08]/[0.96] px-5">
+            <div
+              className="flex h-[88px] shrink-0 items-center justify-between gap-3 border-b border-white/[0.07] bg-[#0b0a08]/[0.96] px-5"
+              data-testid="workspace-header-canvas"
+            >
               <span className="flex min-w-0 items-center gap-2 text-[12px] font-medium text-white/82">
-                {selectedCanvas.kind === "asset" &&
-                selectedAsset?.content_type.startsWith("video/") ? (
-                  <Video className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
-                ) : selectedCanvas.kind === "asset" ? (
-                  <Image className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
-                ) : selectedCanvas.kind === "shot" ? (
-                  <Clapperboard className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
-                ) : selectedCanvas.kind === "character" ? (
-                  <Image className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
-                ) : (
-                  <FileText className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
-                )}
+                <Clapperboard className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
                 <span className="truncate">{canvasTitle}</span>
               </span>
               <div className="flex shrink-0 items-center gap-2">
-                <div
-                  className="hidden w-48 shrink-0 sm:block"
-                  title={
-                    projectProgress
-                      ? `${projectProgress.completed_shots}/${projectProgress.total_shots} Shots complete`
-                      : undefined
-                  }
-                >
-                  <div className="flex items-center justify-between text-[12px]">
-                    <span className="text-white/42">
-                      {locale.startsWith("zh") ? "进度" : "Progress"}
-                    </span>
-                    <span className="text-[#8fdcff]">
-                      {projectProgress?.percent ?? 0}%
-                    </span>
-                  </div>
-                  <div
-                    aria-label={
-                      locale.startsWith("zh") ? "进度" : "Progress"
-                    }
-                    aria-valuemax={100}
-                    aria-valuemin={0}
-                    aria-valuenow={projectProgress?.percent ?? 0}
-                    className="mt-2 h-1.5 overflow-hidden rounded-full bg-white/[0.07]"
-                    role="progressbar"
-                  >
-                    <div
-                      className="h-full rounded-full bg-[#1677ff] transition-[width] duration-500"
-                      style={{ width: `${projectProgress?.percent ?? 0}%` }}
-                    />
-                  </div>
-                </div>
+                {(project.access_permission ?? "owner") === "owner" ? (
                 <button
-                  className="flex items-center gap-1.5 rounded-lg bg-[#1677ff] px-3 py-2 text-[12px] font-semibold text-white disabled:opacity-35"
-                  disabled={!canExport || isExporting || isSharing}
+                  className="flex items-center gap-1.5 rounded-lg bg-[#1677ff] px-3 py-2 text-[12px] font-semibold text-white"
                   onClick={() => void shareProject()}
                   type="button"
                 >
                   <Share2 className="h-4 w-4" />
-                  {isExporting || isSharing ? copy.sharing : copy.share}
+                  {copy.share}
                 </button>
+                ) : null}
               </div>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto">
@@ -2980,10 +3309,12 @@ export function ProjectWorkspace({
                     <textarea
                       className="min-h-36 w-full resize-y rounded-xl border border-white/[0.08] bg-white/[0.025] px-4 py-3 text-[16px] leading-8 text-white/68 outline-none focus:border-[#1677ff]/40"
                       defaultValue={creativeBrief(project.brief)}
+                      disabled={!canEdit}
                       name="brief"
                     />
                     <button
-                      className="rounded-lg bg-[#1677ff] px-4 py-2 text-[12px] font-semibold text-white"
+                      className="rounded-lg bg-[#1677ff] px-4 py-2 text-[12px] font-semibold text-white disabled:opacity-35"
+                      disabled={!canEdit}
                       type="submit"
                     >
                       Save direction
@@ -2993,17 +3324,45 @@ export function ProjectWorkspace({
                     <h3 className="text-[15px] font-semibold text-white/76">
                       {copy.settingAttributes}
                     </h3>
-                    <div className="mt-4 divide-y divide-white/[0.06]">
-                      {settingPairs.map((pair) => (
+                    <form
+                      className="mt-4 divide-y divide-white/[0.06]"
+                      key={`${project.id}-${project.updated_at}-settings`}
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        const form = new FormData(event.currentTarget);
+                        void saveProjectSettings(
+                          settingPairs.map((pair, index) => ({
+                            label: pair.label,
+                            value: String(form.get(`setting-${index}`) ?? ""),
+                          })),
+                        );
+                      }}
+                    >
+                      {settingPairs.map((pair, index) => (
                         <div
                           className="grid grid-cols-[112px_minmax(0,1fr)] gap-3 py-2.5 text-[13px]"
                           key={`${pair.label}-${pair.value}`}
                         >
                           <span className="text-white/32">{pair.label}</span>
-                          <span className="text-white/68">{pair.value}</span>
+                          <input
+                            aria-label={`${pair.label} setting`}
+                            className="min-w-0 rounded-lg border border-transparent bg-transparent px-2 py-1 text-white/68 outline-none transition hover:border-white/[0.08] focus:border-[#1677ff]/40 focus:bg-white/[0.025]"
+                            defaultValue={pair.value}
+                            disabled={!canEdit}
+                            name={`setting-${index}`}
+                          />
                         </div>
                       ))}
-                    </div>
+                      <div className="pt-3">
+                        <button
+                          className="rounded-lg bg-[#1677ff] px-4 py-2 text-[12px] font-semibold text-white disabled:opacity-35"
+                          disabled={!canEdit || settingPairs.length === 0}
+                          type="submit"
+                        >
+                          Save settings
+                        </button>
+                      </div>
+                    </form>
                   </section>
                 </article>
               ) : null}
@@ -3031,11 +3390,28 @@ export function ProjectWorkspace({
                   {storyboard ? (
                     <div className="mt-6 space-y-3">
                       {storyboard.shots.map((shot) => (
-                        <button
+                        <form
                           className="group w-full rounded-2xl border border-white/[0.07] bg-white/[0.018] p-5 text-left transition hover:border-[#1677ff]/25 hover:bg-[#1677ff]/[0.025]"
                           key={shot.id}
-                          onClick={() => selectShot(shot)}
-                          type="button"
+                          onSubmit={(event) => {
+                            event.preventDefault();
+                            const form = new FormData(event.currentTarget);
+                            const content = String(form.get("content") ?? "");
+                            void saveShotDraft(shot, {
+                              description:
+                                activeDocumentMode === "outline"
+                                  ? content
+                                  : shot.description,
+                              prompt_en:
+                                activeDocumentMode === "script"
+                                  ? content
+                                  : shot.prompt_en,
+                              prompt_zh: shot.prompt_zh,
+                              duration_seconds: shot.duration_seconds,
+                              aspect_ratio: shot.aspect_ratio,
+                              generation_mode: shot.generation_mode,
+                            });
+                          }}
                         >
                           <div className="flex items-center justify-between gap-4">
                             <span className="text-[12px] font-semibold text-[#6eb8ff]">
@@ -3048,19 +3424,39 @@ export function ProjectWorkspace({
                               <span className="rounded-md border border-white/[0.08] bg-white/[0.025] px-2.5 py-1 text-[12px] text-white/38">
                                 {shot.aspect_ratio}
                               </span>
+                              <button
+                                className="rounded-md border border-white/[0.08] px-2.5 py-1 text-[12px] text-white/42 hover:text-white"
+                                onClick={() => selectShot(shot)}
+                                type="button"
+                              >
+                                Open
+                              </button>
                             </span>
                           </div>
-                          <h3 className="mt-3 text-[17px] font-medium leading-8 text-white/82">
-                            {shot.description}
-                          </h3>
-                          {activeDocumentMode !== "outline" ? (
-                            <p className="mt-3 line-clamp-3 text-[14px] leading-7 text-white/38">
-                              {locale.startsWith("zh") && shot.prompt_zh
-                                ? shot.prompt_zh
-                                : shot.prompt_en}
-                            </p>
-                          ) : null}
-                        </button>
+                          <textarea
+                            aria-label={`Edit ${activeDocumentMode} for ${copy.shot} ${shot.index + 1}`}
+                            className="mt-3 min-h-24 w-full resize-y rounded-xl border border-transparent bg-transparent px-1 py-1 text-[17px] font-medium leading-8 text-white/82 outline-none transition hover:border-white/[0.07] focus:border-[#1677ff]/35 focus:bg-white/[0.02] disabled:opacity-70"
+                            defaultValue={
+                              activeDocumentMode === "outline"
+                                ? shot.description
+                                : locale.startsWith("zh") && shot.prompt_zh
+                                  ? shot.prompt_zh
+                                  : shot.prompt_en
+                            }
+                            disabled={!canEdit}
+                            key={`${shot.id}-${activeDocumentMode}-${shot.description}-${shot.prompt_en}`}
+                            name="content"
+                          />
+                          <div className="mt-3 flex justify-end">
+                            <button
+                              className="rounded-lg border border-white/[0.09] px-3 py-2 text-[12px] text-white/58 hover:text-white disabled:opacity-35"
+                              disabled={!canEdit}
+                              type="submit"
+                            >
+                              Save {activeDocumentMode}
+                            </button>
+                          </div>
+                        </form>
                       ))}
                     </div>
                   ) : (
@@ -3087,6 +3483,7 @@ export function ProjectWorkspace({
                       <span>Character name</span>
                       <input
                         className="mt-2 w-full rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-2 text-[16px] text-white/78 outline-none"
+                        disabled={!canEdit}
                         onChange={(event) =>
                           setCharacterDraft((current) =>
                             current
@@ -3102,6 +3499,7 @@ export function ProjectWorkspace({
                       <textarea
                         aria-label="Character description"
                         className="mt-2 min-h-24 w-full resize-y rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-3 text-[15px] leading-7 text-white/70 outline-none"
+                        disabled={!canEdit}
                         onChange={(event) =>
                           setCharacterDraft((current) =>
                             current
@@ -3112,11 +3510,24 @@ export function ProjectWorkspace({
                         value={characterDraft?.description ?? ""}
                       />
                     </label>
+                    <div className="mt-4">
+                      <WorkspaceModelSelect
+                        allowProjectDefault={false}
+                        label="Image model"
+                        onChange={(value) => {
+                          setCharacterGenerationModel(value);
+                          setCharacterEstimate(null);
+                        }}
+                        options={IMAGE_MODEL_OPTIONS}
+                        value={characterGenerationModel}
+                      />
+                    </div>
                     <label className="mt-4 block text-[12px] text-white/38">
                       <span>Prompt</span>
                       <textarea
                         aria-label="Character prompt"
                         className="mt-2 min-h-32 w-full resize-y rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-3 text-[15px] leading-7 text-white/70 outline-none"
+                        disabled={!canEdit}
                         onChange={(event) =>
                           setCharacterDraft((current) =>
                             current
@@ -3129,7 +3540,8 @@ export function ProjectWorkspace({
                     </label>
                     <div className="mt-3 flex justify-end">
                       <button
-                        className="rounded-lg border border-white/[0.09] px-3 py-2 text-[12px] text-white/58 hover:text-white"
+                        className="rounded-lg border border-white/[0.09] px-3 py-2 text-[12px] text-white/58 hover:text-white disabled:opacity-35"
+                        disabled={!canEdit}
                         onClick={() => void saveCharacterDraft(selectedCharacter)}
                         type="button"
                       >
@@ -3217,6 +3629,136 @@ export function ProjectWorkspace({
                 </article>
               ) : null}
 
+              {selectedCanvas.kind === "scene" && selectedScene ? (
+                <article className="mx-auto max-w-4xl px-6 py-8 sm:px-10">
+                  <div className="rounded-2xl border border-white/[0.07] p-5">
+                    <div className="flex items-center gap-2 text-[12px] font-semibold text-[#7bc6ff]">
+                      <MapPin className="h-4 w-4" />
+                      {copy.scene}
+                    </div>
+                    <label className="mt-4 block text-[12px] text-white/38">
+                      <span>Scene name</span>
+                      <input
+                        aria-label="Scene name"
+                        className="mt-2 w-full rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-2 text-[16px] text-white/78 outline-none"
+                        disabled={!canEdit}
+                        onChange={(event) =>
+                          setSceneDraft((current) =>
+                            current
+                              ? { ...current, name: event.target.value }
+                              : current,
+                          )
+                        }
+                        value={sceneDraft?.name ?? ""}
+                      />
+                    </label>
+                    <label className="mt-4 block text-[12px] text-white/38">
+                      <span>{copy.location}</span>
+                      <input
+                        aria-label="Scene location"
+                        className="mt-2 w-full rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-2 text-[16px] text-white/78 outline-none"
+                        disabled={!canEdit}
+                        onChange={(event) =>
+                          setSceneDraft((current) =>
+                            current
+                              ? { ...current, location: event.target.value }
+                              : current,
+                          )
+                        }
+                        value={sceneDraft?.location ?? ""}
+                      />
+                    </label>
+                    <label className="mt-4 block text-[12px] text-white/38">
+                      <span>{copy.description}</span>
+                      <textarea
+                        aria-label="Scene description"
+                        className="mt-2 min-h-24 w-full resize-y rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-3 text-[15px] leading-7 text-white/70 outline-none"
+                        disabled={!canEdit}
+                        onChange={(event) =>
+                          setSceneDraft((current) =>
+                            current
+                              ? { ...current, description: event.target.value }
+                              : current,
+                          )
+                        }
+                        value={sceneDraft?.description ?? ""}
+                      />
+                    </label>
+                    <label className="mt-4 block text-[12px] text-white/38">
+                      <span>Prompt</span>
+                      <textarea
+                        aria-label="Scene prompt"
+                        className="mt-2 min-h-32 w-full resize-y rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-3 text-[15px] leading-7 text-white/70 outline-none"
+                        disabled={!canEdit}
+                        onChange={(event) =>
+                          setSceneDraft((current) =>
+                            current
+                              ? { ...current, prompt_en: event.target.value }
+                              : current,
+                          )
+                        }
+                        value={sceneDraft?.prompt_en ?? ""}
+                      />
+                    </label>
+                    <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t border-white/[0.06] pt-4">
+                      <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/[0.09] px-3 py-2.5 text-[12px] text-white/60 hover:border-[#1677ff]/35 hover:text-white">
+                        <Upload className="h-3.5 w-3.5 text-[#4facff]" />
+                        Upload
+                        <input
+                          accept="image/*"
+                          aria-label="Upload scene image"
+                          className="sr-only"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            event.currentTarget.value = "";
+                            if (file) {
+                              void uploadSceneAsset(selectedScene, file);
+                            }
+                          }}
+                          type="file"
+                        />
+                      </label>
+                      <button
+                        className="rounded-lg border border-white/[0.09] px-3 py-2 text-[12px] text-white/58 hover:text-white disabled:opacity-35"
+                        disabled={!canEdit || isWorking}
+                        onClick={() => void saveSceneDraft(selectedScene)}
+                        type="button"
+                      >
+                        Save scene
+                      </button>
+                    </div>
+                  </div>
+                  <section className="mt-5 rounded-2xl border border-white/[0.07] p-4">
+                    <p className="mb-3 text-[12px] font-semibold text-white/38">
+                      Results
+                    </p>
+                    <AssetResultList
+                      assets={assets.filter(
+                        (asset) =>
+                          asset.content_type.startsWith("image/") &&
+                          asset.filename.startsWith(
+                            `scene-${selectedScene.id}-`,
+                          ),
+                      )}
+                      onDelete={(asset) => void deleteProjectAsset(asset)}
+                      onOpen={(asset) =>
+                        setSelectedCanvas({ kind: "asset", assetId: asset.id })
+                      }
+                      onSelect={(assetId) =>
+                        void setSelectedAsset(
+                          "scene",
+                          selectedScene.id,
+                          assetId,
+                        )
+                      }
+                      selectedAssetId={
+                        selectedResourceAssets[`scene:${selectedScene.id}`]
+                      }
+                    />
+                  </section>
+                </article>
+              ) : null}
+
               {selectedCanvas.kind === "shot" && canvasShot ? (
                 <article className="mx-auto max-w-4xl px-6 py-8 sm:px-10">
                   <div className="aspect-video overflow-hidden rounded-2xl border border-white/[0.08] bg-[radial-gradient(circle_at_72%_20%,rgba(22,119,255,0.26),transparent_28%),linear-gradient(145deg,#13213d,#080c13)] p-6">
@@ -3267,7 +3809,7 @@ export function ProjectWorkspace({
                         <span>{copy.duration}</span>
                         <input
                           className="mt-2 w-full rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-2 text-white/78 outline-none"
-                          max={15}
+                          max={30}
                           min={1}
                           onChange={(event) =>
                             setShotDraft((current) =>
@@ -3300,10 +3842,22 @@ export function ProjectWorkspace({
                           value={shotDraft?.aspect_ratio ?? "16:9"}
                         >
                           <option value="16:9">16:9</option>
+                          <option value="21:9">21:9</option>
                           <option value="9:16">9:16</option>
                           <option value="1:1">1:1</option>
                         </select>
                       </label>
+                    </div>
+                    <div className="mt-4">
+                      <WorkspaceModelSelect
+                        label="Video model"
+                        onChange={(value) => {
+                          setShotGenerationModel(value);
+                          setEstimate(null);
+                        }}
+                        options={VIDEO_MODEL_OPTIONS}
+                        value={shotGenerationModel}
+                      />
                     </div>
                     <label className="mt-4 block text-[12px] text-white/38">
                       <span>Prompt</span>
@@ -3692,6 +4246,14 @@ export function ProjectWorkspace({
                           >
                             <Share2 className="h-3.5 w-3.5" />
                           </button>
+                          <button
+                            aria-label={`${copy.publish} ${asset.filename}`}
+                            className="grid size-8 place-items-center rounded-lg border border-white/[0.09] text-white/45 hover:border-[#1677ff]/35 hover:text-white"
+                            onClick={() => openPublishDialog(asset)}
+                            type="button"
+                          >
+                            <Send className="h-3.5 w-3.5" />
+                          </button>
                         </div>
                       ))}
                     </div>
@@ -3725,7 +4287,10 @@ export function ProjectWorkspace({
             />
             {agentPanelCollapsed ? (
               <>
-                <div className="grid h-14 shrink-0 place-items-center border-b border-white/[0.07] bg-[#0d0c0a]/[0.96]">
+                <div
+                  className="grid h-[88px] shrink-0 place-items-center border-b border-white/[0.07] bg-[#0d0c0a]/[0.96]"
+                  data-testid="workspace-header-agents"
+                >
                   <button
                     aria-label={copy.expandAgents}
                     className="grid size-8 place-items-center rounded-lg text-[#4facff] hover:bg-[#1677ff]/10"
@@ -3753,7 +4318,10 @@ export function ProjectWorkspace({
                 agentPanelCollapsed && "hidden",
               )}
             >
-            <div className="flex h-14 shrink-0 items-center justify-between border-b border-white/[0.07] bg-[#0d0c0a]/[0.96] px-4">
+            <div
+              className="flex h-[88px] shrink-0 items-center justify-between border-b border-white/[0.07] bg-[#0d0c0a]/[0.96] px-4"
+              data-testid="workspace-header-agents"
+            >
               <span className="flex items-center gap-2 text-[12px] font-medium text-white/82">
                 <span className="grid size-6 place-items-center rounded-lg bg-[#1677ff]/15 text-[#7bc6ff]">
                   <Sparkles className="h-3.5 w-3.5" />
@@ -3816,7 +4384,9 @@ export function ProjectWorkspace({
               ) : null}
               <div ref={messagesEndRef} />
             </div>
-            {workflow?.status === "awaiting_approval" && workflow.stage !== "ready" ? (
+            {canEdit &&
+            workflow?.status === "awaiting_approval" &&
+            workflow.stage !== "ready" ? (
               <div className="shrink-0 border-t border-white/[0.07] p-3">
                 <ApprovalCard
                   copy={copy}
@@ -3837,6 +4407,7 @@ export function ProjectWorkspace({
                 <span className="sr-only">{t("agent")}</span>
                 <textarea
                   className="min-h-16 w-full resize-none bg-transparent text-[15px] leading-7 text-white outline-none placeholder:text-white/28"
+                  disabled={!canEdit}
                   onChange={(event) => setMessageDraft(event.target.value)}
                   placeholder={copy.chatPlaceholder}
                   value={messageDraft}
@@ -3845,7 +4416,7 @@ export function ProjectWorkspace({
                   <button
                     aria-label={copy.send}
                     className="grid size-8 place-items-center rounded-xl bg-[#1677ff] text-white disabled:opacity-35"
-                    disabled={!messageDraft.trim() || isWorking}
+                    disabled={!canEdit || !messageDraft.trim() || isWorking}
                     onClick={() => void sendMessage()}
                     type="button"
                   >
@@ -3876,7 +4447,7 @@ export function ProjectWorkspace({
               : []),
             { id: "assets" as const, label: copy.assets, icon: Layers3 },
             { id: "canvas" as const, label: t("canvas"), icon: Film },
-            { id: "agent" as const, label: t("agent"), icon: MessageCircleMore },
+            { id: "agent" as const, label: t("agent"), icon: Sparkles },
           ].map(({ id, label, icon: Icon }) => (
             <button
               className={cn(
@@ -3994,10 +4565,7 @@ export function ProjectWorkspace({
             className="w-full max-w-md rounded-2xl border border-white/[0.12] bg-[#15120e] p-6"
             role="dialog"
           >
-            <p className="text-[12px] text-[#5cc8ff]">
-              VideoAgent
-            </p>
-            <h2 id="generation-error-title" className="mt-3 text-xl font-semibold">
+            <h2 id="generation-error-title" className="text-xl font-semibold">
               {t("generationError")}
             </h2>
             {generationErrorMessage ? (
@@ -4014,6 +4582,221 @@ export function ProjectWorkspace({
               {t("dismiss")}
             </button>
           </div>
+        </div>
+      ) : null}
+
+      {shareDialogOpen ? (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-5 backdrop-blur-sm"
+          onPointerDown={(event) => {
+            if (event.target === event.currentTarget) {
+              setShareDialogOpen(false);
+            }
+          }}
+        >
+          <section
+            aria-labelledby="collaboration-title"
+            aria-modal="true"
+            className="w-full max-w-lg rounded-2xl border border-white/[0.12] bg-[#15120e] p-6"
+            role="dialog"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2
+                  className="text-xl font-semibold text-white"
+                  id="collaboration-title"
+                >
+                  {copy.shareTitle}
+                </h2>
+              </div>
+              <button
+                aria-label={copy.cancel}
+                className="grid size-8 place-items-center rounded-lg text-white/35 hover:bg-white/[0.06] hover:text-white"
+                onClick={() => setShareDialogOpen(false)}
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <label className="mt-5 block text-[12px] text-white/42">
+              <span>{copy.inviteEmail}</span>
+              <span className="mt-2 flex items-center gap-2 rounded-xl border border-white/[0.09] bg-white/[0.025] px-3">
+                <Mail className="h-4 w-4 text-[#4facff]" />
+                <input
+                  aria-label={copy.inviteEmail}
+                  className="min-w-0 flex-1 bg-transparent py-3 text-[15px] text-white outline-none"
+                  onChange={(event) => setShareEmail(event.target.value)}
+                  placeholder="name@example.com"
+                  type="email"
+                  value={shareEmail}
+                />
+              </span>
+            </label>
+            <div className="relative mt-4">
+              <span className="text-[12px] text-white/42">Access</span>
+              <button
+                aria-expanded={sharePermissionOpen}
+                aria-haspopup="listbox"
+                aria-label="Collaboration access"
+                className="mt-2 flex w-full items-center justify-between rounded-xl border border-white/[0.09] bg-[#0f0e0c] px-3 py-3 text-left text-[15px] text-white transition hover:border-[#1677ff]/30"
+                onClick={() => setSharePermissionOpen((current) => !current)}
+                type="button"
+              >
+                <span>
+                  {sharePermission === "view" ? copy.canView : copy.canEdit}
+                </span>
+                <ChevronDown
+                  aria-hidden="true"
+                  className={cn(
+                    "h-4 w-4 text-white/38 transition",
+                    sharePermissionOpen && "rotate-180",
+                  )}
+                />
+              </button>
+              {sharePermissionOpen ? (
+                <div
+                  className="absolute left-0 right-0 top-[calc(100%+6px)] z-20 grid gap-1 rounded-xl border border-white/[0.1] bg-[#17150f] p-1.5 shadow-2xl shadow-black/50"
+                  role="listbox"
+                >
+                  {(["view", "edit"] as const).map((permission) => (
+                    <button
+                      aria-selected={sharePermission === permission}
+                      className={cn(
+                        "flex items-center justify-between rounded-lg px-3 py-2.5 text-left text-[14px] transition",
+                        sharePermission === permission
+                          ? "bg-[#1677ff]/15 text-[#9bd8ff]"
+                          : "text-white/62 hover:bg-white/[0.05] hover:text-white",
+                      )}
+                      key={permission}
+                      onClick={() => {
+                        setSharePermission(permission);
+                        setSharePermissionOpen(false);
+                      }}
+                      role="option"
+                      type="button"
+                    >
+                      {permission === "view" ? copy.canView : copy.canEdit}
+                      {sharePermission === permission ? (
+                        <Check className="h-4 w-4" />
+                      ) : null}
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+            <button
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#1677ff] px-4 py-3 text-[13px] font-semibold text-white disabled:opacity-35"
+              disabled={isSharing}
+              onClick={() => void createCollaborationLink()}
+              type="button"
+            >
+              {isSharing ? <LoaderCircle className="h-4 w-4 animate-spin" /> : <Link2 className="h-4 w-4" />}
+              {copy.createLink}
+            </button>
+            {collaborationLink ? (
+              <div className="mt-5 rounded-xl border border-[#1677ff]/25 bg-[#1677ff]/[0.06] p-3">
+                <p className="text-[12px] text-white/46">
+                  {copy.linkAccess}
+                  {" · "}
+                  {collaborationLink.permission === "edit"
+                    ? copy.canEdit
+                    : copy.canView}
+                </p>
+                <input
+                  aria-label="Collaboration link"
+                  className="mt-3 w-full rounded-lg border border-white/[0.09] bg-black/25 px-3 py-2 text-[12px] text-white/68"
+                  readOnly
+                  value={collaborationLink.share_url}
+                />
+                <div className="mt-3 flex gap-2">
+                  <button
+                    className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-white/[0.1] px-3 py-2 text-[12px] text-white/65 hover:text-white"
+                    onClick={() => void copyCollaborationLink()}
+                    type="button"
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                    {shareCopied ? copy.copied : copy.copyLink}
+                  </button>
+                  <a
+                    className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-white/[0.08] px-3 py-2 text-[12px] text-white/65 hover:text-white"
+                    href={collaborationLink.share_url}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    <Link2 className="h-3.5 w-3.5" />
+                    {copy.openLink}
+                  </a>
+                </div>
+              </div>
+            ) : null}
+          </section>
+        </div>
+      ) : null}
+
+      {publishAsset ? (
+        <div
+          className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-5 backdrop-blur-sm"
+          onPointerDown={(event) => {
+            if (event.target === event.currentTarget) setPublishAsset(null);
+          }}
+        >
+          <form
+            aria-labelledby="publish-final-cut-title"
+            aria-modal="true"
+            className="w-full max-w-lg rounded-2xl border border-white/[0.12] bg-[#15120e] p-6"
+            onSubmit={(event) => void publishFinalCut(event)}
+            role="dialog"
+          >
+            <div className="flex items-start justify-between gap-4">
+              <h2
+                className="text-xl font-semibold text-white"
+                id="publish-final-cut-title"
+              >
+                {copy.publishTitle}
+              </h2>
+              <button
+                aria-label={copy.cancel}
+                className="grid size-8 place-items-center rounded-lg text-white/35 hover:bg-white/[0.06] hover:text-white"
+                onClick={() => setPublishAsset(null)}
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <label className="mt-5 block text-[12px] text-white/42">
+              <span>Title</span>
+              <input
+                aria-label="Published video title"
+                className="mt-2 w-full rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-3 text-[15px] text-white outline-none"
+                maxLength={200}
+                onChange={(event) => setPublishTitleDraft(event.target.value)}
+                required
+                value={publishTitleDraft}
+              />
+            </label>
+            <label className="mt-4 block text-[12px] text-white/42">
+              <span>{copy.publishPrompt}</span>
+              <textarea
+                aria-label="Published video description"
+                className="mt-2 min-h-28 w-full resize-y rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-3 text-[15px] leading-7 text-white outline-none"
+                onChange={(event) => setPublishPromptDraft(event.target.value)}
+                value={publishPromptDraft}
+              />
+            </label>
+            {publishMessage ? (
+              <p className="mt-4 rounded-lg bg-emerald-400/10 px-3 py-2 text-[12px] text-emerald-200">
+                {publishMessage}
+              </p>
+            ) : null}
+            <button
+              className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-[#1677ff] px-4 py-3 text-[13px] font-semibold text-white disabled:opacity-35"
+              disabled={isWorking || !publishTitleDraft.trim()}
+              type="submit"
+            >
+              <Send className="h-4 w-4" />
+              {copy.publish}
+            </button>
+          </form>
         </div>
       ) : null}
 

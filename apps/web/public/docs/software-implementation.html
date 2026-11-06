@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Dev" />
     <title>Dev · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=32" />
+    <link rel="stylesheet" href="../docs.css?v=33" />
   </head>
   <body data-document="software-implementation.html">
     <main class="document-shell" id="document-shell">
@@ -77,13 +77,13 @@
 <h2 id="2-system-scope">2. System Scope</h2>
 <ul>
 <li>Next.js App Router product UI.</li>
-<li>Left navigation: Agents, Skills, Hots, Assets, Docs.</li>
+<li>Left navigation: Agents, Skills, Videos, Assets, Docs.</li>
 <li>Home composer with Skill and Hook selectors, six production playbooks, and</li>
 <p>transparent custom dropdowns.</p>
 <li>Auto-growing prompt textarea with idea suggestions rendered only in the empty state.</li>
 <li>Complete live video-model catalogue with provider-labelled Pippit and Kling options.</li>
 <li>Flat searchable Skills catalogue using <code>user_id/skill_id</code>, plus user publishing.</li>
-<li>Searchable Hots feed with looping video playback, Skill-backed scenario</li>
+<li>Searchable Videos feed with looping video playback, Skill-backed scenario</li>
 <p>reuse, and publishing.</p>
 <li>Searchable Assets waterfall with internal Video/Skill tabs, permission, and</li>
 <p><code>yyyy-mm-dd</code> edit date; videos preview on hover, Skill cards have no cover, and cards do not repeat type labels.</p>
@@ -325,7 +325,7 @@ status
 </tr></thead><tbody>
 <tr>
 <td><code>packages/landing/src/index.tsx</code></td>
-<td>Shared nav, composer, Skills, Hots, Docs</td>
+<td>Shared nav, composer, Skills, Videos, Docs</td>
 </tr>
 <tr>
 <td><code>packages/landing/src/content.ts</code></td>
@@ -373,8 +373,9 @@ video_agent/camera_movement
 video_agent/music_video
 video_agent/reference_remake
 video_agent/agent_handoff</code></pre>
-<p>Review uses the same card form as other task-oriented Skills. Signed-in users can publish a skill under their own namespace.</p>
-<p>Production playbooks are defined in <code>packages/landing/src/content.ts</code> with a prompt, Skill, Hook, style, frame, duration, and review mode. Applying one updates the full composer draft; clicking the active playbook again restores the saved pre-playbook composer state. Hots cards carry a Skill ID so scenario reuse enters Agents with the matching Skill selected.</p>
+<p>Review uses the same card form as other task-oriented Skills. Signed-in users can publish a skill under their own namespace. Public Skills are included in the catalogue for other signed-in users.</p>
+<p><code>GET /skills</code> returns <code>likes</code>, <code>uses</code>, <code>is_liked</code>, and <code>is_mine</code>. Repeated likes and uses are represented by unique rows in <code>skill_engagement_likes</code> and <code>skill_engagement_usages</code>, so the same account cannot inflate a leaderboard. The frontend computes <code>uses × 2 + likes × 3</code>, keeps category filters separate from overall rank, and renders the top-three reward projection. Videos has the equivalent <code>hots_likes</code> record, with rank based on unique likes.</p>
+<p>Production playbooks are defined in <code>packages/landing/src/content.ts</code> with a prompt, Skill, Hook, style, frame, duration, and review mode. Applying one updates the full composer draft; clicking the active playbook again restores the saved pre-playbook composer state. Videos cards carry a Skill ID so scenario reuse enters Agents with the matching Skill selected.</p>
 <h2 id="9-documentation-localization">9. Documentation Localization</h2>
 <p>The globe control switches documentation language.</p>
 <pre><code class="language-text">English: product-requirements.html
@@ -400,6 +401,14 @@ Chinese: product-requirements.zh.html</code></pre>
 <tr>
 <td><code>storyboards</code></td>
 <td>Current board and version</td>
+</tr>
+<tr>
+<td><code>characters</code></td>
+<td>Reusable character objects and image prompts</td>
+</tr>
+<tr>
+<td><code>scenes</code></td>
+<td>Reusable location/environment objects and image prompts</td>
 </tr>
 <tr>
 <td><code>shots</code></td>
@@ -434,8 +443,20 @@ Chinese: product-requirements.zh.html</code></pre>
 <td>Published Skill instructions, prompt template, and I/O contracts</td>
 </tr>
 <tr>
+<td><code>skill_engagement_likes</code></td>
+<td>Unique user-to-Skill-key likes</td>
+</tr>
+<tr>
+<td><code>skill_engagement_usages</code></td>
+<td>Unique user-to-Skill-key use signals</td>
+</tr>
+<tr>
 <td><code>hots_posts</code></td>
 <td>Community videos, captions, Skill references, and likes</td>
+</tr>
+<tr>
+<td><code>hots_likes</code></td>
+<td>Unique user-to-post likes</td>
 </tr>
 <tr>
 <td><code>generation_jobs</code></td>
@@ -464,6 +485,14 @@ Chinese: product-requirements.zh.html</code></pre>
 <tr>
 <td><code>share_links</code></td>
 <td>Hashed tokens, expiry, revocation, and access count</td>
+</tr>
+<tr>
+<td><code>project_collaborations</code></td>
+<td>Hashed project invite tokens, email restriction, permission, and expiry</td>
+</tr>
+<tr>
+<td><code>project_collaborators</code></td>
+<td>Accepted collaborators and view/edit roles</td>
 </tr>
 <tr>
 <td><code>platform_settings</code></td>
@@ -572,6 +601,14 @@ Chinese: product-requirements.zh.html</code></pre>
 <td><code>/projects/{id}/storyboard/characters/{character_id}</code></td>
 </tr>
 <tr>
+<td><code>PATCH</code></td>
+<td><code>/projects/{id}/storyboard/scenes/{scene_id}</code></td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/scenes/{id}/assets</code></td>
+</tr>
+<tr>
 <td><code>GET</code></td>
 <td><code>/projects/{id}/progress</code></td>
 </tr>
@@ -630,6 +667,18 @@ Chinese: product-requirements.zh.html</code></pre>
 <tr>
 <td><code>POST</code></td>
 <td><code>/assets/{id}/share</code></td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/hots/from-asset/{asset_id}</code></td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/projects/{id}/collaborations</code></td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/collaborations/{token}/accept</code></td>
 </tr>
 <tr>
 <td><code>DELETE</code></td>
@@ -694,6 +743,8 @@ Chinese: product-requirements.zh.html</code></pre>
 <li>Uploads enforce byte limits and validate declared MIME plus file signatures.</li>
 <li>Share tokens are stored as hashes and become unavailable after expiry or</li>
 <p>revocation.</p>
+<li>Collaboration tokens create project membership only after authenticated</li>
+<p>acceptance. View-only membership is enforced by project mutation endpoints.</p>
 <li>Administration access is restricted by <code>VIDEOAGENT_ADMIN_EMAILS</code>.</li>
 <li>Disabling a user immediately revokes existing sessions.</li>
 <li>The generation kill switch blocks both estimation and Provider submission.</li>
@@ -722,6 +773,6 @@ pnpm test:e2e
 python scripts\build_pages.py</code></pre>
 <p>Backend coverage currently consists of 71 tests, frontend coverage consists of 30 Vitest tests, and Playwright contains seven no-fee browser flows. Playwright uses the Mock Provider for generation and therefore never consumes real Provider credits.</p></article>
     </main>
-    <script src="../docs.js?v=32"></script>
+    <script src="../docs.js?v=33"></script>
   </body>
 </html>

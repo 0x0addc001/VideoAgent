@@ -16,13 +16,13 @@ boundaries, runtime flow, provider adapters, and engineering conventions.
 ## 2. System Scope
 
 - Next.js App Router product UI.
-- Left navigation: Agents, Skills, Hots, Assets, Docs.
+- Left navigation: Agents, Skills, Videos, Assets, Docs.
 - Home composer with Skill and Hook selectors, six production playbooks, and
   transparent custom dropdowns.
 - Auto-growing prompt textarea with idea suggestions rendered only in the empty state.
 - Complete live video-model catalogue with provider-labelled Pippit and Kling options.
 - Flat searchable Skills catalogue using `user_id/skill_id`, plus user publishing.
-- Searchable Hots feed with looping video playback, Skill-backed scenario
+- Searchable Videos feed with looping video playback, Skill-backed scenario
   reuse, and publishing.
 - Searchable Assets waterfall with internal Video/Skill tabs, permission, and
   `yyyy-mm-dd` edit date; videos preview on hover, Skill cards have no cover,
@@ -201,7 +201,7 @@ status
 
 | Module | Responsibility |
 | --- | --- |
-| `packages/landing/src/index.tsx` | Shared nav, composer, Skills, Hots, Docs |
+| `packages/landing/src/index.tsx` | Shared nav, composer, Skills, Videos, Docs |
 | `packages/landing/src/content.ts` | English UI and Chinese resources |
 | `app-landing-page.tsx` | Product home project creation |
 | `project-workspace.tsx` | History navigation, asset tree, canvas, approval-driven Agent chat, generation, and review |
@@ -247,12 +247,21 @@ video_agent/agent_handoff
 ```
 
 Review uses the same card form as other task-oriented Skills. Signed-in users
-can publish a skill under their own namespace.
+can publish a skill under their own namespace. Public Skills are included in
+the catalogue for other signed-in users.
+
+`GET /skills` returns `likes`, `uses`, `is_liked`, and `is_mine`. Repeated likes
+and uses are represented by unique rows in `skill_engagement_likes` and
+`skill_engagement_usages`, so the same account cannot inflate a leaderboard.
+The frontend computes
+`uses × 2 + likes × 3`, keeps category filters separate from overall rank, and
+renders the top-three reward projection. Videos has the equivalent
+`hots_likes` record, with rank based on unique likes.
 
 Production playbooks are defined in `packages/landing/src/content.ts` with a
 prompt, Skill, Hook, style, frame, duration, and review mode. Applying one
 updates the full composer draft; clicking the active playbook again restores
-the saved pre-playbook composer state. Hots cards carry a Skill ID so scenario
+the saved pre-playbook composer state. Videos cards carry a Skill ID so scenario
 reuse enters Agents with the matching Skill selected.
 
 ## 9. Documentation Localization
@@ -277,6 +286,8 @@ locale state.
 | `sessions` | Token hashes and expiry |
 | `projects` | Owner, title, brief, state |
 | `storyboards` | Current board and version |
+| `characters` | Reusable character objects and image prompts |
+| `scenes` | Reusable location/environment objects and image prompts |
 | `shots` | Prompt, frame, duration, status |
 | `conversations` | One per project |
 | `messages` | User/assistant content |
@@ -285,7 +296,10 @@ locale state.
 | `workspace_folder_items` | One-to-one conversation filing |
 | `project_workflows` | Concept, outline, script, and generation approval state |
 | `user_skills` | Published Skill instructions, prompt template, and I/O contracts |
+| `skill_engagement_likes` | Unique user-to-Skill-key likes |
+| `skill_engagement_usages` | Unique user-to-Skill-key use signals |
 | `hots_posts` | Community videos, captions, Skill references, and likes |
+| `hots_likes` | Unique user-to-post likes |
 | `generation_jobs` | Provider task and idempotency |
 | `provider_connections` | Legacy OAuth storage |
 | `oauth_flows` | Legacy OAuth state |
@@ -293,6 +307,8 @@ locale state.
 | `credit_entries` | Idempotent reservation and refund ledger |
 | `assets` | Uploads, generated clips, deliveries, covers, and permissions |
 | `share_links` | Hashed tokens, expiry, revocation, and access count |
+| `project_collaborations` | Hashed project invite tokens, email restriction, permission, and expiry |
+| `project_collaborators` | Accepted collaborators and view/edit roles |
 | `platform_settings` | Generation switch and registration policy |
 | `invite_codes` | Hashed codes, expiry, and use limits |
 | `admin_audit_logs` | Administrative mutation trail |
@@ -323,6 +339,8 @@ locale state.
 | `PATCH` | `/projects/{id}/storyboard/order` |
 | `PATCH` | `/projects/{id}/storyboard/shots/{shot_id}` |
 | `PATCH` | `/projects/{id}/storyboard/characters/{character_id}` |
+| `PATCH` | `/projects/{id}/storyboard/scenes/{scene_id}` |
+| `POST` | `/scenes/{id}/assets` |
 | `GET` | `/projects/{id}/progress` |
 | `GET/POST` | `/projects/{id}/visual-review/models`, `/visual-review` |
 | `POST` | `/shots/{id}/estimate` |
@@ -338,6 +356,9 @@ locale state.
 | `GET` | `/assets/{id}/content` |
 | `POST` | `/projects/{id}/exports` |
 | `POST` | `/assets/{id}/share` |
+| `POST` | `/hots/from-asset/{asset_id}` |
+| `POST` | `/projects/{id}/collaborations` |
+| `POST` | `/collaborations/{token}/accept` |
 | `DELETE` | `/shares/{id}` |
 | `GET` | `/shares/{token}/content` |
 | `GET/PATCH` | `/admin/settings` |
@@ -365,6 +386,8 @@ locale state.
 - Uploads enforce byte limits and validate declared MIME plus file signatures.
 - Share tokens are stored as hashes and become unavailable after expiry or
   revocation.
+- Collaboration tokens create project membership only after authenticated
+  acceptance. View-only membership is enforced by project mutation endpoints.
 - Administration access is restricted by `VIDEOAGENT_ADMIN_EMAILS`.
 - Disabling a user immediately revokes existing sessions.
 - The generation kill switch blocks both estimation and Provider submission.

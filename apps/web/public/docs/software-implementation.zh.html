@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Dev" />
     <title>Dev · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=32" />
+    <link rel="stylesheet" href="../docs.css?v=33" />
   </head>
   <body data-document="software-implementation.zh.html">
     <main class="document-shell" id="document-shell">
@@ -96,13 +96,15 @@
 <h2 id="2-系统范围">2. 系统范围</h2>
 <ul>
 <li>Next.js App Router Web 界面。</li>
-<li>左侧 Agents、Skills、Hots、Assets、Docs 导航和独立视图切换。</li>
+<li>左侧 Agents、Skills、Videos、Assets、Docs 导航和独立视图切换。</li>
 <li>蓝色播放键品牌、无框标签页图标和激活图标填充/线框反转。</li>
-<li>首页连续视频轮播、流式主标语、Skill/Hook 选择器、场景 Playbook、自定义透明下拉和 Action 生成入口。</li>
-<li>创作输入框根据 <code>scrollHeight</code> 自动增高，并在输入非空时隐藏示例灵感；Playbook 保持可用，重复点击当前项会恢复应用前草稿。</li>
+<li>首页连续视频轮播、流式主标语、Skill/Hook 选择器、场景策略、自定义透明下拉和 Action 生成入口。</li>
+<li>创作输入框根据 <code>scrollHeight</code> 自动增高，并在输入非空时隐藏示例灵感；策略保持可用，重复点击当前项会恢复应用前草稿。</li>
 <li>模型下拉框使用统一模型元数据，展示 Pippit 8 个、Kling 7 个当前可用的视频模型及 Provider。</li>
 <li>Skills 使用单一可搜索目录，显示 <code>user_id/skill_id</code>；原厂商能力使用厂商命名空间（如 <code>kling</code>），跨 Provider 工作流使用 <code>video_agent</code>。</li>
-<li>Hots 支持搜索、循环视频、作者、喜欢数、发布，以及带 Skill 的场景复用。</li>
+<li>Skills 提供分类筛选、综合榜单、点赞和去重使用信号；公开 Skill 对其他登录用户可见，作者不能给自己点赞。</li>
+<li>Videos 支持搜索、循环视频、作者、喜欢数、发布，以及带 Skill 的场景复用。</li>
+<li>Videos 提供分类筛选、去重点赞排名和前三名奖励展示。</li>
 <li>Assets 使用瀑布流，并通过 Video/Skill 内部分页区分类型；Video 卡片悬浮静音播放，Skill 卡片无封面并展示 private/public 和 <code>yyyy-mm-dd</code> 编辑时间。</li>
 <li>九份中英文文档、全文搜索、统一深色阅读主题、左侧可折叠目录和章节高亮。</li>
 <li>注册、登录、登出和服务端会话。</li>
@@ -143,7 +145,7 @@
 │   ├── src/lib/                    # 前端工具函数
 │   └── tests/                      # Vitest 测试
 ├── packages/landing/
-│   ├── src/index.tsx               # 共享首页、导航、Hots、Docs
+│   ├── src/index.tsx               # 共享首页、导航、Videos、Docs
 │   ├── src/content.ts              # 英文内容与中文占位资源
 │   └── src/landing.css             # 共享视觉样式
 ├── services/api/
@@ -452,7 +454,7 @@ https://example.com/api/   → FastAPI</code></pre>
 </tr>
 <tr>
 <td><code>packages/landing</code></td>
-<td>左侧导航、共享品牌、视频主视觉、创作框、Hots 和 Docs</td>
+<td>左侧导航、共享品牌、视频主视觉、创作框、Videos 和 Docs</td>
 </tr>
 <tr>
 <td><code>locale-switcher.tsx</code></td>
@@ -523,6 +525,14 @@ zh-CN</code></pre>
 <td>每个项目唯一的当前故事板</td>
 </tr>
 <tr>
+<td><code>characters</code></td>
+<td>可复用角色对象、描述和图片 Prompt</td>
+</tr>
+<tr>
+<td><code>scenes</code></td>
+<td>可复用场景、场地、环境描述和图片 Prompt</td>
+</tr>
+<tr>
 <td><code>shots</code></td>
 <td>镜头 Prompt、比例、时长和状态</td>
 </tr>
@@ -555,8 +565,20 @@ zh-CN</code></pre>
 <td>用户 Skill 名称、说明、执行规范、提示词和输入输出契约</td>
 </tr>
 <tr>
+<td><code>skill_engagement_likes</code></td>
+<td>用户与任意稳定 Skill 标识的唯一互动点赞记录</td>
+</tr>
+<tr>
+<td><code>skill_engagement_usages</code></td>
+<td>用户与任意稳定 Skill 标识的唯一使用信号</td>
+</tr>
+<tr>
 <td><code>hots_posts</code></td>
-<td>Hots 视频、标题、描述、Skill 和喜欢数</td>
+<td>Videos 视频、标题、描述、Skill 和喜欢数</td>
+</tr>
+<tr>
+<td><code>hots_likes</code></td>
+<td>用户与 Videos 作品的唯一点赞记录</td>
 </tr>
 <tr>
 <td><code>generation_jobs</code></td>
@@ -587,6 +609,14 @@ zh-CN</code></pre>
 <td>Token 哈希、过期、撤销和访问计数</td>
 </tr>
 <tr>
+<td><code>project_collaborations</code></td>
+<td>项目协作邀请哈希、邮箱限制、权限与有效期</td>
+</tr>
+<tr>
+<td><code>project_collaborators</code></td>
+<td>已接受协作的账号及查看/编辑权限</td>
+</tr>
+<tr>
 <td><code>platform_settings</code></td>
 <td>生成开关与注册策略</td>
 </tr>
@@ -602,7 +632,7 @@ zh-CN</code></pre>
 <p>关键约束：</p>
 <ul>
 <li>业务主键使用 UUID。</li>
-<li><code>Project.owner_id</code> 决定资源权限。</li>
+<li>项目权限由 <code>Project.owner_id</code> 与 <code>project_collaborators</code> 共同决定。</li>
 <li><code>Storyboard.project_id</code> 唯一。</li>
 <li><code>Conversation.project_id</code> 唯一。</li>
 <li><code>WorkspaceFolderItem.project_id</code> 唯一，一个对话只能收纳在一个项目目录中。</li>
@@ -800,6 +830,16 @@ task reference    → query-result   → JobStatus + result URL</code></pre>
 <td>编辑单个 Character</td>
 </tr>
 <tr>
+<td>PATCH</td>
+<td><code>/projects/{id}/storyboard/scenes/{scene_id}</code></td>
+<td>编辑 Scene 名称、地点与 Prompt</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/scenes/{id}/assets</code></td>
+<td>上传 Scene 参考图</td>
+</tr>
+<tr>
 <td>POST</td>
 <td><code>/shots/{id}/estimate</code></td>
 <td>查询积分估算</td>
@@ -873,6 +913,21 @@ task reference    → query-result   → JobStatus + result URL</code></pre>
 <td>POST</td>
 <td><code>/assets/{id}/share</code></td>
 <td>创建限时分享</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/hots/from-asset/{asset_id}</code></td>
+<td>发布已导出的成片</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/projects/{id}/collaborations</code></td>
+<td>创建项目协作邀请</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/collaborations/{token}/accept</code></td>
+<td>接受协作并写入成员关系</td>
 </tr>
 <tr>
 <td>DELETE</td>
@@ -960,6 +1015,7 @@ task reference    → query-result   → JobStatus + result URL</code></pre>
 <li>不安全方法校验 <code>Origin</code> 与 <code>Sec-Fetch-Site</code>。</li>
 <li>上传读取有字节上限，并校验声明的 MIME 与文件签名。</li>
 <li>分享 Token 只保存 SHA-256 哈希，过期或撤销后返回 404。</li>
+<li>协作 Token 只保存哈希；接受后写入 ProjectCollaborator，view 成员的项目写操作返回 403。</li>
 <li><code>VIDEOAGENT_ADMIN_EMAILS</code> 是管理权限的唯一引导来源。</li>
 <li>普通用户访问 <code>/admin/*</code> 返回 <code>403</code>，未登录返回 <code>401</code>。</li>
 <li>停用用户时删除其 Session；管理员不能停用自己。</li>
@@ -1172,11 +1228,11 @@ pnpm --dir apps/web build</code></pre>
 <li>后端测试使用临时 SQLite 文件。</li>
 <li>Pippit 测试使用本地 Fake CLI，不访问真实生成网络。</li>
 <li>Kling Provider 测试使用 Fake MCP client，不触发付费生成。</li>
-<li>前端测试覆盖共享首页、导航、文档加载、自定义下拉、Hots 发布、创作提交、历史目录、逐层审批、Skill AI 优化和持久化发布。</li>
+<li>前端测试覆盖共享首页、导航、文档加载、自定义下拉、Videos 发布、创作提交、历史目录、逐层审批、Skill AI 优化、持久化发布、分类榜单和点赞状态。</li>
 <li>工作流批准使用本地即时阶段推进；显式调整和自定义修改才调用远程规划器，减少选项点击等待。</li>
 <li>Agent 语言由项目 Brief 和当前用户 Prompt 自动检测，不直接沿用账户语言。</li>
 <li>Pippit 会将低于模型下限的镜头时长提升到 4 秒并同步估算；Provider 拒绝时返回可读的 <code>502</code> 错误并幂等退款。</li>
-<li>Playwright 使用 Mock Provider 验证审批、生成、导出、分享、Skill 优化，以及 Hots 视频上传和 Assets 详情，不访问付费 Provider。</li>
+<li>Playwright 使用 Mock Provider 验证审批、生成、导出、分享、Skill 优化，以及 Videos 视频上传和 Assets 详情，不访问付费 Provider。</li>
 <li>管理测试覆盖白名单权限、积分调整、账号停用、邀请码、注册关闭和生成开关。</li>
 <li>普通 CI 不执行付费生成。</li>
 </ul>
@@ -1260,6 +1316,6 @@ pnpm --dir apps/web build</code></pre>
 <li>设计或实现边界变化已更新本文档。</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=32"></script>
+    <script src="../docs.js?v=33"></script>
   </body>
 </html>

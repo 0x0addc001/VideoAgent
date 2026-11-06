@@ -12,6 +12,7 @@ from videoagent.api.agent_activity import router as agent_activity_router
 from videoagent.api.assets import router as assets_router
 from videoagent.api.auth import router as auth_router
 from videoagent.api.characters import router as characters_router
+from videoagent.api.collaboration import router as collaboration_router
 from videoagent.api.credits import router as credits_router
 from videoagent.api.evaluation import router as evaluation_router
 from videoagent.api.generation import router as generation_router
@@ -19,6 +20,7 @@ from videoagent.api.health import router as health_router
 from videoagent.api.hots import router as hots_router
 from videoagent.api.projects import router as projects_router
 from videoagent.api.providers import router as providers_router
+from videoagent.api.scenes import router as scenes_router
 from videoagent.api.skills import router as skills_router
 from videoagent.api.storyboards import router as storyboards_router
 from videoagent.api.workspace import router as workspace_router
@@ -83,6 +85,8 @@ def create_app(
     application.include_router(projects_router, prefix=resolved_settings.api_prefix)
     application.include_router(storyboards_router, prefix=resolved_settings.api_prefix)
     application.include_router(characters_router, prefix=resolved_settings.api_prefix)
+    application.include_router(collaboration_router, prefix=resolved_settings.api_prefix)
+    application.include_router(scenes_router, prefix=resolved_settings.api_prefix)
     application.include_router(evaluation_router, prefix=resolved_settings.api_prefix)
     application.include_router(generation_router, prefix=resolved_settings.api_prefix)
     application.include_router(agent_router, prefix=resolved_settings.api_prefix)

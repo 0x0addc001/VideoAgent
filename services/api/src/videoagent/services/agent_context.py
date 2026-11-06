@@ -68,6 +68,14 @@ async def build_agent_context(
                     for character in storyboard.characters
                 )
             )
+        if storyboard.scenes:
+            storyboard_lines.append(
+                "Scenes: "
+                + "; ".join(
+                    f"{scene.name} @ {scene.location}: {_clip(scene.description, 180)}"
+                    for scene in storyboard.scenes
+                )
+            )
         storyboard_lines.extend(
             f"Shot {shot.index + 1}: {_clip(shot.description, 220)} "
             f"({shot.duration_seconds}s, {shot.aspect_ratio})"

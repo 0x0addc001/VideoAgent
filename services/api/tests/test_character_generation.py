@@ -108,3 +108,21 @@ async def test_character_reference_generation_requires_project_image(client):
     )
     assert generated.status_code == 201
     assert generated.json()["content_type"] == "image/jpeg"
+
+
+@pytest.mark.api
+async def test_character_generation_rejects_non_image_provider(client):
+    _, character = await project_with_character(client)
+
+    response = await client.post(
+        f"/api/v1/characters/{character['id']}/generate",
+        json={
+            "approved": True,
+            "generation_mode": "text_to_image",
+            "provider": "pippit",
+            "model": "Seedance_2.5",
+        },
+    )
+
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "IMAGE_PROVIDER_UNSUPPORTED"

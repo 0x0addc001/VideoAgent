@@ -48,6 +48,15 @@ async def test_mock_generation_export_and_share(client):
     assert completed.status_code == 200
     assert completed.json()["status"] == "succeeded"
 
+    rendered_from_agent = await client.post(
+        f"/api/v1/projects/{project['id']}/messages",
+        json={"content": "Render the final cut"},
+    )
+    assert rendered_from_agent.status_code == 200
+    assert rendered_from_agent.json()["assistant_message"]["metadata"]["action"] == (
+        "render_final_cut"
+    )
+
     exported = await client.post(
         f"/api/v1/projects/{project['id']}/exports",
         json={
@@ -75,10 +84,81 @@ async def test_mock_generation_export_and_share(client):
     public_download = await client.get(share["share_url"])
     assert public_download.status_code == 200
 
+    published = await client.post(
+        f"/api/v1/hots/from-asset/{payload['items'][0]['id']}",
+        json={
+            "title": "Export acceptance",
+            "prompt": "A generated short",
+            "skill": "auto",
+        },
+    )
+    assert published.status_code == 201
+    assert published.json()["asset_id"] == payload["items"][0]["id"]
+    assert (
+        await client.get(f"/api/v1/hots/{published.json()['id']}/video")
+    ).status_code == 200
+
     revoked = await client.delete(f"/api/v1/shares/{share['id']}")
     assert revoked.status_code == 204
     unavailable = await client.get(share["share_url"])
     assert unavailable.status_code == 404
+
+
+@pytest.mark.api
+async def test_export_requires_every_shot_to_be_generated(client):
+    assert (await register(client, email="final-cut-gate@example.com")).status_code == 201
+    project = (
+        await client.post(
+            "/api/v1/projects",
+            json={"title": "Two-shot film", "brief": "A complete two-shot story"},
+        )
+    ).json()
+    storyboard = await client.put(
+        f"/api/v1/projects/{project['id']}/storyboard",
+        json={
+            "characters": [
+                {
+                    "name": "Lead",
+                    "description": "The recurring lead.",
+                    "prompt_en": "Cinematic portrait of the lead",
+                }
+            ],
+            "scenes": [
+                {
+                    "name": "Studio",
+                    "location": "Production studio",
+                    "description": "A controlled production set.",
+                    "prompt_en": "Cinematic production studio",
+                }
+            ],
+            "shots": [
+                {
+                    "description": "Opening",
+                    "prompt_en": "Cinematic opening",
+                },
+                {
+                    "description": "Closing",
+                    "prompt_en": "Cinematic closing",
+                },
+            ],
+        },
+    )
+    shot_id = storyboard.json()["shots"][0]["id"]
+    generated = await client.post(
+        f"/api/v1/shots/{shot_id}/generate",
+        headers={"Idempotency-Key": "incomplete-final-cut"},
+        json={"approved": True},
+    )
+    assert generated.status_code == 201
+    completed = await client.get(f"/api/v1/jobs/{generated.json()['id']}")
+    assert completed.status_code == 200
+    assert completed.json()["status"] == "succeeded"
+    incomplete = await client.post(
+        f"/api/v1/projects/{project['id']}/exports",
+        json={"aspect_ratios": ["16:9"]},
+    )
+    assert incomplete.status_code == 409
+    assert incomplete.json()["error"]["code"] == "SHOTS_NOT_READY"
 
 
 @pytest.mark.api

@@ -14,6 +14,7 @@ from videoagent.models import (
     Asset,
     Character,
     ResourceSelection,
+    Scene,
     ShareLink,
     Shot,
     Storyboard,
@@ -49,9 +50,31 @@ async def owned_asset_or_404(
     session: AsyncSession,
     asset_id: UUID,
     user_id: UUID,
+    *,
+    required_permission: str = "view",
 ) -> Asset:
     asset = await session.get(Asset, asset_id)
-    if asset is None or asset.owner_id != user_id or asset.deleted_at is not None:
+    if asset is None or asset.deleted_at is not None:
+        raise AppError(
+            status_code=404,
+            code="ASSET_NOT_FOUND",
+            message="The asset was not found.",
+        )
+    if asset.project_id is not None:
+        try:
+            await owned_project_or_404(
+                session,
+                asset.project_id,
+                user_id,
+                required_permission=required_permission,
+            )
+        except AppError as exc:
+            raise AppError(
+                status_code=404,
+                code="ASSET_NOT_FOUND",
+                message="The asset was not found.",
+            ) from exc
+    elif asset.owner_id != user_id:
         raise AppError(
             status_code=404,
             code="ASSET_NOT_FOUND",
@@ -81,13 +104,17 @@ async def list_project_assets(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> AssetList:
-    await owned_project_or_404(session, project_id, user.id)
+    await owned_project_or_404(
+        session,
+        project_id,
+        user.id,
+        required_permission="view",
+    )
     assets = (
         await session.scalars(
             select(Asset)
             .where(
                 Asset.project_id == project_id,
-                Asset.owner_id == user.id,
                 Asset.deleted_at.is_(None),
             )
             .order_by(Asset.created_at.desc())
@@ -105,7 +132,12 @@ async def upload_project_asset(
     settings: Annotated[Settings, Depends(get_settings)],
     shot_id: Annotated[UUID | None, Form()] = None,
 ) -> AssetRead:
-    await owned_project_or_404(session, project_id, user.id)
+    await owned_project_or_404(
+        session,
+        project_id,
+        user.id,
+        required_permission="view",
+    )
     if shot_id is not None:
         owned_shot = await session.scalar(
             select(Shot.id)
@@ -136,7 +168,12 @@ async def rename_asset(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> AssetRead:
-    asset = await owned_asset_or_404(session, asset_id, user.id)
+    asset = await owned_asset_or_404(
+        session,
+        asset_id,
+        user.id,
+        required_permission="edit",
+    )
     asset.filename = payload.filename.strip()
     await session.commit()
     await session.refresh(asset)
@@ -149,7 +186,12 @@ async def delete_asset(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> None:
-    asset = await owned_asset_or_404(session, asset_id, user.id)
+    asset = await owned_asset_or_404(
+        session,
+        asset_id,
+        user.id,
+        required_permission="edit",
+    )
     asset.deleted_at = datetime.now(UTC)
     for selection in (
         await session.scalars(
@@ -169,12 +211,16 @@ async def list_asset_selections(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> ResourceSelectionList:
-    await owned_project_or_404(session, project_id, user.id)
+    await owned_project_or_404(
+        session,
+        project_id,
+        user.id,
+        required_permission="view",
+    )
     selections = (
         await session.scalars(
             select(ResourceSelection).where(
                 ResourceSelection.project_id == project_id,
-                ResourceSelection.owner_id == user.id,
             )
         )
     ).all()
@@ -207,12 +253,21 @@ async def update_asset_selection(
             .join(Storyboard, Storyboard.id == Shot.storyboard_id)
             .where(Shot.id == payload.resource_id, Storyboard.project_id == project_id)
         )
-    else:
+    elif payload.resource_type == "character":
         resource = await session.scalar(
             select(Character.id)
             .join(Storyboard, Storyboard.id == Character.storyboard_id)
             .where(
                 Character.id == payload.resource_id,
+                Storyboard.project_id == project_id,
+            )
+        )
+    else:
+        resource = await session.scalar(
+            select(Scene.id)
+            .join(Storyboard, Storyboard.id == Scene.storyboard_id)
+            .where(
+                Scene.id == payload.resource_id,
                 Storyboard.project_id == project_id,
             )
         )
@@ -227,7 +282,6 @@ async def update_asset_selection(
             ResourceSelection.resource_type == payload.resource_type,
             ResourceSelection.resource_id == payload.resource_id,
             ResourceSelection.project_id == project_id,
-            ResourceSelection.owner_id == user.id,
         )
     )
     if payload.asset_id is None:
@@ -270,7 +324,11 @@ async def get_asset_content(
     session: Annotated[AsyncSession, Depends(get_session)],
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> FileResponse:
-    asset = await owned_asset_or_404(session, asset_id, user.id)
+    asset = await owned_asset_or_404(
+        session,
+        asset_id,
+        user.id,
+    )
     path = asset_path(asset, settings)
     if not path.exists():
         raise AppError(
@@ -288,7 +346,12 @@ async def share_asset(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> ShareLinkRead:
-    asset = await owned_asset_or_404(session, asset_id, user.id)
+    asset = await owned_asset_or_404(
+        session,
+        asset_id,
+        user.id,
+        required_permission="edit",
+    )
     share, token = await create_share(
         session,
         asset=asset,

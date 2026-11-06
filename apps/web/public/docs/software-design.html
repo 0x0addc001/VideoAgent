@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Arch" />
     <title>Arch · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=32" />
+    <link rel="stylesheet" href="../docs.css?v=33" />
   </head>
   <body data-document="software-design.html">
     <main class="document-shell" id="document-shell">
@@ -86,8 +86,9 @@
 <li><strong>Skills:</strong> one searchable catalogue of generation, workflow, and review skills.</li>
 <li><strong>Assets:</strong> a waterfall library of the user's videos and skills with</li>
 <p>permission and edit time; videos preview on hover and skills have no cover.</p>
-<li><strong>Hots:</strong> community feed with author, likes, playback, and publishing.</li>
-<li><strong>Docs:</strong> embedded bilingual documentation with a collapsible table of contents.</li>
+<li><strong>Videos:</strong> community feed with author, likes, playback, and publishing.</li>
+<li><strong>Docs:</strong> embedded bilingual documentation with a resizable document</li>
+<p>directory and a collapsible in-document table of contents.</p>
 </ul>
 <h2 id="3-scope">3. Scope</h2>
 <h3 id="3-1-product-baseline">3.1 Product Baseline</h3>
@@ -105,8 +106,8 @@
 <li>Kling China-region CLI text-to-video, motion control, and multimodal</li>
 <p>reference capabilities.</p>
 <li>Mock Provider and Celery polling.</li>
-<li>Live readiness progress plus Final Cut visual evaluation.</li>
-<li>Hots feed playback, author, likes, and publishing.</li>
+<li>Final Cut visual evaluation.</li>
+<li>Videos feed playback, author, likes, and publishing.</li>
 <li>English and Chinese documentation generated from paired Markdown sources.</li>
 <li>Project-level image, video, and audio uploads with MIME, signature, and size validation.</li>
 <li>FFmpeg composition with 16:9, 9:16, and 1:1 deliveries, covers, captions, and soundtracks.</li>
@@ -259,7 +260,7 @@ query-result</code></pre>
 </tr></thead><tbody>
 <tr>
 <td><code>video_agent/search_all_resources</code></td>
-<td>Search projects, videos, skills, Hots, and Docs</td>
+<td>Search projects, videos, skills, Videos, and Docs</td>
 </tr>
 <tr>
 <td><code>kling/text_to_video</code></td>
@@ -347,7 +348,8 @@ query-result</code></pre>
 </tr>
 </tbody></table></div>
 <p>Review uses the same task-oriented card structure as other Skills.</p>
-<p>Selecting a skill preloads a concrete prompt in the Agents composer. The Agents composer also includes a Skill selector. Signed-in users can publish a skill under their own <code>&lt;user_id&gt;/&lt;skill_id&gt;</code> namespace.</p>
+<p>Selecting a skill preloads a concrete prompt in the Agents composer. The Agents composer also includes a Skill selector. Signed-in users can publish a skill under their own <code>&lt;user_id&gt;/&lt;skill_id&gt;</code> namespace. Public Skills are discoverable to other signed-in users.</p>
+<p>The catalogue classifies Skills as Generation, Story, Workflow, Post, Review, or Utility. Engagement is stored as one <code>skill_engagement_likes</code> row per user and stable Skill key and one <code>skill_engagement_usages</code> row per user and key. The leaderboard score combines these de-duplicated signals as <code>uses × 2 + likes × 3</code>. Videos ranks by one <code>hots_likes</code> row per user and post. Authors cannot create engagement against their own content. The UI exposes top-three reward projections; credit settlement remains an audited operating action.</p>
 <p>The Model selector uses the verified live catalogue: seven Kling video models and eight Pippit video models, plus Auto. Options use <code>Provider/Model</code> naming so users can distinguish model families.</p>
 <p>The Agents composer includes production playbooks for product ads, creator vlogs, micro drama, music videos, localization, and batch variants. Selecting a playbook sets the prompt, Skill, Hook, style, frame, duration, and review mode as one coherent starting point. Playbooks use toggle behavior: selecting the active playbook again restores the pre-playbook draft. Hook controls the first-three-second strategy: visual impact, narrative twist, spoken hook, sound cue, or proof first.</p>
 <h2 id="10-data-model">10. Data Model</h2>
@@ -374,6 +376,10 @@ query-result</code></pre>
 <tr>
 <td><code>characters</code></td>
 <td>Ordered recurring roles, descriptions, and reusable image prompts</td>
+</tr>
+<tr>
+<td><code>scenes</code></td>
+<td>Ordered locations, environment descriptions, and reusable image prompts</td>
 </tr>
 <tr>
 <td><code>shots</code></td>
@@ -408,8 +414,20 @@ query-result</code></pre>
 <td>Published Skill instructions, prompt template, and I/O contracts</td>
 </tr>
 <tr>
+<td><code>skill_engagement_likes</code></td>
+<td>One toggleable like per user and stable Skill key</td>
+</tr>
+<tr>
+<td><code>skill_engagement_usages</code></td>
+<td>One de-duplicated use signal per user and stable Skill key</td>
+</tr>
+<tr>
 <td><code>hots_posts</code></td>
 <td>Community video publication and metadata</td>
+</tr>
+<tr>
+<td><code>hots_likes</code></td>
+<td>One toggleable like per user and Videos post</td>
 </tr>
 <tr>
 <td><code>generation_jobs</code></td>
@@ -438,6 +456,14 @@ query-result</code></pre>
 <tr>
 <td><code>share_links</code></td>
 <td>Hashed tokens, expiry, revocation, and access count</td>
+</tr>
+<tr>
+<td><code>project_collaborations</code></td>
+<td>Hashed project invite tokens, email restriction, permission, and expiry</td>
+</tr>
+<tr>
+<td><code>project_collaborators</code></td>
+<td>Accepted users and their view/edit project role</td>
 </tr>
 <tr>
 <td><code>platform_settings</code></td>
@@ -483,6 +509,10 @@ query-result</code></pre>
 <td><code>POST /characters/{id}/estimate</code>, <code>/assets</code>, and <code>/generate</code></td>
 </tr>
 <tr>
+<td>Scene references</td>
+<td><code>POST /scenes/{id}/assets</code>, <code>PATCH /projects/{id}/storyboard/scenes/{scene_id}</code></td>
+</tr>
+<tr>
 <td>Agent</td>
 <td>Get messages, send a message, and observe a run</td>
 </tr>
@@ -500,11 +530,11 @@ query-result</code></pre>
 </tr>
 <tr>
 <td>Skills</td>
-<td>List and persist user Skills; optimize rough ideas into structured drafts</td>
+<td>List public and owned Skills, persist drafts, and toggle likes/uses</td>
 </tr>
 <tr>
-<td>Hots</td>
-<td>Upload MP4 posts, list community videos, and stream public content</td>
+<td>Videos</td>
+<td>Upload MP4 posts, list community videos, stream content, and toggle likes</td>
 </tr>
 <tr>
 <td>Evaluation</td>
@@ -528,7 +558,7 @@ query-result</code></pre>
 </tr>
 <tr>
 <td>Delivery</td>
-<td>Export, share, revoke, and public share content</td>
+<td>Export, asset share, publish exported video, collaboration link, accept, revoke</td>
 </tr>
 <tr>
 <td>Administration</td>
@@ -543,16 +573,20 @@ query-result</code></pre>
 <li>Continuous background carousel with no inter-frame gap.</li>
 <li>Streaming hero title and blue play brand mark.</li>
 <li>Custom transparent composer dropdowns.</li>
-<li>Flat searchable Skills catalogue with user publishing.</li>
-<li>Hots masonry feed with looping muted video playback.</li>
+<li>Flat searchable Skills catalogue with categories, ranking, engagement, and</li>
+<p>user publishing.</p>
+<li>Videos masonry feed with looping muted video playback, categories, ranking, and</li>
+<p>likes.</p>
 <li>Searchable Assets waterfall with internal Video/Skill tabs; videos preview on</li>
 <p>hover and Skill cards omit cover images.</p>
 <li>Searchable embedded Docs with a collapsible table of contents.</li>
 <li>Semi-transparent search, language, notification, credit, and avatar controls.</li>
+<li>The avatar popover aligns to the navigation rail's 13px horizontal inner</li>
+<p>padding, inherits the navigation text scale, and opens upward. Its Languages row shows the current selection with a right chevron and opens a separate right-side flyout containing English and Chinese vertically. Notifications omit empty-state copy and expose a right chevron. Account actions carry icons, while the gear sits at the right edge of the avatar row.</p>
 <li>The muted video carousel is a persistent, translucent backdrop across Agents,</li>
-<p>Skills, Hots, Assets, Docs, and conversation views.</p>
+<p>Skills, Videos, Assets, Docs, and conversation views.</p>
 <li>Viewport-aware composer menus that flip above the trigger when needed, plus</li>
-<p>downward-opening language, notification, account, and search menus.</p>
+<p>upward-opening language, notification, and account menus.</p>
 <li>Avatar account actions for login, registration, and sign-out.</li>
 <li>An isolated <code>/admin</code> control room for internal operations.</li>
 <li>Reference uploads, delivery downloads, cover preview, and share-link creation</li>
@@ -563,12 +597,12 @@ query-result</code></pre>
 <p>organization. Both groups are visible before sign-in and when empty.</p>
 <li>Project folders expose the disclosure control before a blue folder icon.</li>
 <p>Filed conversations move out of Recents and render as indented children of their project folder.</p>
-<li>An IDE-style three-part canvas: <code>Direction</code> and <code>Vision</code> resources, the selected</li>
-<p>editor document or asset, and the approval-driven Agents panel.</p>
+<li>An IDE-style three-part canvas: <code>Directions</code>, <code>Visions</code>, and <code>Versions</code></li>
+<p>resources, the selected editor document or asset, and the approval-driven Agents panel.</p>
 <li>The Assets and Agents side panels can collapse to labeled rails. Their widths</li>
 <p>use responsive clamped proportions so they remain usable across desktop sizes.</p>
-<li><code>Direction</code> contains <code>Settings</code>, <code>Outlines</code>, and <code>Scripts</code>. <code>Vision</code> contains</li>
-<p><code>Characters</code>, <code>Shots</code>, and <code>Final Cut</code>. Characters retain separate Description and Generation pages; each Shot opens one combined page. Empty directories render no waiting copy.</p>
+<li><code>Directions</code> contains editable <code>Settings</code>, <code>Outlines</code>, and <code>Scripts</code>.</li>
+<p><code>Visions</code> contains <code>Characters</code>, <code>Scenes</code>, and <code>Shots</code>. <code>Versions</code> is a peer top-level directory for exported final video versions. Characters and Scenes own their uploaded references; each Shot opens one combined page. Empty directories render no waiting copy.</p>
 <li>Skill Studio persists reusable Skills with a stable namespace, instructions,</li>
 <p>quality gates, prompt template, and input/output contracts. <code>AI optimize</code> turns an early idea into that structure.</p>
 <li>The built-in <code>video_agent/skill_synthesis</code> Skill opens Skill Studio directly</li>
@@ -579,14 +613,16 @@ query-result</code></pre>
 <p>the mounted application shell, and highlight the matching history item.</p>
 <li>The Projects row opens the project creation form, while the Recents row</li>
 <p>starts a new Agents conversation. Both rows provide disclosure controls.</p>
-<li>Hots publishing requires an MP4 upload and persists the video as a public</li>
-<p>asset. The author's Assets view lists real Hots videos and Skills, and every card opens a detail dialog.</p>
-<li>The editor pane uses its own compact header. A live readiness progress bar and</li>
-<p>Share are aligned at its far right; the progress bar polls every three seconds.</p>
+<li>Videos publishing requires an MP4 upload and persists the video as a public</li>
+<p>asset. The author's Assets view lists real Videos and Skills, and every card opens a detail dialog.</p>
+<li>The editor pane header is always titled <code>Storyboard</code> with a clapperboard icon;</li>
+<p>it does not change with the selected resource. Share stays aligned at its far right.</p>
 <li>Final Cut review is separate from readiness. Users choose a configured vision</li>
 <p>evaluator and metrics for character consistency, style consistency, prompt alignment, or temporal stability.</p>
 <li>Settings derives semantic attributes from conversation instead of showing raw</li>
 <p>Q&amp;A or approval decisions as values.</p>
+<li>Attribute extraction excludes language-correction meta instructions and derives</li>
+<p>duration, format, product, opening, development, ending, tone, visual style, and lighting separately. Recognized Chinese terms are normalized to English; uncertain translations are omitted from the English attribute table.</p>
 <li>Shot and Character editors expose editable descriptions and prompts. Uploads</li>
 <p>append <code>@&lt;asset-id&gt;</code> to the prompt and the server infers reference mode.</p>
 <li>Results live under their Shot or Character directory with persisted final</li>
@@ -597,6 +633,8 @@ query-result</code></pre>
 <p>and completed replies render as static text, including after a panel is collapsed and reopened.</p>
 <li>Docs occupies the full content area beside the navigation rail without</li>
 <p>overlapping it; its embedded document uses the same persistent backdrop.</p>
+<li>Docs opens on the first document. Its vertical document directory defaults to</li>
+<p>the expanded navigation width and can be resized independently with a draggable separator. Search is above the directory, which can also collapse to an icon rail.</p>
 <li>Workspace text never renders smaller than button text, and authentication</li>
 <p>pages use the same dark visual system as the product.</p>
 <li>Active navigation and asset icons invert outline and fill: inactive icons are</li>
@@ -610,7 +648,7 @@ query-result</code></pre>
 <p>The project workspace progresses through overall direction, episode and shot outline, scene script, and generation-ready states. Each transition requires an explicit user decision. Refinement and custom instructions remain on the current stage.</p>
 <h2 id="13-documentation-language">13. Documentation Language</h2>
 <ul>
-<li>The globe button beside notifications controls documentation language.</li>
+<li>The Languages row inside the avatar popover controls documentation language.</li>
 <li>English documents are generated as <code>*.html</code>.</li>
 <li>Chinese documents are generated as <code>*.zh.html</code>.</li>
 <li>Document tabs are <code>PRD</code>, <code>Playbook</code>, <code>Arch</code>, <code>API</code>, <code>Dev</code>, <code>Test</code>, <code>Ops</code>, <code>FAQ</code>,</li>
@@ -628,6 +666,8 @@ query-result</code></pre>
 <li>Uploaded media is validated by declared MIME, signature, and size.</li>
 <li>Share tokens are stored as hashes and support expiry, revocation, and access</li>
 <p>accounting.</p>
+<li>Collaboration tokens are separate from media-share tokens. Accepting a valid</li>
+<p>token creates a project membership with <code>view</code> or <code>edit</code> permission; email restrictions are checked against the authenticated account.</p>
 <li>Administrative APIs require an email in <code>VIDEOAGENT_ADMIN_EMAILS</code>.</li>
 <li>Disabling an account revokes its existing sessions.</li>
 <li>Generation checks the runtime kill switch before estimation and submission.</li>
@@ -651,7 +691,7 @@ Celery + Redis</code></pre>
 <p>workflows and Review presented as normal skill cards.</p>
 <li>Documentation switches between English and Chinese and follows the complete</li>
 <p>nine-document order.</p>
-<li>Production playbooks and Skill-backed Hots scenarios provide editable,</li>
+<li>Production playbooks and Skill-backed Videos scenarios provide editable,</li>
 <p>reusable starting points.</p>
 <li>The prompt editor grows with stacked or wrapped content, and empty-state</li>
 <p>suggestions hide as soon as non-whitespace input exists.</p>
@@ -663,6 +703,6 @@ Celery + Redis</code></pre>
 <p>with every mutation recorded in the audit log.</p>
 </ol></article>
     </main>
-    <script src="../docs.js?v=32"></script>
+    <script src="../docs.js?v=33"></script>
   </body>
 </html>

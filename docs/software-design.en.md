@@ -28,8 +28,9 @@ contains five isolated views:
 - **Skills:** one searchable catalogue of generation, workflow, and review skills.
 - **Assets:** a waterfall library of the user's videos and skills with
   permission and edit time; videos preview on hover and skills have no cover.
-- **Hots:** community feed with author, likes, playback, and publishing.
-- **Docs:** embedded bilingual documentation with a collapsible table of contents.
+- **Videos:** community feed with author, likes, playback, and publishing.
+- **Docs:** embedded bilingual documentation with a resizable document
+  directory and a collapsible in-document table of contents.
 
 ## 3. Scope
 
@@ -48,8 +49,8 @@ contains five isolated views:
 - Kling China-region CLI text-to-video, motion control, and multimodal
   reference capabilities.
 - Mock Provider and Celery polling.
-- Live readiness progress plus Final Cut visual evaluation.
-- Hots feed playback, author, likes, and publishing.
+- Final Cut visual evaluation.
+- Videos feed playback, author, likes, and publishing.
 - English and Chinese documentation generated from paired Markdown sources.
 - Project-level image, video, and audio uploads with MIME, signature, and size validation.
 - FFmpeg composition with 16:9, 9:16, and 1:1 deliveries, covers, captions, and soundtracks.
@@ -224,7 +225,7 @@ product-level Skills use `video_agent`.
 
 | Skill ID | Input and result |
 | --- | --- |
-| `video_agent/search_all_resources` | Search projects, videos, skills, Hots, and Docs |
+| `video_agent/search_all_resources` | Search projects, videos, skills, Videos, and Docs |
 | `kling/text_to_video` | Text prompt to one video clip |
 | `kling/image_to_video` | Still image to controlled motion |
 | `kling/reference_to_video` | Image, video, or audio references to a generated clip |
@@ -251,7 +252,17 @@ Review uses the same task-oriented card structure as other Skills.
 
 Selecting a skill preloads a concrete prompt in the Agents composer. The
 Agents composer also includes a Skill selector. Signed-in users can publish a
-skill under their own `<user_id>/<skill_id>` namespace.
+skill under their own `<user_id>/<skill_id>` namespace. Public Skills are
+discoverable to other signed-in users.
+
+The catalogue classifies Skills as Generation, Story, Workflow, Post, Review,
+or Utility. Engagement is stored as one `skill_engagement_likes` row per user
+and stable Skill key and one `skill_engagement_usages` row per user and key.
+The leaderboard score combines these de-duplicated signals as
+`uses × 2 + likes × 3`. Videos ranks by one `hots_likes` row per user and post.
+Authors cannot create engagement against their own content. The UI exposes
+top-three reward projections; credit settlement remains an audited operating
+action.
 
 The Model selector uses the verified live catalogue: seven Kling video models
 and eight Pippit video models, plus Auto. Options use `Provider/Model` naming
@@ -274,6 +285,7 @@ sound cue, or proof first.
 | `projects` | Project metadata and owner |
 | `storyboards` | One current storyboard per project |
 | `characters` | Ordered recurring roles, descriptions, and reusable image prompts |
+| `scenes` | Ordered locations, environment descriptions, and reusable image prompts |
 | `shots` | Ordered prompts, duration, frame, mode, and status |
 | `conversations` | One conversation per project |
 | `messages` | User and assistant messages |
@@ -282,7 +294,10 @@ sound cue, or proof first.
 | `workspace_folder_items` | Conversation-to-folder filing |
 | `project_workflows` | Concept, outline, script, and generation approval state |
 | `user_skills` | Published Skill instructions, prompt template, and I/O contracts |
+| `skill_engagement_likes` | One toggleable like per user and stable Skill key |
+| `skill_engagement_usages` | One de-duplicated use signal per user and stable Skill key |
 | `hots_posts` | Community video publication and metadata |
+| `hots_likes` | One toggleable like per user and Videos post |
 | `generation_jobs` | Provider task, idempotency key, status, result |
 | `provider_connections` | Provider authorization metadata |
 | `oauth_flows` | OAuth transaction state |
@@ -290,6 +305,8 @@ sound cue, or proof first.
 | `credit_entries` | Idempotent reservation and refund ledger |
 | `assets` | Uploads, generated clips, deliveries, covers, and ownership |
 | `share_links` | Hashed tokens, expiry, revocation, and access count |
+| `project_collaborations` | Hashed project invite tokens, email restriction, permission, and expiry |
+| `project_collaborators` | Accepted users and their view/edit project role |
 | `platform_settings` | Generation switch and registration policy |
 | `invite_codes` | Hashed invite codes, expiry, and usage limits |
 | `admin_audit_logs` | Administrative action trail |
@@ -306,18 +323,19 @@ Base path: `/api/v1`
 | Storyboards | `GET` and `PUT /projects/{id}/storyboard` |
 | Storyboard order | `PATCH /projects/{id}/storyboard/order` |
 | Character image | `POST /characters/{id}/estimate`, `/assets`, and `/generate` |
+| Scene references | `POST /scenes/{id}/assets`, `PATCH /projects/{id}/storyboard/scenes/{scene_id}` |
 | Agent | Get messages, send a message, and observe a run |
 | Agent activity | `GET /projects/{id}/agent-activity/{run_id}` |
 | Workspace | Folders, recent conversations, and drag-to-file conversation organization |
 | Workflow | Read and decide concept, outline, and script approval stages |
-| Skills | List and persist user Skills; optimize rough ideas into structured drafts |
-| Hots | Upload MP4 posts, list community videos, and stream public content |
+| Skills | List public and owned Skills, persist drafts, and toggle likes/uses |
+| Videos | Upload MP4 posts, list community videos, stream content, and toggle likes |
 | Evaluation | Progress polling plus Final Cut visual-review endpoints |
 | Generation | Estimate, submit, job status |
 | Providers | Pippit status and credits |
 | Credits | `GET /credits` |
 | Assets | List, upload, and content download |
-| Delivery | Export, share, revoke, and public share content |
+| Delivery | Export, asset share, publish exported video, collaboration link, accept, revoke |
 | Administration | Overview, users, credits, jobs, refunds, invites, settings, and audit |
 
 Agent responses and job status use regular JSON with polling.
@@ -330,16 +348,24 @@ The shared Landing UI owns:
 - Continuous background carousel with no inter-frame gap.
 - Streaming hero title and blue play brand mark.
 - Custom transparent composer dropdowns.
-- Flat searchable Skills catalogue with user publishing.
-- Hots masonry feed with looping muted video playback.
+- Flat searchable Skills catalogue with categories, ranking, engagement, and
+  user publishing.
+- Videos masonry feed with looping muted video playback, categories, ranking, and
+  likes.
 - Searchable Assets waterfall with internal Video/Skill tabs; videos preview on
   hover and Skill cards omit cover images.
 - Searchable embedded Docs with a collapsible table of contents.
 - Semi-transparent search, language, notification, credit, and avatar controls.
+- The avatar popover aligns to the navigation rail's 13px horizontal inner
+  padding, inherits the navigation text scale, and opens upward. Its Languages
+  row shows the current selection with a right chevron and opens a separate
+  right-side flyout containing English and Chinese vertically.
+  Notifications omit empty-state copy and expose a right chevron. Account
+  actions carry icons, while the gear sits at the right edge of the avatar row.
 - The muted video carousel is a persistent, translucent backdrop across Agents,
-  Skills, Hots, Assets, Docs, and conversation views.
+  Skills, Videos, Assets, Docs, and conversation views.
 - Viewport-aware composer menus that flip above the trigger when needed, plus
-  downward-opening language, notification, account, and search menus.
+  upward-opening language, notification, and account menus.
 - Avatar account actions for login, registration, and sign-out.
 - An isolated `/admin` control room for internal operations.
 - Reference uploads, delivery downloads, cover preview, and share-link creation
@@ -351,14 +377,16 @@ The shared Landing UI owns:
 - Project folders expose the disclosure control before a blue folder icon.
   Filed conversations move out of Recents and render as indented children of
   their project folder.
-- An IDE-style three-part canvas: `Direction` and `Vision` resources, the selected
-  editor document or asset, and the approval-driven Agents panel.
+- An IDE-style three-part canvas: `Directions`, `Visions`, and `Versions`
+  resources, the selected editor document or asset, and the approval-driven
+  Agents panel.
 - The Assets and Agents side panels can collapse to labeled rails. Their widths
   use responsive clamped proportions so they remain usable across desktop sizes.
-- `Direction` contains `Settings`, `Outlines`, and `Scripts`. `Vision` contains
-  `Characters`, `Shots`, and `Final Cut`. Characters retain separate Description
-  and Generation pages; each Shot opens one combined page. Empty directories
-  render no waiting copy.
+- `Directions` contains editable `Settings`, `Outlines`, and `Scripts`.
+  `Visions` contains `Characters`, `Scenes`, and `Shots`. `Versions` is a peer
+  top-level directory for exported final video versions. Characters and Scenes
+  own their uploaded references; each Shot opens one combined page. Empty
+  directories render no waiting copy.
 - Skill Studio persists reusable Skills with a stable namespace, instructions,
   quality gates, prompt template, and input/output contracts. `AI optimize`
   turns an early idea into that structure.
@@ -372,16 +400,21 @@ The shared Landing UI owns:
   the mounted application shell, and highlight the matching history item.
 - The Projects row opens the project creation form, while the Recents row
   starts a new Agents conversation. Both rows provide disclosure controls.
-- Hots publishing requires an MP4 upload and persists the video as a public
-  asset. The author's Assets view lists real Hots videos and Skills, and every
+- Videos publishing requires an MP4 upload and persists the video as a public
+  asset. The author's Assets view lists real Videos and Skills, and every
   card opens a detail dialog.
-- The editor pane uses its own compact header. A live readiness progress bar and
-  Share are aligned at its far right; the progress bar polls every three seconds.
+- The editor pane header is always titled `Storyboard` with a clapperboard icon;
+  it does not change with the selected resource. Share stays aligned at its far
+  right.
 - Final Cut review is separate from readiness. Users choose a configured vision
   evaluator and metrics for character consistency, style consistency, prompt
   alignment, or temporal stability.
 - Settings derives semantic attributes from conversation instead of showing raw
   Q&A or approval decisions as values.
+- Attribute extraction excludes language-correction meta instructions and derives
+  duration, format, product, opening, development, ending, tone, visual style,
+  and lighting separately. Recognized Chinese terms are normalized to English;
+  uncertain translations are omitted from the English attribute table.
 - Shot and Character editors expose editable descriptions and prompts. Uploads
   append `@<asset-id>` to the prompt and the server infers reference mode.
 - Results live under their Shot or Character directory with persisted final
@@ -393,6 +426,10 @@ The shared Landing UI owns:
   collapsed and reopened.
 - Docs occupies the full content area beside the navigation rail without
   overlapping it; its embedded document uses the same persistent backdrop.
+- Docs opens on the first document. Its vertical document directory defaults to
+  the expanded navigation width and can be resized independently with a
+  draggable separator. Search is above the directory, which can also collapse
+  to an icon rail.
 - Workspace text never renders smaller than button text, and authentication
   pages use the same dark visual system as the product.
 - Active navigation and asset icons invert outline and fill: inactive icons are
@@ -412,7 +449,7 @@ stage.
 
 ## 13. Documentation Language
 
-- The globe button beside notifications controls documentation language.
+- The Languages row inside the avatar popover controls documentation language.
 - English documents are generated as `*.html`.
 - Chinese documents are generated as `*.zh.html`.
 - Document tabs are `PRD`, `Playbook`, `Arch`, `API`, `Dev`, `Test`, `Ops`, `FAQ`,
@@ -430,6 +467,9 @@ stage.
 - Uploaded media is validated by declared MIME, signature, and size.
 - Share tokens are stored as hashes and support expiry, revocation, and access
   accounting.
+- Collaboration tokens are separate from media-share tokens. Accepting a valid
+  token creates a project membership with `view` or `edit` permission; email
+  restrictions are checked against the authenticated account.
 - Administrative APIs require an email in `VIDEOAGENT_ADMIN_EMAILS`.
 - Disabling an account revokes its existing sessions.
 - Generation checks the runtime kill switch before estimation and submission.
@@ -458,7 +498,7 @@ Celery + Redis
    workflows and Review presented as normal skill cards.
 8. Documentation switches between English and Chinese and follows the complete
    nine-document order.
-9. Production playbooks and Skill-backed Hots scenarios provide editable,
+9. Production playbooks and Skill-backed Videos scenarios provide editable,
     reusable starting points.
 10. The prompt editor grows with stacked or wrapped content, and empty-state
     suggestions hide as soon as non-whitespace input exists.

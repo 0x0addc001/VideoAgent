@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent API" />
     <title>API · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=32" />
+    <link rel="stylesheet" href="../docs.css?v=33" />
   </head>
   <body data-document="interface-reference.zh.html">
     <main class="document-shell" id="document-shell">
@@ -51,10 +51,11 @@
 <a class="toc-link toc-level-3" href="#积分估算">积分估算</a>
 <a class="toc-link toc-level-3" href="#提交生成">提交生成</a>
 <a class="toc-link toc-level-2" href="#角色图片生成">角色图片生成</a>
+<a class="toc-link toc-level-3" href="#场景编辑与参考图">场景编辑与参考图</a>
 <a class="toc-link toc-level-3" href="#查询任务">查询任务</a>
 <a class="toc-link toc-level-2" href="#用户积分">用户积分</a>
 <a class="toc-link toc-level-2" href="#skill">Skill</a>
-<a class="toc-link toc-level-2" href="#hots">Hots</a>
+<a class="toc-link toc-level-2" href="#videos">Videos</a>
 <a class="toc-link toc-level-2" href="#资产与媒体">资产与媒体</a>
 <a class="toc-link toc-level-2" href="#管理后台">管理后台</a>
 <a class="toc-link toc-level-2" href="#pippit-provider">Pippit Provider</a>
@@ -229,6 +230,15 @@ http://localhost:8000/openapi.json</code></pre>
       &quot;prompt_zh&quot;: &quot;稳定身份与自然肤质的角色定妆照&quot;
     }
   ],
+  &quot;scenes&quot;: [
+    {
+      &quot;name&quot;: &quot;Studio&quot;,
+      &quot;location&quot;: &quot;Downtown loft&quot;,
+      &quot;description&quot;: &quot;带落地窗和暖色日光的制作空间。&quot;,
+      &quot;prompt_en&quot;: &quot;Cinematic production loft with warm daylight&quot;,
+      &quot;prompt_zh&quot;: &quot;暖日光下的电影感制作空间&quot;
+    }
+  ],
   &quot;shots&quot;: [
     {
       &quot;description&quot;: &quot;开场产品亮相&quot;,
@@ -317,9 +327,11 @@ http://localhost:8000/openapi.json</code></pre>
 <pre><code class="language-json">{
   &quot;approved&quot;: true,
   &quot;generation_mode&quot;: &quot;image_to_video&quot;,
-  &quot;reference_asset_id&quot;: &quot;00000000-0000-0000-0000-000000000010&quot;
+  &quot;reference_asset_id&quot;: &quot;00000000-0000-0000-0000-000000000010&quot;,
+  &quot;provider&quot;: &quot;kling&quot;,
+  &quot;model&quot;: &quot;kling-video-v4_0&quot;
 }</code></pre>
-<p>未显式批准时返回 <code>403</code>。相同镜头和幂等键重复请求会返回已有任务，不会再次提交 Provider。 <code>generation_mode</code> 为 <code>text_to_video</code> 或 <code>image_to_video</code>；图生视频必须引用当前用户、 当前项目中的有效图片资产。</p>
+<p>未显式批准时返回 <code>403</code>。相同镜头和幂等键重复请求会返回已有任务，不会再次提交 Provider。 <code>generation_mode</code> 为 <code>text_to_video</code> 或 <code>image_to_video</code>；图生视频必须引用当前用户、 当前项目中的有效图片资产。 故事板至少包含一个 Character 和一个 Scene 后，才允许镜头估算与生成；否则返回 <code>409 VISION_OBJECTS_REQUIRED</code>。 <code>provider</code> 与 <code>model</code> 是可选的任务级覆盖；同时省略时继承项目默认模型。切换模型会 使旧积分估算失效。</p>
 <h2 id="角色图片生成">角色图片生成</h2>
 <div class="table-wrap"><table><thead><tr>
 <th>方法</th>
@@ -346,9 +358,13 @@ http://localhost:8000/openapi.json</code></pre>
 <pre><code class="language-json">{
   &quot;approved&quot;: true,
   &quot;generation_mode&quot;: &quot;image_to_image&quot;,
-  &quot;reference_asset_id&quot;: &quot;00000000-0000-0000-0000-000000000010&quot;
+  &quot;reference_asset_id&quot;: &quot;00000000-0000-0000-0000-000000000010&quot;,
+  &quot;provider&quot;: &quot;kling&quot;,
+  &quot;model&quot;: &quot;kling-image-v3_0&quot;
 }</code></pre>
 <p><code>generation_mode</code> 为 <code>text_to_image</code> 或 <code>image_to_image</code>。成功响应为 <code>AssetRead</code>， 客户端可通过 <code>content_url</code> 预览和下载生成图片。</p>
+<h3 id="场景编辑与参考图">场景编辑与参考图</h3>
+<p><code>PATCH /projects/{project_id}/storyboard/scenes/{scene_id}</code> 可更新名称、地点、 描述和 Prompt。<code>POST /scenes/{scene_id}/assets</code> 上传场景参考图，返回素材名会绑定 Scene ID，工作区据此把图片放在对应 Scene 目录下。</p>
 <h3 id="查询任务">查询任务</h3>
 <p><code>GET /jobs/{job_id}</code></p>
 <p>常见状态：</p>
@@ -379,7 +395,7 @@ cancelled</code></pre>
 <tr>
 <td><code>GET</code></td>
 <td><code>/skills</code></td>
-<td>当前用户已保存的 Skill</td>
+<td>获取公开 Skill 和当前用户拥有的 Skill</td>
 </tr>
 <tr>
 <td><code>POST</code></td>
@@ -391,14 +407,33 @@ cancelled</code></pre>
 <td><code>/skills/optimize</code></td>
 <td>将粗略能力想法整理成结构化草稿</td>
 </tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/skills/engagement/query</code></td>
+<td>批量读取最多 100 个稳定 Skill 标识的互动数据</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/skills/engagement/like</code></td>
+<td>切换稳定 Skill 标识的点赞状态</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/skills/engagement/use</code></td>
+<td>记录一次去重使用信号</td>
+</tr>
 </tbody></table></div>
-<p>优化接口返回稳定的 <code>skill_id</code>、名称、描述、详细执行规范、启动提示词以及输入和 输出 JSON Schema。保存后的 Skill 属于当前登录账户，并会在 Skills 页面自动恢复。</p>
+<p>优化接口返回稳定的 <code>skill_id</code>、名称、描述、详细执行规范、启动提示词以及输入和 输出 JSON Schema。列表响应增加 <code>is_mine</code>、<code>likes</code>、<code>uses</code> 和 <code>is_liked</code>。 互动接口接收 <code>{&quot;skill_key&quot;:&quot;&lt;user_id&gt;/&lt;skill_id&gt;&quot;}</code>，让内置 Skill 与用户发布 Skill 使用同一套持久统计。作者不能给自己的 Skill 点赞；同一账户重复请求不会重复 增加点赞数或使用数。</p>
+<pre><code class="language-json">{
+  &quot;skill_key&quot;: &quot;video_agent/creator_vlog&quot;
+}</code></pre>
+<p><code>POST /skills/engagement/query</code> 接收 <code>{&quot;skill_keys&quot;:[&quot;&lt;user_id&gt;/&lt;skill_id&gt;&quot;]}</code>， 并以 <code>items</code> 对象返回对应标识的互动数据，用于加载不在用户 Skill 表中的内置 Skill。</p>
 <pre><code class="language-json">{
   &quot;idea&quot;: &quot;把产品静帧制作成高级广告视频&quot;,
   &quot;title&quot;: &quot;电影感产品广告&quot;,
   &quot;locale&quot;: &quot;zh-CN&quot;
 }</code></pre>
-<h2 id="hots">Hots</h2>
+<h2 id="videos">Videos</h2>
 <div class="table-wrap"><table><thead><tr>
 <th>方法</th>
 <th>路径</th>
@@ -415,12 +450,17 @@ cancelled</code></pre>
 <td>上传 MP4 并发布社区作品</td>
 </tr>
 <tr>
+<td><code>POST</code></td>
+<td><code>/hots/{post_id}/like</code></td>
+<td>切换当前用户点赞状态</td>
+</tr>
+<tr>
 <td><code>GET</code></td>
 <td><code>/hots/{post_id}/video</code></td>
 <td>播放公开视频</td>
 </tr>
 </tbody></table></div>
-<p><code>POST /hots</code> 使用 <code>multipart/form-data</code>，字段为 <code>file</code>、<code>title</code>、<code>prompt</code> 和 <code>skill</code>。上传视频作为公开资产保存，并自动出现在作者的 Assets 中。</p>
+<p><code>POST /hots</code> 使用 <code>multipart/form-data</code>，字段为 <code>file</code>、<code>title</code>、<code>prompt</code> 和 <code>skill</code>。上传视频作为公开资产保存，并自动出现在作者的 Assets 中。Videos 响应包含 <code>is_liked</code>；同一账户最多贡献一次点赞，作者不能给自己的作品点赞。</p>
 <h2 id="资产与媒体">资产与媒体</h2>
 <p>媒体接口均校验当前用户所有权。不支持的类型、文件头不匹配或超过大小限制的文件 会在创建 Asset 记录前被拒绝。</p>
 <div class="table-wrap"><table><thead><tr>
@@ -474,6 +514,21 @@ cancelled</code></pre>
 <td>创建限时分享链接</td>
 </tr>
 <tr>
+<td><code>POST</code></td>
+<td><code>/hots/from-asset/{asset_id}</code></td>
+<td>直接发布已导出的成片</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/projects/{project_id}/collaborations</code></td>
+<td>创建项目协作链接</td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/collaborations/{token}/accept</code></td>
+<td>接受邀请并加入项目</td>
+</tr>
+<tr>
 <td><code>DELETE</code></td>
 <td><code>/shares/{share_id}</code></td>
 <td>撤销分享链接</td>
@@ -496,12 +551,19 @@ file=&lt;图片、视频或音频&gt;</code></pre>
   &quot;captions&quot;: &quot;一段产品故事&quot;,
   &quot;permission&quot;: &quot;private&quot;
 }</code></pre>
-<p>导出响应包含交付版本 Asset 与自动生成的封面。当前实现使用 FFmpeg 合成可用镜头， 统一交付比例，在镜头间添加短交叉淡化，并可加入字幕和上传的音轨。</p>
+<p>导出响应包含交付版本 Asset 与自动生成的封面。只有全部故事板 Shot 均已生成结果时才可导出。 当前实现使用 FFmpeg 合成这些镜头， 统一交付比例，在镜头间添加短交叉淡化，并可加入字幕和上传的音轨。</p>
 <p>分享请求：</p>
 <pre><code class="language-json">{
   &quot;expires_in_hours&quot;: 24
 }</code></pre>
 <p>分享 Token 随机生成且只保存哈希；链接支持过期与撤销，访问时累计审计计数。</p>
+<p>协作请求：</p>
+<pre><code class="language-json">{
+  &quot;permission&quot;: &quot;edit&quot;,
+  &quot;collaborator_email&quot;: &quot;editor@example.com&quot;,
+  &quot;expires_in_hours&quot;: 168
+}</code></pre>
+<p>协作链接与素材分享链接分离。登录用户接受邀请后才会建立项目成员关系，服务端继续按 <code>view</code> 或 <code>edit</code> 权限校验项目接口。</p>
 <h2 id="管理后台">管理后台</h2>
 <p>管理接口要求当前登录邮箱位于 <code>VIDEOAGENT_ADMIN_EMAILS</code>。其他用户返回 <code>403 ADMIN_ACCESS_REQUIRED</code>。</p>
 <div class="table-wrap"><table><thead><tr>
@@ -664,6 +726,6 @@ file=&lt;图片、视频或音频&gt;</code></pre>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=32"></script>
+    <script src="../docs.js?v=33"></script>
   </body>
 </html>

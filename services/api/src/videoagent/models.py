@@ -210,6 +210,11 @@ class Storyboard(Base):
         cascade="all, delete-orphan",
         order_by="Character.index",
     )
+    scenes: Mapped[list["Scene"]] = relationship(
+        back_populates="storyboard",
+        cascade="all, delete-orphan",
+        order_by="Scene.index",
+    )
 
 
 class Character(Base):
@@ -234,6 +239,31 @@ class Character(Base):
     )
 
     storyboard: Mapped[Storyboard] = relationship(back_populates="characters")
+
+
+class Scene(Base):
+    __tablename__ = "scenes"
+    __table_args__ = (UniqueConstraint("storyboard_id", "index"),)
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    storyboard_id: Mapped[UUID] = mapped_column(
+        ForeignKey("storyboards.id", ondelete="CASCADE"),
+        index=True,
+    )
+    index: Mapped[int] = mapped_column(Integer)
+    name: Mapped[str] = mapped_column(String(120))
+    description: Mapped[str] = mapped_column(Text)
+    location: Mapped[str] = mapped_column(String(240))
+    prompt_en: Mapped[str] = mapped_column(Text)
+    prompt_zh: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+    storyboard: Mapped[Storyboard] = relationship(back_populates="scenes")
 
 
 class Shot(Base):
@@ -385,6 +415,59 @@ class ShareLink(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
+class ProjectCollaboration(Base):
+    __tablename__ = "project_collaborations"
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    project_id: Mapped[UUID] = mapped_column(
+        ForeignKey("projects.id", ondelete="CASCADE"),
+        index=True,
+    )
+    owner_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+    )
+    collaborator_email: Mapped[str | None] = mapped_column(
+        String(320),
+        nullable=True,
+        index=True,
+    )
+    permission: Mapped[str] = mapped_column(String(16), default="edit")
+    token_hash: Mapped[str] = mapped_column(String(64), unique=True, index=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    revoked_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class ProjectCollaborator(Base):
+    __tablename__ = "project_collaborators"
+    __table_args__ = (UniqueConstraint("project_id", "user_id"),)
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    project_id: Mapped[UUID] = mapped_column(
+        ForeignKey("projects.id", ondelete="CASCADE"),
+        index=True,
+    )
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+    )
+    permission: Mapped[str] = mapped_column(String(16), default="edit")
+    invited_by_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=utcnow,
+        onupdate=utcnow,
+    )
+
+
 class Conversation(Base):
     __tablename__ = "conversations"
 
@@ -523,6 +606,32 @@ class UserSkill(Base):
     )
 
 
+class SkillLike(Base):
+    __tablename__ = "skill_engagement_likes"
+    __table_args__ = (UniqueConstraint("skill_key", "user_id"),)
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    skill_key: Mapped[str] = mapped_column(String(240), index=True)
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
+class SkillUsage(Base):
+    __tablename__ = "skill_engagement_usages"
+    __table_args__ = (UniqueConstraint("skill_key", "user_id"),)
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    skill_key: Mapped[str] = mapped_column(String(240), index=True)
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
 class HotsPost(Base):
     __tablename__ = "hots_posts"
 
@@ -546,6 +655,22 @@ class HotsPost(Base):
         default=utcnow,
         onupdate=utcnow,
     )
+
+
+class HotsLike(Base):
+    __tablename__ = "hots_likes"
+    __table_args__ = (UniqueConstraint("post_id", "user_id"),)
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    post_id: Mapped[UUID] = mapped_column(
+        ForeignKey("hots_posts.id", ondelete="CASCADE"),
+        index=True,
+    )
+    user_id: Mapped[UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"),
+        index=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
 
 
 class ProviderConnection(Base):

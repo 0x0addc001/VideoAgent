@@ -2,30 +2,35 @@
 
 import {
   Bell,
+  Check,
   ChevronDown,
   ChevronRight,
-  Clapperboard,
   FileText,
   Film,
-  Flame,
   Folder,
   Gem,
   Globe,
   Heart,
+  Layers3,
+  LogIn,
+  LogOut,
   PanelLeftClose,
   PanelLeftOpen,
   Play,
   Plus,
   Search,
+  Settings as SettingsIcon,
   Sparkles,
   Upload,
   UserRound,
+  UserPlus,
   Video,
   X,
 } from "lucide-react";
 import {
   type CSSProperties,
   FormEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
   useEffect,
@@ -62,8 +67,8 @@ export type LandingProjectDraft = {
   skill: string;
   hook: LandingHook;
   style: string;
-  aspectRatio: "auto" | "16:9" | "9:16" | "1:1";
-  durationSeconds: "auto" | 5 | 10;
+  aspectRatio: "auto" | "21:9" | "16:9" | "9:16" | "1:1";
+  durationSeconds: "auto" | 5 | 10 | 15 | 30;
   model: string;
   resolution: "auto" | "720p" | "1080p";
   audio: "auto" | "on" | "off";
@@ -73,8 +78,10 @@ export type LandingProjectDraft = {
 type PublishedHot = {
   author: string;
   assetId?: string;
+  category: HotCategory;
   createdAt?: string;
   id?: string;
+  isLiked: boolean;
   isMine?: boolean;
   likes: number;
   prompt: string;
@@ -122,18 +129,129 @@ type RecentConversation = {
 type PublishedSkill = {
   id?: string;
   body: string;
+  category: SkillCategory;
   description?: string;
   instructions?: string;
   inputSchema?: Record<string, unknown>;
+  isLiked: boolean;
+  isMine: boolean;
+  likes: number;
   outputSchema?: Record<string, unknown>;
   prompt: string;
   promptTemplate?: string;
   skillId: string;
   title: string;
   updatedAt?: string;
+  uses: number;
   userId: string;
   visibility?: "private" | "public";
 };
+
+type SkillCategory =
+  | "generation"
+  | "story"
+  | "workflow"
+  | "post"
+  | "review"
+  | "utility";
+
+type HotCategory =
+  | "vlog"
+  | "product"
+  | "drama"
+  | "music"
+  | "localization"
+  | "campaign";
+
+type SkillSort = "signals" | "uses" | "likes" | "newest";
+type HotSort = "likes" | "newest";
+
+const skillCategoryById: Record<string, SkillCategory> = {
+  search_all_resources: "utility",
+  skill_synthesis: "utility",
+  agent_handoff: "utility",
+  text_to_video: "generation",
+  image_to_video: "generation",
+  reference_to_video: "generation",
+  first_last_frame: "generation",
+  motion_control: "generation",
+  video_extend: "generation",
+  style_transfer: "post",
+  video_edit: "post",
+  video_upscale: "post",
+  video_localization: "post",
+  reference_remake: "post",
+  product_film: "workflow",
+  creator_vlog: "workflow",
+  short_drama: "story",
+  script_assistant: "story",
+  smart_preview: "story",
+  batch_variants: "workflow",
+  camera_movement: "workflow",
+  music_video: "workflow",
+  review: "review",
+};
+
+const hotCategoryBySkill: Record<string, HotCategory> = {
+  creator_vlog: "vlog",
+  product_film: "product",
+  short_drama: "drama",
+  music_video: "music",
+  video_localization: "localization",
+  batch_variants: "campaign",
+};
+
+function skillCategoryFor(skillId: string): SkillCategory {
+  const known = skillCategoryById[skillId];
+  if (known) return known;
+  if (/review|audit|evaluat|score/.test(skillId)) return "review";
+  if (/edit|upscale|localiz|style|lip_sync|dub|remake|post/.test(skillId)) {
+    return "post";
+  }
+  if (/drama|script|story|outline|character/.test(skillId)) return "story";
+  if (/text_to|image_to|reference_to|generate|motion|frame/.test(skillId)) {
+    return "generation";
+  }
+  if (/search|handoff|synthesis|utility|tool/.test(skillId)) return "utility";
+  return "workflow";
+}
+
+function hotCategoryFor(skillReference: string): HotCategory {
+  const skillId = skillReference.split("/").at(-1) ?? skillReference;
+  return hotCategoryBySkill[skillId] ?? "vlog";
+}
+
+function skillKey(skill: Pick<PublishedSkill, "skillId" | "userId">) {
+  return `${skill.userId}/${skill.skillId}`;
+}
+
+function hotKey(hot: Pick<PublishedHot, "author" | "title">) {
+  return `${hot.author}/${hot.title}`;
+}
+
+function timestamp(value?: string) {
+  if (!value) return 0;
+  const parsed = Date.parse(value);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
+function compareSkillSignals(left: PublishedSkill, right: PublishedSkill) {
+  return (
+    right.uses * 2 +
+    right.likes * 3 -
+    (left.uses * 2 + left.likes * 3) ||
+    right.likes - left.likes ||
+    right.uses - left.uses ||
+    timestamp(right.updatedAt) - timestamp(left.updatedAt)
+  );
+}
+
+function compareHotSignals(left: PublishedHot, right: PublishedHot) {
+  return (
+    right.likes - left.likes ||
+    timestamp(right.createdAt) - timestamp(left.createdAt)
+  );
+}
 
 type OptimizedSkill = {
   skill_id: string;
@@ -189,7 +307,7 @@ const HERO_LINE_TWO: HeroPart[] = [
   { text: "Director", accent: true },
 ];
 
-const DOCS_ASSET_VERSION = "32";
+const DOCS_ASSET_VERSION = "33";
 
 function heroPartsLength(parts: readonly HeroPart[]) {
   return parts.reduce((total, part) => total + Array.from(part.text).length, 0);
@@ -623,6 +741,10 @@ export function LandingPage({
   );
   const [navCollapsed, setNavCollapsed] = useState(false);
   const [navWidth, setNavWidth] = useState<number | null>(null);
+  const [docsDirectoryWidth, setDocsDirectoryWidth] = useState<number | null>(
+    null,
+  );
+  const [docsDirectoryCollapsed, setDocsDirectoryCollapsed] = useState(false);
   const [historyGroupsOpen, setHistoryGroupsOpen] = useState({
     projects: true,
     recents: true,
@@ -639,8 +761,15 @@ export function LandingPage({
   const [publishHotError, setPublishHotError] = useState<string | null>(null);
   const [isPublishingHot, setIsPublishingHot] = useState(false);
   const [publishedHots, setPublishedHots] = useState<PublishedHot[]>([]);
+  const [localHotSignals, setLocalHotSignals] = useState<
+    Record<string, { isLiked: boolean; likes: number }>
+  >({});
   const [userVideoAssets, setUserVideoAssets] = useState<UserVideoAsset[]>([]);
   const [skillsQuery, setSkillsQuery] = useState("");
+  const [skillCategory, setSkillCategory] = useState<"all" | SkillCategory>(
+    "all",
+  );
+  const [skillSort, setSkillSort] = useState<SkillSort>("signals");
   const [publishSkillOpen, setPublishSkillOpen] = useState(false);
   const [skillIdeaDraft, setSkillIdeaDraft] = useState("");
   const [skillIdDraft, setSkillIdDraft] = useState("");
@@ -654,6 +783,9 @@ export function LandingPage({
   const [isOptimizingSkill, setIsOptimizingSkill] = useState(false);
   const [isSavingSkill, setIsSavingSkill] = useState(false);
   const [publishedSkills, setPublishedSkills] = useState<PublishedSkill[]>([]);
+  const [localSkillSignals, setLocalSkillSignals] = useState<
+    Record<string, { isLiked: boolean; likes: number; uses: number }>
+  >({});
   const [recentConversations, setRecentConversations] = useState<
     RecentConversation[]
   >([]);
@@ -669,6 +801,8 @@ export function LandingPage({
     string | null
   >(null);
   const [hotsQuery, setHotsQuery] = useState("");
+  const [hotsCategory, setHotsCategory] = useState<"all" | HotCategory>("all");
+  const [hotsSort, setHotsSort] = useState<HotSort>("likes");
   const [assetQuery, setAssetQuery] = useState("");
   const [assetType, setAssetType] = useState<"video" | "skill">("video");
   const [assetDetail, setAssetDetail] = useState<AssetDetail | null>(null);
@@ -680,6 +814,12 @@ export function LandingPage({
   const [displayAvatar, setDisplayAvatar] = useState<string | null>(null);
   const [accountEmail, setAccountEmail] = useState<string | null>(null);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [languageMenuOpen, setLanguageMenuOpen] = useState(false);
+  const [languageMenuPosition, setLanguageMenuPosition] = useState<{
+    top: number;
+    left: number;
+  } | null>(null);
+  const [notifications] = useState<Array<{ id: string; message: string }>>([]);
   const [prompt, setPrompt] = useState("");
   const [skill, setSkill] = useState("auto");
   const [hook, setHook] = useState<LandingHook>("auto");
@@ -698,6 +838,7 @@ export function LandingPage({
   const [isCreating, setIsCreating] = useState(false);
   const [composerError, setComposerError] = useState<string | null>(null);
   const accountRef = useRef<HTMLDivElement>(null);
+  const languageMenuRef = useRef<HTMLDivElement>(null);
   const promptRef = useRef<HTMLTextAreaElement>(null);
   const playbookSnapshotRef = useRef<ComposerPlaybookSnapshot | null>(null);
   const currentConversationId = activeConversationId ?? hashConversationId;
@@ -724,6 +865,48 @@ export function LandingPage({
     window.addEventListener("pointerup", stop, { once: true });
   }
 
+  function beginDocsDirectoryResize(
+    event: ReactPointerEvent<HTMLButtonElement>,
+  ) {
+    event.preventDefault();
+    const directory = event.currentTarget.parentElement;
+    if (!directory) return;
+    const startX = event.clientX;
+    const startWidth = directory.getBoundingClientRect().width;
+    const move = (moveEvent: PointerEvent) => {
+      const width = Math.max(
+        220,
+        Math.min(
+          window.innerWidth * 0.48,
+          startWidth + moveEvent.clientX - startX,
+        ),
+      );
+      setDocsDirectoryWidth(width);
+    };
+    const stop = () => {
+      window.removeEventListener("pointermove", move);
+      window.removeEventListener("pointerup", stop);
+    };
+    window.addEventListener("pointermove", move);
+    window.addEventListener("pointerup", stop, { once: true });
+  }
+
+  function resizeDocsDirectoryWithKeyboard(
+    event: ReactKeyboardEvent<HTMLButtonElement>,
+  ) {
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+    event.preventDefault();
+    const directory = event.currentTarget.parentElement;
+    if (!directory) return;
+    const step = event.key === "ArrowRight" ? 24 : -24;
+    setDocsDirectoryWidth(
+      Math.max(
+        220,
+        Math.min(window.innerWidth * 0.48, directory.getBoundingClientRect().width + step),
+      ),
+    );
+  }
+
   useEffect(() => {
     document.documentElement.lang = locale;
     document.title = content.documentTitle;
@@ -747,8 +930,13 @@ export function LandingPage({
     }
     syncHashView();
     function closeMenus(event: PointerEvent) {
-      if (!accountRef.current?.contains(event.target as Node)) {
+      if (
+        !accountRef.current?.contains(event.target as Node) &&
+        !languageMenuRef.current?.contains(event.target as Node)
+      ) {
         setAccountMenuOpen(false);
+        setLanguageMenuOpen(false);
+        setLanguageMenuPosition(null);
       }
     }
 
@@ -764,7 +952,38 @@ export function LandingPage({
     setNavCollapsed(
       window.localStorage.getItem("videoagent.nav-collapsed") === "1",
     );
+    const savedDocsWidth = Number(
+      window.localStorage.getItem("videoagent.docs-directory-width"),
+    );
+    if (Number.isFinite(savedDocsWidth) && savedDocsWidth >= 220) {
+      setDocsDirectoryWidth(savedDocsWidth);
+    }
+    setDocsDirectoryCollapsed(
+      window.localStorage.getItem("videoagent.docs-directory-collapsed") === "1",
+    );
   }, []);
+
+  useEffect(() => {
+    if (docsDirectoryWidth === null) return;
+    window.localStorage.setItem(
+      "videoagent.docs-directory-width",
+      String(Math.round(docsDirectoryWidth)),
+    );
+  }, [docsDirectoryWidth]);
+
+  useEffect(() => {
+    window.localStorage.setItem(
+      "videoagent.docs-directory-collapsed",
+      docsDirectoryCollapsed ? "1" : "0",
+    );
+  }, [docsDirectoryCollapsed]);
+
+  useEffect(() => {
+    if (activeView !== "docs") return;
+    const firstDocument = content.documents[0]?.path;
+    if (firstDocument) setActiveDocument(firstDocument);
+    setDocsQuery("");
+  }, [activeView, content.documents]);
 
   useEffect(() => {
     if (currentConversationId) {
@@ -780,6 +999,10 @@ export function LandingPage({
       navCollapsed ? "1" : "0",
     );
   }, [navCollapsed]);
+
+  useEffect(() => {
+    if (!accountMenuOpen) setLanguageMenuOpen(false);
+  }, [accountMenuOpen]);
 
   useEffect(() => {
     if (!accountApiBase || mode !== "app") return;
@@ -831,6 +1054,10 @@ export function LandingPage({
             OptimizedSkill & {
               id: string;
               user_id: string;
+              is_mine: boolean;
+              likes: number;
+              uses: number;
+              is_liked: boolean;
               visibility: "private" | "public";
               updated_at: string;
             }
@@ -840,18 +1067,55 @@ export function LandingPage({
           (payload.items ?? []).map((item) => ({
             id: item.id,
             body: item.description,
+            category: skillCategoryFor(item.skill_id),
             description: item.description,
             instructions: item.instructions,
             inputSchema: item.input_schema,
+            isLiked: item.is_liked ?? false,
+            isMine: item.is_mine ?? false,
+            likes: item.likes ?? 0,
             outputSchema: item.output_schema,
             prompt: item.prompt_template,
             promptTemplate: item.prompt_template,
             skillId: item.skill_id,
             title: item.title,
             updatedAt: item.updated_at,
+            uses: item.uses ?? 0,
             userId: item.user_id,
             visibility: item.visibility,
           })),
+        );
+        const engagementResponse = await fetch(
+          `${accountApiBase}/skills/engagement/query`,
+          {
+            body: JSON.stringify({
+              skill_keys: content.skills.items.map(
+                (item) => `${item.userId}/${item.skillId}`,
+              ),
+            }),
+            credentials: "include",
+            headers: { "Content-Type": "application/json" },
+            method: "POST",
+          },
+        );
+        if (!active || !engagementResponse.ok) return;
+        const engagement = (await engagementResponse.json()) as {
+          items?: Record<
+            string,
+            { is_liked: boolean; likes: number; uses: number }
+          >;
+        };
+        setLocalSkillSignals(
+          Object.fromEntries(
+            Object.entries(engagement.items ?? {}).map(([key, signal]) => [
+              key,
+              {
+                isLiked: signal.is_liked,
+                likes: signal.likes,
+                uses: signal.uses,
+              },
+            ]),
+          ),
         );
       } catch {
         // Signed-out users still see the bundled Skill catalogue.
@@ -874,6 +1138,7 @@ export function LandingPage({
             author: string;
             likes: number;
             is_mine: boolean;
+            is_liked: boolean;
             created_at: string;
           }>;
         };
@@ -882,9 +1147,11 @@ export function LandingPage({
             id: item.id,
             assetId: item.asset_id,
             author: item.author,
+            category: hotCategoryFor(item.skill),
             createdAt: item.created_at,
-            isMine: item.is_mine,
-            likes: item.likes,
+            isLiked: item.is_liked ?? false,
+            isMine: item.is_mine ?? false,
+            likes: item.likes ?? 0,
             prompt: item.prompt,
             skill: item.skill,
             title: item.title,
@@ -1144,9 +1411,186 @@ export function LandingPage({
     window.setTimeout(() => promptRef.current?.focus(), 250);
   }
 
-  function useSkill(skillId: string, value: string) {
+  function updateLocalSkillSignal(
+    item: Pick<PublishedSkill, "skillId" | "userId">,
+    update: (current: { isLiked: boolean; likes: number; uses: number }) => {
+      isLiked: boolean;
+      likes: number;
+      uses: number;
+    },
+  ) {
+    const key = skillKey(item);
+    setLocalSkillSignals((current) => {
+      const previous = current[key] ?? {
+        isLiked: false,
+        likes: 0,
+        uses: 0,
+      };
+      return { ...current, [key]: update(previous) };
+    });
+  }
+
+  async function toggleSkillLike(
+    item: Pick<PublishedSkill, "id" | "isLiked" | "isMine" | "likes" | "skillId" | "userId">,
+  ) {
+    if (item.isMine) return;
+    if (mode === "app" && accountApiBase) {
+      try {
+        const response = await fetch(`${accountApiBase}/skills/engagement/like`, {
+          body: JSON.stringify({ skill_key: skillKey(item) }),
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+        });
+        if (response.ok) {
+          const signal = (await response.json()) as {
+            is_liked: boolean;
+            likes: number;
+            uses: number;
+          };
+          const update = {
+            isLiked: signal.is_liked,
+            likes: signal.likes,
+            uses: signal.uses,
+          };
+          setLocalSkillSignals((current) => ({
+            ...current,
+            [skillKey(item)]: update,
+          }));
+          if (item.id) {
+            setPublishedSkills((current) =>
+              current.map((skill) =>
+                skill.id === item.id ? { ...skill, ...update } : skill,
+              ),
+            );
+          }
+          return;
+        }
+      } catch {
+        // Keep the catalogue usable if engagement persistence is unavailable.
+      }
+    }
+    updateLocalSkillSignal(item, (current) => ({
+      ...current,
+      isLiked: !current.isLiked,
+      likes: Math.max(0, current.likes + (current.isLiked ? -1 : 1)),
+    }));
+  }
+
+  async function recordSkillUse(
+    item: Pick<PublishedSkill, "id" | "skillId" | "userId">,
+  ) {
+    if (mode === "app" && accountApiBase) {
+      try {
+        const response = await fetch(`${accountApiBase}/skills/engagement/use`, {
+          body: JSON.stringify({ skill_key: skillKey(item) }),
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+        });
+        if (response.ok) {
+          const signal = (await response.json()) as {
+            is_liked: boolean;
+            likes: number;
+            uses: number;
+          };
+          const update = {
+            isLiked: signal.is_liked,
+            likes: signal.likes,
+            uses: signal.uses,
+          };
+          setLocalSkillSignals((current) => ({
+            ...current,
+            [skillKey(item)]: update,
+          }));
+          if (item.id) {
+            setPublishedSkills((current) =>
+              current.map((skill) =>
+                skill.id === item.id ? { ...skill, ...update } : skill,
+              ),
+            );
+          }
+          return;
+        }
+      } catch {
+        // Opening the Skill remains possible when telemetry is unavailable.
+      }
+    }
+    updateLocalSkillSignal(item, (current) => ({
+      ...current,
+      uses: current.uses + 1,
+    }));
+  }
+
+  async function toggleHotLike(
+    item: Pick<PublishedHot, "author" | "id" | "isLiked" | "isMine" | "likes" | "title">,
+  ) {
+    if (item.isMine) return;
+    if (mode === "app" && accountApiBase && item.id) {
+      try {
+        const response = await fetch(`${accountApiBase}/hots/${item.id}/like`, {
+          credentials: "include",
+          method: "POST",
+        });
+        if (response.ok) {
+          const signal = (await response.json()) as {
+            is_liked: boolean;
+            likes: number;
+          };
+          setPublishedHots((current) =>
+            current.map((hot) =>
+              hot.id === item.id
+                ? {
+                    ...hot,
+                    isLiked: signal.is_liked,
+                    likes: signal.likes,
+                  }
+                : hot,
+            ),
+          );
+          return;
+        }
+      } catch {
+        // The feed remains browseable if engagement persistence is unavailable.
+      }
+    }
+    const key = hotKey(item);
+    setLocalHotSignals((current) => {
+      const previous =
+        current[key] ?? { isLiked: item.isLiked, likes: item.likes };
+      return {
+        ...current,
+        [key]: {
+          isLiked: !previous.isLiked,
+          likes: Math.max(0, previous.likes + (previous.isLiked ? -1 : 1)),
+        },
+      };
+    });
+  }
+
+  function useSkill(
+    skillId: string,
+    value: string,
+    metricTarget?: Pick<PublishedSkill, "id" | "skillId" | "userId">,
+  ) {
+    if (metricTarget) void recordSkillUse(metricTarget);
     setSkill(skillId);
     usePrompt(value);
+  }
+
+  function useHotScenario(item: Pick<PublishedHot, "prompt" | "skill">) {
+    const normalizedSkillId = item.skill.split("/").at(-1) ?? item.skill;
+    const target = [...publishedSkills, ...content.skills.items].find(
+      (skill) => skill.skillId === normalizedSkillId,
+    );
+    if (target) {
+      useSkill(item.skill, item.prompt, target);
+      return;
+    }
+    useSkill(item.skill, item.prompt, {
+      skillId: normalizedSkillId,
+      userId: "video_agent",
+    });
   }
 
   function clearPlaybookSelection() {
@@ -1248,6 +1692,7 @@ export function LandingPage({
         author: string;
         likes: number;
         is_mine: boolean;
+        is_liked: boolean;
         created_at: string;
       };
       setPublishedHots((current) => [
@@ -1255,9 +1700,11 @@ export function LandingPage({
           id: saved.id,
           assetId: saved.asset_id,
           author: saved.author,
+          category: hotCategoryFor(saved.skill),
           createdAt: saved.created_at,
-          isMine: saved.is_mine,
-          likes: saved.likes,
+          isLiked: saved.is_liked ?? false,
+          isMine: saved.is_mine ?? false,
+          likes: saved.likes ?? 0,
           prompt: saved.prompt,
           skill: saved.skill,
           title: saved.title,
@@ -1402,6 +1849,10 @@ export function LandingPage({
       const saved = (await response.json()) as OptimizedSkill & {
         id: string;
         user_id: string;
+        is_mine: boolean;
+        likes: number;
+        uses: number;
+        is_liked: boolean;
         visibility: "private" | "public";
         updated_at: string;
       };
@@ -1409,15 +1860,20 @@ export function LandingPage({
         {
           id: saved.id,
           body: saved.description,
+          category: skillCategoryFor(saved.skill_id),
           description: saved.description,
           instructions: saved.instructions,
           inputSchema: saved.input_schema,
+          isLiked: saved.is_liked ?? false,
+          isMine: saved.is_mine,
+          likes: saved.likes,
           outputSchema: saved.output_schema,
           prompt: saved.prompt_template,
           promptTemplate: saved.prompt_template,
           skillId: saved.skill_id,
           title: saved.title,
           updatedAt: saved.updated_at,
+          uses: saved.uses ?? 0,
           userId: saved.user_id,
           visibility: saved.visibility,
         },
@@ -1432,6 +1888,11 @@ export function LandingPage({
   }
 
   function openView(view: LandingView) {
+    if (view === "docs") {
+      const firstDocument = content.documents[0]?.path;
+      if (firstDocument) setActiveDocument(firstDocument);
+      setDocsQuery("");
+    }
     setActiveView(view);
     onViewChange?.(view);
     window.history.replaceState(null, "", `#${view}`);
@@ -1524,24 +1985,81 @@ export function LandingPage({
       ? activeDocument.replace(/\.html$/, ".zh.html")
       : activeDocument;
   const normalizedSkillsQuery = skillsQuery.trim().toLowerCase();
-  const visibleSkills = [...publishedSkills, ...content.skills.items].filter(
+  const bundledSkills: PublishedSkill[] = content.skills.items.map((item) => {
+    const local = localSkillSignals[skillKey(item)];
+    return {
+      ...item,
+      category: skillCategoryFor(item.skillId),
+      isLiked: local?.isLiked ?? false,
+      isMine: false,
+      likes: local?.likes ?? 0,
+      uses: local?.uses ?? 0,
+    };
+  });
+  const allSkills = [...publishedSkills, ...bundledSkills];
+  const filteredSkills = allSkills.filter(
     (item) =>
-      !normalizedSkillsQuery ||
-      `${item.userId}/${item.skillId} ${item.title} ${item.body}`
-        .toLowerCase()
-        .includes(normalizedSkillsQuery),
+      (skillCategory === "all" || item.category === skillCategory) &&
+      (!normalizedSkillsQuery ||
+        `${item.userId}/${item.skillId} ${item.title} ${item.body}`
+          .toLowerCase()
+          .includes(normalizedSkillsQuery)),
   );
+  const visibleSkills = [...filteredSkills]
+    .sort((left, right) => {
+      if (skillSort === "uses") return right.uses - left.uses;
+      if (skillSort === "likes") return right.likes - left.likes;
+      if (skillSort === "newest") {
+        return timestamp(right.updatedAt) - timestamp(left.updatedAt);
+      }
+      return compareSkillSignals(left, right);
+    });
   const normalizedHotsQuery = hotsQuery.trim().toLowerCase();
-  const visibleHots: PublishedHot[] = [
-    ...publishedHots,
-    ...content.hots.items.map((item) => ({ ...item })),
-  ].filter(
+  const bundledHots: PublishedHot[] = content.hots.items.map((item) => {
+    const local = localHotSignals[hotKey(item)];
+    return {
+      ...item,
+      category: hotCategoryFor(item.skill),
+      isLiked: local?.isLiked ?? false,
+      likes: local?.likes ?? item.likes,
+    };
+  });
+  const allHots = [...publishedHots, ...bundledHots];
+  const filteredHots = allHots.filter(
     (item) =>
-      !normalizedHotsQuery ||
-      `${item.title} ${item.author} ${item.prompt}`
-        .toLowerCase()
-        .includes(normalizedHotsQuery),
+      (hotsCategory === "all" || item.category === hotsCategory) &&
+      (!normalizedHotsQuery ||
+        `${item.title} ${item.author} ${item.prompt}`
+          .toLowerCase()
+          .includes(normalizedHotsQuery)),
   );
+  const visibleHots = [...filteredHots]
+    .sort((left, right) =>
+      hotsSort === "newest"
+        ? timestamp(right.createdAt) - timestamp(left.createdAt)
+        : compareHotSignals(left, right),
+    );
+  const skillCategoryOptions = [
+    { id: "all" as const, label: content.skills.categories.all },
+    { id: "generation" as const, label: content.skills.categories.generation },
+    { id: "story" as const, label: content.skills.categories.story },
+    { id: "workflow" as const, label: content.skills.categories.workflow },
+    { id: "post" as const, label: content.skills.categories.post },
+    { id: "review" as const, label: content.skills.categories.review },
+    { id: "utility" as const, label: content.skills.categories.utility },
+  ];
+  const hotCategoryOptions = [
+    { id: "all" as const, label: content.hots.categories.all },
+    { id: "vlog" as const, label: content.hots.categories.vlog },
+    { id: "product" as const, label: content.hots.categories.product },
+    { id: "drama" as const, label: content.hots.categories.drama },
+    { id: "music" as const, label: content.hots.categories.music },
+    {
+      id: "localization" as const,
+      label: content.hots.categories.localization,
+    },
+    { id: "campaign" as const, label: content.hots.categories.campaign },
+  ];
   const normalizedAssetQuery = assetQuery.trim().toLowerCase();
   const hotAssetIds = new Set(
     publishedHots
@@ -1585,7 +2103,7 @@ export function LandingPage({
           videoUrl: undefined,
           prompt: item.prompt,
           author: item.userId,
-          likes: 0,
+          likes: item.likes,
           body: item.body,
           instructions: item.instructions,
         })),
@@ -1661,7 +2179,7 @@ export function LandingPage({
             type="button"
           />
         ) : null}
-        <div className="nav-brand-row">
+        <div className="nav-brand-row" data-testid="workspace-header-history">
           <a
             className="brand"
             href={mode === "app" ? `/${locale}` : "./"}
@@ -1695,7 +2213,7 @@ export function LandingPage({
             onClick={() => openView("agents")}
             type="button"
           >
-            <Clapperboard aria-hidden="true" className="nav-icon" />
+            <Sparkles aria-hidden="true" className="nav-icon" />
             <span>{content.nav.agents}</span>
           </button>
           <button
@@ -1711,7 +2229,7 @@ export function LandingPage({
             onClick={() => openView("hots")}
             type="button"
           >
-            <Flame aria-hidden="true" className="nav-icon" />
+            <Film aria-hidden="true" className="nav-icon" />
             <span>{content.nav.hots}</span>
           </button>
           <button
@@ -1719,7 +2237,7 @@ export function LandingPage({
             onClick={() => openView("assets")}
             type="button"
           >
-            <Film aria-hidden="true" className="nav-icon" />
+            <Layers3 aria-hidden="true" className="nav-icon" />
             <span>{content.nav.assets}</span>
           </button>
           <button
@@ -1894,52 +2412,81 @@ export function LandingPage({
               aria-expanded={accountMenuOpen}
               aria-label={content.nav.account}
               className="profile-trigger"
-              onClick={() => setAccountMenuOpen((current) => !current)}
+              onClick={() => {
+                setLanguageMenuOpen(false);
+                setLanguageMenuPosition(null);
+                setAccountMenuOpen((current) => !current);
+              }}
               title={content.nav.account}
               type="button"
             >
               <span
-                className={`account-avatar${displayAvatar ? "" : " account-avatar-default"}`}
+                className={`account-avatar${displayAvatar ? "" : " account-avatar-default"}${notifications.length > 0 ? " has-updates" : ""}`}
               >
                 {displayAvatar ?? <UserRound className="avatar-placeholder" />}
               </span>
               <span className="profile-name">
-                {accountEmail?.split("@")[0] ??
+                {accountEmail ??
                   (docsLocale === "zh-CN" ? "访客" : "Guest")}
               </span>
-              <ChevronDown aria-hidden="true" />
+              <SettingsIcon
+                aria-hidden="true"
+                className="profile-settings-indicator"
+              />
             </button>
             <div className="account-menu profile-menu" hidden={!accountMenuOpen}>
-              <div className="profile-menu-row profile-language-row">
+              <button
+                aria-expanded={languageMenuOpen}
+                className="profile-menu-row profile-language-row"
+                onClick={(event) => {
+                  if (languageMenuOpen) {
+                    setLanguageMenuOpen(false);
+                    setLanguageMenuPosition(null);
+                    return;
+                  }
+                  const rect = event.currentTarget.getBoundingClientRect();
+                  const menuWidth = 216;
+                  setLanguageMenuPosition({
+                    top: Math.max(
+                      16,
+                      Math.min(rect.top, window.innerHeight - 150),
+                    ),
+                    left: Math.min(
+                      rect.right + 10,
+                      window.innerWidth - menuWidth - 16,
+                    ),
+                  });
+                  setLanguageMenuOpen(true);
+                }}
+                type="button"
+              >
                 <span>
                   <Globe aria-hidden="true" />
                   {content.nav.language}
                 </span>
-                <div>
-                  <button
-                    aria-checked={docsLocale === "en"}
-                    onClick={() => selectDocsLocale("en")}
-                    role="menuitemradio"
-                    type="button"
-                  >
-                    EN
-                  </button>
-                  <button
-                    aria-checked={docsLocale === "zh-CN"}
-                    onClick={() => selectDocsLocale("zh-CN")}
-                    role="menuitemradio"
-                    type="button"
-                  >
-                    中
-                  </button>
-                </div>
-              </div>
+                <span className="profile-row-value">
+                  {docsLocale === "en" ? "English" : "中文"}
+                  <ChevronRight aria-hidden="true" />
+                </span>
+              </button>
               <div className="profile-menu-row">
                 <span>
                   <Bell aria-hidden="true" />
                   {content.nav.notifications}
                 </span>
-                <em>{content.nav.emptyNotifications}</em>
+                <div className="profile-row-trailing">
+                  {notifications.length > 0 ? (
+                    <i
+                      aria-label="Notifications available"
+                      className="profile-update-dot"
+                      role="status"
+                    />
+                  ) : null}
+                  <ChevronRight
+                    aria-hidden="true"
+                    className="profile-notification-chevron"
+                  />
+                </div>
               </div>
               <div className="profile-menu-row">
                 <span>
@@ -1951,39 +2498,57 @@ export function LandingPage({
               <div className="profile-menu-divider" />
               {accountEmail ? (
                 <>
-                  <span className="account-email">{accountEmail}</span>
-                  <button onClick={() => void signOut()} type="button">
-                    {content.nav.signOut}
+                  <button
+                    className="account-action"
+                    onClick={() => void signOut()}
+                    type="button"
+                  >
+                    <LogOut aria-hidden="true" />
+                    <span>{content.nav.signOut}</span>
                   </button>
                 </>
               ) : mode === "app" ? (
                 <>
-                  <a href={`/${locale}/login`} onClick={() => setAccountMenuOpen(false)}>
-                    {content.nav.logIn}
+                  <a
+                    className="account-action"
+                    href={`/${locale}/login`}
+                    onClick={() => setAccountMenuOpen(false)}
+                  >
+                    <LogIn aria-hidden="true" />
+                    <span>{content.nav.logIn}</span>
                   </a>
-                  <a href={`/${locale}/register`} onClick={() => setAccountMenuOpen(false)}>
-                    {content.nav.register}
+                  <a
+                    className="account-action"
+                    href={`/${locale}/register`}
+                    onClick={() => setAccountMenuOpen(false)}
+                  >
+                    <UserPlus aria-hidden="true" />
+                    <span>{content.nav.register}</span>
                   </a>
                 </>
               ) : (
                 <>
                   <button
+                    className="account-action"
                     onClick={() => {
                       setAccountMenuOpen(false);
                       setPreviewNoticeOpen(true);
                     }}
                     type="button"
                   >
-                    {content.nav.logIn}
+                    <LogIn aria-hidden="true" />
+                    <span>{content.nav.logIn}</span>
                   </button>
                   <button
+                    className="account-action"
                     onClick={() => {
                       setAccountMenuOpen(false);
                       setPreviewNoticeOpen(true);
                     }}
                     type="button"
                   >
-                    {content.nav.register}
+                    <UserPlus aria-hidden="true" />
+                    <span>{content.nav.register}</span>
                   </button>
                 </>
               )}
@@ -1991,6 +2556,46 @@ export function LandingPage({
           </div>
         </div>
       </header>
+
+      {languageMenuOpen && languageMenuPosition ? (
+        <div
+          aria-label={content.nav.language}
+          className="profile-language-options profile-language-flyout"
+          ref={languageMenuRef}
+          role="menu"
+          style={{
+            top: languageMenuPosition.top,
+            left: languageMenuPosition.left,
+          }}
+        >
+          <button
+            aria-checked={docsLocale === "en"}
+            onClick={() => {
+              selectDocsLocale("en");
+              setLanguageMenuOpen(false);
+              setLanguageMenuPosition(null);
+            }}
+            role="menuitemradio"
+            type="button"
+          >
+            English
+            {docsLocale === "en" ? <Check aria-hidden="true" /> : null}
+          </button>
+          <button
+            aria-checked={docsLocale === "zh-CN"}
+            onClick={() => {
+              selectDocsLocale("zh-CN");
+              setLanguageMenuOpen(false);
+              setLanguageMenuPosition(null);
+            }}
+            role="menuitemradio"
+            type="button"
+          >
+            中文
+            {docsLocale === "zh-CN" ? <Check aria-hidden="true" /> : null}
+          </button>
+        </div>
+      ) : null}
 
       {activeView === "agents" ? (
       <section className="hero" id="agents">
@@ -2106,7 +2711,7 @@ export function LandingPage({
                 }}
                 options={[
                   { label: "Auto", value: "auto" },
-                  ...["16:9", "9:16", "1:1"].map((ratio) => ({
+                  ...["21:9", "16:9", "9:16", "1:1"].map((ratio) => ({
                     label: ratio,
                     value: ratio,
                   })),
@@ -2126,7 +2731,7 @@ export function LandingPage({
                 }}
                 options={[
                   { label: "Auto", value: "auto" },
-                  ...[5, 10].map((duration) => ({
+                  ...[5, 10, 15, 30].map((duration) => ({
                     label: `${duration}${content.composer.seconds}`,
                     value: String(duration),
                   })),
@@ -2220,7 +2825,22 @@ export function LandingPage({
 
       {activeView === "skills" ? (
       <section className="section feature-section" id="skills">
-        <div className="view-toolbar">
+        <div className="ranking-panel">
+          <div className="ranking-heading">
+            <span className="ranking-kicker">
+              <Video aria-hidden="true" />
+              {content.skills.rankingLabel}
+            </span>
+            <p>{content.skills.rankingHint}</p>
+          </div>
+          <div className="reward-tiers" aria-label={content.skills.rewardLine}>
+            <span><b>#1</b> 500</span>
+            <span><b>#2</b> 300</span>
+            <span><b>#3</b> 150</span>
+            <small>{content.skills.rewardLine}</small>
+          </div>
+        </div>
+        <div className="view-toolbar ranking-toolbar">
           <label className="view-search">
             <Search aria-hidden="true" />
             <input
@@ -2231,6 +2851,44 @@ export function LandingPage({
               value={skillsQuery}
             />
           </label>
+          <div
+            aria-label={content.skills.sortLabel}
+            className="ranking-sorts"
+            role="group"
+          >
+            {[
+              ["signals", content.skills.sortSignals],
+              ["uses", content.skills.sortUses],
+              ["likes", content.skills.sortLikes],
+              ["newest", content.skills.sortNewest],
+            ].map(([id, label]) => (
+              <button
+                aria-pressed={skillSort === id}
+                key={id}
+                onClick={() => setSkillSort(id as SkillSort)}
+                type="button"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div
+          aria-label={content.skills.categoryLabel}
+          className="category-filter"
+          role="tablist"
+        >
+          {skillCategoryOptions.map((category) => (
+            <button
+              aria-selected={skillCategory === category.id}
+              key={category.id}
+              onClick={() => setSkillCategory(category.id)}
+              role="tab"
+              type="button"
+            >
+              {category.label}
+            </button>
+          ))}
         </div>
         <div className="feature-grid skill-grid">
           <button
@@ -2238,29 +2896,70 @@ export function LandingPage({
             onClick={openSkillPublisher}
             type="button"
           >
-            <Play aria-hidden="true" className="skill-publish-icon" />
+            <Video aria-hidden="true" className="skill-publish-icon" />
             <span>{content.skills.publish}</span>
           </button>
           {visibleSkills.map((item) => (
-            <button
-              className="feature-card skill-card"
+            <div
+              className="skill-card-shell"
               key={`${item.userId}/${item.skillId}`}
-              onClick={() =>
-                item.userId === "video_agent" && item.skillId === "skill_synthesis"
-                  ? openSkillSynthesis()
-                  : useSkill(item.skillId, item.prompt)
-              }
-              type="button"
             >
-              <span className="skill-code">
-                {item.userId}/{item.skillId}
-              </span>
-              <span className="skill-card-copy">
-                <strong>{item.title}</strong>
-                <p>{item.body}</p>
-              </span>
-              <i aria-hidden="true">↗</i>
-            </button>
+              <button
+                className="feature-card skill-card"
+                onClick={() => {
+                  if (
+                    item.userId === "video_agent" &&
+                    item.skillId === "skill_synthesis"
+                  ) {
+                    void recordSkillUse(item);
+                    openSkillSynthesis();
+                    return;
+                  }
+                  useSkill(item.skillId, item.prompt, item);
+                }}
+                type="button"
+              >
+                <span className="skill-card-topline">
+                  <span className="skill-code">
+                    {item.userId}/{item.skillId}
+                  </span>
+                </span>
+                <span className="skill-card-copy">
+                  <span className="skill-title-line">
+                    <Video aria-hidden="true" className="skill-title-icon" />
+                    <strong>{item.title}</strong>
+                    <span className="skill-category-badge">
+                      {skillCategoryOptions.find(
+                        (category) => category.id === item.category,
+                      )?.label ?? item.category}
+                    </span>
+                  </span>
+                  <p>{item.body}</p>
+                  <span className="skill-metrics">
+                    <span>
+                      <Heart aria-hidden="true" />
+                      {item.likes} {content.skills.likesLabel}
+                    </span>
+                    <span>
+                      <Play aria-hidden="true" />
+                      {item.uses} {content.skills.usesLabel}
+                    </span>
+                  </span>
+                </span>
+                <i aria-hidden="true">↗</i>
+              </button>
+              <button
+                aria-label={`${item.isLiked ? "Unlike" : "Like"} ${item.title}`}
+                aria-pressed={item.isLiked}
+                className="skill-like"
+                disabled={item.isMine}
+                onClick={() => void toggleSkillLike(item)}
+                title={item.isMine ? "Authors cannot like their own Skill" : undefined}
+                type="button"
+              >
+                <Heart aria-hidden="true" />
+              </button>
+            </div>
           ))}
         </div>
         {visibleSkills.length === 0 ? (
@@ -2289,7 +2988,7 @@ export function LandingPage({
               role="tab"
               type="button"
             >
-              <Video aria-hidden="true" className="docs-tab-icon" />
+              <Film aria-hidden="true" className="docs-tab-icon" />
               {content.assets.tabs.video}
             </button>
             <button
@@ -2298,7 +2997,7 @@ export function LandingPage({
               role="tab"
               type="button"
             >
-              <Clapperboard aria-hidden="true" className="docs-tab-icon" />
+              <Video aria-hidden="true" className="docs-tab-icon" />
               {content.assets.tabs.skill}
             </button>
           </div>
@@ -2378,7 +3077,22 @@ export function LandingPage({
 
       {activeView === "hots" ? (
       <section className="section hots-section" id="hots">
-        <div className="view-toolbar">
+        <div className="ranking-panel">
+          <div className="ranking-heading">
+            <span className="ranking-kicker">
+              <Film aria-hidden="true" />
+              {content.hots.rankingLabel}
+            </span>
+            <p>{content.hots.rankingHint}</p>
+          </div>
+          <div className="reward-tiers" aria-label={content.hots.rewardLine}>
+            <span><b>#1</b> 300</span>
+            <span><b>#2</b> 180</span>
+            <span><b>#3</b> 100</span>
+            <small>{content.hots.rewardLine}</small>
+          </div>
+        </div>
+        <div className="view-toolbar ranking-toolbar">
           <label className="view-search">
             <Search aria-hidden="true" />
             <input
@@ -2389,6 +3103,42 @@ export function LandingPage({
               value={hotsQuery}
             />
           </label>
+          <div
+            aria-label={content.hots.sortLabel}
+            className="ranking-sorts"
+            role="group"
+          >
+            {[
+              ["likes", content.hots.sortLikes],
+              ["newest", content.hots.sortNewest],
+            ].map(([id, label]) => (
+              <button
+                aria-pressed={hotsSort === id}
+                key={id}
+                onClick={() => setHotsSort(id as HotSort)}
+                type="button"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <div
+          aria-label={content.hots.categoryLabel}
+          className="category-filter"
+          role="tablist"
+        >
+          {hotCategoryOptions.map((category) => (
+            <button
+              aria-selected={hotsCategory === category.id}
+              key={category.id}
+              onClick={() => setHotsCategory(category.id)}
+              role="tab"
+              type="button"
+            >
+              {category.label}
+            </button>
+          ))}
         </div>
         <div className="community-stream">
           <button
@@ -2400,57 +3150,94 @@ export function LandingPage({
             <span>{content.hots.publish}</span>
           </button>
           {visibleHots.map((item, index) => (
-            <button
-              className={`community-card community-card-${(index % 5) + 1}`}
+            <div
+              className="community-entry"
               key={`${item.author}-${item.title}-${index}`}
-              onClick={() =>
-                item.id
-                  ? setAssetDetail({
-                      author: item.author,
-                      editedAt: (item.createdAt ?? new Date().toISOString()).slice(0, 10),
-                      likes: item.likes,
-                      permission: "public",
-                      prompt: item.prompt,
-                      title: item.title,
-                      type: "video",
-                      videoUrl:
-                        item.videoUrl ?? videos[index % videos.length].src,
-                    })
-                  : useSkill(item.skill, item.prompt)
-              }
-              type="button"
             >
-              <video
-                aria-hidden="true"
-                autoPlay
-                loop
-                muted
-                playsInline
-                poster={videos[index % videos.length].poster}
-                preload="auto"
+              <button
+                className={`community-card community-card-${(index % 5) + 1}`}
+                onClick={() =>
+                  item.id
+                    ? setAssetDetail({
+                        author: item.author,
+                        editedAt: (
+                          item.createdAt ?? new Date().toISOString()
+                        ).slice(0, 10),
+                        likes: item.likes,
+                        permission: "public",
+                        prompt: item.prompt,
+                        title: item.title,
+                        type: "video",
+                        videoUrl:
+                          item.videoUrl ?? videos[index % videos.length].src,
+                      })
+                    : useHotScenario(item)
+                }
+                type="button"
               >
-                <source
-                  src={item.videoUrl ?? videos[index % videos.length].src}
-                  type="video/mp4"
-                />
-              </video>
-              <span className="community-card-content">
-                <span className="community-card-title">{item.title}</span>
-                <span className="community-card-meta">
-                  <span className="community-author">
-                    <span className="community-author-mark" aria-hidden="true">
-                      {Array.from(item.author)[0]}
+                <video
+                  aria-hidden="true"
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  poster={videos[index % videos.length].poster}
+                  preload="auto"
+                >
+                  <source
+                    src={item.videoUrl ?? videos[index % videos.length].src}
+                    type="video/mp4"
+                  />
+                </video>
+                <span className="community-card-content">
+                  <span className="community-card-title-line">
+                  <Film
+                    aria-hidden="true"
+                    className="community-title-icon"
+                  />
+                    <span className="community-card-title">{item.title}</span>
+                    <span className="community-category">
+                      {hotCategoryOptions.find(
+                        (category) => category.id === item.category,
+                      )?.label ?? item.category}
                     </span>
-                    {item.author}
                   </span>
-                  <span className="community-likes">
-                    <Heart aria-hidden="true" />
-                    {item.likes}
+                  <span className="community-card-meta">
+                    <span className="community-author">
+                      <span
+                        className="community-author-mark"
+                        aria-hidden="true"
+                      >
+                        {Array.from(item.author)[0]}
+                      </span>
+                      {item.author}
+                    </span>
+                    <span className="community-likes">
+                      <Heart aria-hidden="true" />
+                      {item.likes}
+                    </span>
                   </span>
                 </span>
-              </span>
-              <span className="community-action">{content.hots.makeThis} ↗</span>
-            </button>
+                <span className="community-action">
+                  {content.hots.makeThis} ↗
+                </span>
+              </button>
+              <button
+                aria-label={`${item.isLiked ? "Unlike" : "Like"} ${item.title}`}
+                aria-pressed={item.isLiked}
+                className="community-like-toggle"
+                disabled={item.isMine}
+                onClick={() => void toggleHotLike(item)}
+                title={
+                  item.isMine
+                    ? "Authors cannot like their own video post"
+                    : undefined
+                }
+                type="button"
+              >
+                <Heart aria-hidden="true" />
+              </button>
+            </div>
           ))}
         </div>
         {visibleHots.length === 0 ? (
@@ -2494,29 +3281,94 @@ export function LandingPage({
               </div>
             ) : null}
           </div>
-          <div aria-label={content.nav.docs} className="docs-tabs" role="tablist">
-            {content.documents.map((document) => (
+          <div
+            className={`docs-body${docsDirectoryCollapsed ? " docs-directory-collapsed" : ""}`}
+            style={
+              {
+                "--docs-directory-width": docsDirectoryWidth
+                  ? docsDirectoryCollapsed
+                    ? "58px"
+                    : `${docsDirectoryWidth}px`
+                  : docsDirectoryCollapsed
+                    ? "58px"
+                  : navCollapsed
+                    ? "25vw"
+                    : "var(--app-nav-width, 25vw)",
+              } as CSSProperties
+            }
+          >
+            <aside
+              className="docs-directory"
+              data-testid="docs-directory"
+            >
               <button
-                aria-selected={activeDocument === document.path}
-                key={document.path}
-                onClick={() => {
-                  setActiveDocument(document.path);
-                  setDocsQuery("");
-                }}
-                role="tab"
+                aria-label={
+                  docsDirectoryCollapsed
+                    ? "Expand document list"
+                    : "Collapse document list"
+                }
+                className="docs-directory-toggle"
+                onClick={() =>
+                  setDocsDirectoryCollapsed((current) => !current)
+                }
                 type="button"
               >
-                <FileText aria-hidden="true" className="docs-tab-icon" />
-                {docsLocale === "zh-CN" ? document.labelZh : document.label}
+                {docsDirectoryCollapsed ? (
+                  <PanelLeftOpen aria-hidden="true" />
+                ) : (
+                  <PanelLeftClose aria-hidden="true" />
+                )}
               </button>
-            ))}
-          </div>
-          <div className="docs-frame">
-            <iframe
-              key={`${activeDocument}-${docsLocale}`}
-              src={`${docsBase}${activeDocumentSource}?v=${DOCS_ASSET_VERSION}`}
-              title={content.documents.find((document) => document.path === activeDocument)?.label}
-            />
+              <button
+                aria-label="Resize document directory"
+                className="docs-directory-resize"
+                onKeyDown={resizeDocsDirectoryWithKeyboard}
+                onPointerDown={beginDocsDirectoryResize}
+                type="button"
+              />
+              <div
+                aria-label={content.nav.docs}
+                aria-orientation="vertical"
+                className="docs-tabs"
+                role="tablist"
+              >
+                {content.documents.map((document) => (
+                  <button
+                    aria-label={
+                      docsLocale === "zh-CN"
+                        ? document.labelZh
+                        : document.label
+                    }
+                    aria-selected={activeDocument === document.path}
+                    key={document.path}
+                    onClick={() => {
+                      setActiveDocument(document.path);
+                      setDocsQuery("");
+                    }}
+                    role="tab"
+                    type="button"
+                  >
+                    <FileText aria-hidden="true" className="docs-tab-icon" />
+                    <span className="docs-tab-label">
+                      {docsLocale === "zh-CN"
+                        ? document.labelZh
+                        : document.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </aside>
+            <div className="docs-frame">
+              <iframe
+                key={`${activeDocument}-${docsLocale}`}
+                src={`${docsBase}${activeDocumentSource}?v=${DOCS_ASSET_VERSION}`}
+                title={
+                  content.documents.find(
+                    (document) => document.path === activeDocument,
+                  )?.label
+                }
+              />
+            </div>
           </div>
         </section>
       ) : null}

@@ -1,3 +1,4 @@
+import re
 from typing import Annotated, Literal, cast
 from uuid import UUID, uuid4
 
@@ -7,11 +8,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from videoagent.agent.graph import StoryboardAgent
-from videoagent.api.dependencies import get_current_user, get_session, get_storyboard_agent
+from videoagent.api.dependencies import (
+    get_current_user,
+    get_session,
+    get_settings,
+    get_storyboard_agent,
+)
+from videoagent.config import Settings
 from videoagent.models import Conversation, Message, User
 from videoagent.schemas import (
     AgentMessageCreate,
     AgentTurnResponse,
+    ExportRequest,
     MessageList,
     MessageRead,
     StoryboardRead,
@@ -21,13 +29,24 @@ from videoagent.schemas import (
 from videoagent.services.agent_activity import AgentActivityRecorder
 from videoagent.services.agent_context import build_agent_context
 from videoagent.services.language import detect_locale
+from videoagent.services.media import export_project
 from videoagent.services.storyboards import (
+    load_storyboard,
     owned_project_or_404,
     replace_storyboard,
 )
 from videoagent.services.workflow import get_or_create_workflow
 
 router = APIRouter(prefix="/projects/{project_id}/messages", tags=["agent"])
+FINAL_CUT_REQUEST = re.compile(
+    r"(?:"
+    r"\b(?:render|export|assemble)\s+(?:the\s+)?(?:final\s+cut|film)\b"
+    r"|\bfinal\s+cut\s+please\b"
+    r"|(?:生成|合成|导出|制作)(?:最终)?成片"
+    r"|(?:生成|合成|导出)(?:最终)?视频"
+    r")",
+    re.IGNORECASE,
+)
 
 
 async def get_conversation(
@@ -51,7 +70,12 @@ async def list_messages(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> MessageList:
-    project = await owned_project_or_404(session, project_id, user.id)
+    project = await owned_project_or_404(
+        session,
+        project_id,
+        user.id,
+        required_permission="view",
+    )
     result = await session.execute(
         select(Conversation)
         .options(selectinload(Conversation.messages))
@@ -69,6 +93,7 @@ async def create_agent_message(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
     agent: Annotated[StoryboardAgent, Depends(get_storyboard_agent)],
+    settings: Annotated[Settings, Depends(get_settings)],
 ) -> AgentTurnResponse:
     project = await owned_project_or_404(session, project_id, user.id)
     conversation = await get_conversation(session, project.id)
@@ -110,7 +135,7 @@ async def create_agent_message(
     await reporter.emit(
         "memory",
         "Loaded project memory",
-        f"{context.recent_message_count} recent messages · current Characters and Shots · "
+        f"{context.recent_message_count} recent messages · current Characters, Scenes, and Shots · "
         "8-message rolling window with 600 characters per message",
     )
     if context.selected_skill:
@@ -122,6 +147,54 @@ async def create_agent_message(
                 if context.skill_instructions
                 else f"{context.selected_skill} · built-in or selection-only Skill"
             ),
+        )
+
+    if FINAL_CUT_REQUEST.search(payload.content):
+        storyboard = await load_storyboard(session, project.id)
+        if storyboard is None:
+            raise RuntimeError("Workflow response is missing a storyboard")
+        await reporter.emit(
+            "state",
+            "Preparing the final cut",
+            f"Assembling all {len(storyboard.shots)} completed Shots.",
+            "running",
+        )
+        export = await export_project(
+            session,
+            project=project,
+            request=ExportRequest(),
+            settings=settings,
+        )
+        assistant_message = Message(
+            conversation_id=conversation.id,
+            role="assistant",
+            content=(
+                f"成片已生成，共 {len(export.items)} 个版本。你可以在 Versions 中查看、分享或发布。"
+                if locale == "zh-CN"
+                else (
+                    f"The final cut is ready in {len(export.items)} versions. "
+                    "Open Versions to review, share, or publish it."
+                )
+            ),
+            metadata_json={
+                "action": "render_final_cut",
+                "asset_ids": [str(asset.id) for asset in export.items],
+            },
+        )
+        session.add(assistant_message)
+        await session.flush()
+        await reporter.emit(
+            "reply",
+            "Final-cut reply ready",
+            "The completed delivery is ready in Versions.",
+        )
+        await session.refresh(user_message)
+        await session.refresh(assistant_message)
+        return AgentTurnResponse(
+            user_message=MessageRead.model_validate(user_message),
+            assistant_message=MessageRead.model_validate(assistant_message),
+            storyboard=StoryboardRead.model_validate(storyboard),
+            workflow=WorkflowStateRead.model_validate(workflow),
         )
 
     try:
@@ -153,7 +226,7 @@ async def create_agent_message(
     await reporter.emit(
         "state",
         "Updating Direction and Vision",
-        "Replacing Characters and Shots with the validated plan.",
+        "Updating Characters, Scenes, and Shots with the validated plan.",
         "running",
     )
     storyboard = await replace_storyboard(
@@ -161,12 +234,13 @@ async def create_agent_message(
         project.id,
         plan.storyboard.shots,
         plan.storyboard.characters,
+        plan.storyboard.scenes,
     )
     await reporter.emit(
         "state",
         "Project state updated",
         f"Storyboard v{storyboard.version} · {len(storyboard.characters)} Characters · "
-        f"{len(storyboard.shots)} Shots",
+        f"{len(storyboard.scenes)} Scenes · {len(storyboard.shots)} Shots",
     )
     assistant_message = Message(
         conversation_id=conversation.id,

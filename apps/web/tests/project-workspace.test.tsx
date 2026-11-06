@@ -35,18 +35,6 @@ describe("ProjectWorkspace", () => {
       if (url.endsWith("/projects/project-1/asset-selections")) {
         return Promise.resolve(Response.json({ items: [] }));
       }
-      if (url.endsWith("/projects/project-1/progress")) {
-        return Promise.resolve(
-          Response.json({
-            percent: 85,
-            workflow_stage: "ready",
-            workflow_status: "approved",
-            total_shots: 2,
-            completed_shots: 1,
-            updated_at: "2026-11-03T00:00:02Z",
-          }),
-        );
-      }
       if (url.includes("/agent-activity/")) {
         return Promise.resolve(
           Response.json({
@@ -178,6 +166,17 @@ describe("ProjectWorkspace", () => {
                   prompt_zh: null,
                 },
               ],
+              scenes: [
+                {
+                  id: "scene-1",
+                  index: 0,
+                  name: "Copenhagen canal",
+                  description: "A quiet canal-side location at sunrise.",
+                  location: "Nyhavn",
+                  prompt_en: "Cinematic Copenhagen canal at sunrise",
+                  prompt_zh: null,
+                },
+              ],
               shots: [
                 {
                   id: "shot-1",
@@ -245,6 +244,8 @@ describe("ProjectWorkspace", () => {
                 status: "draft",
               },
             ],
+            characters: [],
+            scenes: [],
           }),
         );
       }
@@ -270,6 +271,44 @@ describe("ProjectWorkspace", () => {
             error_code: null,
             created_at: "2026-11-03T00:00:02Z",
           }),
+        );
+      }
+      if (
+        url.endsWith("/projects/project-1/collaborations") &&
+        init?.method === "POST"
+      ) {
+        return Promise.resolve(
+          Response.json({
+            id: "collaboration-1",
+            project_id: "project-1",
+            permission: "view",
+            collaborator_email: "editor@example.com",
+            share_url: "http://localhost:3000/en/collaboration/token-1",
+            expires_at: "2026-11-10T00:00:00Z",
+            created_at: "2026-11-03T00:00:00Z",
+          }),
+        );
+      }
+      if (
+        url.endsWith("/hots/from-asset/final-cut-1") &&
+        init?.method === "POST"
+      ) {
+        return Promise.resolve(
+          Response.json(
+            {
+              id: "post-1",
+              asset_id: "final-cut-1",
+              title: "Copenhagen morning",
+              prompt: "A quiet Copenhagen morning told in one shot",
+              skill: "auto",
+              author: "creator",
+              likes: 0,
+              is_mine: true,
+              is_liked: false,
+              created_at: "2026-11-03T00:00:00Z",
+            },
+            { status: 201 },
+          ),
         );
       }
       throw new Error(`Unexpected request: ${init?.method ?? "GET"} ${url}`);
@@ -308,16 +347,22 @@ describe("ProjectWorkspace", () => {
       screen.getAllByRole("heading", { name: "Copenhagen morning" }),
     ).not.toHaveLength(0);
     expect(screen.getAllByText("Recents").length).toBeGreaterThan(0);
-    expect(screen.getByRole("button", { name: "Direction" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Directions" })).toBeVisible();
     expect(screen.getByRole("button", { name: "Settings" })).toBeVisible();
-    expect(screen.getByRole("button", { name: "Vision" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Visions" })).toBeVisible();
+    expect(screen.getByTestId("workspace-header-canvas")).toHaveTextContent(
+      "Storyboard",
+    );
     expect(screen.getByRole("button", { name: "Characters" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Scenes" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Copenhagen canal" })).toBeVisible();
     expect(screen.getByText("Maya")).toBeVisible();
     expect(screen.queryByRole("button", { name: "Description" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Generation" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Shots" })).toBeVisible();
     expect(screen.getByRole("button", { name: "Shot 1" })).toBeVisible();
-    expect(screen.getByRole("button", { name: "Final Cut" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Versions" })).toBeVisible();
+    expect(screen.queryByRole("button", { name: "Final Cut" })).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Upload asset")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Storyboard" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Media" })).not.toBeInTheDocument();
@@ -336,8 +381,14 @@ describe("ProjectWorkspace", () => {
     expect(screen.queryByText("2 shots")).not.toBeInTheDocument();
     expect(document.querySelector(".max-h-64")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Settings" }));
+    expect(screen.getByTestId("workspace-header-canvas")).toHaveTextContent(
+      "Storyboard",
+    );
     expect(screen.getByText("Attributes")).toBeVisible();
-    expect(screen.getByText("Creative brief")).toBeVisible();
+    expect(screen.getByText("Format")).toBeVisible();
+    expect(screen.getByDisplayValue("One-shot film")).toBeVisible();
+    expect(screen.queryByText("Creative brief")).not.toBeInTheDocument();
+    expect(screen.queryByText("Director direction")).not.toBeInTheDocument();
     expect(screen.queryByText("Agent prompt")).not.toBeInTheDocument();
     expect(screen.queryByText("Director answer")).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Outlines" }));
@@ -348,17 +399,78 @@ describe("ProjectWorkspace", () => {
     expect(
       document.querySelector('[data-document-mode="script"]'),
     ).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Copenhagen canal" }));
+    expect(await screen.findByLabelText("Scene location")).toHaveValue("Nyhavn");
     fireEvent.click(screen.getByRole("button", { name: "Shot 1" }));
+    expect(screen.getByTestId("workspace-header-canvas")).toHaveTextContent(
+      "Storyboard",
+    );
     expect(screen.getByText("Upload")).toBeVisible();
     expect(screen.getByText("Prompt")).toBeVisible();
+      fireEvent.change(screen.getByLabelText("Video model"), {
+        target: { value: "Seedance_2.5" },
+      });
+      fireEvent.click(
+        screen.getByRole("button", { name: "Estimate credits" }),
+      );
+      await waitFor(() => {
+        const estimateCall = fetchMock.mock.calls.find(
+          ([input, init]) =>
+            String(input).endsWith("/shots/shot-1/estimate") &&
+            init?.method === "POST",
+        );
+        const body = estimateCall?.[1]?.body;
+        if (!estimateCall || !body) return false;
+        expect(JSON.parse(String(body))).toMatchObject({
+          provider: "pippit",
+          model: "Seedance_2.5",
+        });
+        return true;
+      });
     expect(
       screen.queryByRole("button", { name: "Review" }),
     ).not.toBeInTheDocument();
-    expect(screen.getByRole("progressbar", { name: "Progress" }))
-      .toHaveAttribute("aria-valuenow", "85");
-    fireEvent.click(screen.getByRole("button", { name: "final-cut.mp4" }));
+    expect(
+      screen.queryByRole("button", { name: "Render final cut" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("progressbar", { name: "Progress" }),
+    ).not.toBeInTheDocument();
+    fireEvent.click(
+      screen.getByRole("button", { name: /^final-cut\.mp4/ }),
+    );
     expect(await screen.findByText("Final Cut review")).toBeVisible();
     expect(screen.getByText("No visual evaluator is configured.")).toBeVisible();
+
+    fireEvent.click(screen.getByRole("button", { name: /^Share$/ }));
+    expect(screen.getByRole("dialog", { name: "Share and collaborate" })).toBeVisible();
+    fireEvent.change(screen.getByLabelText("Invitee email (optional)"), {
+      target: { value: "editor@example.com" },
+    });
+    expect(
+      screen.getByRole("button", { name: "Collaboration access" }),
+    ).toHaveTextContent("Can view");
+    fireEvent.click(
+      screen.getByRole("button", { name: "Collaboration access" }),
+    );
+    expect(screen.getByRole("listbox")).toBeVisible();
+    fireEvent.click(screen.getByRole("option", { name: "Can view" }));
+    fireEvent.click(screen.getByRole("button", { name: "Create link" }));
+    expect(
+      await screen.findByDisplayValue(
+        "http://localhost:3000/en/collaboration/token-1",
+      ),
+    ).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+
+    fireEvent.click(
+      screen.getByRole("button", { name: "Publish final-cut.mp4" }),
+    );
+    expect(
+      screen.getByRole("dialog", { name: "Publish final cut" }),
+    ).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: /^Publish$/ }));
+    expect(await screen.findByText("Published to Videos")).toBeVisible();
     },
     30_000,
   );
