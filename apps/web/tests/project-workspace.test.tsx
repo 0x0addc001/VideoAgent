@@ -517,7 +517,22 @@ describe("ProjectWorkspace", () => {
             shot_id: "shot-1",
             provider: "mock",
             provider_task_id: "mock-task-1",
-            status: "succeeded",
+            status: "running",
+            result_url: null,
+            error_code: null,
+            created_at: "2026-11-03T00:00:02Z",
+          }),
+        );
+      }
+      if (url.endsWith("/jobs/job-1") && !init?.method) {
+        return Promise.resolve(
+          Response.json({
+            id: "job-1",
+            project_id: "project-1",
+            shot_id: "shot-1",
+            provider: "mock",
+            provider_task_id: "mock-task-1",
+            status: "running",
             result_url: null,
             error_code: null,
             created_at: "2026-11-03T00:00:02Z",
@@ -795,6 +810,9 @@ describe("ProjectWorkspace", () => {
       });
       return true;
     });
+    expect(await screen.findByTestId("generation-progress")).toHaveTextContent(
+      "The video model is generating",
+    );
     expect(
       screen.queryByRole("button", { name: "Review" }),
     ).not.toBeInTheDocument();

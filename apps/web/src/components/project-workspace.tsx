@@ -696,6 +696,9 @@ export function workspaceCopy(locale: string) {
         generate: "生成",
         approvalRequired: "请先在小秘中批准故事，再生成镜头。",
         generating: "生成中……",
+        generationWaiting: "生成任务已提交，正在等待视频模型……",
+        generationRunning: "视频模型正在生成，通常需要几分钟……",
+        generationConfirming: "正在确认任务提交状态……",
         upload: "上传",
         uploading: "上传中……",
         downloadResult: "下载生成内容",
@@ -844,6 +847,9 @@ export function workspaceCopy(locale: string) {
         generate: "Generate",
         approvalRequired: "Approve the story in Agents before generating a shot.",
         generating: "Generating…",
+        generationWaiting: "The generation job is submitted and waiting for the video model…",
+        generationRunning: "The video model is generating the clip. This can take several minutes…",
+        generationConfirming: "Confirming the generation submission…",
         upload: "Upload",
         uploading: "Uploading…",
         downloadResult: "Download result",
@@ -3912,6 +3918,27 @@ export function ProjectWorkspace({
               </div>
             </div>
             <div className="min-h-0 flex-1 overflow-y-auto">
+              {activeJob ? (
+                <div
+                  aria-live="polite"
+                  className="sticky top-0 z-20 mx-4 mt-4 flex items-start gap-3 rounded-xl border border-[#1677ff]/25 bg-[#0b1728]/[0.96] px-4 py-3 shadow-lg shadow-black/20 backdrop-blur-xl sm:mx-6"
+                  data-testid="generation-progress"
+                >
+                  <LoaderCircle className="mt-0.5 h-4 w-4 shrink-0 animate-spin text-[#6eb8ff]" />
+                  <div className="min-w-0">
+                    <p className="text-[13px] font-semibold text-white/80">
+                      {t("generating")}
+                    </p>
+                    <p className="mt-1 text-[12px] leading-5 text-white/45">
+                      {activeJob.status === "running"
+                        ? copy.generationRunning
+                        : activeJob.status === "submission_uncertain"
+                          ? copy.generationConfirming
+                          : copy.generationWaiting}
+                    </p>
+                  </div>
+                </div>
+              ) : null}
               {selectedCanvas.kind === "settings" ? (
                 <article className="mx-auto max-w-4xl px-6 py-10 sm:px-10">
                   <p className="text-[12px] font-semibold text-[#6eb8ff]">
@@ -4660,13 +4687,16 @@ export function ProjectWorkspace({
                         className="rounded-xl bg-[#1677ff] px-3 py-2.5 text-[12px] font-semibold text-white disabled:opacity-35"
                         disabled={
                           isWorking ||
+                          Boolean(activeJob) ||
                           canvasShot.status === "completed" ||
                           workflow?.status !== "approved"
                         }
                         onClick={() => void generateShot()}
                         type="button"
                       >
-                        {isWorking ? copy.generating : copy.generate}
+                        {isWorking || activeJob
+                          ? copy.generating
+                          : copy.generate}
                       </button>
                     </div>
                     {estimate ? (
