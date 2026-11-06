@@ -44,6 +44,7 @@ describe("ProjectWorkspace", () => {
     expect(copy.saveSettings).toBe("保存设定");
     expect(copy.open).toBe("打开");
     expect(copy.prompt).toBe("提示词");
+    expect(copy.results).toBe("资产");
     expect(
       Object.values(copy).filter(
         (value) => typeof value === "string" && value.endsWith("集"),
@@ -1083,15 +1084,21 @@ describe("ProjectWorkspace", () => {
         init?.method === "POST"
       ) {
         messageAttempts += 1;
-        return Promise.resolve(
-          Response.json(
-            {
-              error: {
-                code: "PLANNER_UNAVAILABLE",
-                message: "Planner unavailable",
-              },
-            },
-            { status: 503 },
+        return new Promise((resolve) =>
+          window.setTimeout(
+            () =>
+              resolve(
+                Response.json(
+                  {
+                    error: {
+                      code: "PLANNER_UNAVAILABLE",
+                      message: "Planner unavailable",
+                    },
+                  },
+                  { status: 503 },
+                ),
+              ),
+            500,
           ),
         );
       }
@@ -1113,6 +1120,10 @@ describe("ProjectWorkspace", () => {
     });
     fireEvent.click(screen.getByRole("button", { name: "Send" }));
 
+    expect(screen.getByText("Continue the story")).toBeVisible();
+    expect(screen.getByTestId("agent-thinking")).toHaveTextContent(
+      "VideoAgent is thinking through the next step",
+    );
     expect(
       await screen.findByRole("dialog", {
         name: "Unable to continue",

@@ -1901,6 +1901,9 @@ export function LandingPage({
   }
 
   function openView(view: LandingView) {
+    if (view !== "conversation") {
+      setHashConversationId(null);
+    }
     if (view === "docs") {
       const firstDocument = content.documents[0]?.path;
       if (firstDocument) setActiveDocument(firstDocument);

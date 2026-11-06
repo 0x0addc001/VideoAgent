@@ -723,7 +723,7 @@ export function workspaceCopy(locale: string) {
         uploadCharacterImage: "上传角色图片",
         uploadSceneImage: "上传场地图片",
         uploadShotReference: "上传镜头参考素材",
-        results: "生成结果",
+        results: "资产",
         saveCharacter: "保存角色",
         sceneName: "场地名称",
         sceneDescription: "场地描述",
@@ -871,7 +871,7 @@ export function workspaceCopy(locale: string) {
         uploadCharacterImage: "Upload character image",
         uploadSceneImage: "Upload scene image",
         uploadShotReference: "Upload shot reference",
-        results: "Results",
+        results: "Assets",
         saveCharacter: "Save character",
         sceneName: "Scene name",
         sceneDescription: "Scene description",
@@ -2215,7 +2215,7 @@ export function ProjectWorkspace({
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView?.({ block: "end" });
-  }, [agentActivities, messages]);
+  }, [agentActivities, messages, pendingDecision]);
 
   useEffect(() => {
     if (!project || !agentActivityRunId || !isWorking) return;
@@ -2989,9 +2989,20 @@ export function ProjectWorkspace({
     const content = (contentOverride ?? messageDraft).trim();
     if (!project || !content || isWorking) return;
     const runId = beginAgentRun();
+    const optimisticMessageId = `pending-${runId}`;
     setIsWorking(true);
-    setPendingDecision(copy.thinking);
+    setPendingDecision(t("thinkingMessage"));
     setActionError(null);
+    setMessages((current) => [
+      ...current,
+      {
+        id: optimisticMessageId,
+        role: "user",
+        content,
+        created_at: new Date().toISOString(),
+      },
+    ]);
+    setMessageDraft("");
     try {
       const response = await fetch(`${API_BASE_URL}/projects/${project.id}/messages`, {
         method: "POST",
@@ -3007,7 +3018,11 @@ export function ProjectWorkspace({
       }
       const turn = (await response.json()) as AgentTurn;
       beginAssistantStream(turn.assistant_message);
-      setMessages((current) => [...current, turn.user_message, turn.assistant_message]);
+      setMessages((current) => [
+        ...current.filter((message) => message.id !== optimisticMessageId),
+        turn.user_message,
+        turn.assistant_message,
+      ]);
       setStoryboard(turn.storyboard);
       if (turn.workflow) setWorkflow(turn.workflow);
       setSelectedShotId(turn.storyboard.shots[0]?.id ?? null);
@@ -3019,12 +3034,14 @@ export function ProjectWorkspace({
         );
       }
       setEstimate(null);
-      setMessageDraft("");
       setMobilePanel("canvas");
       await refreshAssets();
       await settleAgentRun(runId);
       await refreshWorkspace();
     } catch (error) {
+      setMessages((current) =>
+        current.filter((message) => message.id !== optimisticMessageId),
+      );
       const message =
         error instanceof Error && error.message !== "agent-message-failed"
           ? error.message
@@ -5252,7 +5269,11 @@ export function ProjectWorkspace({
                   locale={locale}
                 />
               ) : pendingDecision ? (
-                <div className="mr-3 flex items-center gap-2 rounded-2xl border border-white/[0.07] bg-white/[0.02] px-4 py-3 text-[15px] leading-7 text-white/52">
+                <div
+                  aria-live="polite"
+                  className="mr-3 flex animate-pulse items-center gap-2 rounded-2xl border border-white/[0.07] bg-white/[0.02] px-4 py-3 text-[15px] leading-7 text-white/52"
+                  data-testid="agent-thinking"
+                >
                   <LoaderCircle className="h-4 w-4 shrink-0 animate-spin text-[#4facff]" />
                   {pendingDecision}
                 </div>

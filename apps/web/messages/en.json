@@ -44,6 +44,7 @@
     "shotCount": "{count} shots",
     "agentIntro": "Tell VideoAgent what you want to create. The storyboard will stay editable at every step.",
     "agentPlaceholder": "What are we making?",
+    "thinkingMessage": "VideoAgent is thinking through the next step…",
     "send": "Send",
     "shotInspector": "Shot settings",
     "aspectRatio": "Aspect ratio",

@@ -44,6 +44,7 @@
     "shotCount": "{count} 个镜头",
     "agentIntro": "告诉视频小秘你想创作什么。故事板在每一步都可以编辑。",
     "agentPlaceholder": "我们要做什么视频？",
+    "thinkingMessage": "视频小秘正在思考并规划下一步……",
     "send": "发送",
     "shotInspector": "镜头设置",
     "aspectRatio": "画面比例",

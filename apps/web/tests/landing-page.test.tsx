@@ -957,6 +957,17 @@ describe("LandingPage", () => {
         container.querySelector('[data-testid="conversation-content"]'),
       ),
     ).toHaveTextContent("project-1");
+
+    fireEvent.click(
+      [...container.querySelectorAll(".site-header button")].find(
+        (button) => button.textContent === "Skills",
+      )!,
+    );
+    expect(
+      container.querySelector('[data-testid="conversation-content"]'),
+    ).not.toBeInTheDocument();
+    expect(container.querySelector("#skills")).toBeInTheDocument();
+    expect(window.location.hash).toBe("#skills");
   });
 
   it("shows Projects and Recents before sign-in and without conversations", () => {
