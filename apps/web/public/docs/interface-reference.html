@@ -39,6 +39,7 @@
 <a class="toc-link toc-level-3" href="#read-storyboard">Read Storyboard</a>
 <a class="toc-link toc-level-3" href="#replace-storyboard">Replace Storyboard</a>
 <a class="toc-link toc-level-3" href="#reorder-storyboard">Reorder Storyboard</a>
+<a class="toc-link toc-level-3" href="#save-storyboard-version">Save Storyboard Version</a>
 <a class="toc-link toc-level-2" href="#videoagent-conversation">VideoAgent Conversation</a>
 <a class="toc-link toc-level-3" href="#list-messages">List Messages</a>
 <a class="toc-link toc-level-3" href="#send-message">Send Message</a>
@@ -262,6 +263,12 @@ http://localhost:8000/openapi.json</code></pre>
     &quot;00000000-0000-0000-0000-000000000001&quot;
   ]
 }</code></pre>
+<h3 id="save-storyboard-version">Save Storyboard Version</h3>
+<p><code>POST /projects/{project_id}/versions</code></p>
+<pre><code class="language-json">{
+  &quot;label&quot;: &quot;Director approved&quot;
+}</code></pre>
+<p><code>GET /projects/{project_id}/versions</code> lists immutable snapshot metadata. <code>POST /projects/{project_id}/versions/{version_id}/restore</code> restores the snapshot and returns the updated Storyboard. Snapshots include all Characters, Scenes, and Shots; they do not modify exported FinalCuts.</p>
 <h2 id="videoagent-conversation">VideoAgent Conversation</h2>
 <h3 id="list-messages">List Messages</h3>
 <p><code>GET /projects/{project_id}/messages</code></p>

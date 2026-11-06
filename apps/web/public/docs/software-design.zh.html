@@ -624,6 +624,11 @@ pippit-tool-cli query-result</code></pre>
 <td>每个项目唯一的当前故事板</td>
 </tr>
 <tr>
+<td><code>storyboard_versions</code></td>
+<td><code>project_id</code>, <code>revision</code>, <code>snapshot</code>, <code>created_by_id</code></td>
+<td>不可变故事板快照，用于保存与回滚</td>
+</tr>
+<tr>
 <td><code>characters</code></td>
 <td><code>id</code>, <code>storyboard_id</code>, <code>index</code>, <code>name</code>, prompts</td>
 <td>持续角色的描述与可复用图片提示词</td>
@@ -1037,11 +1042,13 @@ cancelled</code></pre>
 <li><code>Assets</code>：通过 Video 与 Skill 两个内部分页切换，支持搜索；Video 卡片悬浮静音播放，Skill 卡片不显示封面；卡片只展示权限和 <code>yyyy-mm-dd</code> 编辑时间。</li>
 <li>Assets 展示当前用户真实发布的 Videos 和 Skill；点击卡片打开详情，视频详情可直接播放。</li>
 <li><code>Docs</code>：按 PRD、策略、Arch、API、Dev、Test、Ops、FAQ、TODO 展示中英文文档，支持全文搜索。</li>
-<li>项目工作区采用 IDE 式布局：可压缩历史导航、<code>Directions</code> / <code>Visions</code> / <code>Versions</code></li>
-<p>资源树、中央编辑画布和右侧审批式 Agents。</p>
+<li>项目工作区采用 IDE 式布局：可压缩历史导航、<code>Directions</code> / <code>Visions</code></li>
+<p>资源树、独立 <code>Versions</code> 历史面板、中央编辑画布和右侧审批式 Agents。</p>
 <li>Assets 与 Agents 侧栏可折叠为带标签的窄轨；展开宽度使用响应式比例，适配不同桌面尺寸。</li>
 <li><code>Directions</code> 包含可编辑的 <code>Settings</code>、<code>Outlines</code>、<code>Scripts</code>；<code>Visions</code></li>
-<p>包含 <code>Characters</code>、<code>Scenes</code>、<code>Shots</code>；<code>Versions</code> 与二者同级，用于管理最终 导出视频版本及创建日期。Character 与 Scene 各自承接参考图，每个 Shot 使用一个合并页面； 空目录不显示等待文案。</p>
+<p>包含 <code>Characters</code>、<code>Scenes</code>、<code>Shots</code> 和 <code>FinalCuts</code>。<code>Versions</code> 不是对象目录， 而是 Storyboard 快照历史，支持查看和回滚。Character 与 Scene 各自承接参考图， 每个 Shot 使用一个合并页面；空目录不显示等待文案。</p>
+<li>画布标题栏显示最近保存时间，并提供 <code>Save</code> 与 <code>Share</code>；保存生成不可变快照，</li>
+<p>回滚将当前内容恢复为快照中的 Storyboard。</p>
 <li>Settings 从对话中提炼 <code>属性 / 值</code>，不直接展示原始问答或批准消息。</li>
 <li>属性抽取先排除语言纠错等元指令，再识别结构化的时长、形式、产品、开场、发展、结尾、</li>
 <p>基调和视觉方向；英文界面对可识别的中文术语做英文归一化，翻译不确定的内容不展示。</p>

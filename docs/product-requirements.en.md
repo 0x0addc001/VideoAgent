@@ -171,10 +171,15 @@ Assets contains the current user's finished and in-progress work.
 
 ### 7.1 Project Workspace and Delivery
 
-- The resource tree has three peer groups: `Directions` contains editable
-  Settings, Outlines, and Scripts; `Visions` contains Characters, Scenes, and
-  Shots; `Versions` contains exported final video versions with their creation
-  dates.
+- The resource tree has two object groups: `Directions` contains editable
+  Settings, Outlines, and Scripts; `Visions` contains Characters, Scenes,
+  Shots, and `FinalCuts`. `Versions` is a separate Storyboard snapshot history,
+  not an object directory.
+- The canvas header shows the latest saved time, then `Save`, then `Share`.
+  Saving creates an immutable snapshot of the complete Storyboard, Characters,
+  Scenes, and Shots.
+- Version history shows revision and save time, and supports
+  restore. Restored content is marked unsaved until saved again.
 - Settings combines production attributes and extracted Agent-director clues in
   one `Attribute / Value` table. Q&A is reduced to semantic keys and values;
   approval messages are not treated as attributes.

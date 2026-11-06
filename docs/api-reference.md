@@ -189,6 +189,21 @@ Shot IDs, generated assets, generation history, and project continuity.
 }
 ```
 
+### Save Storyboard Version
+
+`POST /projects/{project_id}/versions`
+
+```json
+{
+  "label": "Director approved"
+}
+```
+
+`GET /projects/{project_id}/versions` lists immutable snapshot metadata.
+`POST /projects/{project_id}/versions/{version_id}/restore` restores the
+snapshot and returns the updated Storyboard. Snapshots include all Characters,
+Scenes, and Shots; they do not modify exported FinalCuts.
+
 ## VideoAgent Conversation
 
 ### List Messages

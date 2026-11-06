@@ -293,6 +293,26 @@ class Shot(Base):
     storyboard: Mapped[Storyboard] = relationship(back_populates="shots")
 
 
+class StoryboardVersion(Base):
+    __tablename__ = "storyboard_versions"
+    __table_args__ = (UniqueConstraint("project_id", "revision"),)
+
+    id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    project_id: Mapped[UUID] = mapped_column(
+        ForeignKey("projects.id", ondelete="CASCADE"),
+        index=True,
+    )
+    revision: Mapped[int] = mapped_column(Integer)
+    label: Mapped[str] = mapped_column(String(120), default="Manual save")
+    storyboard_version: Mapped[int] = mapped_column(Integer)
+    snapshot: Mapped[dict[str, object]] = mapped_column(JSON)
+    created_by_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utcnow)
+
+
 class GenerationJob(Base):
     __tablename__ = "generation_jobs"
     __table_args__ = (UniqueConstraint("shot_id", "idempotency_key"),)

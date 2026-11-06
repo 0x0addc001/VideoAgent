@@ -336,6 +336,7 @@ ORM 表：
 | `sessions` | 服务端会话 Token 哈希 |
 | `projects` | 项目和所有者 |
 | `storyboards` | 每个项目唯一的当前故事板 |
+| `storyboard_versions` | 项目级不可变 Storyboard JSON 快照、修订号与保存时间 |
 | `characters` | 可复用角色对象、描述和图片 Prompt |
 | `scenes` | 可复用场景、场地、环境描述和图片 Prompt |
 | `shots` | 镜头 Prompt、比例、时长和状态 |
@@ -458,6 +459,8 @@ task reference    → query-result   → JobStatus + result URL
 | GET | `/hots/{id}/video` | 播放公开视频 |
 | GET | `/projects/{id}/storyboard` | 获取故事板 |
 | PUT | `/projects/{id}/storyboard` | 整体替换故事板 |
+| GET/POST | `/projects/{id}/versions` | 读取或保存 Storyboard 快照 |
+| POST | `/projects/{id}/versions/{version_id}/restore` | 回滚 Storyboard 快照 |
 | PATCH | `/projects/{id}/storyboard/order` | 调整镜头顺序并保留 Shot ID 与资产 |
 | PATCH | `/projects/{id}/storyboard/shots/{shot_id}` | 编辑单个 Shot |
 | PATCH | `/projects/{id}/storyboard/characters/{character_id}` | 编辑单个 Character |

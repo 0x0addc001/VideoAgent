@@ -403,6 +403,10 @@ Chinese: product-requirements.zh.html</code></pre>
 <td>Current board and version</td>
 </tr>
 <tr>
+<td><code>storyboard_versions</code></td>
+<td>Immutable project Storyboard snapshots, revisions, and save time</td>
+</tr>
+<tr>
 <td><code>characters</code></td>
 <td>Reusable character objects and image prompts</td>
 </tr>
@@ -591,6 +595,14 @@ Chinese: product-requirements.zh.html</code></pre>
 <tr>
 <td><code>PATCH</code></td>
 <td><code>/projects/{id}/storyboard/order</code></td>
+</tr>
+<tr>
+<td><code>GET/POST</code></td>
+<td><code>/projects/{id}/versions</code></td>
+</tr>
+<tr>
+<td><code>POST</code></td>
+<td><code>/projects/{id}/versions/{version_id}/restore</code></td>
 </tr>
 <tr>
 <td><code>PATCH</code></td>

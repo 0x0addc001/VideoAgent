@@ -1,12 +1,13 @@
 from typing import Literal
 from uuid import UUID
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from videoagent.errors import AppError
 from videoagent.models import (
+    Asset,
     Character,
     Project,
     ProjectCollaborator,
@@ -104,8 +105,19 @@ async def replace_storyboard(
         session.add(storyboard)
         await session.flush()
     else:
-        await session.execute(delete(Shot).where(Shot.storyboard_id == storyboard.id))
         storyboard.version += 1
+        await session.flush()
+
+    existing_shots = list(
+        (
+            await session.scalars(
+                select(Shot).where(Shot.storyboard_id == storyboard.id).order_by(Shot.index)
+            )
+        ).all()
+    )
+    for position, existing_shot in enumerate(existing_shots):
+        existing_shot.index = -(position + 1)
+    if existing_shots:
         await session.flush()
 
     if characters is not None:
@@ -166,20 +178,28 @@ async def replace_storyboard(
         for existing_scene in existing_scenes:
             if existing_scene.id not in retained_scene_ids:
                 await session.delete(existing_scene)
+    retained_shot_ids: set[UUID] = set()
     for index, shot_data in enumerate(shots):
-        session.add(
-            Shot(
-                storyboard_id=storyboard.id,
-                index=index,
-                description=shot_data.description,
-                prompt_en=shot_data.prompt_en,
-                prompt_zh=shot_data.prompt_zh,
-                duration_seconds=shot_data.duration_seconds,
-                aspect_ratio=shot_data.aspect_ratio,
-                generation_mode=shot_data.generation_mode,
-                status="ready",
-            )
+        saved_shot = existing_shots[index] if index < len(existing_shots) else None
+        if saved_shot is None:
+            saved_shot = Shot(storyboard_id=storyboard.id)
+            session.add(saved_shot)
+        else:
+            retained_shot_ids.add(saved_shot.id)
+        saved_shot.index = index
+        saved_shot.description = shot_data.description
+        saved_shot.prompt_en = shot_data.prompt_en
+        saved_shot.prompt_zh = shot_data.prompt_zh
+        saved_shot.duration_seconds = shot_data.duration_seconds
+        saved_shot.aspect_ratio = shot_data.aspect_ratio
+        saved_shot.generation_mode = shot_data.generation_mode
+        saved_shot.status = "ready"
+    discarded_shot_ids = [shot.id for shot in existing_shots if shot.id not in retained_shot_ids]
+    if discarded_shot_ids:
+        await session.execute(
+            update(Asset).where(Asset.shot_id.in_(discarded_shot_ids)).values(shot_id=None)
         )
+        await session.execute(delete(Shot).where(Shot.id.in_(discarded_shot_ids)))
     await session.flush()
     saved = await load_storyboard(session, project_id)
     if saved is None:

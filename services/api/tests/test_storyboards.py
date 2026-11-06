@@ -182,6 +182,67 @@ async def test_reordering_storyboard_rejects_partial_shot_set(client):
 
 
 @pytest.mark.api
+async def test_storyboard_versions_can_be_saved_listed_and_restored(client):
+    assert (await register(client)).status_code == 201
+    project = await create_project(client)
+    created = await client.put(
+        f"/api/v1/projects/{project['id']}/storyboard",
+        json={
+            "characters": [
+                {
+                    "name": "Avery",
+                    "description": "The recurring lead.",
+                    "prompt_en": "Cinematic portrait of Avery",
+                }
+            ],
+            "scenes": [
+                {
+                    "name": "Studio",
+                    "location": "Downtown studio",
+                    "description": "A warm production studio.",
+                    "prompt_en": "Warm production studio",
+                }
+            ],
+            "shots": [
+                {
+                    "description": "Opening",
+                    "prompt_en": "Cinematic opening",
+                }
+            ],
+        },
+    )
+    shot_id = created.json()["shots"][0]["id"]
+
+    saved = await client.post(
+        f"/api/v1/projects/{project['id']}/versions",
+        json={"label": "Director approved"},
+    )
+    assert saved.status_code == 201
+    saved_body = saved.json()
+    assert saved_body["revision"] == 1
+    assert saved_body["shot_count"] == 1
+
+    edited = await client.patch(
+        f"/api/v1/projects/{project['id']}/storyboard/shots/{shot_id}",
+        json={"description": "Changed after save", "prompt_en": "Changed prompt"},
+    )
+    assert edited.status_code == 200
+
+    versions = await client.get(f"/api/v1/projects/{project['id']}/versions")
+    assert versions.status_code == 200
+    assert versions.json()["items"][0]["label"] == "Director approved"
+
+    restored = await client.post(
+        f"/api/v1/projects/{project['id']}/versions/{saved_body['id']}/restore"
+    )
+    assert restored.status_code == 200
+    restored_body = restored.json()
+    assert restored_body["shots"][0]["id"] == shot_id
+    assert restored_body["shots"][0]["description"] == "Opening"
+    assert restored_body["shots"][0]["prompt_en"] == "Cinematic opening"
+
+
+@pytest.mark.api
 async def test_storyboard_rejects_invalid_generation_mode(client):
     assert (await register(client)).status_code == 201
     project = await create_project(client)

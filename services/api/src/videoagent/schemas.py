@@ -401,6 +401,26 @@ class StoryboardRead(BaseModel):
     updated_at: datetime
 
 
+class StoryboardVersionCreate(BaseModel):
+    label: str = Field(default="Manual save", min_length=1, max_length=120)
+
+
+class StoryboardVersionRead(BaseModel):
+    id: UUID
+    project_id: UUID
+    revision: int
+    label: str
+    storyboard_version: int
+    shot_count: int
+    character_count: int
+    scene_count: int
+    created_at: datetime
+
+
+class StoryboardVersionList(BaseModel):
+    items: list[StoryboardVersionRead]
+
+
 class ProjectProgressRead(BaseModel):
     percent: int = Field(ge=0, le=100)
     workflow_stage: WorkflowStage

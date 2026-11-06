@@ -131,6 +131,46 @@ describe("ProjectWorkspace", () => {
           }),
         );
       }
+      if (url.endsWith("/projects/project-1/versions") && !init?.method) {
+        return Promise.resolve(
+          Response.json({
+            items: [
+              {
+                id: "version-1",
+                project_id: "project-1",
+                revision: 1,
+                label: "Director approved",
+                storyboard_version: 1,
+                shot_count: 2,
+                character_count: 1,
+                scene_count: 1,
+                created_at: "2026-11-06T01:20:00Z",
+              },
+            ],
+          }),
+        );
+      }
+      if (
+        url.endsWith("/projects/project-1/versions") &&
+        init?.method === "POST"
+      ) {
+        return Promise.resolve(
+          Response.json(
+            {
+              id: "version-2",
+              project_id: "project-1",
+              revision: 2,
+              label: "Manual save",
+              storyboard_version: 1,
+              shot_count: 2,
+              character_count: 1,
+              scene_count: 1,
+              created_at: "2026-11-06T02:30:00Z",
+            },
+            { status: 201 },
+          ),
+        );
+      }
       if (url.endsWith("/projects/project-1/visual-review/models")) {
         return Promise.resolve(Response.json({ items: [] }));
       }
@@ -494,7 +534,26 @@ describe("ProjectWorkspace", () => {
     expect(screen.queryByRole("button", { name: "Generation" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Shots" })).toBeVisible();
     expect(screen.getByRole("button", { name: "Shot 1" })).toBeVisible();
-    expect(screen.getByRole("button", { name: "Versions" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "FinalCuts" })).toBeVisible();
+    expect(screen.getByText("Versions")).toBeVisible();
+    expect(screen.getByText(/v1 · Director approved/)).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "Restore v1" }),
+    ).toBeVisible();
+    expect(screen.getByText(/Saved at/)).toBeVisible();
+    fireEvent.click(
+      screen.getByRole("button", { name: /^Save$/ }),
+    );
+    await waitFor(() => {
+      expect(
+        fetchMock.mock.calls.some(
+          ([input, init]) =>
+            String(input).endsWith("/projects/project-1/versions") &&
+            init?.method === "POST",
+        ),
+      ).toBe(true);
+    });
+    expect(await screen.findByText(/v2 · Manual save/)).toBeVisible();
     expect(screen.queryByRole("button", { name: "Final Cut" })).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Upload asset")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Storyboard" })).not.toBeInTheDocument();

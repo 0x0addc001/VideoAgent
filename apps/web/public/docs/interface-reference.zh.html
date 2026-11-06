@@ -39,6 +39,7 @@
 <a class="toc-link toc-level-3" href="#读取">读取</a>
 <a class="toc-link toc-level-3" href="#整体替换">整体替换</a>
 <a class="toc-link toc-level-3" href="#镜头排序">镜头排序</a>
+<a class="toc-link toc-level-3" href="#保存故事板版本">保存故事板版本</a>
 <a class="toc-link toc-level-2" href="#agent-对话">Agent 对话</a>
 <a class="toc-link toc-level-3" href="#消息历史">消息历史</a>
 <a class="toc-link toc-level-3" href="#发送消息">发送消息</a>
@@ -259,6 +260,12 @@ http://localhost:8000/openapi.json</code></pre>
     &quot;00000000-0000-0000-0000-000000000001&quot;
   ]
 }</code></pre>
+<h3 id="保存故事板版本">保存故事板版本</h3>
+<p><code>POST /projects/{project_id}/versions</code></p>
+<pre><code class="language-json">{
+  &quot;label&quot;: &quot;导演确认&quot;
+}</code></pre>
+<p><code>GET /projects/{project_id}/versions</code> 返回不可变快照的元数据； <code>POST /projects/{project_id}/versions/{version_id}/restore</code> 回滚指定快照并返回 更新后的 Storyboard。快照包含全部 Characters、Scenes 和 Shots，不会修改已经导出的 FinalCuts。</p>
 <h2 id="agent-对话">Agent 对话</h2>
 <h3 id="消息历史">消息历史</h3>
 <p><code>GET /projects/{project_id}/messages</code></p>

@@ -1,0 +1,207 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="820" viewBox="0 0 1500 820" role="img" aria-labelledby="title desc">
+  <title id="title">VideoAgent technical architecture</title>
+  <desc id="desc">Five-stage architecture: director workspace, FastAPI control plane, Agent and domain services, asynchronous generation and providers, then durable data and final-cut delivery.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#060a12"/>
+      <stop offset="1" stop-color="#0a1320"/>
+    </linearGradient>
+    <linearGradient id="logo" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#1677ff"/>
+      <stop offset="1" stop-color="#72ceff"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#b7d8ff" stroke-opacity=".025"/>
+    </pattern>
+    <filter id="shadow" x="-15%" y="-15%" width="130%" height="140%">
+      <feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#000" flood-opacity=".28"/>
+    </filter>
+    <marker id="blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10Z" fill="#55b9ff"/>
+    </marker>
+    <marker id="green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10Z" fill="#4be3a5"/>
+    </marker>
+    <marker id="amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10Z" fill="#ffbd66"/>
+    </marker>
+    <style>
+      text { font-family: Manrope, "Segoe UI", Arial, sans-serif; }
+      .brand { fill:#f7faff; font-size:31px; font-weight:700; letter-spacing:-.7px; }
+      .kicker { fill:#71c4ff; font-size:11px; font-weight:700; letter-spacing:1.5px; }
+      .subtitle { fill:#8da2b9; font-size:13px; }
+      .step { fill:#6f89a2; font-size:10.5px; font-weight:700; letter-spacing:1.2px; }
+      .column { fill:#edf5ff; font-size:20px; font-weight:700; }
+      .column-sub { fill:#7e93a9; font-size:11.5px; }
+      .chip { fill:#0a1422; stroke:#213a55; }
+      .chip-title { fill:#e9f3ff; font-size:13px; font-weight:650; }
+      .chip-copy { fill:#7d92a9; font-size:10.5px; }
+      .card { fill:#0d1726; stroke:#243b55; }
+      .flow { fill:none; stroke:#55b9ff; stroke-width:1.8; marker-end:url(#blue); }
+      .flow-async { fill:none; stroke:#4be3a5; stroke-width:1.8; stroke-dasharray:8 6; marker-end:url(#green); }
+      .flow-data { fill:none; stroke:#ffbd66; stroke-width:1.7; stroke-dasharray:3 5; marker-end:url(#amber); }
+      .flow-label { fill:#8197ad; font-size:9.5px; font-weight:600; }
+      .footer { fill:#71869c; font-size:10px; }
+    </style>
+  </defs>
+
+  <rect width="1500" height="820" fill="url(#bg)"/>
+  <rect width="1500" height="820" fill="url(#grid)"/>
+  <circle cx="1380" cy="64" r="150" fill="#1677ff" opacity=".065"/>
+
+  <g transform="translate(58 36)">
+    <rect width="52" height="52" rx="14" fill="#0c1930" stroke="#2b67a3"/>
+    <path d="M16 13L40 26L16 39Z" fill="url(#logo)"/>
+    <text x="70" y="13" class="kicker">VIDEOAGENT / TECHNICAL ARCHITECTURE</text>
+    <text x="70" y="45" class="brand">One controlled path from idea to film</text>
+    <text x="0" y="77" class="subtitle">The director sets direction. The Agent plans. Services enforce control. Durable storage preserves every result.</text>
+  </g>
+
+  <!-- Stage 1 -->
+  <g transform="translate(58 160)" filter="url(#shadow)">
+    <rect width="244" height="544" rx="20" class="card"/>
+    <text x="18" y="29" class="step">01 / EXPERIENCE</text>
+    <text x="18" y="58" class="column">Director workspace</text>
+    <text x="18" y="79" class="column-sub">Browser and product shell</text>
+    <g transform="translate(14 104)">
+      <rect width="216" height="52" rx="10" class="chip"/>
+      <text x="12" y="20" class="chip-title">Browser / Next.js</text>
+      <text x="12" y="37" class="chip-copy">responsive product application</text>
+      <rect y="62" width="216" height="52" rx="10" class="chip"/>
+      <text x="12" y="82" class="chip-title">Agent chat &amp; approvals</text>
+      <text x="12" y="99" class="chip-copy">live execution trace</text>
+      <rect y="124" width="216" height="52" rx="10" class="chip"/>
+      <text x="12" y="144" class="chip-title">Storyboard canvas</text>
+      <text x="12" y="161" class="chip-copy">edit content and shot settings</text>
+      <rect y="186" width="216" height="52" rx="10" class="chip"/>
+      <text x="12" y="206" class="chip-title">Assets / Versions / Docs</text>
+      <text x="12" y="223" class="chip-copy">review, restore, search</text>
+      <rect y="248" width="216" height="52" rx="10" class="chip"/>
+      <text x="12" y="268" class="chip-title">Share &amp; publish</text>
+      <text x="12" y="285" class="chip-copy">collaboration and community</text>
+    </g>
+  </g>
+
+  <!-- Stage 2 -->
+  <g transform="translate(338 160)" filter="url(#shadow)">
+    <rect width="244" height="544" rx="20" class="card"/>
+    <text x="18" y="29" class="step">02 / CONTROL PLANE</text>
+    <text x="18" y="58" class="column">FastAPI</text>
+    <text x="18" y="79" class="column-sub">Python 3.12 · async REST</text>
+    <g transform="translate(14 104)">
+      <rect width="216" height="52" rx="10" class="chip"/>
+      <text x="12" y="20" class="chip-title">Sessions &amp; security</text>
+      <text x="12" y="37" class="chip-copy">HttpOnly · CSRF · rate limits</text>
+      <rect y="62" width="216" height="52" rx="10" class="chip"/>
+      <text x="12" y="82" class="chip-title">REST endpoints</text>
+      <text x="12" y="99" class="chip-copy">projects, messages, jobs, assets</text>
+      <rect y="124" width="216" height="52" rx="10" class="chip"/>
+      <text x="12" y="144" class="chip-title">Approval boundary</text>
+      <text x="12" y="161" class="chip-copy">credits before billable calls</text>
+      <rect y="186" width="216" height="52" rx="10" class="chip"/>
+      <text x="12" y="206" class="chip-title">Idempotency</text>
+      <text x="12" y="223" class="chip-copy">safe retries and reconciliation</text>
+      <rect y="248" width="216" height="52" rx="10" class="chip"/>
+      <text x="12" y="268" class="chip-title">Pydantic contracts</text>
+      <text x="12" y="285" class="chip-copy">validated request and response data</text>
+    </g>
+  </g>
+
+  <!-- Stage 3 -->
+  <g transform="translate(618 160)" filter="url(#shadow)">
+    <rect width="244" height="544" rx="20" class="card" stroke="#2b6ca6"/>
+    <text x="18" y="29" class="step">03 / INTELLIGENCE</text>
+    <text x="18" y="58" class="column">Agent + services</text>
+    <text x="18" y="79" class="column-sub">Planning and domain policy</text>
+    <g transform="translate(14 104)">
+      <rect width="216" height="52" rx="10" class="chip"/>
+      <text x="12" y="20" class="chip-title">Context + Memory</text>
+      <text x="12" y="37" class="chip-copy">brief, history, Skills, storyboard</text>
+      <rect y="62" width="216" height="52" rx="10" class="chip"/>
+      <text x="12" y="82" class="chip-title">LangGraph planner</text>
+      <text x="12" y="99" class="chip-copy">remote LLM → local fallback</text>
+      <rect y="124" width="216" height="52" rx="10" class="chip"/>
+      <text x="12" y="144" class="chip-title">StoryboardPlan</text>
+      <text x="12" y="161" class="chip-copy">Characters · Scenes · Shots</text>
+      <rect y="186" width="216" height="52" rx="10" class="chip"/>
+      <text x="12" y="206" class="chip-title">Projects &amp; versions</text>
+      <text x="12" y="223" class="chip-copy">save, history, rollback</text>
+      <rect y="248" width="216" height="52" rx="10" class="chip"/>
+      <text x="12" y="268" class="chip-title">Credits &amp; assets</text>
+      <text x="12" y="285" class="chip-copy">reserve, refund, selection</text>
+    </g>
+  </g>
+
+  <!-- Stage 4 -->
+  <g transform="translate(898 160)" filter="url(#shadow)">
+    <rect width="244" height="544" rx="20" class="card" stroke="#28735a"/>
+    <text x="18" y="29" class="step" fill="#4be3a5">04 / GENERATION</text>
+    <text x="18" y="58" class="column">Async + models</text>
+    <text x="18" y="79" class="column-sub">Provider-neutral execution</text>
+    <g transform="translate(14 104)">
+      <rect width="216" height="52" rx="10" class="chip"/>
+      <text x="12" y="20" class="chip-title">Redis + Celery</text>
+      <text x="12" y="37" class="chip-copy">broker, worker, result backend</text>
+      <rect y="62" width="216" height="52" rx="10" class="chip"/>
+      <text x="12" y="82" class="chip-title">Polling fallback</text>
+      <text x="12" y="99" class="chip-copy">persisted jobs survive queue loss</text>
+      <rect y="124" width="216" height="52" rx="10" class="chip"/>
+      <text x="12" y="144" class="chip-title">Provider Resolver</text>
+      <text x="12" y="161" class="chip-copy">capability, model, task type</text>
+      <rect y="186" width="216" height="52" rx="10" class="chip"/>
+      <text x="12" y="206" class="chip-title">Pippit CLI</text>
+      <text x="12" y="223" class="chip-copy">Seedance · Wan · references</text>
+      <rect y="248" width="216" height="52" rx="10" class="chip"/>
+      <text x="12" y="268" class="chip-title">Kling CLI / MCP</text>
+      <text x="12" y="285" class="chip-copy">T2V · I2V · Omni-Ref · edit</text>
+      <rect y="310" width="216" height="52" rx="10" class="chip"/>
+      <text x="12" y="330" class="chip-title">Mock Provider</text>
+      <text x="12" y="347" class="chip-copy">testing without paid credits</text>
+    </g>
+  </g>
+
+  <!-- Stage 5 -->
+  <g transform="translate(1178 160)" filter="url(#shadow)">
+    <rect width="264" height="544" rx="20" class="card" stroke="#8e5c26"/>
+    <text x="18" y="29" class="step" fill="#ffbd66">05 / DELIVERY</text>
+    <text x="18" y="58" class="column">Data + FinalCuts</text>
+    <text x="18" y="79" class="column-sub">Durable output and distribution</text>
+    <g transform="translate(14 104)">
+      <rect width="236" height="52" rx="10" class="chip"/>
+      <text x="12" y="20" class="chip-title">PostgreSQL / SQLite</text>
+      <text x="12" y="37" class="chip-copy">business source of truth</text>
+      <rect y="62" width="236" height="52" rx="10" class="chip"/>
+      <text x="12" y="82" class="chip-title">Media storage / MinIO</text>
+      <text x="12" y="99" class="chip-copy">images, video, audio, checksums</text>
+      <rect y="124" width="236" height="52" rx="10" class="chip"/>
+      <text x="12" y="144" class="chip-title">FFmpeg rendering</text>
+      <text x="12" y="161" class="chip-copy">captions, soundtrack, ratios</text>
+      <rect y="186" width="236" height="52" rx="10" class="chip"/>
+      <text x="12" y="206" class="chip-title">FinalCuts &amp; review</text>
+      <text x="12" y="223" class="chip-copy">versions and visual metrics</text>
+      <rect y="248" width="236" height="52" rx="10" class="chip"/>
+      <text x="12" y="268" class="chip-title">Deliver</text>
+      <text x="12" y="285" class="chip-copy">share, collaborate, publish</text>
+    </g>
+  </g>
+
+  <!-- Clean gutter arrows -->
+  <path d="M302 326H338" class="flow"/>
+  <path d="M582 326H618" class="flow"/>
+  <path d="M862 326H898" class="flow-async"/>
+  <path d="M1142 326H1178" class="flow-data"/>
+  <text x="305" y="314" class="flow-label">HTTPS</text>
+  <text x="586" y="314" class="flow-label">plan</text>
+  <text x="865" y="314" class="flow-label">jobs</text>
+  <text x="1143" y="314" class="flow-label">assets</text>
+
+  <!-- Footer -->
+  <rect x="58" y="733" width="1384" height="1" fill="#1b3046"/>
+  <text x="58" y="755" class="footer">SYNC</text>
+  <text x="108" y="755" class="footer">browser ↔ FastAPI</text>
+  <text x="330" y="755" class="footer">ASYNC</text>
+  <text x="380" y="755" class="footer">FastAPI → Redis/Celery → Provider</text>
+  <text x="720" y="755" class="footer">DURABLE</text>
+  <text x="782" y="755" class="footer">database and media remain the source of truth</text>
+  <text x="58" y="785" class="footer">CROSS-CUTTING  ·  server-side credentials  ·  user/project isolation  ·  approvals  ·  idempotency  ·  observable Agent activity</text>
+</svg>

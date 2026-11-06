@@ -16,6 +16,8 @@ import {
   Folder,
   FolderOpen,
   Gem,
+  GitBranch,
+  History,
   Image,
   Link2,
   LoaderCircle,
@@ -30,6 +32,8 @@ import {
   PanelRightOpen,
   Pencil,
   Plus,
+  RotateCcw,
+  Save as SaveIcon,
   ScanSearch,
   Send,
   Share2,
@@ -128,6 +132,18 @@ type Storyboard = {
   shots: Shot[];
   characters: Character[];
   scenes: Scene[];
+};
+
+type StoryboardVersion = {
+  id: string;
+  project_id: string;
+  revision: number;
+  label: string;
+  storyboard_version: number;
+  shot_count: number;
+  character_count: number;
+  scene_count: number;
+  created_at: string;
 };
 
 type CostEstimate = {
@@ -320,6 +336,15 @@ const IMAGE_MODEL_OPTIONS = [
     provider: "Kling",
   },
 ] as const;
+
+function optionalFetch(
+  input: RequestInfo | URL,
+  init?: RequestInit,
+): Promise<Response | null> {
+  return Promise.resolve()
+    .then(() => fetch(input, init))
+    .catch(() => null);
+}
 
 function selectedModelRoute(modelId: string) {
   if (modelId === "project") return {};
@@ -555,8 +580,13 @@ function workspaceCopy(locale: string) {
         character: "角色集",
         scene: "场景集",
         scenes: "Scenes",
+        finalCuts: "最终成片",
         location: "地点",
         versions: "版本",
+        savedAt: "保存于",
+        notSaved: "尚未保存",
+        restore: "回滚",
+        restoreConfirm: "回滚到这个故事板版本？当前未保存的修改会被替换。",
         thinking: "思考中",
         noAssets: "当前对话还没有资产。",
         brief: "方向",
@@ -653,8 +683,14 @@ function workspaceCopy(locale: string) {
         character: "Characters",
         scene: "Scenes",
         scenes: "Scenes",
+        finalCuts: "FinalCuts",
         location: "Location",
         versions: "Versions",
+        savedAt: "Saved at",
+        notSaved: "Not saved yet",
+        restore: "Restore",
+        restoreConfirm:
+          "Restore this storyboard version? Unsaved current changes will be replaced.",
         thinking: "Thinking",
         noAssets: "No assets in this conversation yet.",
         brief: "Direction",
@@ -1215,7 +1251,9 @@ type AssetsTreeProps = {
   selected: CanvasSelection;
   selectedResourceAssets: Record<string, string>;
   storyboard: Storyboard | null;
+  versions: StoryboardVersion[];
   onSelect: (selection: CanvasSelection) => void;
+  onRestoreVersion: (version: StoryboardVersion) => void;
   onToggleCollapsed: () => void;
 };
 
@@ -1229,7 +1267,9 @@ function AssetsTree({
   selected,
   selectedResourceAssets,
   storyboard,
+  versions,
   onSelect,
+  onRestoreVersion,
   onToggleCollapsed,
 }: AssetsTreeProps) {
   const [sections, setSections] = useState({
@@ -1238,7 +1278,7 @@ function AssetsTree({
     character: true,
     scene: true,
     shots: true,
-    versions: true,
+    finalCuts: true,
   });
   const selectedClass =
     "border-[#1677ff]/30 bg-[#1677ff]/[0.08] text-white";
@@ -1308,7 +1348,7 @@ function AssetsTree({
   const sourceAssets = assets.filter(
     (asset) => !["export", "cover"].includes(asset.kind),
   );
-  const versionAssets = assets.filter((asset) => asset.kind === "export");
+  const finalCutAssets = assets.filter((asset) => asset.kind === "export");
 
   return (
     <aside className="relative flex w-full min-h-0 min-w-0 shrink-0 flex-col border-r border-white/[0.07] bg-[#0b0a08]/[0.72] backdrop-blur-lg">
@@ -1574,36 +1614,76 @@ function AssetsTree({
                 </div>
               ) : null}
 
+              {sectionButton("finalCuts", copy.finalCuts, true)}
+              {sections.finalCuts ? (
+                <div className="space-y-1 pl-7">
+                  {finalCutAssets.map((asset) => (
+                    <button
+                      className={cn(
+                        "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
+                        selected.kind === "asset" &&
+                          selected.assetId === asset.id
+                          ? selectedClass
+                          : idleClass,
+                      )}
+                      key={asset.id}
+                      onClick={() =>
+                        onSelect({ kind: "asset", assetId: asset.id })
+                      }
+                      type="button"
+                    >
+                      <Film className="h-3.5 w-3.5 text-[#4facff]" />
+                      <span className="truncate">{asset.filename}</span>
+                      <time
+                        className="ml-auto shrink-0 text-white/28"
+                        dateTime={asset.created_at}
+                      >
+                        {asset.created_at.slice(0, 10)}
+                      </time>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+
             </div>
           ) : null}
 
-          {sectionButton("versions", copy.versions)}
-          {sections.versions ? (
-            <div className="space-y-1 pl-3">
-              {versionAssets.map((asset) => (
-                <button
-                  className={cn(
-                    "flex w-full items-center gap-2 rounded-lg border px-3 py-2 text-left text-[12px] transition",
-                    selected.kind === "asset" && selected.assetId === asset.id
-                      ? selectedClass
-                      : idleClass,
-                  )}
-                  key={asset.id}
-                  onClick={() => onSelect({ kind: "asset", assetId: asset.id })}
-                  type="button"
+          <div className="mt-3 border-t border-white/[0.07] pt-3">
+            <div className="flex items-center gap-2 px-2 py-2 text-[15px] font-semibold text-white/48">
+              <History className="h-4 w-4 text-[#6eb8ff]" />
+              {copy.versions}
+            </div>
+            <div className="space-y-1">
+              {versions.map((version) => (
+                <div
+                  className="group flex items-center gap-2 rounded-lg border border-transparent px-3 py-2 text-[12px] text-white/52 hover:border-white/[0.07] hover:bg-white/[0.03]"
+                  key={version.id}
                 >
-                  <Film className="h-3.5 w-3.5 text-[#4facff]" />
-                  <span className="truncate">{asset.filename}</span>
-                  <time
-                    className="ml-auto shrink-0 text-white/28"
-                    dateTime={asset.created_at}
+                  <GitBranch className="h-3.5 w-3.5 shrink-0 text-[#4facff]" />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate font-medium text-white/72">
+                      v{version.revision} · {version.label}
+                    </span>
+                    <time
+                      className="mt-0.5 block text-[10px] text-white/28"
+                      dateTime={version.created_at}
+                    >
+                      {version.created_at.slice(0, 16).replace("T", " ")}
+                    </time>
+                  </span>
+                  <button
+                    aria-label={`${copy.restore} v${version.revision}`}
+                    className="grid size-7 shrink-0 place-items-center rounded-md text-white/32 hover:bg-white/[0.05] hover:text-[#8fdcff]"
+                    onClick={() => onRestoreVersion(version)}
+                    title={copy.restore}
+                    type="button"
                   >
-                    {asset.created_at.slice(0, 10)}
-                  </time>
-                </button>
+                    <RotateCcw className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               ))}
             </div>
-          ) : null}
+          </div>
         </div>
       </div>
     </aside>
@@ -1621,6 +1701,11 @@ export function ProjectWorkspace({
   const locale = useLocale();
   const [project, setProject] = useState<Project | null>(null);
   const [storyboard, setStoryboard] = useState<Storyboard | null>(null);
+  const [storyboardVersions, setStoryboardVersions] = useState<
+    StoryboardVersion[]
+  >([]);
+  const [savedAt, setSavedAt] = useState<string | null>(null);
+  const [isSavingVersion, setIsSavingVersion] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [agentActivities, setAgentActivities] = useState<AgentActivity[]>([]);
   const [agentActivityRunId, setAgentActivityRunId] = useState<string | null>(
@@ -1766,6 +1851,7 @@ export function ProjectWorkspace({
           assetsResponse,
           workspaceResponse,
           workflowResponse,
+          versionsResponse,
         ] = await Promise.all([
           fetch(`${API_BASE_URL}/projects/${projectId}`, { credentials: "include" }),
           fetch(`${API_BASE_URL}/projects/${projectId}/storyboard`, {
@@ -1777,12 +1863,13 @@ export function ProjectWorkspace({
           fetch(`${API_BASE_URL}/projects/${projectId}/assets`, {
             credentials: "include",
           }),
-          fetch(`${API_BASE_URL}/workspace`, { credentials: "include" }).catch(
-            () => null,
-          ),
-          fetch(`${API_BASE_URL}/projects/${projectId}/workflow`, {
+          optionalFetch(`${API_BASE_URL}/workspace`, { credentials: "include" }),
+          optionalFetch(`${API_BASE_URL}/projects/${projectId}/workflow`, {
             credentials: "include",
-          }).catch(() => null),
+          }),
+          optionalFetch(`${API_BASE_URL}/projects/${projectId}/versions`, {
+            credentials: "include",
+          }),
         ]);
         if (!active) return;
         if (projectResponse.status === 404) {
@@ -1827,6 +1914,13 @@ export function ProjectWorkspace({
         }
         if (workflowResponse?.ok) {
           setWorkflow((await workflowResponse.json()) as WorkflowState);
+        }
+        if (versionsResponse?.ok) {
+          const versions = (
+            (await versionsResponse.json()) as { items: StoryboardVersion[] }
+          ).items;
+          setStoryboardVersions(versions);
+          setSavedAt(versions[0]?.created_at ?? null);
         }
         const hashQuery = window.location.hash.split("?", 2)[1] ?? "";
         const shouldStart =
@@ -2123,6 +2217,98 @@ export function ProjectWorkspace({
       prompt_zh: selectedScene.prompt_zh,
     });
   }, [selectedScene]);
+
+  function formatSavedTime(value: string) {
+    return new Intl.DateTimeFormat(locale.startsWith("zh") ? "zh-CN" : "en-US", {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(new Date(value));
+  }
+
+  async function saveStoryboardVersion() {
+    if (!project || !storyboard || isSavingVersion) return;
+    setIsSavingVersion(true);
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/projects/${project.id}/versions`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ label: "Manual save" }),
+        },
+      );
+      if (!response.ok) {
+        const body = (await response.json().catch(() => null)) as
+          | { error?: { message?: string } }
+          | null;
+        throw new Error(body?.error?.message || "version-save-failed");
+      }
+      const version = (await response.json()) as StoryboardVersion;
+      setStoryboardVersions((current) => [version, ...current]);
+      setSavedAt(version.created_at);
+      setActionError(null);
+    } catch (error) {
+      showBackendError(
+        error instanceof Error && error.message !== "version-save-failed"
+          ? error.message
+          : locale.startsWith("zh")
+            ? "故事板版本保存失败。"
+            : "The storyboard version could not be saved.",
+        () => void saveStoryboardVersion(),
+      );
+    } finally {
+      setIsSavingVersion(false);
+    }
+  }
+
+  async function restoreStoryboardVersion(version: StoryboardVersion) {
+    if (
+      !project ||
+      !window.confirm(
+        `${copy.restoreConfirm}\n\nv${version.revision} · ${version.label}`,
+      )
+    ) {
+      return;
+    }
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/projects/${project.id}/versions/${version.id}/restore`,
+        {
+          method: "POST",
+          credentials: "include",
+        },
+      );
+      if (!response.ok) {
+        const body = (await response.json().catch(() => null)) as
+          | { error?: { message?: string } }
+          | null;
+        throw new Error(body?.error?.message || "version-restore-failed");
+      }
+      const restored = (await response.json()) as Storyboard;
+      setStoryboard(restored);
+      setSelectedShotId(restored.shots[0]?.id ?? null);
+      setSelectedCanvas(
+        restored.shots.length > 0
+          ? { kind: "document", document: "outline" }
+          : { kind: "settings" },
+      );
+      setSavedAt(null);
+      await refreshAssets();
+      setActionError(null);
+    } catch (error) {
+      showBackendError(
+        error instanceof Error && error.message !== "version-restore-failed"
+          ? error.message
+          : locale.startsWith("zh")
+            ? "故事板版本回滚失败。"
+            : "The storyboard version could not be restored.",
+        () => void restoreStoryboardVersion(version),
+      );
+    }
+  }
 
   async function refreshWorkspace() {
     const response = await fetch(`${API_BASE_URL}/workspace`, {
@@ -3412,6 +3598,10 @@ export function ProjectWorkspace({
               selected={selectedCanvas}
               selectedResourceAssets={selectedResourceAssets}
               storyboard={storyboard}
+              versions={storyboardVersions}
+              onRestoreVersion={(version) =>
+                void restoreStoryboardVersion(version)
+              }
             />
           </div>
 
@@ -3430,6 +3620,26 @@ export function ProjectWorkspace({
                 <span className="truncate">{canvasTitle}</span>
               </span>
               <div className="flex shrink-0 items-center gap-2">
+                <span className="mr-1 text-[11px] text-white/32">
+                  {savedAt
+                    ? `${copy.savedAt} ${formatSavedTime(savedAt)}`
+                    : copy.notSaved}
+                </span>
+                {canEdit ? (
+                  <button
+                    className="flex items-center gap-1.5 rounded-lg border border-white/[0.1] px-3 py-2 text-[12px] font-medium text-white/62 hover:border-[#1677ff]/35 hover:text-white disabled:opacity-35"
+                    disabled={!storyboard || isSavingVersion}
+                    onClick={() => void saveStoryboardVersion()}
+                    type="button"
+                  >
+                    {isSavingVersion ? (
+                      <LoaderCircle className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <SaveIcon className="h-4 w-4" />
+                    )}
+                    {copy.save}
+                  </button>
+                ) : null}
                 {(project.access_permission ?? "owner") === "owner" ? (
                 <button
                   className="flex items-center gap-1.5 rounded-lg bg-[#1677ff] px-3 py-2 text-[12px] font-semibold text-white"

@@ -288,6 +288,7 @@ sound cue, or proof first.
 | `sessions` | Hashed server-side session tokens |
 | `projects` | Project metadata and owner |
 | `storyboards` | One current storyboard per project |
+| `storyboard_versions` | Immutable Storyboard snapshots with revision, payload, author, and save time |
 | `characters` | Ordered recurring roles, descriptions, and reusable image prompts |
 | `scenes` | Ordered locations, environment descriptions, and reusable image prompts |
 | `shots` | Ordered prompts, duration, frame, mode, and status |
@@ -381,16 +382,19 @@ The shared Landing UI owns:
 - Project folders expose the disclosure control before a blue folder icon.
   Filed conversations move out of Recents and render as indented children of
   their project folder.
-- An IDE-style three-part canvas: `Directions`, `Visions`, and `Versions`
-  resources, the selected editor document or asset, and the approval-driven
-  Agents panel.
+- An IDE-style canvas with `Directions` and `Visions` object trees, an
+  independent `Versions` history panel, the selected editor document or asset,
+  and the approval-driven Agents panel.
 - The Assets and Agents side panels can collapse to labeled rails. Their widths
   use responsive clamped proportions so they remain usable across desktop sizes.
 - `Directions` contains editable `Settings`, `Outlines`, and `Scripts`.
-  `Visions` contains `Characters`, `Scenes`, and `Shots`. `Versions` is a peer
-  top-level directory for exported final video versions. Characters and Scenes
-  own their uploaded references; each Shot opens one combined page. Empty
-  directories render no waiting copy.
+  `Visions` contains `Characters`, `Scenes`, `Shots`, and `FinalCuts`.
+  `Versions` is Storyboard snapshot history rather than an object directory.
+  Characters and Scenes own their uploaded references; each Shot opens one
+  combined page.
+- The canvas header shows the latest saved time, `Save`, and `Share`. Saving
+  creates an immutable snapshot; restore replaces the current Storyboard with
+  the snapshot content.
 - Skill Studio persists reusable Skills with a stable namespace, instructions,
   quality gates, prompt template, and input/output contracts. `AI optimize`
   turns an early idea into that structure.

@@ -286,6 +286,7 @@ locale state.
 | `sessions` | Token hashes and expiry |
 | `projects` | Owner, title, brief, state |
 | `storyboards` | Current board and version |
+| `storyboard_versions` | Immutable project Storyboard snapshots, revisions, and save time |
 | `characters` | Reusable character objects and image prompts |
 | `scenes` | Reusable location/environment objects and image prompts |
 | `shots` | Prompt, frame, duration, status |
@@ -337,6 +338,8 @@ locale state.
 | `GET` | `/hots/{id}/video` |
 | `GET/PUT` | `/projects/{id}/storyboard` |
 | `PATCH` | `/projects/{id}/storyboard/order` |
+| `GET/POST` | `/projects/{id}/versions` |
+| `POST` | `/projects/{id}/versions/{version_id}/restore` |
 | `PATCH` | `/projects/{id}/storyboard/shots/{shot_id}` |
 | `PATCH` | `/projects/{id}/storyboard/characters/{character_id}` |
 | `PATCH` | `/projects/{id}/storyboard/scenes/{scene_id}` |

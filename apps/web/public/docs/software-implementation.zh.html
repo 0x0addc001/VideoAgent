@@ -525,6 +525,10 @@ zh-CN</code></pre>
 <td>每个项目唯一的当前故事板</td>
 </tr>
 <tr>
+<td><code>storyboard_versions</code></td>
+<td>项目级不可变 Storyboard JSON 快照、修订号与保存时间</td>
+</tr>
+<tr>
 <td><code>characters</code></td>
 <td>可复用角色对象、描述和图片 Prompt</td>
 </tr>
@@ -813,6 +817,16 @@ task reference    → query-result   → JobStatus + result URL</code></pre>
 <td>PUT</td>
 <td><code>/projects/{id}/storyboard</code></td>
 <td>整体替换故事板</td>
+</tr>
+<tr>
+<td>GET/POST</td>
+<td><code>/projects/{id}/versions</code></td>
+<td>读取或保存 Storyboard 快照</td>
+</tr>
+<tr>
+<td>POST</td>
+<td><code>/projects/{id}/versions/{version_id}/restore</code></td>
+<td>回滚 Storyboard 快照</td>
 </tr>
 <tr>
 <td>PATCH</td>

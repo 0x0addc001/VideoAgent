@@ -177,6 +177,21 @@ http://localhost:8000/openapi.json
 }
 ```
 
+### 保存故事板版本
+
+`POST /projects/{project_id}/versions`
+
+```json
+{
+  "label": "导演确认"
+}
+```
+
+`GET /projects/{project_id}/versions` 返回不可变快照的元数据；
+`POST /projects/{project_id}/versions/{version_id}/restore` 回滚指定快照并返回
+更新后的 Storyboard。快照包含全部 Characters、Scenes 和 Shots，不会修改已经导出的
+FinalCuts。
+
 ## Agent 对话
 
 ### 消息历史

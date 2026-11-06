@@ -185,8 +185,12 @@ video_agent/agent_handoff</code></pre>
 </ul>
 <h3 id="7-1-project-workspace-and-delivery">7.1 Project Workspace and Delivery</h3>
 <ul>
-<li>The resource tree has three peer groups: <code>Directions</code> contains editable</li>
-<p>Settings, Outlines, and Scripts; <code>Visions</code> contains Characters, Scenes, and Shots; <code>Versions</code> contains exported final video versions with their creation dates.</p>
+<li>The resource tree has two object groups: <code>Directions</code> contains editable</li>
+<p>Settings, Outlines, and Scripts; <code>Visions</code> contains Characters, Scenes, Shots, and <code>FinalCuts</code>. <code>Versions</code> is a separate Storyboard snapshot history, not an object directory.</p>
+<li>The canvas header shows the latest saved time, then <code>Save</code>, then <code>Share</code>.</li>
+<p>Saving creates an immutable snapshot of the complete Storyboard, Characters, Scenes, and Shots.</p>
+<li>Version history shows revision and save time, and supports</li>
+<p>restore. Restored content is marked unsaved until saved again.</p>
 <li>Settings combines production attributes and extracted Agent-director clues in</li>
 <p>one <code>Attribute / Value</code> table. Q&amp;A is reduced to semantic keys and values; approval messages are not treated as attributes.</p>
 <li>The English workspace does not render raw Chinese dialogue as Settings values.</li>

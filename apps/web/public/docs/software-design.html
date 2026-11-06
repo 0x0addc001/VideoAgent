@@ -377,6 +377,10 @@ query-result</code></pre>
 <td>One current storyboard per project</td>
 </tr>
 <tr>
+<td><code>storyboard_versions</code></td>
+<td>Immutable Storyboard snapshots with revision, payload, author, and save time</td>
+</tr>
+<tr>
 <td><code>characters</code></td>
 <td>Ordered recurring roles, descriptions, and reusable image prompts</td>
 </tr>
@@ -600,12 +604,14 @@ query-result</code></pre>
 <p>organization. Both groups are visible before sign-in and when empty.</p>
 <li>Project folders expose the disclosure control before a blue folder icon.</li>
 <p>Filed conversations move out of Recents and render as indented children of their project folder.</p>
-<li>An IDE-style three-part canvas: <code>Directions</code>, <code>Visions</code>, and <code>Versions</code></li>
-<p>resources, the selected editor document or asset, and the approval-driven Agents panel.</p>
+<li>An IDE-style canvas with <code>Directions</code> and <code>Visions</code> object trees, an</li>
+<p>independent <code>Versions</code> history panel, the selected editor document or asset, and the approval-driven Agents panel.</p>
 <li>The Assets and Agents side panels can collapse to labeled rails. Their widths</li>
 <p>use responsive clamped proportions so they remain usable across desktop sizes.</p>
 <li><code>Directions</code> contains editable <code>Settings</code>, <code>Outlines</code>, and <code>Scripts</code>.</li>
-<p><code>Visions</code> contains <code>Characters</code>, <code>Scenes</code>, and <code>Shots</code>. <code>Versions</code> is a peer top-level directory for exported final video versions. Characters and Scenes own their uploaded references; each Shot opens one combined page. Empty directories render no waiting copy.</p>
+<p><code>Visions</code> contains <code>Characters</code>, <code>Scenes</code>, <code>Shots</code>, and <code>FinalCuts</code>. <code>Versions</code> is Storyboard snapshot history rather than an object directory. Characters and Scenes own their uploaded references; each Shot opens one combined page.</p>
+<li>The canvas header shows the latest saved time, <code>Save</code>, and <code>Share</code>. Saving</li>
+<p>creates an immutable snapshot; restore replaces the current Storyboard with the snapshot content.</p>
 <li>Skill Studio persists reusable Skills with a stable namespace, instructions,</li>
 <p>quality gates, prompt template, and input/output contracts. <code>AI optimize</code> turns an early idea into that structure.</p>
 <li>The built-in <code>video_agent/skill_synthesis</code> Skill opens Skill Studio directly</li>

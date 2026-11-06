@@ -58,25 +58,19 @@ the same generated documentation pages.
 ## Agent Runtime
 
 The current Agent is a bounded production planner, not an unrestricted ReAct
-loop.
+loop. One run performs the following steps:
 
-```text
-POST /projects/{project_id}/messages
-  → persist the user request and run_id
-  → assemble bounded Context
-  → load short-term Memory and current project resources
-  → resolve an optional user-owned Skill
-  → run the LangGraph plan_storyboard node
-  → validate the StoryboardPlan with Pydantic
-  → persist Characters, Shots, messages, and workflow state
-  → return the director response
-```
+1. Persist the user request and its `run_id`.
+2. Assemble bounded project Context and short-term Memory.
+3. Resolve an optional user-owned Skill.
+4. Execute the LangGraph `plan_storyboard` node.
+5. Validate the `StoryboardPlan` with Pydantic.
+6. Persist Characters, Scenes, Shots, messages, and workflow state.
+7. Return the director response.
 
-The frontend polls the durable run trace while waiting:
-
-```text
-GET /projects/{project_id}/agent-activity/{run_id}
-```
+The frontend polls
+`GET /projects/{project_id}/agent-activity/{run_id}` while waiting and renders
+only the execution steps that actually occurred.
 
 Only work that actually occurred is displayed. The Storyboard Agent does not
 hold pay-per-use MCP tools, so planning cannot create an unreviewed billable
@@ -102,15 +96,10 @@ The Context Builder resolves a current-user Skill and attaches its persisted
 instructions when available. Built-in Skills otherwise contribute their Skill
 ID as a directing constraint.
 
-Kling MCP remains in the provider layer:
-
-```text
-explicit user approval
-  → generation API
-  → provider resolver
-  → Kling MCP tool client or China-region CLI
-  → text_to_video / image_to_video / query_tasks
-```
+Kling MCP remains in the provider layer. An explicit user approval reaches the
+Generation API, which resolves the selected Provider/model and then invokes the
+Kling MCP tool client or China-region CLI. The Storyboard Agent cannot call
+these billable tools directly.
 
 Character image generation currently uses the Kling China-region CLI for
 text-to-image and reference-image-to-image.
@@ -138,6 +127,29 @@ VIDEOAGENT_VISION_TIMEOUT_SECONDS=120
 
 ## Architecture
 
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/architecture.svg">
+  <img src="docs/assets/architecture-light.svg" alt="VideoAgent technical architecture">
+</picture>
+
+*End-to-end architecture: product shell, FastAPI control plane, bounded Agent
+runtime, domain services, Redis/Celery polling, Provider adapters, durable data,
+FFmpeg delivery, review, sharing, and collaboration.*
+
+**Architecture source:** [dark SVG](docs/assets/architecture.svg) · [light SVG](docs/assets/architecture-light.svg)
+
+<details>
+<summary><strong>中文技术架构图</strong></summary>
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/architecture-zh.svg">
+  <img src="docs/assets/architecture-zh-light.svg" alt="VideoAgent 技术架构中文版">
+</picture>
+
+[深色 SVG](docs/assets/architecture-zh.svg) · [浅色 SVG](docs/assets/architecture-zh-light.svg)
+
+</details>
+
 | Layer | Technology |
 | --- | --- |
 | Product UI | Next.js 16 App Router, React 19, TypeScript, Tailwind CSS |
@@ -150,16 +162,9 @@ VIDEOAGENT_VISION_TIMEOUT_SECONDS=120
 | Video providers | Pippit CLI, Kling China-region CLI, optional Kling MCP, Mock |
 | Testing | pytest, Vitest, Playwright |
 
-```text
-apps/web                 Next.js product application
-apps/landing             Vite project homepage
-packages/landing         Shared homepage and product-shell UI
-services/api             FastAPI, LangGraph, providers, data, and tests
-docs                     Product, design, API, operations, FAQ, and tests
-site                     Static homepage media, fonts, and public assets
-deploy                   PostgreSQL, Redis, MinIO, and deployment configuration
-tests/e2e                Playwright end-to-end flows
-```
+The repository separates product UI, reusable landing UI, backend control
+plane, Agent runtime, Provider adapters, release documentation, deployment
+infrastructure, and browser-level acceptance tests.
 
 The GitHub Pages homepage is static. The full application remains a
 Next.js/FastAPI deployment because Pages cannot run the API, provider CLIs,

@@ -386,6 +386,7 @@ CLI 负责国内站 OAuth、MCP 传输和工具参数。Provider 适配器将 Kl
 | `hots_posts` | `owner_id`, `asset_id`, `title`, `prompt`, `skill_id`, `like_count` | 社区视频发布及详情 |
 | `hots_likes` | `post_id`, `user_id` | 用户与 Videos 作品的唯一点赞记录 |
 | `storyboards` | `id`, `project_id`, `version` | 每个项目唯一的当前故事板 |
+| `storyboard_versions` | `project_id`, `revision`, `snapshot`, `created_by_id` | 不可变故事板快照，用于保存与回滚 |
 | `characters` | `id`, `storyboard_id`, `index`, `name`, prompts | 持续角色的描述与可复用图片提示词 |
 | `scenes` | `id`, `storyboard_id`, `index`, `name`, `location`, prompts | 可复用场景、场地与参考图提示词 |
 | `shots` | `id`, `storyboard_id`, `index`, `prompt_en`, `prompt_zh`, `status` | 镜头定义 |
@@ -551,13 +552,15 @@ cancelled
 - `Assets`：通过 Video 与 Skill 两个内部分页切换，支持搜索；Video 卡片悬浮静音播放，Skill 卡片不显示封面；卡片只展示权限和 `yyyy-mm-dd` 编辑时间。
 - Assets 展示当前用户真实发布的 Videos 和 Skill；点击卡片打开详情，视频详情可直接播放。
 - `Docs`：按 PRD、策略、Arch、API、Dev、Test、Ops、FAQ、TODO 展示中英文文档，支持全文搜索。
-- 项目工作区采用 IDE 式布局：可压缩历史导航、`Directions` / `Visions` / `Versions`
-  资源树、中央编辑画布和右侧审批式 Agents。
+- 项目工作区采用 IDE 式布局：可压缩历史导航、`Directions` / `Visions`
+  资源树、独立 `Versions` 历史面板、中央编辑画布和右侧审批式 Agents。
 - Assets 与 Agents 侧栏可折叠为带标签的窄轨；展开宽度使用响应式比例，适配不同桌面尺寸。
 - `Directions` 包含可编辑的 `Settings`、`Outlines`、`Scripts`；`Visions`
-  包含 `Characters`、`Scenes`、`Shots`；`Versions` 与二者同级，用于管理最终
-  导出视频版本及创建日期。Character 与 Scene 各自承接参考图，每个 Shot 使用一个合并页面；
-  空目录不显示等待文案。
+  包含 `Characters`、`Scenes`、`Shots` 和 `FinalCuts`。`Versions` 不是对象目录，
+  而是 Storyboard 快照历史，支持查看和回滚。Character 与 Scene 各自承接参考图，
+  每个 Shot 使用一个合并页面；空目录不显示等待文案。
+- 画布标题栏显示最近保存时间，并提供 `Save` 与 `Share`；保存生成不可变快照，
+  回滚将当前内容恢复为快照中的 Storyboard。
 - Settings 从对话中提炼 `属性 / 值`，不直接展示原始问答或批准消息。
 - 属性抽取先排除语言纠错等元指令，再识别结构化的时长、形式、产品、开场、发展、结尾、
   基调和视觉方向；英文界面对可识别的中文术语做英文归一化，翻译不确定的内容不展示。

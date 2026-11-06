@@ -143,9 +143,13 @@ Assets 展示当前用户的成品和半成品。
 
 ### 7.1 项目工作区与交付
 
-- 资源树包含三个同级目录：`Directions` 管理可编辑的 `Settings`、`Outlines` 和
-  `Scripts`；`Visions` 管理 `Characters`、`Scenes` 和 `Shots`；`Versions`
-  管理最终视频版本及其创建日期。
+- 资源树包含 `Directions` 与 `Visions` 两个对象区域：前者管理可编辑的
+  `Settings`、`Outlines` 和 `Scripts`；后者管理 `Characters`、`Scenes`、`Shots`
+  和 `FinalCuts`。`Versions` 是独立的故事板快照历史，不作为对象目录。
+- 画布标题栏依次展示最近保存时间、`Save` 和 `Share`。保存会创建包含完整
+  Storyboard、Characters、Scenes 和 Shots 的不可变快照。
+- Versions 历史显示版本号和保存时间，并支持回滚；回滚后的当前内容
+  标记为尚未保存，直到用户再次保存。
 - Settings 将制作属性与从 Agent-导演对话中提取的关键线索合并为 `属性 / 值` 表；
   Q&A 会提炼成语义要素和值，批准类消息不作为属性。
 - 英文界面不会直接展示中文对话原文；可识别的中文创作术语会归一化为英文，无法可靠

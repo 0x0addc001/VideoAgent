@@ -167,8 +167,12 @@ video_agent/agent_handoff</code></pre>
 </ul>
 <h3 id="7-1-项目工作区与交付">7.1 项目工作区与交付</h3>
 <ul>
-<li>资源树包含三个同级目录：<code>Directions</code> 管理可编辑的 <code>Settings</code>、<code>Outlines</code> 和</li>
-<p><code>Scripts</code>；<code>Visions</code> 管理 <code>Characters</code>、<code>Scenes</code> 和 <code>Shots</code>；<code>Versions</code> 管理最终视频版本及其创建日期。</p>
+<li>资源树包含 <code>Directions</code> 与 <code>Visions</code> 两个对象区域：前者管理可编辑的</li>
+<p><code>Settings</code>、<code>Outlines</code> 和 <code>Scripts</code>；后者管理 <code>Characters</code>、<code>Scenes</code>、<code>Shots</code> 和 <code>FinalCuts</code>。<code>Versions</code> 是独立的故事板快照历史，不作为对象目录。</p>
+<li>画布标题栏依次展示最近保存时间、<code>Save</code> 和 <code>Share</code>。保存会创建包含完整</li>
+<p>Storyboard、Characters、Scenes 和 Shots 的不可变快照。</p>
+<li>Versions 历史显示版本号和保存时间，并支持回滚；回滚后的当前内容</li>
+<p>标记为尚未保存，直到用户再次保存。</p>
 <li>Settings 将制作属性与从 Agent-导演对话中提取的关键线索合并为 <code>属性 / 值</code> 表；</li>
 <p>Q&amp;A 会提炼成语义要素和值，批准类消息不作为属性。</p>
 <li>英文界面不会直接展示中文对话原文；可识别的中文创作术语会归一化为英文，无法可靠</li>

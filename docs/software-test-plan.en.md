@@ -170,6 +170,9 @@ Component tests cover:
   “Review” score button.
 - Character and Scene pages support uploaded, reference-image, and text image
   generation, with generated images stored as downloadable project assets.
+- Storyboard snapshots are immutable and support listing and restore.
+- Restore preserves the Shot ID at the same index, and exported results live
+  under `Visions / FinalCuts`.
 - Final Cut review is available only for exported assets, lets the user choose a
   configured vision evaluator and consistency metrics, and is unavailable when
   no evaluator is configured.
