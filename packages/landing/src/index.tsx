@@ -3294,9 +3294,9 @@ export function LandingPage({
             <label className="view-search docs-search">
               <Search aria-hidden="true" />
               <input
-                aria-label="Search docs"
+                aria-label={content.nav.docsSearch}
                 onChange={(event) => setDocsQuery(event.target.value)}
-                placeholder="Search docs"
+                placeholder={content.nav.docsSearch}
                 type="search"
                 value={docsQuery}
               />

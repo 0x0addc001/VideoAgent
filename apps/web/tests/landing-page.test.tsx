@@ -48,6 +48,15 @@ describe("LandingPage", () => {
     expect(container.querySelector(".site-header > nav")).toHaveTextContent(
       "技能",
     );
+    const docsButton = [
+      ...container.querySelectorAll(".site-header > nav > button"),
+    ].find((button) => button.textContent === "文档");
+    expect(docsButton).toBeDefined();
+    fireEvent.click(docsButton!);
+    expect(container.querySelector('.docs-search input[type="search"]')).toHaveAttribute(
+      "placeholder",
+      "搜索文档",
+    );
   });
 
   it("keeps left-side navigation, a VA brand, and creation composer", () => {

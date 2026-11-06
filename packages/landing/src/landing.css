@@ -2421,10 +2421,10 @@ html[lang="zh-CN"] .va-landing select {
 }
 
 .site-header > nav > button[aria-current="page"] .nav-icon {
-  fill: currentColor;
-  stroke: transparent;
-  stroke-width: 1.75;
-  transform: scale(1.08);
+  fill: rgba(79, 172, 255, 0.18);
+  stroke: currentColor;
+  stroke-width: 1.8;
+  transform: scale(1.06);
 }
 
 .site-header > nav .nav-dropdown summary {
