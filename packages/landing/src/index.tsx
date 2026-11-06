@@ -283,6 +283,7 @@ export type LandingPageProps = {
   conversationContent?: ReactNode;
   renderConversation?: (projectId: string) => ReactNode;
   onViewChange?: (view: LandingView) => void;
+  onLocaleChange?: (locale: LandingLocale) => void;
 };
 
 function BrandMark() {
@@ -744,6 +745,7 @@ export function LandingPage({
   conversationContent,
   renderConversation,
   onViewChange,
+  onLocaleChange,
 }: LandingPageProps) {
   const content = landingContent[locale];
   const [activeView, setActiveView] = useState<LandingView>("agents");
@@ -1965,6 +1967,12 @@ export function LandingPage({
     setDocsQuery("");
   }
 
+  function selectAppLocale(nextLocale: LandingLocale) {
+    setDocsLocale(nextLocale);
+    setDocsQuery("");
+    onLocaleChange?.(nextLocale);
+  }
+
   async function signOut() {
     setAccountMenuOpen(false);
     if (mode === "project" || !accountApiBase) {
@@ -2482,7 +2490,7 @@ export function LandingPage({
                   {content.nav.language}
                 </span>
                 <span className="profile-row-value">
-                  {docsLocale === "en" ? "English" : "中文"}
+                  {locale === "en" ? "English" : "中文"}
                   <ChevronRight aria-hidden="true" />
                 </span>
               </button>
@@ -2586,9 +2594,9 @@ export function LandingPage({
           }}
         >
           <button
-            aria-checked={docsLocale === "en"}
+            aria-checked={locale === "en"}
             onClick={() => {
-              selectDocsLocale("en");
+              selectAppLocale("en");
               setLanguageMenuOpen(false);
               setLanguageMenuPosition(null);
             }}
@@ -2596,12 +2604,12 @@ export function LandingPage({
             type="button"
           >
             English
-            {docsLocale === "en" ? <Check aria-hidden="true" /> : null}
+            {locale === "en" ? <Check aria-hidden="true" /> : null}
           </button>
           <button
-            aria-checked={docsLocale === "zh-CN"}
+            aria-checked={locale === "zh-CN"}
             onClick={() => {
-              selectDocsLocale("zh-CN");
+              selectAppLocale("zh-CN");
               setLanguageMenuOpen(false);
               setLanguageMenuPosition(null);
             }}
@@ -2609,7 +2617,7 @@ export function LandingPage({
             type="button"
           >
             中文
-            {docsLocale === "zh-CN" ? <Check aria-hidden="true" /> : null}
+            {locale === "zh-CN" ? <Check aria-hidden="true" /> : null}
           </button>
         </div>
       ) : null}

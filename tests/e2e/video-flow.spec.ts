@@ -2,7 +2,13 @@ import { expect, test } from "@playwright/test";
 import { resolve } from "node:path";
 
 test("serves the localized Chinese product experience", async ({ page }) => {
-  await page.goto("/zh-CN");
+  await page.goto("/en");
+  await page.getByRole("button", { name: "Account" }).click();
+  await page.locator(".profile-language-row").click();
+  await page
+    .locator(".profile-language-options button")
+    .filter({ hasText: "中文" })
+    .click();
 
   await expect(page).toHaveURL(/\/zh-CN$/);
   await expect(

@@ -127,28 +127,36 @@ VIDEOAGENT_VISION_TIMEOUT_SECONDS=120
 
 ## Architecture
 
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/architecture.svg">
-  <img src="docs/assets/architecture-light.svg" alt="VideoAgent technical architecture">
-</picture>
-
-*End-to-end architecture: product shell, FastAPI control plane, bounded Agent
-runtime, domain services, Redis/Celery polling, Provider adapters, durable data,
-FFmpeg delivery, review, sharing, and collaboration.*
-
-**Architecture source:** [dark SVG](docs/assets/architecture.svg) · [light SVG](docs/assets/architecture-light.svg)
-
-<details>
-<summary><strong>中文技术架构图</strong></summary>
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/architecture-zh.svg">
-  <img src="docs/assets/architecture-zh-light.svg" alt="VideoAgent 技术架构中文版">
-</picture>
-
-[深色 SVG](docs/assets/architecture-zh.svg) · [浅色 SVG](docs/assets/architecture-zh-light.svg)
-
-</details>
+```text
+Director
+  │
+  ▼
+Next.js product shell
+  │ HTTPS
+  ▼
+FastAPI control plane
+  ├─ Auth · approval · credits · idempotency
+  ├─ Agent runtime
+  │    Context/Memory → LangGraph → Planner → StoryboardPlan
+  ├─ Domain services
+  │    projects · versions · assets · collaboration · visual review
+  └─ Generation jobs
+       │
+       ▼
+Redis broker → Celery worker → Provider resolver
+                                  ├─ Pippit CLI
+                                  ├─ Kling China CLI / MCP
+                                  └─ Mock Provider
+       │
+       ▼
+PostgreSQL/SQLite + Media/MinIO
+  │
+  ▼
+FFmpeg
+  │
+  ▼
+FinalCuts → share · collaborate · publish
+```
 
 | Layer | Technology |
 | --- | --- |

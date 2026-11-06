@@ -8,7 +8,7 @@ import {
 } from "@videoagent/landing";
 import "@videoagent/landing/styles.css";
 import { useLocale } from "next-intl";
-import { useRouter } from "@/i18n/navigation";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { ProjectWorkspace } from "@/components/project-workspace";
 
 type Project = {
@@ -32,6 +32,7 @@ const videos = [
 
 export function AppLandingPage() {
   const router = useRouter();
+  const pathname = usePathname();
   const locale = useLocale() as LandingLocale;
   const content = landingContent[locale];
 
@@ -81,6 +82,11 @@ export function AppLandingPage() {
       locale={locale}
       mode="app"
       onCreateProject={createProject}
+      onLocaleChange={(nextLocale) =>
+        router.replace(`${pathname}${window.location.hash}`, {
+          locale: nextLocale,
+        })
+      }
       renderConversation={(projectId) => (
         <ProjectWorkspace
           embedded
