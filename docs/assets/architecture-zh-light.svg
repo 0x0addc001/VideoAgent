@@ -52,7 +52,7 @@
   <g transform="translate(58 36)">
     <rect width="52" height="52" rx="14" fill="#0c1930" stroke="#2b67a3"/>
     <path d="M16 13L40 26L16 39Z" fill="url(#logo)"/>
-    <text x="70" y="13" class="kicker">VIDEOAGENT / TECHNICAL ARCHITECTURE</text>
+    <text x="70" y="13" class="kicker">VIDEOAGENT / 技术架构</text>
     <text x="70" y="45" class="brand">从灵感到成片，一条受控路径</text>
     <text x="0" y="77" class="subtitle">导演确定方向，Agent 负责规划，服务执行控制，持久化存储保留每个结果。</text>
   </g>
