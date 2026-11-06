@@ -281,7 +281,7 @@ test("runs a complete mock video workflow without paid generation", async ({
   await page.getByRole("button", { name: /^Publish .+\.mp4$/ }).first().click();
   const publishDialog = page.getByRole("dialog", { name: "Publish final cut" });
   await expect(publishDialog).toBeVisible();
-  await publishDialog.getByLabel("Published video title").fill("Rain study");
+  await publishDialog.getByLabel("Title").fill("Rain study");
   await publishDialog.getByRole("button", { name: "Publish", exact: true }).click();
   expect((await publishResponsePromise).status()).toBe(201);
   await expect(publishDialog).toContainText("Published to Videos");

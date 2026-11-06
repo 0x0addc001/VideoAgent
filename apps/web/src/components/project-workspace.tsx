@@ -371,20 +371,32 @@ function creativeBrief(brief: string) {
   return brief.split(PRODUCTION_SETTINGS_MARKER, 1)[0]?.trim() || brief.trim();
 }
 
-function productionSettingPairs(brief: string) {
+function productionSettingPairs(brief: string, locale?: string) {
   const settingsLine = brief.match(/Production settings:\s*(.+)/i)?.[1];
   if (!settingsLine) return [];
-  const labels = [
-    "Skill",
-    "Hook",
-    "Style",
-    "Frame",
-    "Length",
-    "Model",
-    "Quality",
-    "Audio",
-    "Review",
-  ];
+  const labels = locale?.startsWith("zh")
+    ? [
+        "技能",
+        "Hook",
+        "风格",
+        "画幅",
+        "时长",
+        "模型",
+        "清晰度",
+        "音频",
+        "审核",
+      ]
+    : [
+        "Skill",
+        "Hook",
+        "Style",
+        "Frame",
+        "Length",
+        "Model",
+        "Quality",
+        "Audio",
+        "Review",
+      ];
   return settingsLine
     .split("·")
     .map((part) => part.trim())
@@ -397,12 +409,14 @@ function productionSettingPairs(brief: string) {
 
 function WorkspaceModelSelect({
   allowProjectDefault = true,
+  defaultLabel = "Project default",
   label = "Model",
   onChange,
   options,
   value,
 }: {
   allowProjectDefault?: boolean;
+  defaultLabel?: string;
   label?: string;
   onChange: (value: string) => void;
   options: ReadonlyArray<{ id: string; label: string }>;
@@ -417,7 +431,7 @@ function WorkspaceModelSelect({
         value={value}
       >
         {allowProjectDefault ? (
-          <option value="project">Project default</option>
+          <option value="project">{defaultLabel}</option>
         ) : null}
         {options.map((option) => (
           <option key={option.id} value={option.id}>
@@ -442,7 +456,7 @@ function AgentActivityTrace({
   const labels: Record<AgentActivity["kind"], string> = {
     context: chinese ? "载入项目上下文" : "Load project context",
     memory: chinese ? "读取项目记忆" : "Read project memory",
-    skill: chinese ? "检查 Skill 指令" : "Resolve Skill instructions",
+    skill: chinese ? "检查技能指令" : "Resolve Skill instructions",
     planning: chinese ? "规划故事板" : "Plan the storyboard",
     validation: chinese ? "校验结构结果" : "Validate structured result",
     state: chinese ? "更新项目状态" : "Update project state",
@@ -546,7 +560,7 @@ function AgentActivityTrace({
   );
 }
 
-function workspaceCopy(locale: string) {
+export function workspaceCopy(locale: string) {
   const chinese = locale.startsWith("zh");
   return chinese
     ? {
@@ -571,18 +585,20 @@ function workspaceCopy(locale: string) {
         expandAgents: "展开小秘",
         docs: "文档",
         assets: "资产",
+        skills: "技能",
+        hots: "视频",
         agent: "小秘",
         direction: "创作方向",
         vision: "视觉",
-        settings: "设定集",
+        settings: "设定",
         settingAttributes: "属性",
         description: "描述",
         generation: "生成",
-        character: "角色集",
-        scene: "场景集",
-        scenes: "Scenes",
-        finalCuts: "最终成片",
-        location: "地点",
+        character: "角色",
+        scene: "场地",
+        scenes: "场地",
+        finalCuts: "成片",
+        location: "场地位置",
         versions: "版本",
         savedAt: "保存于",
         notSaved: "尚未保存",
@@ -592,10 +608,10 @@ function workspaceCopy(locale: string) {
         noAssets: "当前对话还没有资产。",
         brief: "方向",
         storyboard: "故事板",
-        script: "剧本集",
-        scripts: "剧本集",
+        script: "剧本",
+        scripts: "剧本",
         shots: "镜头",
-        outline: "大纲集",
+        outline: "大纲",
         media: "媒体",
         uploads: "上传素材",
         generated: "生成素材",
@@ -632,16 +648,16 @@ function workspaceCopy(locale: string) {
         openLink: "打开链接",
         publish: "发布",
         publishTitle: "发布成片",
-        publishPrompt: "描述",
-        published: "已发布到 Videos",
+        publishPrompt: "作品描述",
+        published: "已发布到视频",
         shot: "镜头",
         duration: "时长",
         ratio: "画面比例",
         estimate: "估算积分",
-        generate: "生成镜头",
+        generate: "生成",
         approvalRequired: "请先在小秘中批准故事，再生成镜头。",
         generating: "生成中……",
-        upload: "上传素材",
+        upload: "上传",
         uploading: "上传中……",
         downloadResult: "下载生成内容",
         current: "当前",
@@ -652,6 +668,46 @@ function workspaceCopy(locale: string) {
         addBeat: "增加一个叙事节拍",
         commercial: "增强商业转化感",
         readyMessage: "剧本已批准。选择镜头即可估算和生成。",
+        projectDefault: "项目默认",
+        open: "打开",
+        saveDirection: "保存方向",
+        saveSettings: "保存设定",
+        saveDocument: "保存文档",
+        saveOutline: "保存大纲",
+        saveScript: "保存剧本",
+        characterName: "角色名称",
+        imageModel: "图片模型",
+        prompt: "提示词",
+        characterPrompt: "角色提示词",
+        scenePrompt: "场地提示词",
+        shotPrompt: "镜头提示词",
+        uploadCharacterImage: "上传角色图片",
+        uploadSceneImage: "上传场地图片",
+        uploadShotReference: "上传镜头参考素材",
+        results: "生成结果",
+        saveCharacter: "保存角色",
+        sceneName: "场地名称",
+        sceneDescription: "场地描述",
+        videoModel: "视频模型",
+        taskType: "任务类型",
+        audio: "音频",
+        shotAudio: "镜头声音",
+        auto: "自动",
+        referenceRemake: "参考重制",
+        edit: "编辑",
+        extend: "延长",
+        on: "开启",
+        off: "关闭",
+        resolution: "分辨率",
+        shotResolution: "镜头分辨率",
+        saveShot: "保存镜头",
+        saveScene: "保存场地",
+        copyId: "复制 ID",
+        shareAccess: "协作权限",
+        collaborationLink: "协作链接",
+        titleLabel: "标题",
+        publishedPrompt: "作品描述",
+        publishError: "发布失败，请稍后重试。",
       }
     : {
         projects: "Projects",
@@ -675,6 +731,8 @@ function workspaceCopy(locale: string) {
         expandAgents: "Expand agents",
         docs: "Docs",
         assets: "Assets",
+        skills: "Skills",
+        hots: "Videos",
         agent: "Agents",
         direction: "Directions",
         vision: "Visions",
@@ -686,7 +744,7 @@ function workspaceCopy(locale: string) {
         scene: "Scenes",
         scenes: "Scenes",
         finalCuts: "FinalCuts",
-        location: "Location",
+        location: "Scene location",
         versions: "Versions",
         savedAt: "Saved at",
         notSaved: "Not saved yet",
@@ -744,10 +802,10 @@ function workspaceCopy(locale: string) {
         duration: "Duration",
         ratio: "Aspect ratio",
         estimate: "Estimate credits",
-        generate: "Generate shot",
+        generate: "Generate",
         approvalRequired: "Approve the story in Agents before generating a shot.",
         generating: "Generating…",
-        upload: "Upload asset",
+        upload: "Upload",
         uploading: "Uploading…",
         downloadResult: "Download result",
         current: "Current",
@@ -758,6 +816,46 @@ function workspaceCopy(locale: string) {
         addBeat: "Add another story beat",
         commercial: "Make it more commercial",
         readyMessage: "The script is approved. Choose a shot to estimate and generate.",
+        projectDefault: "Project default",
+        open: "Open",
+        saveDirection: "Save direction",
+        saveSettings: "Save settings",
+        saveDocument: "Save document",
+        saveOutline: "Save outline",
+        saveScript: "Save script",
+        characterName: "Character name",
+        imageModel: "Image model",
+        prompt: "Prompt",
+        characterPrompt: "Character prompt",
+        scenePrompt: "Scene prompt",
+        shotPrompt: "Shot prompt",
+        uploadCharacterImage: "Upload character image",
+        uploadSceneImage: "Upload scene image",
+        uploadShotReference: "Upload shot reference",
+        results: "Results",
+        saveCharacter: "Save character",
+        sceneName: "Scene name",
+        sceneDescription: "Scene description",
+        videoModel: "Video model",
+        taskType: "Task type",
+        audio: "Audio",
+        shotAudio: "Shot audio",
+        auto: "Auto",
+        referenceRemake: "Reference remake",
+        edit: "Edit",
+        extend: "Extend",
+        on: "On",
+        off: "Off",
+        resolution: "Resolution",
+        shotResolution: "Shot resolution",
+        saveShot: "Save shot",
+        saveScene: "Save scene",
+        copyId: "Copy ID",
+        shareAccess: "Collaboration access",
+        collaborationLink: "Collaboration link",
+        titleLabel: "Title",
+        publishedPrompt: "Published video description",
+        publishError: "The final cut could not be published.",
       };
 }
 
@@ -799,8 +897,8 @@ function WorkspaceHistory({
   });
   const primaryNavItems = [
     { href: "/#agents", icon: Sparkles, label: copy.agent },
-    { href: "/#skills", icon: Video, label: "Skills" },
-    { href: "/#hots", icon: Film, label: "Videos" },
+    { href: "/#skills", icon: Video, label: copy.skills },
+    { href: "/#hots", icon: Film, label: copy.hots },
     { href: "/#assets", icon: Layers3, label: copy.assets },
     { href: "/#docs", icon: FileText, label: copy.docs },
   ] as const;
@@ -2411,7 +2509,11 @@ export function ProjectWorkspace({
       },
     ).catch(() => null);
     if (!response?.ok) {
-      setActionError("Shot changes could not be saved.");
+      setActionError(
+        locale.startsWith("zh")
+          ? "镜头修改保存失败。"
+          : "Shot changes could not be saved.",
+      );
       return null;
     }
     const updated = (await response.json()) as Shot;
@@ -2433,7 +2535,11 @@ export function ProjectWorkspace({
       },
     ).catch(() => null);
     if (!response?.ok) {
-      setActionError("Character changes could not be saved.");
+      setActionError(
+        locale.startsWith("zh")
+          ? "角色修改保存失败。"
+          : "Character changes could not be saved.",
+      );
       return null;
     }
     const updated = (await response.json()) as Character;
@@ -2453,7 +2559,11 @@ export function ProjectWorkspace({
       },
     ).catch(() => null);
     if (!response?.ok) {
-      setActionError("Scene changes could not be saved.");
+      setActionError(
+        locale.startsWith("zh")
+          ? "场地修改保存失败。"
+          : "Scene changes could not be saved.",
+      );
       return null;
     }
     const updated = (await response.json()) as Scene;
@@ -2474,7 +2584,9 @@ export function ProjectWorkspace({
       }),
     }).catch(() => null);
     if (!response?.ok) {
-      setActionError("Direction could not be saved.");
+      setActionError(
+        locale.startsWith("zh") ? "创作方向保存失败。" : "Direction could not be saved.",
+      );
       return;
     }
     setProject((await response.json()) as Project);
@@ -2494,7 +2606,9 @@ export function ProjectWorkspace({
       }),
     }).catch(() => null);
     if (!response?.ok) {
-      setActionError("Settings could not be saved.");
+      setActionError(
+        locale.startsWith("zh") ? "设定保存失败。" : "Settings could not be saved.",
+      );
       return;
     }
     setProject((await response.json()) as Project);
@@ -2543,7 +2657,11 @@ export function ProjectWorkspace({
       },
     ).catch(() => null);
     if (!response?.ok) {
-      setActionError("The selected result could not be updated.");
+      setActionError(
+        locale.startsWith("zh")
+          ? "选中结果更新失败。"
+          : "The selected result could not be updated.",
+      );
       return;
     }
     setSelectedResourceAssets((current) => {
@@ -2556,13 +2674,24 @@ export function ProjectWorkspace({
   }
 
   async function deleteProjectAsset(asset: Asset) {
-    if (!project || !window.confirm(`Delete ${asset.filename}?`)) return;
+    if (
+      !project ||
+      !window.confirm(
+        locale.startsWith("zh")
+          ? `删除 ${asset.filename}？`
+          : `Delete ${asset.filename}?`,
+      )
+    ) {
+      return;
+    }
     const response = await fetch(`${API_BASE_URL}/assets/${asset.id}`, {
       method: "DELETE",
       credentials: "include",
     }).catch(() => null);
     if (!response?.ok) {
-      setActionError("The asset could not be deleted.");
+      setActionError(
+        locale.startsWith("zh") ? "资产删除失败。" : "The asset could not be deleted.",
+      );
       return;
     }
     setAssets((current) => current.filter((item) => item.id !== asset.id));
@@ -2581,7 +2710,11 @@ export function ProjectWorkspace({
       body: JSON.stringify({ filename }),
     }).catch(() => null);
     if (!response?.ok) {
-      setActionError("The asset name could not be saved.");
+      setActionError(
+        locale.startsWith("zh")
+          ? "资产名称保存失败。"
+          : "The asset name could not be saved.",
+      );
       return;
     }
     const updated = (await response.json()) as Asset;
@@ -3459,7 +3592,11 @@ export function ProjectWorkspace({
       if (!response.ok) throw new Error("publish-failed");
       setPublishMessage(copy.published);
     } catch {
-      setActionError("The final cut could not be published.");
+      setActionError(
+        locale.startsWith("zh")
+          ? "成片发布失败，请稍后重试。"
+          : "The final cut could not be published.",
+      );
     } finally {
       setIsWorking(false);
     }
@@ -3501,7 +3638,7 @@ export function ProjectWorkspace({
   const activeDocumentMode =
     selectedCanvas.kind === "document" ? selectedCanvas.document : null;
   const settingPairs = [
-    ...(project ? productionSettingPairs(project.brief) : []),
+    ...(project ? productionSettingPairs(project.brief, locale) : []),
     ...extractedConversationAttributes(messages, locale),
   ];
 
@@ -3685,7 +3822,7 @@ export function ProjectWorkspace({
                       disabled={!canEdit}
                       type="submit"
                     >
-                      Save direction
+                      {copy.saveDirection}
                     </button>
                   </form>
                   <section className="mt-8 rounded-2xl border border-white/[0.07] bg-white/[0.02] p-5">
@@ -3727,7 +3864,7 @@ export function ProjectWorkspace({
                           disabled={!canEdit || settingPairs.length === 0}
                           type="submit"
                         >
-                          Save settings
+                          {copy.saveSettings}
                         </button>
                       </div>
                     </form>
@@ -3797,7 +3934,7 @@ export function ProjectWorkspace({
                                 onClick={() => selectShot(shot)}
                                 type="button"
                               >
-                                Open
+                                {copy.open}
                               </button>
                             </span>
                           </div>
@@ -3821,7 +3958,11 @@ export function ProjectWorkspace({
                               disabled={!canEdit}
                               type="submit"
                             >
-                              Save {activeDocumentMode}
+                              {activeDocumentMode === "outline"
+                                ? copy.saveOutline
+                                : activeDocumentMode === "script"
+                                  ? copy.saveScript
+                                  : copy.saveDirection}
                             </button>
                           </div>
                         </form>
@@ -3848,7 +3989,7 @@ export function ProjectWorkspace({
                 <article className="mx-auto max-w-4xl px-6 py-8 sm:px-10">
                   <div className="rounded-2xl border border-white/[0.07] p-5">
                     <label className="block text-[12px] text-white/38">
-                      <span>Character name</span>
+                      <span>{copy.characterName}</span>
                       <input
                         className="mt-2 w-full rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-2 text-[16px] text-white/78 outline-none"
                         disabled={!canEdit}
@@ -3865,7 +4006,7 @@ export function ProjectWorkspace({
                     <label className="mt-4 block text-[12px] text-white/38">
                       <span>{copy.description}</span>
                       <textarea
-                        aria-label="Character description"
+                        aria-label={copy.description}
                         className="mt-2 min-h-24 w-full resize-y rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-3 text-[15px] leading-7 text-white/70 outline-none"
                         disabled={!canEdit}
                         onChange={(event) =>
@@ -3881,7 +4022,7 @@ export function ProjectWorkspace({
                     <div className="mt-4">
                       <WorkspaceModelSelect
                         allowProjectDefault={false}
-                        label="Image model"
+                        label={copy.imageModel}
                         onChange={(value) => {
                           setCharacterGenerationModel(value);
                           setCharacterEstimate(null);
@@ -3891,9 +4032,9 @@ export function ProjectWorkspace({
                       />
                     </div>
                     <label className="mt-4 block text-[12px] text-white/38">
-                      <span>Prompt</span>
+                      <span>{copy.prompt}</span>
                       <textarea
-                        aria-label="Character prompt"
+                        aria-label={copy.characterPrompt}
                         className="mt-2 min-h-32 w-full resize-y rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-3 text-[15px] leading-7 text-white/70 outline-none"
                         disabled={!canEdit}
                         onChange={(event) =>
@@ -3913,16 +4054,16 @@ export function ProjectWorkspace({
                         onClick={() => void saveCharacterDraft(selectedCharacter)}
                         type="button"
                       >
-                        Save character
+                        {copy.saveCharacter}
                       </button>
                     </div>
                     <div className="mt-4 grid grid-cols-3 gap-2 border-t border-white/[0.06] pt-4">
                       <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/[0.09] px-3 py-2.5 text-[12px] text-white/60">
                         <Upload className="h-3.5 w-3.5 text-[#4facff]" />
-                        Upload
+                        {copy.upload}
                         <input
                           accept="image/*"
-                          aria-label="Upload character image"
+                          aria-label={copy.uploadCharacterImage}
                           className="sr-only"
                           onChange={(event) => {
                             const file = event.target.files?.[0];
@@ -3950,7 +4091,7 @@ export function ProjectWorkspace({
                         onClick={() => void generateCharacter(selectedCharacter)}
                         type="button"
                       >
-                        {isWorking ? copy.generating : "Generate"}
+                        {isWorking ? copy.generating : copy.generate}
                       </button>
                     </div>
                     {characterEstimate ? (
@@ -3966,7 +4107,7 @@ export function ProjectWorkspace({
                   </div>
                   <section className="mt-5 rounded-2xl border border-white/[0.07] p-4">
                     <p className="mb-3 text-[12px] font-semibold text-white/38">
-                      Results
+                      {copy.results}
                     </p>
                     <AssetResultList
                       assets={assets.filter(
@@ -4005,9 +4146,9 @@ export function ProjectWorkspace({
                       {copy.scene}
                     </div>
                     <label className="mt-4 block text-[12px] text-white/38">
-                      <span>Scene name</span>
+                      <span>{copy.sceneName}</span>
                       <input
-                        aria-label="Scene name"
+                        aria-label={copy.sceneName}
                         className="mt-2 w-full rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-2 text-[16px] text-white/78 outline-none"
                         disabled={!canEdit}
                         onChange={(event) =>
@@ -4023,7 +4164,7 @@ export function ProjectWorkspace({
                     <label className="mt-4 block text-[12px] text-white/38">
                       <span>{copy.location}</span>
                       <input
-                        aria-label="Scene location"
+                        aria-label={copy.location}
                         className="mt-2 w-full rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-2 text-[16px] text-white/78 outline-none"
                         disabled={!canEdit}
                         onChange={(event) =>
@@ -4039,7 +4180,7 @@ export function ProjectWorkspace({
                     <label className="mt-4 block text-[12px] text-white/38">
                       <span>{copy.description}</span>
                       <textarea
-                        aria-label="Scene description"
+                        aria-label={copy.sceneDescription}
                         className="mt-2 min-h-24 w-full resize-y rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-3 text-[15px] leading-7 text-white/70 outline-none"
                         disabled={!canEdit}
                         onChange={(event) =>
@@ -4053,9 +4194,9 @@ export function ProjectWorkspace({
                       />
                     </label>
                     <label className="mt-4 block text-[12px] text-white/38">
-                      <span>Prompt</span>
+                      <span>{copy.prompt}</span>
                       <textarea
-                        aria-label="Scene prompt"
+                        aria-label={copy.scenePrompt}
                         className="mt-2 min-h-32 w-full resize-y rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-3 text-[15px] leading-7 text-white/70 outline-none"
                         disabled={!canEdit}
                         onChange={(event) =>
@@ -4071,7 +4212,7 @@ export function ProjectWorkspace({
                     <div className="mt-4">
                       <WorkspaceModelSelect
                         allowProjectDefault={false}
-                        label="Image model"
+                        label={copy.imageModel}
                         onChange={(value) => {
                           setSceneGenerationModel(value);
                           setSceneEstimate(null);
@@ -4083,10 +4224,10 @@ export function ProjectWorkspace({
                     <div className="mt-4 grid grid-cols-3 gap-2 border-t border-white/[0.06] pt-4">
                       <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/[0.09] px-3 py-2.5 text-[12px] text-white/60 hover:border-[#1677ff]/35 hover:text-white">
                         <Upload className="h-3.5 w-3.5 text-[#4facff]" />
-                        Upload
+                        {copy.upload}
                         <input
                           accept="image/*"
-                          aria-label="Upload scene image"
+                          aria-label={copy.uploadSceneImage}
                           className="sr-only"
                           onChange={(event) => {
                             const file = event.target.files?.[0];
@@ -4112,7 +4253,7 @@ export function ProjectWorkspace({
                         onClick={() => void generateScene(selectedScene)}
                         type="button"
                       >
-                        {isWorking ? copy.generating : "Generate"}
+                        {isWorking ? copy.generating : copy.generate}
                       </button>
                     </div>
                     <div className="mt-3 flex justify-end">
@@ -4122,7 +4263,7 @@ export function ProjectWorkspace({
                         onClick={() => void saveSceneDraft(selectedScene)}
                         type="button"
                       >
-                        Save scene
+                        {copy.saveScene}
                       </button>
                     </div>
                     {sceneEstimate ? (
@@ -4134,7 +4275,7 @@ export function ProjectWorkspace({
                   </div>
                   <section className="mt-5 rounded-2xl border border-white/[0.07] p-4">
                     <p className="mb-3 text-[12px] font-semibold text-white/38">
-                      Results
+                      {copy.results}
                     </p>
                     <AssetResultList
                       assets={assets.filter(
@@ -4254,7 +4395,8 @@ export function ProjectWorkspace({
                     </div>
                     <div className="mt-4">
                       <WorkspaceModelSelect
-                        label="Video model"
+                        label={copy.videoModel}
+                        defaultLabel={copy.projectDefault}
                         onChange={(value) => {
                           setShotGenerationModel(value);
                           setEstimate(null);
@@ -4264,9 +4406,9 @@ export function ProjectWorkspace({
                       />
                       <div className="mt-3 grid gap-3 sm:grid-cols-3">
                         <label className="text-[12px] text-white/38">
-                          <span>Task type</span>
+                          <span>{copy.taskType}</span>
                           <select
-                            aria-label="Task type"
+                            aria-label={copy.taskType}
                             className="mt-2 w-full rounded-xl border border-white/[0.09] bg-[#11100d] px-3 py-2 text-[13px] text-white/72 outline-none"
                             onChange={(event) =>
                               setShotTaskType(
@@ -4279,16 +4421,16 @@ export function ProjectWorkspace({
                             }
                             value={shotTaskType}
                           >
-                            <option value="auto">Auto</option>
-                            <option value="reference">Reference remake</option>
-                            <option value="edit">Edit</option>
-                            <option value="extend">Extend</option>
+                            <option value="auto">{copy.auto}</option>
+                            <option value="reference">{copy.referenceRemake}</option>
+                            <option value="edit">{copy.edit}</option>
+                            <option value="extend">{copy.extend}</option>
                           </select>
                         </label>
                         <label className="text-[12px] text-white/38">
-                          <span>Audio</span>
+                          <span>{copy.audio}</span>
                           <select
-                            aria-label="Shot audio"
+                            aria-label={copy.shotAudio}
                             className="mt-2 w-full rounded-xl border border-white/[0.09] bg-[#11100d] px-3 py-2 text-[13px] text-white/72 outline-none"
                             onChange={(event) =>
                               setShotAudioMode(
@@ -4297,15 +4439,15 @@ export function ProjectWorkspace({
                             }
                             value={shotAudioMode}
                           >
-                            <option value="auto">Auto</option>
-                            <option value="on">On</option>
-                            <option value="off">Off</option>
+                            <option value="auto">{copy.auto}</option>
+                            <option value="on">{copy.on}</option>
+                            <option value="off">{copy.off}</option>
                           </select>
                         </label>
                         <label className="text-[12px] text-white/38">
-                          <span>Resolution</span>
+                          <span>{copy.resolution}</span>
                           <select
-                            aria-label="Shot resolution"
+                            aria-label={copy.shotResolution}
                             className="mt-2 w-full rounded-xl border border-white/[0.09] bg-[#11100d] px-3 py-2 text-[13px] text-white/72 outline-none"
                             onChange={(event) =>
                               setShotResolution(
@@ -4318,7 +4460,7 @@ export function ProjectWorkspace({
                             }
                             value={shotResolution}
                           >
-                            <option value="auto">Auto</option>
+                            <option value="auto">{copy.auto}</option>
                             <option value="720p">720p</option>
                             <option value="1080p">1080p</option>
                             <option value="4k">4K</option>
@@ -4332,9 +4474,9 @@ export function ProjectWorkspace({
                       </p>
                     </div>
                     <label className="mt-4 block text-[12px] text-white/38">
-                      <span>Prompt</span>
+                      <span>{copy.prompt}</span>
                       <textarea
-                        aria-label="Shot prompt"
+                        aria-label={copy.shotPrompt}
                         className="mt-2 min-h-40 w-full resize-y rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-3 text-[15px] leading-7 text-white/70 outline-none focus:border-[#1677ff]/40"
                         onChange={(event) =>
                           setShotDraft((current) =>
@@ -4352,16 +4494,16 @@ export function ProjectWorkspace({
                         onClick={() => void saveShotDraft(canvasShot)}
                         type="button"
                       >
-                        Save shot
+                        {copy.saveShot}
                       </button>
                     </div>
                     <div className="mt-4 grid grid-cols-3 gap-2 border-t border-white/[0.06] pt-4">
                       <label className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border border-white/[0.09] px-3 py-2.5 text-[12px] text-white/60 hover:border-[#1677ff]/35 hover:text-white">
                         <Upload className="h-3.5 w-3.5 text-[#4facff]" />
-                        Upload
+                        {copy.upload}
                         <input
                           accept="image/*,video/*,audio/*"
-                          aria-label="Upload shot reference"
+                          aria-label={copy.uploadShotReference}
                           className="sr-only"
                           onChange={(event) => {
                             const file = event.target.files?.[0];
@@ -4400,7 +4542,7 @@ export function ProjectWorkspace({
                         onClick={() => void generateShot()}
                         type="button"
                       >
-                        {isWorking ? copy.generating : "Generate"}
+                        {isWorking ? copy.generating : copy.generate}
                       </button>
                     </div>
                     {estimate ? (
@@ -4416,7 +4558,7 @@ export function ProjectWorkspace({
                   </div>
                   <section className="mt-5 rounded-2xl border border-white/[0.07] p-4">
                     <p className="mb-3 text-[12px] font-semibold text-white/38">
-                      Results
+                      {copy.results}
                     </p>
                     <AssetResultList
                       assets={assets.filter(
@@ -4483,7 +4625,7 @@ export function ProjectWorkspace({
                           className="rounded-lg border border-white/[0.09] px-3 py-2 text-[12px] text-white/52 hover:text-white"
                           type="submit"
                         >
-                          Save
+                          {copy.save}
                         </button>
                       </form>
                       <div className="mt-2 flex flex-wrap gap-2">
@@ -4501,7 +4643,7 @@ export function ProjectWorkspace({
                           title={selectedAsset.id}
                           type="button"
                         >
-                          Copy ID @{selectedAsset.id.slice(0, 8)}
+                          {copy.copyId} @{selectedAsset.id.slice(0, 8)}
                         </button>
                       </div>
                     </div>
@@ -4689,7 +4831,7 @@ export function ProjectWorkspace({
                           </p>
                           <p className="mt-2 max-w-2xl text-[13px] leading-6 text-white/40">
                             {locale.startsWith("zh")
-                              ? "选择视觉评估模型与指标，在发布前检查最终成片。"
+                              ? "选择视觉评估模型与指标，在发布前检查成片。"
                               : "Choose a visual evaluator and quality metrics before publishing."}
                           </p>
                         </div>
@@ -5320,11 +5462,11 @@ export function ProjectWorkspace({
               </span>
             </label>
             <div className="relative mt-4">
-              <span className="text-[12px] text-white/42">Access</span>
+              <span className="text-[12px] text-white/42">{copy.shareAccess}</span>
               <button
                 aria-expanded={sharePermissionOpen}
                 aria-haspopup="listbox"
-                aria-label="Collaboration access"
+                aria-label={copy.shareAccess}
                 className="mt-2 flex w-full items-center justify-between rounded-xl border border-white/[0.09] bg-[#0f0e0c] px-3 py-3 text-left text-[15px] text-white transition hover:border-[#1677ff]/30"
                 onClick={() => setSharePermissionOpen((current) => !current)}
                 type="button"
@@ -5390,7 +5532,7 @@ export function ProjectWorkspace({
                     : copy.canView}
                 </p>
                 <input
-                  aria-label="Collaboration link"
+                  aria-label={copy.collaborationLink}
                   className="mt-3 w-full rounded-lg border border-white/[0.09] bg-black/25 px-3 py-2 text-[12px] text-white/68"
                   readOnly
                   value={collaborationLink.share_url}
@@ -5451,9 +5593,9 @@ export function ProjectWorkspace({
               </button>
             </div>
             <label className="mt-5 block text-[12px] text-white/42">
-              <span>Title</span>
+              <span>{copy.titleLabel}</span>
               <input
-                aria-label="Published video title"
+                aria-label={`${copy.publish}${copy.titleLabel}`}
                 className="mt-2 w-full rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-3 text-[15px] text-white outline-none"
                 maxLength={200}
                 onChange={(event) => setPublishTitleDraft(event.target.value)}
@@ -5464,7 +5606,7 @@ export function ProjectWorkspace({
             <label className="mt-4 block text-[12px] text-white/42">
               <span>{copy.publishPrompt}</span>
               <textarea
-                aria-label="Published video description"
+                aria-label={copy.publishedPrompt}
                 className="mt-2 min-h-28 w-full resize-y rounded-xl border border-white/[0.09] bg-white/[0.025] px-3 py-3 text-[15px] leading-7 text-white outline-none"
                 onChange={(event) => setPublishPromptDraft(event.target.value)}
                 value={publishPromptDraft}

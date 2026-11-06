@@ -2207,7 +2207,10 @@ export function LandingPage({
             <BrandMark />
             <span className="brand-copy">
               {locale === "zh-CN" ? (
-                <strong>视频小秘</strong>
+                <>
+                  <strong>视频</strong>
+                  <em>小秘</em>
+                </>
               ) : (
                 <>
                   <strong>Video</strong>
@@ -2630,7 +2633,10 @@ export function LandingPage({
               <StreamingHeroTitle
                 lineOne={
                   locale === "zh-CN"
-                    ? [{ text: content.hero.eyebrow }]
+                    ? [
+                        { text: "视频" },
+                        { text: "小秘", accent: true },
+                      ]
                     : HERO_LINE_ONE
                 }
                 lineTwo={
@@ -3561,7 +3567,7 @@ export function LandingPage({
             >
               ×
             </button>
-            <p className="preview-eyebrow">Skills</p>
+            <p className="preview-eyebrow">{content.skills.label}</p>
             <h2 id="publish-skill-title">{content.skills.publishTitle}</h2>
             <label>
               <span>{content.skills.skillIdeaLabel}</span>

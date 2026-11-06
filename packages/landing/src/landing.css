@@ -3453,7 +3453,6 @@ html[lang="zh-CN"] .hero-copy h1 {
 .skill-publish-icon {
   width: 30px;
   height: 30px;
-  fill: currentColor;
   stroke: currentColor;
 }
 
@@ -3804,7 +3803,6 @@ html[lang="zh-CN"] .hero-copy h1 {
 .community-card.community-publish-card .community-publish-icon {
   width: 30px;
   height: 30px;
-  fill: currentColor;
   stroke: currentColor;
 }
 

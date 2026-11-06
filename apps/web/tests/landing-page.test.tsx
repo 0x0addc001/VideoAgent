@@ -33,6 +33,7 @@ describe("LandingPage", () => {
     );
 
     expect(container.querySelector(".brand-copy")).toHaveTextContent("视频小秘");
+    expect(container.querySelector(".brand-copy em")).toHaveTextContent("小秘");
     expect(container.querySelector(".site-header > nav")).toHaveTextContent(
       "小秘",
     );
@@ -42,6 +43,10 @@ describe("LandingPage", () => {
     expect(container.querySelector("h1")).toHaveAttribute(
       "aria-label",
       "视频小秘 把想象拍成片",
+    );
+    expect(container.querySelector("h1 .hero-accent")).toHaveTextContent("小秘");
+    expect(container.querySelector(".site-header > nav")).toHaveTextContent(
+      "技能",
     );
   });
 

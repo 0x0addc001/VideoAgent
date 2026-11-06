@@ -2,7 +2,10 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { NextIntlClientProvider } from "next-intl";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import en from "../messages/en.json";
-import { ProjectWorkspace } from "@/components/project-workspace";
+import {
+  ProjectWorkspace,
+  workspaceCopy,
+} from "@/components/project-workspace";
 
 vi.mock("@/i18n/navigation", () => ({
   Link: ({
@@ -26,6 +29,28 @@ afterEach(() => {
 });
 
 describe("ProjectWorkspace", () => {
+  it("localizes Chinese workspace navigation and editing controls", () => {
+    const copy = workspaceCopy("zh-CN");
+
+    expect(copy.agent).toBe("小秘");
+    expect(copy.skills).toBe("技能");
+    expect(copy.settings).toBe("设定");
+    expect(copy.outline).toBe("大纲");
+    expect(copy.script).toBe("剧本");
+    expect(copy.character).toBe("角色");
+    expect(copy.scene).toBe("场地");
+    expect(copy.finalCuts).toBe("成片");
+    expect(copy.saveDirection).toBe("保存方向");
+    expect(copy.saveSettings).toBe("保存设定");
+    expect(copy.open).toBe("打开");
+    expect(copy.prompt).toBe("提示词");
+    expect(
+      Object.values(copy).filter(
+        (value) => typeof value === "string" && value.endsWith("集"),
+      ),
+    ).toEqual([]);
+  });
+
   it(
     "starts the first agent turn from a newly created project brief",
     async () => {
