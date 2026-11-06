@@ -52,6 +52,12 @@ async def test_scene_is_editable_and_owns_uploaded_reference_images(client):
     estimate = await client.post(f"/api/v1/scenes/{scene['id']}/estimate")
     assert estimate.status_code == 200
     assert estimate.json()["credits"] == 2
+    selected_estimate = await client.post(
+        f"/api/v1/scenes/{scene['id']}/estimate",
+        json={"provider": "kling", "model": "kling-image-v3_0_omni"},
+    )
+    assert selected_estimate.status_code == 200
+    assert selected_estimate.json()["credits"] == 2
     generated = await client.post(
         f"/api/v1/scenes/{scene['id']}/generate",
         json={

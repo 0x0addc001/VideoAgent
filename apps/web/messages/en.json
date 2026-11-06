@@ -55,6 +55,7 @@
     "createStarter": "Draft first shot",
     "estimatedCredits": "Estimated credits",
     "estimate": "Estimate cost",
+    "estimateError": "Credits could not be estimated. Check the selected model and try again.",
     "generate": "Generate shot",
     "agentGenerate": "Generate current video",
     "agentAdjust": "Adjust shot",

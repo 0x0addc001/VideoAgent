@@ -376,7 +376,7 @@ http://localhost:8000/openapi.json</code></pre>
   &quot;provider&quot;: &quot;kling&quot;,
   &quot;model&quot;: &quot;kling-image-v3_0&quot;
 }</code></pre>
-<p><code>generation_mode</code> 为 <code>text_to_image</code> 或 <code>image_to_image</code>。成功响应为 <code>AssetRead</code>， 客户端可通过 <code>content_url</code> 预览和下载生成图片。</p>
+<p><code>generation_mode</code> 为 <code>text_to_image</code> 或 <code>image_to_image</code>。成功响应为 <code>AssetRead</code>， 客户端可通过 <code>content_url</code> 预览和下载生成图片。 估算接口同样接受可选的 <code>provider</code> 与 <code>model</code>，确保估算与实际生成使用同一图片模型。</p>
 <h3 id="场景编辑与参考图">场景编辑与参考图</h3>
 <p><code>PATCH /projects/{project_id}/storyboard/scenes/{scene_id}</code> 可更新名称、地点、 描述和 Prompt。<code>POST /scenes/{scene_id}/assets</code> 上传场景参考图，返回素材名会绑定 Scene ID，工作区据此把图片放在对应 Scene 目录下。</p>
 <p><code>POST /scenes/{scene_id}/estimate</code> 和 <code>POST /scenes/{scene_id}/generate</code> 用于执行 场景文生图或图生图；请求接受与 Character 生成相同的 <code>provider</code>、<code>model</code> 覆盖。</p>

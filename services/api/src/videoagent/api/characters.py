@@ -10,8 +10,13 @@ from videoagent.config import Settings
 from videoagent.errors import AppError
 from videoagent.models import Asset, Character, Project, Storyboard, User
 from videoagent.providers.base import CostEstimate
-from videoagent.providers.kling_cli import KlingCLIError, KlingCLIVideoProvider
-from videoagent.schemas import AssetRead, CharacterGenerationApproval
+from videoagent.providers.kling_cli import (
+    DEFAULT_KLING_IMAGE_MODEL,
+    KLING_IMAGE_MODELS,
+    KlingCLIError,
+    KlingCLIVideoProvider,
+)
+from videoagent.schemas import AssetRead, CharacterGenerationApproval, ModelSelection
 from videoagent.services.credits import refund_credits, reserve_credits
 from videoagent.services.media import (
     asset_path,
@@ -24,6 +29,23 @@ from videoagent.services.storyboards import owned_project_or_404
 
 router = APIRouter(prefix="/characters", tags=["characters"])
 IMAGE_GENERATION_CREDITS = 2
+
+
+def image_model_for(payload: ModelSelection | None) -> str:
+    if payload and payload.provider not in {None, "kling"}:
+        raise AppError(
+            status_code=422,
+            code="IMAGE_PROVIDER_UNSUPPORTED",
+            message="The selected provider does not support image generation.",
+        )
+    model = payload.model if payload and payload.model else DEFAULT_KLING_IMAGE_MODEL
+    if model not in KLING_IMAGE_MODELS:
+        raise AppError(
+            status_code=422,
+            code="IMAGE_MODEL_UNSUPPORTED",
+            message="The selected model does not support image generation.",
+        )
+    return model
 
 
 async def owned_character_or_404(
@@ -56,8 +78,10 @@ async def estimate_character_image(
     user: Annotated[User, Depends(get_current_user)],
     session: Annotated[AsyncSession, Depends(get_session)],
     settings: Annotated[Settings, Depends(get_settings)],
+    payload: ModelSelection | None = None,
 ) -> CostEstimate:
     await owned_character_or_404(session, character_id, user.id)
+    image_model_for(payload)
     if not await generation_enabled(session, settings):
         raise AppError(
             status_code=503,
@@ -122,12 +146,7 @@ async def generate_character_image(
             code="GENERATION_APPROVAL_REQUIRED",
             message="Generation requires explicit approval.",
         )
-    if payload.provider not in {None, "kling"}:
-        raise AppError(
-            status_code=422,
-            code="IMAGE_PROVIDER_UNSUPPORTED",
-            message="The selected provider does not support image generation.",
-        )
+    model = image_model_for(payload)
     if not await generation_enabled(session, settings):
         raise AppError(
             status_code=503,
@@ -185,7 +204,7 @@ async def generate_character_image(
                 prompt=character.prompt_en,
                 generation_mode=payload.generation_mode,
                 reference_image_path=reference_path,
-                model=payload.model or "kling-image-v3_0",
+                model=model,
             )
         asset = await materialize_character_image(
             session,

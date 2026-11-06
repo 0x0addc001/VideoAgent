@@ -55,6 +55,7 @@
     "createStarter": "起草第一个镜头",
     "estimatedCredits": "预计积分",
     "estimate": "估算积分",
+    "estimateError": "暂时无法估算积分，请检查所选模型后重试。",
     "generate": "生成镜头",
     "agentGenerate": "生成当前视频",
     "agentAdjust": "调整镜头",

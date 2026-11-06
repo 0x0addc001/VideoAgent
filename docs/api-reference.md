@@ -344,6 +344,8 @@ Generation request:
 `generation_mode` is `text_to_image` or `image_to_image`. A successful request
 returns an `AssetRead` whose content can be previewed and downloaded through
 `content_url`.
+The estimate endpoint accepts optional `provider` and `model` fields so the
+estimate follows the same image-model selection used by generation.
 
 ### Scene Editing and References
 

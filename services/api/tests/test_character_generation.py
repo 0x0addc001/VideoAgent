@@ -61,6 +61,19 @@ async def test_character_image_generation_persists_downloadable_asset(client):
         "credits": 2,
         "duration_seconds": 0,
     }
+    selected_estimate = await client.post(
+        f"/api/v1/characters/{character['id']}/estimate",
+        json={"provider": "kling", "model": "kling-image-o1"},
+    )
+    assert selected_estimate.status_code == 200
+    assert selected_estimate.json()["credits"] == 2
+
+    unsupported_model = await client.post(
+        f"/api/v1/characters/{character['id']}/estimate",
+        json={"provider": "kling", "model": "not-an-image-model"},
+    )
+    assert unsupported_model.status_code == 422
+    assert unsupported_model.json()["error"]["code"] == "IMAGE_MODEL_UNSUPPORTED"
 
     response = await client.post(
         f"/api/v1/characters/{character['id']}/generate",

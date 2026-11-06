@@ -360,6 +360,7 @@ Idempotency-Key: unique-request-id
 
 `generation_mode` 为 `text_to_image` 或 `image_to_image`。成功响应为 `AssetRead`，
 客户端可通过 `content_url` 预览和下载生成图片。
+估算接口同样接受可选的 `provider` 与 `model`，确保估算与实际生成使用同一图片模型。
 
 ### 场景编辑与参考图
 

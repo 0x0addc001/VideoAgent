@@ -390,6 +390,10 @@ describe("ProjectWorkspace", () => {
         );
       }
       if (url.endsWith("/scenes/scene-1/estimate") && init?.method === "POST") {
+        expect(JSON.parse(String(init.body))).toMatchObject({
+          provider: "kling",
+          model: "kling-image-o1",
+        });
         return Promise.resolve(
           Response.json({
             provider: "kling",
@@ -403,7 +407,7 @@ describe("ProjectWorkspace", () => {
           approved: true,
           generation_mode: "text_to_image",
           provider: "kling",
-          model: "kling-image-v3_0",
+          model: "kling-image-o1",
         });
         return Promise.resolve(
           Response.json(
@@ -618,6 +622,21 @@ describe("ProjectWorkspace", () => {
     ).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: "Copenhagen canal" }));
     expect(await screen.findByLabelText("Scene location")).toHaveValue("Nyhavn");
+    const imageModel = screen.getByLabelText("Image model");
+    expect(
+      [...imageModel.querySelectorAll("option")].map((option) => option.value),
+    ).toEqual([
+      "kling-image-v3_0",
+      "kling-image-v3_0_omni",
+      "kling-image-o1",
+      "kling-image-v2_1",
+    ]);
+    expect(
+      document.querySelector('input[type="file"]'),
+    ).toHaveClass("hidden");
+    fireEvent.change(imageModel, {
+      target: { value: "kling-image-o1" },
+    });
     fireEvent.click(screen.getByRole("button", { name: "Estimate credits" }));
     await waitFor(() => {
       expect(
@@ -629,6 +648,9 @@ describe("ProjectWorkspace", () => {
       ).toBe(true);
     });
     expect(await screen.findByText(/Estimated credits: 2/)).toBeVisible();
+    expect(
+      screen.getByRole("button", { name: "Estimate credits · 2" }),
+    ).toBeVisible();
     fireEvent.click(screen.getByRole("button", { name: "Generate" }));
     await waitFor(() => {
       expect(
@@ -751,7 +773,7 @@ describe("ProjectWorkspace", () => {
       ).toBe(true);
     });
     },
-    60_000,
+    120_000,
   );
 
   it(

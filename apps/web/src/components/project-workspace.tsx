@@ -335,7 +335,46 @@ const IMAGE_MODEL_OPTIONS = [
     label: "Kling/Kling Image 3.0",
     provider: "Kling",
   },
+  {
+    id: "kling-image-v3_0_omni",
+    label: "Kling/Kling Image 3.0 Omni",
+    provider: "Kling",
+  },
+  {
+    id: "kling-image-o1",
+    label: "Kling/Kling Image O1",
+    provider: "Kling",
+  },
+  {
+    id: "kling-image-v2_1",
+    label: "Kling/Kling Image 2.1",
+    provider: "Kling",
+  },
 ] as const;
+
+function parseCostEstimate(payload: unknown): CostEstimate {
+  if (!payload || typeof payload !== "object") {
+    throw new Error("estimate-invalid-response");
+  }
+  const candidate = payload as {
+    credits?: unknown;
+    duration_seconds?: unknown;
+    estimated_credits?: unknown;
+    provider?: unknown;
+  };
+  const credits = Number(candidate.credits ?? candidate.estimated_credits);
+  if (!Number.isFinite(credits) || credits < 0) {
+    throw new Error("estimate-invalid-credits");
+  }
+  return {
+    provider:
+      typeof candidate.provider === "string" && candidate.provider
+        ? candidate.provider
+        : "auto",
+    credits,
+    duration_seconds: Number(candidate.duration_seconds ?? 0),
+  };
+}
 
 function optionalFetch(
   input: RequestInfo | URL,
@@ -2992,9 +3031,13 @@ export function ProjectWorkspace({
         body: JSON.stringify(selectedModelRoute(shotGenerationModel)),
       });
       if (!response.ok) throw new Error("estimate-failed");
-      setEstimate((await response.json()) as CostEstimate);
-    } catch {
-      setActionError(t("noShot"));
+      setEstimate(parseCostEstimate(await response.json()));
+    } catch (error) {
+      setActionError(
+        error instanceof Error && error.message !== "estimate-failed"
+          ? error.message
+          : t("estimateError"),
+      );
     } finally {
       setIsWorking(false);
     }
@@ -3076,7 +3119,7 @@ export function ProjectWorkspace({
           },
         );
         if (!estimateResponse.ok) throw new Error("estimate-failed");
-        setEstimate((await estimateResponse.json()) as CostEstimate);
+        setEstimate(parseCostEstimate(await estimateResponse.json()));
       }
       const job = await submitGeneration(savedShot, savedShot.prompt_en);
       if (job.status === "succeeded") {
@@ -3109,7 +3152,7 @@ export function ProjectWorkspace({
         },
       );
       if (!estimateResponse.ok) throw new Error("estimate-failed");
-      const nextEstimate = (await estimateResponse.json()) as CostEstimate;
+      const nextEstimate = parseCostEstimate(await estimateResponse.json());
       setEstimate(nextEstimate);
       if (!window.confirm(t("agentGenerateConfirm", { credits: nextEstimate.credits }))) {
         return;
@@ -3334,11 +3377,17 @@ export function ProjectWorkspace({
       const response = await fetch(`${API_BASE_URL}/scenes/${scene.id}/estimate`, {
         method: "POST",
         credentials: "include",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(selectedModelRoute(sceneGenerationModel)),
       });
       if (!response.ok) throw new Error("scene-estimate-failed");
-      setSceneEstimate((await response.json()) as CostEstimate);
-    } catch {
-      setActionError(t("noShot"));
+      setSceneEstimate(parseCostEstimate(await response.json()));
+    } catch (error) {
+      setActionError(
+        error instanceof Error && error.message !== "scene-estimate-failed"
+          ? error.message
+          : t("estimateError"),
+      );
     } finally {
       setIsWorking(false);
     }
@@ -3395,12 +3444,20 @@ export function ProjectWorkspace({
         {
           method: "POST",
           credentials: "include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(
+            selectedModelRoute(characterGenerationModel),
+          ),
         },
       );
       if (!response.ok) throw new Error("character-estimate-failed");
-      setCharacterEstimate((await response.json()) as CostEstimate);
-    } catch {
-      setActionError(t("noShot"));
+      setCharacterEstimate(parseCostEstimate(await response.json()));
+    } catch (error) {
+      setActionError(
+        error instanceof Error && error.message !== "character-estimate-failed"
+          ? error.message
+          : t("estimateError"),
+      );
     } finally {
       setIsWorking(false);
     }
@@ -4064,7 +4121,7 @@ export function ProjectWorkspace({
                         <input
                           accept="image/*"
                           aria-label={copy.uploadCharacterImage}
-                          className="sr-only"
+                          className="hidden"
                           onChange={(event) => {
                             const file = event.target.files?.[0];
                             event.currentTarget.value = "";
@@ -4081,7 +4138,9 @@ export function ProjectWorkspace({
                         onClick={() => void estimateCharacter(selectedCharacter)}
                         type="button"
                       >
-                        {copy.estimate}
+                        {characterEstimate
+                          ? `${copy.estimate} · ${characterEstimate.credits}`
+                          : copy.estimate}
                       </button>
                       <button
                         className="rounded-xl bg-[#1677ff] px-3 py-2.5 text-[12px] font-semibold text-white disabled:opacity-35"
@@ -4228,7 +4287,7 @@ export function ProjectWorkspace({
                         <input
                           accept="image/*"
                           aria-label={copy.uploadSceneImage}
-                          className="sr-only"
+                          className="hidden"
                           onChange={(event) => {
                             const file = event.target.files?.[0];
                             event.currentTarget.value = "";
@@ -4245,7 +4304,9 @@ export function ProjectWorkspace({
                         onClick={() => void estimateScene(selectedScene)}
                         type="button"
                       >
-                        {copy.estimate}
+                        {sceneEstimate
+                          ? `${copy.estimate} · ${sceneEstimate.credits}`
+                          : copy.estimate}
                       </button>
                       <button
                         className="rounded-xl bg-[#1677ff] px-3 py-2.5 text-[12px] font-semibold text-white disabled:opacity-35"
@@ -4504,7 +4565,7 @@ export function ProjectWorkspace({
                         <input
                           accept="image/*,video/*,audio/*"
                           aria-label={copy.uploadShotReference}
-                          className="sr-only"
+                          className="hidden"
                           onChange={(event) => {
                             const file = event.target.files?.[0];
                             event.currentTarget.value = "";
@@ -4530,7 +4591,9 @@ export function ProjectWorkspace({
                         onClick={() => void estimateShot()}
                         type="button"
                       >
-                        {copy.estimate}
+                        {estimate
+                          ? `${copy.estimate} · ${estimate.credits}`
+                          : copy.estimate}
                       </button>
                       <button
                         className="rounded-xl bg-[#1677ff] px-3 py-2.5 text-[12px] font-semibold text-white disabled:opacity-35"
@@ -4762,7 +4825,7 @@ export function ProjectWorkspace({
                                 ? "上传配乐或配音"
                                 : "Upload soundtrack or voice-over"
                             }
-                            className="sr-only"
+                            className="hidden"
                             onChange={(event) => {
                               const file = event.target.files?.[0];
                               event.currentTarget.value = "";

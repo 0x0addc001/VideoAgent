@@ -361,7 +361,7 @@ http://localhost:8000/openapi.json</code></pre>
   &quot;provider&quot;: &quot;kling&quot;,
   &quot;model&quot;: &quot;kling-image-v3_0&quot;
 }</code></pre>
-<p><code>generation_mode</code> is <code>text_to_image</code> or <code>image_to_image</code>. A successful request returns an <code>AssetRead</code> whose content can be previewed and downloaded through <code>content_url</code>.</p>
+<p><code>generation_mode</code> is <code>text_to_image</code> or <code>image_to_image</code>. A successful request returns an <code>AssetRead</code> whose content can be previewed and downloaded through <code>content_url</code>. The estimate endpoint accepts optional <code>provider</code> and <code>model</code> fields so the estimate follows the same image-model selection used by generation.</p>
 <h3 id="scene-editing-and-references">Scene Editing and References</h3>
 <p><code>PATCH /projects/{project_id}/storyboard/scenes/{scene_id}</code> updates name, location, description, or prompts. <code>POST /scenes/{scene_id}/assets</code> uploads a scene reference image. The returned asset filename is namespaced to the scene so the workspace can keep it under that Scene directory.</p>
 <p><code>POST /scenes/{scene_id}/estimate</code> and <code>POST /scenes/{scene_id}/generate</code> run scene text-to-image or image-to-image generation. The request accepts the same <code>provider</code> and <code>model</code> overrides as Character generation.</p>

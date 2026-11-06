@@ -6,6 +6,16 @@ from typing import Any
 
 from videoagent.providers.base import CostEstimate, GenerationRequest, JobStatus, ProviderJob
 
+KLING_IMAGE_MODELS = frozenset(
+    {
+        "kling-image-v3_0_omni",
+        "kling-image-o1",
+        "kling-image-v3_0",
+        "kling-image-v2_1",
+    }
+)
+DEFAULT_KLING_IMAGE_MODEL = "kling-image-v3_0"
+
 
 class KlingCLIError(RuntimeError):
     """Raised when the domestic Kling CLI cannot complete a command."""
@@ -180,7 +190,7 @@ class KlingCLIVideoProvider:
         prompt: str,
         generation_mode: str,
         reference_image_path: str | None = None,
-        model: str = "kling-image-v3_0",
+        model: str = DEFAULT_KLING_IMAGE_MODEL,
         aspect_ratio: str = "3:4",
     ) -> str:
         if generation_mode not in {"text_to_image", "image_to_image"}:
