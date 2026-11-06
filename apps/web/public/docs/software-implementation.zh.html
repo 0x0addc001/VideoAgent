@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="视频小秘 Dev" />
-    <title>Dev · 视频小秘</title>
+    <meta name="description" content="VideoAgent Dev" />
+    <title>Dev · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
     <link rel="stylesheet" href="../docs.css?v=33" />
   </head>
@@ -25,7 +25,7 @@
         </button>
         <nav class="toc-panel" id="toc-panel" aria-label="目录">
           <p class="toc-kicker">目录</p>
-          <a class="toc-link toc-level-1" href="#视频小秘软件实现说明">视频小秘软件实现说明</a>
+          <a class="toc-link toc-level-1" href="#videoagent-软件实现说明">VideoAgent 软件实现说明</a>
 <a class="toc-link toc-level-2" href="#1-文档目的">1. 文档目的</a>
 <a class="toc-link toc-level-2" href="#2-系统范围">2. 系统范围</a>
 <a class="toc-link toc-level-2" href="#3-仓库结构">3. 仓库结构</a>
@@ -33,7 +33,7 @@
 <a class="toc-link toc-level-2" href="#5-请求流程">5. 请求流程</a>
 <a class="toc-link toc-level-3" href="#5-1-注册与会话">5.1 注册与会话</a>
 <a class="toc-link toc-level-3" href="#5-2-项目与故事板">5.2 项目与故事板</a>
-<a class="toc-link toc-level-3" href="#5-3-小秘对话">5.3 小秘对话</a>
+<a class="toc-link toc-level-3" href="#5-3-agent-对话">5.3 Agent 对话</a>
 <a class="toc-link toc-level-3" href="#5-4-生成任务">5.4 生成任务</a>
 <a class="toc-link toc-level-3" href="#5-5-celery-轮询">5.5 Celery 轮询</a>
 <a class="toc-link toc-level-2" href="#6-后端模块职责">6. 后端模块职责</a>
@@ -55,17 +55,17 @@
 <a class="toc-link toc-level-2" href="#15-测试与质量门禁">15. 测试与质量门禁</a>
 <a class="toc-link toc-level-2" href="#16-开发规范">16. 开发规范</a>
 <a class="toc-link toc-level-3" href="#16-1-后端">16.1 后端</a>
-<a class="toc-link toc-level-3" href="#16-2-小秘">16.2 小秘</a>
+<a class="toc-link toc-level-3" href="#16-2-agent">16.2 Agent</a>
 <a class="toc-link toc-level-3" href="#16-3-provider">16.3 Provider</a>
 <a class="toc-link toc-level-3" href="#16-4-前端">16.4 前端</a>
 <a class="toc-link toc-level-2" href="#17-扩展点">17. 扩展点</a>
 <a class="toc-link toc-level-3" href="#新增视频-provider">新增视频 Provider</a>
-<a class="toc-link toc-level-3" href="#新增小秘节点">新增小秘节点</a>
+<a class="toc-link toc-level-3" href="#新增-agent-节点">新增 Agent 节点</a>
 <a class="toc-link toc-level-3" href="#新增-api">新增 API</a>
 <a class="toc-link toc-level-2" href="#19-提交流程检查清单">19. 提交流程检查清单</a>
         </nav>
       </aside>
-      <article class="document"><h1 id="视频小秘软件实现说明">视频小秘软件实现说明</h1>
+      <article class="document"><h1 id="videoagent-软件实现说明">VideoAgent 软件实现说明</h1>
 <div class="table-wrap"><table><thead><tr>
 <th>属性</th>
 <th>内容</th>
@@ -92,11 +92,11 @@
 </tr>
 </tbody></table></div>
 <h2 id="1-文档目的">1. 文档目的</h2>
-<p>本文档面向参与视频小秘开发的前端、后端、小秘、测试和运维人员，说明代码组织、核心流程、模块协作和工程边界。</p>
+<p>本文档面向参与 VideoAgent 开发的前端、后端、Agent、测试和运维人员，说明代码组织、核心流程、模块协作和工程边界。</p>
 <h2 id="2-系统范围">2. 系统范围</h2>
 <ul>
 <li>Next.js App Router Web 界面。</li>
-<li>左侧 小秘、Skills、Videos、Assets、Docs 导航和独立视图切换。</li>
+<li>左侧 Agent、Skills、Videos、Assets、Docs 导航和独立视图切换。</li>
 <li>蓝色播放键品牌、无框标签页图标和激活图标填充/线框反转。</li>
 <li>首页连续视频轮播、流式主标语、Skill/Hook 选择器、场景策略、自定义透明下拉和 Action 生成入口。</li>
 <li>创作输入框根据 <code>scrollHeight</code> 自动增高，并在输入非空时隐藏示例灵感；策略保持可用，重复点击当前项会恢复应用前草稿。</li>
@@ -111,7 +111,7 @@
 <li>用户级项目创建、列表、读取、重命名和归档。</li>
 <li>用户数据所有权隔离。</li>
 <li>多镜头故事板创建、读取和版本化替换。</li>
-<li>LangGraph 单节点小秘编排。</li>
+<li>LangGraph 单节点 Agent 编排。</li>
 <li>无模型密钥时的确定性本地故事板规划器。</li>
 <li>配置 OpenAI-compatible 模型后的结构化故事板规划器。</li>
 <li>积分估算和显式生成审批。</li>
@@ -136,7 +136,7 @@
 <li>Markdown 文档构建。</li>
 </ul>
 <h2 id="3-仓库结构">3. 仓库结构</h2>
-<pre><code class="language-text">视频小秘/
+<pre><code class="language-text">VideoAgent/
 ├── apps/web/
 │   ├── messages/                   # en.json、zh-CN.json
 │   ├── src/app/[locale]/           # 国际化页面
@@ -214,7 +214,7 @@ https://example.com/api/   → FastAPI</code></pre>
 <li>根据请求顺序重建 Character 和 Shot。</li>
 <li>两类资源的 <code>index</code> 均从 0 开始连续分配。</li>
 </ol>
-<h3 id="5-3-小秘对话">5.3 小秘对话</h3>
+<h3 id="5-3-agent-对话">5.3 Agent 对话</h3>
 <pre><code class="language-text">POST /projects/{project_id}/messages
   → 校验 run_id
   → 构建有界 Context 与短时 Memory
@@ -229,9 +229,9 @@ https://example.com/api/   → FastAPI</code></pre>
   → 保存 assistant Message
   → 记录 reply 活动
   → 返回两条 Message 和最新 Storyboard</code></pre>
-<p>小秘图只有一个节点：</p>
+<p>Agent 图只有一个节点：</p>
 <pre><code class="language-text">START → plan_storyboard → END</code></pre>
-<p>前端以 350ms 轮询 <code>GET /projects/{project_id}/agent-activity/{run_id}</code>，把真实小秘 step 渲染为 等待时间线。Context Builder 位于 <code>services/agent_context.py</code>，活动持久化位于 <code>services/agent_activity.py</code>。</p>
+<p>前端以 350ms 轮询 <code>GET /projects/{project_id}/agent-activity/{run_id}</code>，把真实 Agent step 渲染为 等待时间线。Context Builder 位于 <code>services/agent_context.py</code>，活动持久化位于 <code>services/agent_activity.py</code>。</p>
 <h3 id="5-4-生成任务">5.4 生成任务</h3>
 <pre><code class="language-text">用户点击估算
   → POST /shots/{shot_id}/estimate
@@ -280,7 +280,7 @@ https://example.com/api/   → FastAPI</code></pre>
 </tr>
 <tr>
 <td><code>schemas.py</code></td>
-<td>API 和小秘的 Pydantic 模型</td>
+<td>API 和 Agent 的 Pydantic 模型</td>
 </tr>
 <tr>
 <td><code>errors.py</code></td>
@@ -308,7 +308,7 @@ https://example.com/api/   → FastAPI</code></pre>
 </tr>
 <tr>
 <td><code>api/agent_activity.py</code></td>
-<td>查询单次小秘 run 的可观测步骤</td>
+<td>查询单次 Agent run 的可观测步骤</td>
 </tr>
 <tr>
 <td><code>api/workspace.py</code></td>
@@ -360,7 +360,7 @@ https://example.com/api/   → FastAPI</code></pre>
 </tr>
 <tr>
 <td><code>services/agent_activity.py</code></td>
-<td>小秘 run 活动事件持久化</td>
+<td>Agent run 活动事件持久化</td>
 </tr>
 <tr>
 <td><code>services/workflow.py</code></td>
@@ -466,7 +466,7 @@ https://example.com/api/   → FastAPI</code></pre>
 </tr>
 <tr>
 <td><code>project-workspace.tsx</code></td>
-<td>自动开始首轮小秘对话、故事板、镜头设置和生成</td>
+<td>自动开始首轮 Agent 对话、故事板、镜头设置和生成</td>
 </tr>
 <tr>
 <td><code>lib/api.ts</code></td>
@@ -499,7 +499,7 @@ zh-CN</code></pre>
 <li>后端返回稳定错误码，不在数据库保存前端展示文案。</li>
 <li>新增内部翻译 Key 时同时维护中英文资源。</li>
 <li>Docs 语言直接跟随当前应用语言状态，不使用独立的文档语言缓存。</li>
-<li>小秘输出语言来自 <code>User.locale</code>。</li>
+<li>Agent 输出语言来自 <code>User.locale</code>。</li>
 <li>视频模型 Prompt 使用 <code>prompt_en</code>，中文解释保存在 <code>prompt_zh</code>。</li>
 </ul>
 <h2 id="9-数据模型">9. 数据模型</h2>
@@ -756,12 +756,12 @@ task reference    → query-result   → JobStatus + result URL</code></pre>
 <tr>
 <td>POST</td>
 <td><code>/projects/{id}/messages</code></td>
-<td>小秘生成故事板并保存对话</td>
+<td>Agent 生成故事板并保存对话</td>
 </tr>
 <tr>
 <td>GET</td>
 <td><code>/projects/{id}/agent-activity/{run_id}</code></td>
-<td>查询小秘实际执行步骤</td>
+<td>查询 Agent 实际执行步骤</td>
 </tr>
 <tr>
 <td>GET</td>
@@ -896,7 +896,7 @@ task reference    → query-result   → JobStatus + result URL</code></pre>
 <tr>
 <td>GET</td>
 <td><code>/credits</code></td>
-<td>当前用户视频小秘积分余额</td>
+<td>当前用户 VideoAgent 积分余额</td>
 </tr>
 <tr>
 <td>GET</td>
@@ -1042,13 +1042,13 @@ task reference    → query-result   → JobStatus + result URL</code></pre>
 </ul>
 <h2 id="13-本地开发">13. 本地开发</h2>
 <h3 id="13-1-启动-api">13.1 启动 API</h3>
-<pre><code class="language-powershell">cd D:\_Science\小秘\视频小秘
+<pre><code class="language-powershell">cd D:\_Science\Agent\VideoAgent
 .\scripts\dev-api.ps1</code></pre>
 <p>启动脚本会将 Windows PowerShell、Python 标准输出和代码页切换为 UTF-8，避免中文日志乱码。</p>
 <p>默认数据库：</p>
 <pre><code class="language-text">services/api/.data/videoagent.db</code></pre>
 <h3 id="13-2-启动-web">13.2 启动 Web</h3>
-<pre><code class="language-powershell">cd D:\_Science\小秘\视频小秘
+<pre><code class="language-powershell">cd D:\_Science\Agent\VideoAgent
 .\scripts\dev-web.ps1</code></pre>
 <p>该脚本同样会统一控制台编码，并启动 Next.js 开发服务。</p>
 <p>访问：</p>
@@ -1254,7 +1254,7 @@ pnpm --dir apps/web build</code></pre>
 <li>Kling Provider 测试使用 Fake MCP client，不触发付费生成。</li>
 <li>前端测试覆盖共享首页、导航、文档加载、自定义下拉、Videos 发布、创作提交、历史目录、逐层审批、Skill AI 优化、持久化发布、分类榜单和点赞状态。</li>
 <li>工作流批准使用本地即时阶段推进；显式调整和自定义修改才调用远程规划器，减少选项点击等待。</li>
-<li>小秘语言由项目 Brief 和当前用户 Prompt 自动检测，不直接沿用账户语言。</li>
+<li>Agent 语言由项目 Brief 和当前用户 Prompt 自动检测，不直接沿用账户语言。</li>
 <li>Pippit 会将低于模型下限的镜头时长提升到 4 秒并同步估算；Provider 拒绝时返回可读的 <code>502</code> 错误并幂等退款。</li>
 <li>Playwright 使用 Mock Provider 验证审批、生成、导出、分享、Skill 优化，以及 Videos 视频上传和 Assets 详情，不访问付费 Provider。</li>
 <li>管理测试覆盖白名单权限、积分调整、账号停用、邀请码、注册关闭和生成开关。</li>
@@ -1278,10 +1278,10 @@ pnpm --dir apps/web build</code></pre>
 <li>不能把 Pippit Access Key 或 CLI 登录文件写入日志。</li>
 <li>新查询必须包含用户所有权条件。</li>
 </ul>
-<h3 id="16-2-小秘">16.2 小秘</h3>
+<h3 id="16-2-agent">16.2 Agent</h3>
 <ul>
 <li>LLM 输出必须使用 Pydantic 结构化模型。</li>
-<li>不在小秘中直接执行删除、支付或账号操作。</li>
+<li>不在 Agent 中直接执行删除、支付或账号操作。</li>
 <li>外部生成操作必须经过明确的计费审批。</li>
 <li>Prompt 中上传内容和用户文本均视为不可信。</li>
 <li>本地规划器必须保持可用，确保无模型环境可以开发。</li>
@@ -1312,7 +1312,7 @@ pnpm --dir apps/web build</code></pre>
 <li>在 Provider Resolver 中增加选择逻辑。</li>
 <li>增加前端能力展示和积分字段。</li>
 </ol>
-<h3 id="新增小秘节点">新增小秘节点</h3>
+<h3 id="新增-agent-节点">新增 Agent 节点</h3>
 <ol>
 <li>在 <code>AgentState</code> 中增加类型化状态。</li>
 <li>为该状态迁移编写单元测试。</li>

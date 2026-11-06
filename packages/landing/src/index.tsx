@@ -327,9 +327,15 @@ function renderHeroParts(parts: readonly HeroPart[], visible: number) {
   });
 }
 
-function StreamingHeroTitle() {
-  const lineOneLength = heroPartsLength(HERO_LINE_ONE);
-  const lineTwoLength = heroPartsLength(HERO_LINE_TWO);
+function StreamingHeroTitle({
+  lineOne,
+  lineTwo,
+}: {
+  lineOne: readonly HeroPart[];
+  lineTwo: readonly HeroPart[];
+}) {
+  const lineOneLength = heroPartsLength(lineOne);
+  const lineTwoLength = heroPartsLength(lineTwo);
   const totalLength = lineOneLength + lineTwoLength;
   const [visibleCharacters, setVisibleCharacters] = useState<number | null>(null);
 
@@ -379,21 +385,26 @@ function StreamingHeroTitle() {
   const visibleLineTwo = Math.max(0, visible - lineOneLength);
 
   return (
-    <h1 aria-label="VideoAgent You Are the Director" data-hero-stream="loop">
+    <h1
+      aria-label={`${lineOne.map((part) => part.text).join("")} ${lineTwo
+        .map((part) => part.text)
+        .join("")}`}
+      data-hero-stream="loop"
+    >
       <span aria-hidden="true" className="hero-line hero-line-brand">
         <Play
           className={`hero-title-icon${visibleLineOne > 0 ? " is-visible" : ""}`}
         />
         <span className="hero-line-text">
-          <span className="hero-line-ghost">{renderHeroParts(HERO_LINE_ONE, lineOneLength)}</span>
+          <span className="hero-line-ghost">{renderHeroParts(lineOne, lineOneLength)}</span>
           <span className="hero-line-live">
-            {renderHeroParts(HERO_LINE_ONE, visibleLineOne)}
+            {renderHeroParts(lineOne, visibleLineOne)}
           </span>
         </span>
       </span>
       <span aria-hidden="true" className="hero-line">
-        <span className="hero-line-ghost">{renderHeroParts(HERO_LINE_TWO, lineTwoLength)}</span>
-        <span className="hero-line-live">{renderHeroParts(HERO_LINE_TWO, visibleLineTwo)}</span>
+        <span className="hero-line-ghost">{renderHeroParts(lineTwo, lineTwoLength)}</span>
+        <span className="hero-line-live">{renderHeroParts(lineTwo, visibleLineTwo)}</span>
       </span>
     </h1>
   );
@@ -2183,12 +2194,18 @@ export function LandingPage({
           <a
             className="brand"
             href={mode === "app" ? `/${locale}` : "./"}
-            aria-label="VideoAgent home"
+            aria-label={locale === "zh-CN" ? "视频小秘首页" : "VideoAgent home"}
           >
             <BrandMark />
             <span className="brand-copy">
-              <strong>Video</strong>
-              <em>Agent</em>
+              {locale === "zh-CN" ? (
+                <strong>视频小秘</strong>
+              ) : (
+                <>
+                  <strong>Video</strong>
+                  <em>Agent</em>
+                </>
+              )}
             </span>
           </a>
           <button
@@ -2602,7 +2619,18 @@ export function LandingPage({
         <div className="hero-inner">
           <div className="hero-copy">
             <div className="hero-title">
-              <StreamingHeroTitle />
+              <StreamingHeroTitle
+                lineOne={
+                  locale === "zh-CN"
+                    ? [{ text: content.hero.eyebrow }]
+                    : HERO_LINE_ONE
+                }
+                lineTwo={
+                  locale === "zh-CN"
+                    ? [{ text: content.hero.title, accent: true }]
+                    : HERO_LINE_TWO
+                }
+              />
             </div>
           </div>
 
@@ -3727,7 +3755,9 @@ export function LandingPage({
             >
               ×
             </button>
-            <p className="preview-eyebrow">VideoAgent</p>
+            <p className="preview-eyebrow">
+              {locale === "zh-CN" ? "视频小秘" : "VideoAgent"}
+            </p>
             <h2 id="preview-notice-title">{content.preview.title}</h2>
             <p>{content.preview.body}</p>
             <button

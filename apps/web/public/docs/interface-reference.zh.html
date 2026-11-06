@@ -3,8 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="视频小秘 API" />
-    <title>API · 视频小秘</title>
+    <meta name="description" content="VideoAgent API" />
+    <title>API · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
     <link rel="stylesheet" href="../docs.css?v=33" />
   </head>
@@ -25,7 +25,7 @@
         </button>
         <nav class="toc-panel" id="toc-panel" aria-label="目录">
           <p class="toc-kicker">目录</p>
-          <a class="toc-link toc-level-1" href="#视频小秘-api-接口文档">视频小秘 API 接口文档</a>
+          <a class="toc-link toc-level-1" href="#videoagent-api-接口文档">VideoAgent API 接口文档</a>
 <a class="toc-link toc-level-2" href="#健康检查">健康检查</a>
 <a class="toc-link toc-level-2" href="#认证">认证</a>
 <a class="toc-link toc-level-3" href="#注册">注册</a>
@@ -40,10 +40,10 @@
 <a class="toc-link toc-level-3" href="#整体替换">整体替换</a>
 <a class="toc-link toc-level-3" href="#镜头排序">镜头排序</a>
 <a class="toc-link toc-level-3" href="#保存故事板版本">保存故事板版本</a>
-<a class="toc-link toc-level-2" href="#小秘对话">小秘对话</a>
+<a class="toc-link toc-level-2" href="#agent-对话">Agent 对话</a>
 <a class="toc-link toc-level-3" href="#消息历史">消息历史</a>
 <a class="toc-link toc-level-3" href="#发送消息">发送消息</a>
-<a class="toc-link toc-level-3" href="#观测小秘执行">观测小秘执行</a>
+<a class="toc-link toc-level-3" href="#观测-agent-执行">观测 Agent 执行</a>
 <a class="toc-link toc-level-3" href="#读取工作流">读取工作流</a>
 <a class="toc-link toc-level-3" href="#提交审批">提交审批</a>
 <a class="toc-link toc-level-2" href="#制作进度">制作进度</a>
@@ -64,7 +64,7 @@
 <a class="toc-link toc-level-2" href="#错误格式">错误格式</a>
         </nav>
       </aside>
-      <article class="document"><h1 id="视频小秘-api-接口文档">视频小秘 API 接口文档</h1>
+      <article class="document"><h1 id="videoagent-api-接口文档">VideoAgent API 接口文档</h1>
 <div class="table-wrap"><table><thead><tr>
 <th>属性</th>
 <th>内容</th>
@@ -266,7 +266,7 @@ http://localhost:8000/openapi.json</code></pre>
   &quot;label&quot;: &quot;导演确认&quot;
 }</code></pre>
 <p><code>GET /projects/{project_id}/versions</code> 返回不可变快照的元数据； <code>POST /projects/{project_id}/versions/{version_id}/restore</code> 回滚指定快照并返回 更新后的 Storyboard。快照包含全部 Characters、Scenes 和 Shots，不会修改已经导出的 FinalCuts。</p>
-<h2 id="小秘对话">小秘对话</h2>
+<h2 id="agent-对话">Agent 对话</h2>
 <h3 id="消息历史">消息历史</h3>
 <p><code>GET /projects/{project_id}/messages</code></p>
 <h3 id="发送消息">发送消息</h3>
@@ -276,7 +276,7 @@ http://localhost:8000/openapi.json</code></pre>
   &quot;run_id&quot;: &quot;00000000-0000-0000-0000-000000000020&quot;
 }</code></pre>
 <p>响应包含用户消息、Assistant 回复、最新故事板和当前审批阶段。</p>
-<h3 id="观测小秘执行">观测小秘执行</h3>
+<h3 id="观测-agent-执行">观测 Agent 执行</h3>
 <p><code>GET /projects/{project_id}/agent-activity/{run_id}</code></p>
 <p>返回该 run 的有序步骤：</p>
 <pre><code class="language-json">{
@@ -392,10 +392,10 @@ succeeded
 failed
 cancelled</code></pre>
 <p>前端每 5 秒轮询任务状态。Celery Worker 同时轮询任务状态。</p>
-<p>每次成功提交生成时，系统按估算值预留当前用户的视频小秘积分。提交立即失败， 或任务后续进入失败、取消状态时，系统通过幂等退款流水返还预留积分。</p>
+<p>每次成功提交生成时，系统按估算值预留当前用户的 VideoAgent 积分。提交立即失败， 或任务后续进入失败、取消状态时，系统通过幂等退款流水返还预留积分。</p>
 <h2 id="用户积分">用户积分</h2>
 <p><code>GET /credits</code></p>
-<p>返回当前用户独立的视频小秘配额。该余额与服务端 Provider 账户积分池分离。</p>
+<p>返回当前用户独立的 VideoAgent 配额。该余额与服务端 Provider 账户积分池分离。</p>
 <pre><code class="language-json">{
   &quot;provider&quot;: &quot;video_agent&quot;,
   &quot;connected&quot;: true,
@@ -670,7 +670,7 @@ file=&lt;图片、视频或音频&gt;</code></pre>
 <td>查询 Pippit 积分余额</td>
 </tr>
 </tbody></table></div>
-<p>Pippit 授权由服务端统一持有。浏览器不会收到 Access Key 或 CLI 登录文件。 Provider 计费使用服务端配置的账户，产品用户通过 <code>/credits</code> 消费各自独立的视频小秘配额。</p>
+<p>Pippit 授权由服务端统一持有。浏览器不会收到 Access Key 或 CLI 登录文件。 Provider 计费使用服务端配置的账户，产品用户通过 <code>/credits</code> 消费各自独立的 VideoAgent 配额。</p>
 <p>状态响应：</p>
 <pre><code class="language-json">{
   &quot;provider&quot;: &quot;pippit&quot;,
@@ -684,7 +684,7 @@ file=&lt;图片、视频或音频&gt;</code></pre>
   &quot;credits&quot;: 42
 }</code></pre>
 <h2 id="kling-provider">Kling Provider</h2>
-<p>视频小秘使用服务端 <code>@klingai/cli-cn</code> 连接国内站 <code>https://klingai.com/mcp</code>。 浏览器不会接收到 Kling Token。管理员可通过 <code>VIDEOAGENT_KLING_EXPECTED_USER_ID</code> 锁定允许使用的国内账号。当前 CLI 用户可通过 <code>kling who_am_i</code> 与 <code>kling account</code> 只读核验身份和余额。</p>
+<p>VideoAgent 使用服务端 <code>@klingai/cli-cn</code> 连接国内站 <code>https://klingai.com/mcp</code>。 浏览器不会接收到 Kling Token。管理员可通过 <code>VIDEOAGENT_KLING_EXPECTED_USER_ID</code> 锁定允许使用的国内账号。当前 CLI 用户可通过 <code>kling who_am_i</code> 与 <code>kling account</code> 只读核验身份和余额。</p>
 <h2 id="错误格式">错误格式</h2>
 <pre><code class="language-json">{
   &quot;error&quot;: {
@@ -705,7 +705,7 @@ file=&lt;图片、视频或音频&gt;</code></pre>
 </tr>
 <tr>
 <td><code>402</code></td>
-<td>当前用户视频小秘积分不足</td>
+<td>当前用户 VideoAgent 积分不足</td>
 </tr>
 <tr>
 <td><code>403</code></td>

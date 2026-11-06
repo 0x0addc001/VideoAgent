@@ -1,6 +1,17 @@
 import { expect, test } from "@playwright/test";
 import { resolve } from "node:path";
 
+test("serves the localized Chinese product experience", async ({ page }) => {
+  await page.goto("/zh-CN");
+
+  await expect(page).toHaveURL(/\/zh-CN$/);
+  await expect(
+    page.getByRole("heading", { name: "视频小秘 把想象拍成片" }),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "小秘", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Agents", exact: true })).toHaveCount(0);
+});
+
 test("runs a complete mock video workflow without paid generation", async ({
   page,
 }, testInfo) => {

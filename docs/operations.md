@@ -1,4 +1,4 @@
-# 视频小秘运营策略
+# VideoAgent 运营策略
 
 | 属性 | 内容 |
 | --- | --- |
@@ -8,7 +8,7 @@
 
 ## 1. 运营模型
 
-视频小秘按三层内容运营：
+VideoAgent 按三层内容运营：
 
 1. 原厂商 Skill 与跨 Provider 工作流，分别使用 `kling`、`pippit` 或
    `video_agent` 命名空间。
@@ -36,7 +36,7 @@
 - Skill 变更同步更新 PRD、策略、Arch 和 Test。
 - 废弃 Skill 至少保留一个版本并给出迁移说明。
 - 场景策略引用有效 Skill，并与创作框字段保持一致。
-- 外部小秘接力使用明确的 MCP 或 CLI 契约。
+- 外部 Agent 接力使用明确的 MCP 或 CLI 契约。
 
 ### 3.1 Skill 与 Videos 榜单
 
@@ -70,7 +70,7 @@
 - 计费生成必须获得用户明确批准。
 - Provider 提交使用数据库幂等键。
 - 积分和 Provider 状态由服务端读取。
-- 产品界面展示用户独立视频小秘配额，不直接暴露共享 Provider 积分池。
+- 产品界面展示用户独立 VideoAgent 配额，不直接暴露共享 Provider 积分池。
 - 生成成功前预扣用户配额；提交失败、生成失败或取消时执行幂等退款。
 - 监控 Provider 错误率、超时率、不确定提交和重复提交拦截。
 - 保留 Provider Task Reference 以支持对账。

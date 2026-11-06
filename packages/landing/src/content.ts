@@ -725,9 +725,9 @@ export const landingContent = {
   },
   "zh-CN": {
     localeLabel: "简体中文",
-    documentTitle: "VideoAgent",
+    documentTitle: "视频小秘",
     nav: {
-      agents: "Agents",
+      agents: "小秘",
       skills: "Skills",
       assets: "资产",
       hots: "视频",
@@ -753,10 +753,10 @@ export const landingContent = {
       notifications: "通知",
     },
     hero: {
-      eyebrow: "VideoAgent",
+      eyebrow: "视频小秘",
       title: "把想象拍成片",
       description:
-        "描述创意，VideoAgent 编排镜头。",
+        "描述创意，视频小秘编排镜头。",
       create: "创建项目",
       github: "GitHub",
       videoLabel: "正在拍摄电影感 Vlog 的创作者",
@@ -764,7 +764,7 @@ export const landingContent = {
     composer: {
       label: "从一个想法开始",
       placeholder: "描述一个故事、一种情绪，或你想展示的产品……",
-      agentMode: "Agent",
+      agentMode: "小秘",
       videoMode: "视频",
       submit: "开拍",
       creating: "准备中……",
@@ -1018,7 +1018,7 @@ export const landingContent = {
           skillId: "search_all_resources",
           title: "搜索全部资源",
           body: "搜索项目、视频、Skill、社区作品和文档。",
-          prompt: "在 VideoAgent 的全部资源中搜索：",
+          prompt: "在 视频小秘 的全部资源中搜索：",
         },
         {
           userId: "kling",
@@ -1136,8 +1136,8 @@ export const landingContent = {
           userId: "video_agent",
           skillId: "skill_synthesis",
           title: "Skill 合成",
-          body: "把一个粗略能力想法整理成结构化、可测试的 Agent Skill。",
-          prompt: "帮我设计一个可发布的 VideoAgent Skill，我的初始想法是：",
+          body: "把一个粗略能力想法整理成结构化、可测试的 小秘 Skill。",
+          prompt: "帮我设计一个可发布的 视频小秘 Skill，我的初始想法是：",
         },
         {
           userId: "video_agent",
@@ -1191,9 +1191,9 @@ export const landingContent = {
         {
           userId: "video_agent",
           skillId: "agent_handoff",
-          title: "外部 Agent 接力",
-          body: "通过 MCP 或 CLI 把项目上下文与素材交给个人 Agent 继续制作。",
-          prompt: "整理项目上下文、故事板和素材，准备交接给我的个人 Agent：",
+          title: "外部 小秘 接力",
+          body: "通过 MCP 或 CLI 把项目上下文与素材交给个人 小秘 继续制作。",
+          prompt: "整理项目上下文、故事板和素材，准备交接给我的个人 小秘：",
         },
       ],
     },
@@ -1362,7 +1362,7 @@ export const landingContent = {
       features: [
         {
           title: "创意策划",
-          body: "结构化 Agent 将创意需求整理为可编辑的方案和镜头序列。",
+          body: "结构化 小秘 将创意需求整理为可编辑的方案和镜头序列。",
         },
         {
           title: "镜头管理",
@@ -1384,7 +1384,7 @@ export const landingContent = {
         },
         {
           title: "编排故事",
-          description: "Agent 将你的方向整理为可编辑的故事板和镜头清单。",
+          description: "小秘 将你的方向整理为可编辑的故事板和镜头清单。",
         },
         {
           title: "生成镜头",

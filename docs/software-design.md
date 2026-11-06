@@ -1,4 +1,4 @@
-# 视频小秘软件设计说明书
+# VideoAgent 软件设计说明书
 
 | 属性 | 内容 |
 | --- | --- |
@@ -8,19 +8,19 @@
 | 前端框架 | Next.js + TypeScript |
 | 模型 | Pippit/Seedance 2.5 Draft、Pippit/Seedance 2.5、Pippit/Seedance 2.0 Fast VIP、Pippit/Seedance 2.0 VIP、Pippit/Seedance 2.0 Mini 体验版、Pippit/Seedance 2.0 Mini、Pippit/Wan 3.0、Pippit/HappyHorse 1.1、Kling/Kling Video 2.5、Kling/Kling Video 2.6、Kling/Kling Video O1、Kling/Kling Video 3.0、Kling/Kling Video 3.0 Omni、Kling/Kling Video 3.0 Turbo、Kling/Kling Video 4.0、Kling/Kling Video 4.0 Flash、Kling/Kling 2.6 Motion Control、Kling/Kling 3.0 Motion Control、Kling/Kling Image 3.0 Omni、Kling/Kling Image O1、Kling/Kling Image 3.0、Kling/Kling Image 2.1 |
 
-视频小秘通过统一 Provider 边界集成 Pippit CLI 与 Kling 国内版 CLI。Pippit 提供视频提交、任务查询和积分能力，Kling CLI 通过国内站 MCP 提供文本生成视频、任务查询、动作控制和多模态参考能力。
+VideoAgent 通过统一 Provider 边界集成 Pippit CLI 与 Kling 国内版 CLI。Pippit 提供视频提交、任务查询和积分能力，Kling CLI 通过国内站 MCP 提供文本生成视频、任务查询、动作控制和多模态参考能力。
 
 ## 1. 文档目的
 
-本文档描述视频小秘的产品目标、系统架构、核心模块、小秘编排、数据模型、接口规范、Pippit CLI 与 Kling 国内版 CLI 集成、安全策略、测试策略及部署方式，供产品、前端、后端、测试和运维研发人员共同参考。
+本文档描述 VideoAgent 的产品目标、系统架构、核心模块、Agent 编排、数据模型、接口规范、Pippit CLI 与 Kling 国内版 CLI 集成、安全策略、测试策略及部署方式，供产品、前端、后端、测试和运维研发人员共同参考。
 
 ## 2. 产品概述
 
-视频小秘是一个面向内容创作者、营销人员和普通用户的 AI 视频创作平台。产品以“用户是导演”为核心，通过统一的左侧工作台进入 小秘、Skills、Videos、Assets 和 Docs；用户从首页创作框描述创意后创建项目，进入项目工作区与视频小秘协作生成故事板并发起镜头生成。
+VideoAgent 是一个面向内容创作者、营销人员和普通用户的 AI 视频创作平台。产品以“用户是导演”为核心，通过统一的左侧工作台进入 Agent、Skills、Videos、Assets 和 Docs；用户从首页创作框描述创意后创建项目，进入项目工作区与 VideoAgent 协作生成故事板并发起镜头生成。
 
 系统同时提供：
 
-- **小秘：** 首页创作入口和项目内视频小秘对话。
+- **Agent：** 首页创作入口和项目内 VideoAgent 对话。
 - **Skills：** 单一可搜索 Skill 目录，使用 `user_id/skill_id` 标识，并支持用户发布。
 - **Videos：** 可搜索社区作品流，展示作者、喜欢数并支持发布。
 - **Assets：** 用户成品与半成品作品库，按 Video/Skill 分页；视频悬浮预览，Skill 不显示封面。
@@ -38,7 +38,7 @@
 - 搜索、语言、通知、积分和头像使用半透明表面；头像菜单左右边缘对齐导航栏的 13px 内边距，并沿用导航字号。菜单包含语言、通知、积分与带图标的账户操作，通知行带向右展开图标，齿轮位于头像行右端；语言行使用向右图标，点击后在头像菜单右侧独立打开浮层并纵向排列 English 与中文。
 - Videos 展示作者与喜欢数，并支持发布。
 - 支持项目创建、编辑、恢复和删除。
-- 支持小秘生成创意方案和多镜头故事板。
+- 支持 Agent 生成创意方案和多镜头故事板。
 - 支持镜头参数编辑和积分成本估算。
 - 支持 Final Cut 发布前的视觉模型评估。
 - 支持项目级图片、视频和音频素材上传，并校验 MIME、文件头和大小。
@@ -68,7 +68,7 @@
   → 在首页多设定创作框描述创意
   → 提交时自动创建默认项目
   → 直接进入项目工作区
-  → 小秘追问并生成创意方案
+  → Agent 追问并生成创意方案
   → 编辑故事板和镜头
   → 查看预计积分
   → 确认生成
@@ -89,7 +89,7 @@
                           │ HTTPS / JSON / polling
 ┌─────────────────────────▼───────────────────────────────┐
 │ FastAPI /api/v1                                         │
-│ Auth / Projects / 小秘 / Jobs / Assets / Delivery      │
+│ Auth / Projects / Agent / Jobs / Assets / Delivery      │
 │ Credits / Evaluation / Provider                         │
 └──────────┬──────────────────┬───────────────────────────┘
            │                  │
@@ -121,7 +121,7 @@ GET /jobs/{job_id} → FastAPI 查询 Provider → 更新数据库 → 返回最
 | 前端状态 | React 页面状态 |
 | 表单校验 | 浏览器原生表单、Zod、Pydantic |
 | API | FastAPI、Uvicorn |
-| 小秘 | LangGraph |
+| Agent | LangGraph |
 | 模型调用 | LangChain OpenAI-compatible Provider |
 | 数据校验 | Pydantic v2 |
 | 视频服务 | Pippit CLI、Kling 国内版 CLI、Mock Provider |
@@ -150,7 +150,7 @@ GET /jobs/{job_id} → FastAPI 查询 Provider → 更新数据库 → 返回最
 ## 7. 项目结构
 
 ```text
-视频小秘/
+VideoAgent/
 ├── apps/
 │   ├── web/                        # Next.js 正式产品
 │   │   ├── messages/               # 中英文资源脚手架
@@ -216,9 +216,9 @@ GET /jobs/{job_id} → FastAPI 查询 Provider → 更新数据库 → 返回最
 | `services.credits` | 用户积分账户、预扣与幂等退款 |
 | `workers.tasks` | Celery 任务轮询 |
 
-## 9. 小秘设计
+## 9. Agent 设计
 
-### 9.1 基本策略小秘使用一个主小秘和一个确定性节点，不采用无限制 ReAct 循环，也不将相互耦合的创作职责拆成多个自由对话小秘。
+### 9.1 基本策略 Agent 使用一个主 Agent 和一个确定性节点，不采用无限制 ReAct 循环，也不将相互耦合的创作职责拆成多个自由对话 Agent。
 
 - LangGraph 负责故事板规划。
 - 配置 LLM 时由 LangChain OpenAI-compatible Provider 执行模型调用；未配置时使用本地确定性规划器。
@@ -226,7 +226,7 @@ GET /jobs/{job_id} → FastAPI 查询 Provider → 更新数据库 → 返回最
 - Celery 执行 Provider 任务轮询。
 - 项目、对话、故事板和生成任务保存到关系数据库。
 
-小秘图：
+Agent 图：
 
 ```text
 START
@@ -263,23 +263,23 @@ Skill 不是 HTTP 工具调用，也不会在规划阶段直接生成视频。�
 
 ### 9.4 MCP 调用边界
 
-Storyboard 小秘当前不直接持有 MCP 工具，避免模型在规划阶段自行产生付费副作用。
+Storyboard Agent 当前不直接持有 MCP 工具，避免模型在规划阶段自行产生付费副作用。
 Kling MCP 位于 Provider 层：选择 Kling 且 `VIDEOAGENT_KLING_BACKEND=mcp` 时，
 Provider Resolver 使用当前用户的 OAuth Token 创建 `StreamableHTTPToolClient`；
 `KlingVideoProvider` 再调用 `text_to_video`、`image_to_video` 或 `query_tasks`。
 默认国内版 CLI 路径由受控子进程完成同类调用。角色图片当前通过 Kling CLI 的文生图/
 参考图生图执行。
 
-### 9.5 小秘行为可观测性
+### 9.5 Agent 行为可观测性
 
-每次小秘 run 使用客户端提供的 `run_id` 记录：
+每次 Agent run 使用客户端提供的 `run_id` 记录：
 
 ```text
 context → memory → skill → planning → validation → state → reply
 ```
 
 事件写入 `agent_activities` 表，前端以 350ms 间隔轮询该 run 的事件，并在
-小秘 等待区显示实时步骤。事件只描述真实发生的上下文装载、规划、校验和
+Agent 等待区显示实时步骤。事件只描述真实发生的上下文装载、规划、校验和
 状态写入，不把未调用的 MCP 或 Skill 工具显示为已执行。
 
 ## 10. LangGraph 与 Celery
@@ -374,7 +374,7 @@ CLI 负责国内站 OAuth、MCP 传输和工具参数。Provider 适配器将 Kl
 | `projects` | `id`, `owner_id`, `title`, `state`, `brief` | 视频项目 |
 | `conversations` | `id`, `project_id` | 项目对话 |
 | `messages` | `id`, `role`, `content`, `metadata` | 对话消息 |
-| `agent_activities` | `project_id`, `run_id`, `sequence`, `kind`, `status` | 可观测的小秘 run 步骤 |
+| `agent_activities` | `project_id`, `run_id`, `sequence`, `kind`, `status` | 可观测的 Agent run 步骤 |
 | `workspace_folders` | `id`, `owner_id`, `name` | 历史对话的项目目录 |
 | `workspace_folder_items` | `folder_id`, `project_id` | 对话与项目目录的收纳关系 |
 | `project_workflows` | `project_id`, `stage`, `status` | 整体设定、大纲、剧本与生成审批状态 |
@@ -482,8 +482,8 @@ cancelled
 | PATCH | `/auth/me` | 更新语言偏好 |
 | GET/POST | `/projects` | 项目列表和创建 |
 | GET/PATCH/DELETE | `/projects/{id}` | 读取、重命名和归档项目 |
-| GET/POST | `/projects/{id}/messages` | 读取历史或发送小秘消息 |
-| GET | `/projects/{id}/agent-activity/{run_id}` | 读取单次小秘 run 的可观测步骤 |
+| GET/POST | `/projects/{id}/messages` | 读取历史或发送 Agent 消息 |
+| GET | `/projects/{id}/agent-activity/{run_id}` | 读取单次 Agent run 的可观测步骤 |
 | GET | `/workspace` | 项目目录和最近对话 |
 | POST/PATCH/DELETE | `/workspace/folders` | 创建、重命名和删除项目目录 |
 | PUT | `/workspace/threads/{id}/folder` | 收纳或移出历史对话 |
@@ -532,18 +532,18 @@ cancelled
 ### 15.1 信息架构
 
 - 公共入口：左侧导航、连续视频背景、居中创作框、灵感快捷项和八项生成设置。
-- App 左侧导航在视频小秘品牌右侧提供折叠控制，可收起为仅图标模式，右侧内容始终填满剩余空间；Docs 下方固定为 Projects 分组和 Recents 时序历史，两个分组在未登录和空数据时也显示，默认展开且可折叠。
+- App 左侧导航在 VideoAgent 品牌右侧提供折叠控制，可收起为仅图标模式，右侧内容始终填满剩余空间；Docs 下方固定为 Projects 分组和 Recents 时序历史，两个分组在未登录和空数据时也显示，默认展开且可折叠。
 - 对话只使用 `/en#conversation/{project_id}` 哈希视图，不开放独立项目详情页；对话切换保持应用外壳挂载，只高亮当前对话记录。
-- 视频轮播作为 小秘、Skills、Videos、Assets、Docs 和会话页共用的持久半透明背景。
-- Projects 行提供新建项目表单入口；Recents 行提供新建对话入口并返回 小秘。两行均带展开/收起图标。
-- `小秘`：首页创作入口和视频小秘对话。
+- 视频轮播作为 Agent、Skills、Videos、Assets、Docs 和会话页共用的持久半透明背景。
+- Projects 行提供新建项目表单入口；Recents 行提供新建对话入口并返回 Agent。两行均带展开/收起图标。
+- `Agent`：首页创作入口和 VideoAgent 对话。
 - `Skills`：统一可搜索 Skill 目录，卡片显示 `user_id/skill_id`；Kling 原生能力使用 `kling`，跨 Provider 工作流使用 `video_agent`，用户可发布 Skill。
 - Skill Studio 将用户 Skill 持久化到数据库；发布前包含用途、执行规范、质量门禁、启动提示词和输入/输出契约，并提供 AI 优化。
 - 公开 Skill 可被其他登录用户发现；目录按生成、叙事、工作流、后期、评估和工具分类。
 - Skill 点赞按用户和 Skill 唯一，使用数按用户和 Skill 唯一；榜单评分为 `使用数 × 2 + 点赞数 × 3`，作者不能给自己的 Skill 点赞。
 - 内置 `video_agent/skill_synthesis` 用于帮助用户编写和合成新的 Skill，点击后直接打开 Skill Studio。
-- `小秘`：首页提供产品广告、创作者 Vlog、微短剧、音乐 MV、视频本地化和批量测款六类策略；选择后统一设置提示词、Skill、Hook、风格、画幅、时长和审核模式，再次点击当前项会恢复应用前草稿。
-- Skills 目录还覆盖视频本地化、批量变体、剧本助手、智能预演、运镜设计、音乐 MV、参考复刻和外部小秘接力。
+- `Agent`：首页提供产品广告、创作者 Vlog、微短剧、音乐 MV、视频本地化和批量测款六类策略；选择后统一设置提示词、Skill、Hook、风格、画幅、时长和审核模式，再次点击当前项会恢复应用前草稿。
+- Skills 目录还覆盖视频本地化、批量变体、剧本助手、智能预演、运镜设计、音乐 MV、参考复刻和外部 Agent 接力。
 - `Videos`：可搜索社区瀑布流，视频自动播放，按 Vlog、产品、短剧、音乐、本地化和营销分类；按用户去重点赞排名，作者不能给自己的作品点赞。
 - Skills 与 Videos 前三名展示预计奖励：Skills 为 500/300/150 积分，Videos 为 300/180/100 积分；实际发放作为可审计运营操作执行。
 - Videos 发布必须上传 MP4，可填写标题、描述和 Skill；发布视频持久化并出现在作者 Assets。
@@ -551,8 +551,8 @@ cancelled
 - Assets 展示当前用户真实发布的 Videos 和 Skill；点击卡片打开详情，视频详情可直接播放。
 - `Docs`：按 PRD、策略、Arch、API、Dev、Test、Ops、FAQ、TODO 展示中英文文档，支持全文搜索。
 - 项目工作区采用 IDE 式布局：可压缩历史导航、`Directions` / `Visions`
-  资源树、独立 `Versions` 历史面板、中央编辑画布和右侧审批式 小秘。
-- Assets 与 小秘 侧栏可折叠为带标签的窄轨；展开宽度使用响应式比例，适配不同桌面尺寸。
+  资源树、独立 `Versions` 历史面板、中央编辑画布和右侧审批式 Agent。
+- Assets 与 Agent 侧栏可折叠为带标签的窄轨；展开宽度使用响应式比例，适配不同桌面尺寸。
 - `Directions` 包含可编辑的 `Settings`、`Outlines`、`Scripts`；`Visions`
   包含 `Characters`、`Scenes`、`Shots` 和 `FinalCuts`。`Versions` 不是对象目录，
   而是 Storyboard 快照历史，支持查看和回滚。Character 与 Scene 各自承接参考图，
@@ -566,7 +566,7 @@ cancelled
   `@<asset-id>`，多个参考按 Prompt 中出现顺序提交。Shot 可覆盖模型、任务类型、
   音频与分辨率。
 - Shot/Character/Scene 结果位于对应目录下，支持最终选用、复制 ID、预览和删除。
-- 导航、Assets、Canvas、小秘 默认等宽并支持拖拽调整；账号下拉集中语言、通知、积分和账户操作。
+- 导航、Assets、Canvas、Agent 默认等宽并支持拖拽调整；账号下拉集中语言、通知、积分和账户操作。
 - 项目目录将展开按钮放在蓝色目录图标左侧；被收纳的对话从 Recents 移入对应目录，并以缩进子项显示。
 - 品牌与浏览器标签页图标统一使用蓝色播放键；激活导航图标采用填充/线框反转。
 - 管理后台使用独立控制台布局，与用户创作界面隔离。
@@ -579,26 +579,26 @@ cancelled
 历史导航（Projects / Recents）
   → 当前对话资产树
   → 选中的文档、图片、视频或镜头画布
-  → 带审批选项的小秘对话
+  → 带审批选项的 Agent 对话
 ```
 
 移动端采用标签页：
 
 ```text
-History | Assets | Canvas | 小秘
+History | Assets | Canvas | Agent
 ```
 
-历史导航支持压缩，Recent 对话可拖入项目目录，也可拖回全部对话列表。小秘按“整体设定 → 分集/分镜大纲 → 逐场剧本 → 可生成”推进；每一步都必须由用户
+历史导航支持压缩，Recent 对话可拖入项目目录，也可拖回全部对话列表。Agent 按“整体设定 → 分集/分镜大纲 → 逐场剧本 → 可生成”推进；每一步都必须由用户
 批准，调整与自定义意见不会跳过当前阶段。
 
-镜头生成在“可生成”审批完成前保持禁用，镜头检查器会直接提示需要先在 小秘 中批准。
+镜头生成在“可生成”审批完成前保持禁用，镜头检查器会直接提示需要先在 Agent 中批准。
 
 中央编辑区使用自己的紧凑面板栏，不设置页面级项目标题栏；标题和场记板图标固定为
 `Storyboard`，不随 Settings、文档、角色、镜头或素材变化，Share 固定在面板栏最右侧。
 
-只有本次新返回的小秘回复执行一次流式显示；历史消息和已完成回复直接静态展示，折叠再展开不会重新播放。
+只有本次新返回的 Agent 回复执行一次流式显示；历史消息和已完成回复直接静态展示，折叠再展开不会重新播放。
 
-Assets、中央编辑区和 小秘 的滚动条与 Projects、Recents 使用同一套细蓝色样式。
+Assets、中央编辑区和 Agent 的滚动条与 Projects、Recents 使用同一套细蓝色样式。
 
 Docs 使用导航栏右侧的完整内容区域，不与固定导航重叠；内嵌文档沿用全局视频背景。
 每次进入 Docs 默认打开 PRD；搜索框位于文档区域顶部，文档目录位于搜索框下方和阅读区
@@ -627,7 +627,7 @@ Final Cut 页面提供视觉评估模型和指标选择。Review 只在导出的
 ### 15.3 前端状态
 
 - 页面使用 React `useState`、`useEffect`、页面级 `fetch` 和定时轮询。
-- 小秘消息使用普通 JSON 请求；流式输出使用前端分段动画呈现。
+- Agent 消息使用普通 JSON 请求；流式输出使用前端分段动画呈现。
 - 项目事件使用轮询。
 - 不将 Provider 凭据、Access Key 或敏感任务内容写入 localStorage。
 - 私有媒体通过受鉴权的内容路由读取，分享内容通过随机 Token 读取。
@@ -637,7 +637,7 @@ Final Cut 页面提供视觉评估模型和指标选择。Review 只在导出的
 产品使用 next-intl 路由、消息资源和后端 `locale` 字段管理 `en` 与
 `zh-CN`。文档提供两套同构内容。
 
-小秘输出支持三种 Prompt 模式：
+Agent 输出支持三种 Prompt 模式：
 
 - 中文说明 + 英文模型 Prompt。
 - 全中文。
@@ -652,7 +652,7 @@ Final Cut 页面提供视觉评估模型和指标选择。Review 只在导出的
 - 会话 Cookie 使用 HttpOnly 与 SameSite=Lax；生产环境必须启用 Secure。
 - Pippit CLI 登录文件放在服务账号可访问但受严格权限保护的位置。
 - `VIDEOAGENT_PIPPIT_ACCESS_KEY` 只保存在秘密管理系统或服务环境变量中。
-- 不使用小秘生成的内容拼接 Shell 命令。
+- 不使用 Agent 生成的内容拼接 Shell 命令。
 - 日志不记录密码、Cookie、Token、Authorization Header。
 - Cookie 写接口校验 `Origin` 与 `Sec-Fetch-Site`，拒绝跨站提交。
 - 认证、生成和上传分别执行分钟级限流；分布式部署需将计数迁移到 Redis。
@@ -750,7 +750,7 @@ Markdown 文档在构建时生成 HTML，并复制到 `public/docs`。
 ## 23. 验收标准
 
 1. 用户能够创建、修改、归档和删除自己的项目。
-2. 小秘能生成符合 Pydantic Schema 的多镜头故事板。
+2. Agent 能生成符合 Pydantic Schema 的多镜头故事板。
 3. 用户可以在生成前查看并批准预计积分费用。
 4. 刷新页面或重启服务后故事板和任务状态不会丢失。
 5. Pippit Access Key、CLI 登录文件和 Kling 凭据不出现在浏览器、日志或公开接口中。
@@ -774,4 +774,4 @@ Markdown 文档在构建时生成 HTML，并复制到 `public/docs`。
 | Token 泄露 | 服务端加密、日志脱敏、Cookie 安全 |
 | 前后端类型不一致 | OpenAPI 契约测试 |
 | Celery 与 LangGraph 状态重复 | 明确数据库事实来源和单向事件流 |
-| 中英文内容不同步 | 统一翻译键、双语测试、小秘 Locale 状态 |
+| 中英文内容不同步 | 统一翻译键、双语测试、Agent Locale 状态 |

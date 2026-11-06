@@ -467,7 +467,7 @@ function AgentActivityTrace({
 
   return (
     <section
-      aria-label={chinese ? "Agent 执行过程" : "Agent activity"}
+      aria-label={chinese ? "小秘执行过程" : "Agent activity"}
       className="mr-3 overflow-hidden rounded-2xl border border-[#1677ff]/20 bg-[#07101d]/[0.72]"
       data-testid="agent-activity"
     >
@@ -493,14 +493,14 @@ function AgentActivityTrace({
         <span className="min-w-0 flex-1 text-[13px] font-medium text-white/78">
           {active || isWorking
             ? chinese
-              ? "VideoAgent 正在执行"
+              ? "视频小秘正在执行"
               : "VideoAgent is working"
             : failed
               ? chinese
-                ? "Agent 执行失败"
+                ? "小秘执行失败"
                 : "Agent run failed"
               : chinese
-                ? "Agent 执行完成"
+                ? "小秘执行完成"
                 : "Agent run complete"}
         </span>
         <span className="rounded-md bg-white/[0.045] px-2 py-1 text-[12px] text-white/38">
@@ -567,10 +567,11 @@ function workspaceCopy(locale: string) {
         expand: "展开导航",
         collapseAssets: "收起资产",
         expandAssets: "展开资产",
-        collapseAgents: "收起 Agents",
-        expandAgents: "展开 Agents",
+        collapseAgents: "收起小秘",
+        expandAgents: "展开小秘",
         docs: "文档",
         assets: "资产",
+        agent: "小秘",
         direction: "创作方向",
         vision: "视觉",
         settings: "设定集",
@@ -607,13 +608,13 @@ function workspaceCopy(locale: string) {
         awaiting: "等待你的批准",
         approved: "已批准",
         approve: "批准并继续",
-        refine: "让 Agent 调整",
+        refine: "让小秘调整",
         custom: "自定义修改",
-        customPlaceholder: "输入你的修改意见，Agent 会保持当前阶段并重新规划……",
+        customPlaceholder: "输入你的修改意见，小秘会保持当前阶段并重新规划……",
         apply: "发送修改",
-        decisionError: "Agent 未能完成这一步，请重试。",
+        decisionError: "小秘未能完成这一步，请重试。",
         folderError: "项目目录更新失败。",
-        chatPlaceholder: "描述下一步，或向 VideoAgent 提问……",
+        chatPlaceholder: "描述下一步，或向视频小秘提问……",
         send: "发送",
         export: "导出",
         sharing: "分享中……",
@@ -638,7 +639,7 @@ function workspaceCopy(locale: string) {
         ratio: "画面比例",
         estimate: "估算积分",
         generate: "生成镜头",
-        approvalRequired: "请先在 Agents 中批准故事，再生成镜头。",
+        approvalRequired: "请先在小秘中批准故事，再生成镜头。",
         generating: "生成中……",
         upload: "上传素材",
         uploading: "上传中……",
@@ -674,6 +675,7 @@ function workspaceCopy(locale: string) {
         expandAgents: "Expand agents",
         docs: "Docs",
         assets: "Assets",
+        agent: "Agents",
         direction: "Directions",
         vision: "Visions",
         settings: "Settings",
@@ -796,7 +798,7 @@ function WorkspaceHistory({
     recents: true,
   });
   const primaryNavItems = [
-    { href: "/#agents", icon: Sparkles, label: "Agents" },
+    { href: "/#agents", icon: Sparkles, label: copy.agent },
     { href: "/#skills", icon: Video, label: "Skills" },
     { href: "/#hots", icon: Film, label: "Videos" },
     { href: "/#assets", icon: Layers3, label: copy.assets },
@@ -885,7 +887,7 @@ function WorkspaceHistory({
           <span className="grid size-8 place-items-center rounded-lg bg-[#1677ff] text-white">
             <PlayIcon />
           </span>
-          VideoAgent
+          {locale.startsWith("zh") ? "视频小秘" : "VideoAgent"}
         </Link>
         <button
           aria-label={copy.collapse}
@@ -2703,7 +2705,7 @@ export function ProjectWorkspace({
     setIsWorking(true);
     setPendingDecision(
       locale.startsWith("zh")
-        ? "VideoAgent 正在整理当前阶段……"
+        ? "视频小秘正在整理当前阶段……"
         : "VideoAgent is refining this stage…",
     );
     setActionError(null);
@@ -3428,7 +3430,9 @@ export function ProjectWorkspace({
 
   function openPublishDialog(asset: Asset) {
     setPublishAsset(asset);
-    setPublishTitleDraft(project?.title ?? "VideoAgent film");
+    setPublishTitleDraft(
+      project?.title ?? (locale.startsWith("zh") ? "视频小秘影片" : "VideoAgent film"),
+    );
     setPublishPromptDraft(creativeBrief(project?.brief ?? ""));
     setPublishMessage(null);
   }
@@ -4322,9 +4326,9 @@ export function ProjectWorkspace({
                         </label>
                       </div>
                       <p className="mt-2 text-[12px] leading-5 text-white/32">
-                        References follow their `@asset-id` order in the prompt.
-                        Up to 15 image, video, or audio references can be passed
-                        to a capable Agent model.
+                        {locale.startsWith("zh")
+                          ? "参考素材按 Prompt 中 @asset-id 的顺序提交；支持的模型最多接收 15 个图片、视频或音频参考。"
+                          : "References follow their `@asset-id` order in the prompt. Up to 15 image, video, or audio references can be passed to a capable Agent model."}
                       </p>
                     </div>
                     <label className="mt-4 block text-[12px] text-white/38">
@@ -4929,7 +4933,7 @@ export function ProjectWorkspace({
                 >
                   <Sparkles className="h-5 w-5" />
                   <span className="[writing-mode:vertical-rl] text-[13px] tracking-[0.08em]">
-                    Agents
+                    {copy.agent}
                   </span>
                 </button>
               </>
@@ -4948,7 +4952,7 @@ export function ProjectWorkspace({
                 <span className="grid size-6 place-items-center rounded-lg bg-[#1677ff]/15 text-[#7bc6ff]">
                   <Sparkles className="h-3.5 w-3.5" />
                 </span>
-                Agents
+                {copy.agent}
               </span>
               <button
                 aria-label={copy.collapseAgents}

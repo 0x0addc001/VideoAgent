@@ -4,8 +4,8 @@ VideoAgent is an AI video creation workspace. It treats the user as the director
 describe an idea, shape the direction with an agent, generate controlled visual
 resources, review the final cut, and deliver or share the result.
 
-The public product interface is English-first. Documentation includes English
-and Chinese editions; product `/zh-CN` routes currently redirect to `/en`.
+The product interface is available in English and Simplified Chinese.
+Documentation includes matching editions in both languages.
 
 [Live project homepage](https://0x0addc001.github.io/VideoAgent/) ·
 [Product requirements](docs/product-requirements.en.md) ·
@@ -143,7 +143,7 @@ FFmpeg delivery, review, sharing, and collaboration.*
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/assets/architecture-zh.svg">
-  <img src="docs/assets/architecture-zh-light.svg" alt="视频小秘技术架构中文版">
+  <img src="docs/assets/architecture-zh-light.svg" alt="VideoAgent 技术架构中文版">
 </picture>
 
 [深色 SVG](docs/assets/architecture-zh.svg) · [浅色 SVG](docs/assets/architecture-zh-light.svg)

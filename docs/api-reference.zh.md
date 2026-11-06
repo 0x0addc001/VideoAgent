@@ -1,4 +1,4 @@
-# 视频小秘 API 接口文档
+# VideoAgent API 接口文档
 
 | 属性 | 内容 |
 | --- | --- |
@@ -192,7 +192,7 @@ http://localhost:8000/openapi.json
 更新后的 Storyboard。快照包含全部 Characters、Scenes 和 Shots，不会修改已经导出的
 FinalCuts。
 
-## 小秘对话
+## Agent 对话
 
 ### 消息历史
 
@@ -211,7 +211,7 @@ FinalCuts。
 
 响应包含用户消息、Assistant 回复、最新故事板和当前审批阶段。
 
-### 观测小秘执行
+### 观测 Agent 执行
 
 `GET /projects/{project_id}/agent-activity/{run_id}`
 
@@ -389,14 +389,14 @@ cancelled
 
 前端每 5 秒轮询任务状态。Celery Worker 同时轮询任务状态。
 
-每次成功提交生成时，系统按估算值预留当前用户的视频小秘积分。提交立即失败，
+每次成功提交生成时，系统按估算值预留当前用户的 VideoAgent 积分。提交立即失败，
 或任务后续进入失败、取消状态时，系统通过幂等退款流水返还预留积分。
 
 ## 用户积分
 
 `GET /credits`
 
-返回当前用户独立的视频小秘配额。该余额与服务端 Provider 账户积分池分离。
+返回当前用户独立的 VideoAgent 配额。该余额与服务端 Provider 账户积分池分离。
 
 ```json
 {
@@ -565,7 +565,7 @@ Prompt 中使用的稳定 ID，格式为 `@<asset-id>`。
 | `GET` | `/providers/pippit/credits` | 查询 Pippit 积分余额 |
 
 Pippit 授权由服务端统一持有。浏览器不会收到 Access Key 或 CLI 登录文件。
-Provider 计费使用服务端配置的账户，产品用户通过 `/credits` 消费各自独立的视频小秘配额。
+Provider 计费使用服务端配置的账户，产品用户通过 `/credits` 消费各自独立的 VideoAgent 配额。
 
 状态响应：
 
@@ -589,7 +589,7 @@ Provider 计费使用服务端配置的账户，产品用户通过 `/credits` �
 
 ## Kling Provider
 
-视频小秘使用服务端 `@klingai/cli-cn` 连接国内站 `https://klingai.com/mcp`。
+VideoAgent 使用服务端 `@klingai/cli-cn` 连接国内站 `https://klingai.com/mcp`。
 浏览器不会接收到 Kling Token。管理员可通过 `VIDEOAGENT_KLING_EXPECTED_USER_ID`
 锁定允许使用的国内账号。当前 CLI 用户可通过 `kling who_am_i` 与 `kling account`
 只读核验身份和余额。
@@ -612,7 +612,7 @@ Provider 计费使用服务端配置的账户，产品用户通过 `/credits` �
 | 状态码 | 含义 |
 | --- | --- |
 | `401` | 未登录或 Session 过期 |
-| `402` | 当前用户视频小秘积分不足 |
+| `402` | 当前用户 VideoAgent 积分不足 |
 | `403` | 生成审批、管理权限、注册或邀请策略拒绝 |
 | `404` | 资源不存在或不属于当前用户 |
 | `409` | Provider 未就绪 |

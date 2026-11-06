@@ -29,12 +29,12 @@ describe("localization resources", () => {
     expect(landingContent["zh-CN"].hero.title).toBe("把想象拍成片");
     expect(landingContent.en.nav.agents).toBe("Agents");
     expect(landingContent.en.nav.skills).toBe("Skills");
-    expect(landingContent["zh-CN"].nav.agents).toBe("Agents");
+    expect(landingContent["zh-CN"].nav.agents).toBe("小秘");
     expect(landingContent["zh-CN"].nav.skills).toBe("Skills");
     expect(landingContent["zh-CN"].nav.assets).toBe("资产");
     expect(landingContent["zh-CN"].nav.hots).toBe("视频");
     expect(landingContent.en.hero.eyebrow).toBe("VideoAgent");
-    expect(landingContent["zh-CN"].hero.eyebrow).toBe("VideoAgent");
+    expect(landingContent["zh-CN"].hero.eyebrow).toBe("视频小秘");
     expect(landingContent["zh-CN"].product.features[1].title).toBe("镜头管理");
     expect(landingContent["zh-CN"].product.title).toBe("省心策划与制作");
     expect(landingContent["zh-CN"].product.features[2].title).toBe("评估反馈");

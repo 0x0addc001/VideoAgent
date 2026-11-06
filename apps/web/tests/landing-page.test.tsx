@@ -27,6 +27,24 @@ afterEach(() => {
 });
 
 describe("LandingPage", () => {
+  it("renders the Chinese product experience with localized brand terminology", () => {
+    const { container } = render(
+      <LandingPage {...props} locale="zh-CN" />,
+    );
+
+    expect(container.querySelector(".brand-copy")).toHaveTextContent("视频小秘");
+    expect(container.querySelector(".site-header > nav")).toHaveTextContent(
+      "小秘",
+    );
+    expect(container.querySelector(".site-header > nav")).not.toHaveTextContent(
+      "Agents",
+    );
+    expect(container.querySelector("h1")).toHaveAttribute(
+      "aria-label",
+      "视频小秘 把想象拍成片",
+    );
+  });
+
   it("keeps left-side navigation, a VA brand, and creation composer", () => {
     const { container } = render(<LandingPage {...props} />);
     const nav = container.querySelector(".site-header > nav");

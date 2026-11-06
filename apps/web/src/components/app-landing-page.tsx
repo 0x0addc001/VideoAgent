@@ -3,9 +3,11 @@
 import {
   LandingPage,
   landingContent,
+  type LandingLocale,
   type LandingProjectDraft,
 } from "@videoagent/landing";
 import "@videoagent/landing/styles.css";
+import { useLocale } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { ProjectWorkspace } from "@/components/project-workspace";
 
@@ -30,12 +32,13 @@ const videos = [
 
 export function AppLandingPage() {
   const router = useRouter();
-  const content = landingContent.en;
+  const locale = useLocale() as LandingLocale;
+  const content = landingContent[locale];
 
   async function createProject(draft: LandingProjectDraft) {
     const title =
       draft.prompt.split(/\r?\n/, 1)[0]?.trim().slice(0, 72) ||
-      "Untitled video project";
+      (locale === "zh-CN" ? "未命名视频项目" : "Untitled video project");
     const style =
       content.composer.styles.find((option) => option.id === draft.style)?.label ??
       draft.style;
@@ -75,7 +78,7 @@ export function AppLandingPage() {
     <LandingPage
       accountApiBase="/api/account"
       docsBase="/docs/"
-      locale="en"
+      locale={locale}
       mode="app"
       onCreateProject={createProject}
       renderConversation={(projectId) => (
