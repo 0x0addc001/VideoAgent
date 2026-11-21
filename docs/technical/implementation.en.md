@@ -1,4 +1,4 @@
-# VideoAgent Implementation Guide
+# VideoAgent Implementation
 
 | Attribute | Value |
 | --- | --- |

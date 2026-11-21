@@ -6,6 +6,8 @@
 | 更新日期 | 2026-11-05 |
 | 范围 | Skills、Videos、Assets、Provider、支持、指标 |
 
+系统可靠性、部署、监控与故障处理见 [运维手册](../technical/devops.md)；本文件只覆盖产品层面的运营。
+
 ## 1. 运营模型
 
 VideoAgent 按三层内容运营：

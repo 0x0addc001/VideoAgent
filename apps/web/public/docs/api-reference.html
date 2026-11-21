@@ -8,7 +8,7 @@
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
     <link rel="stylesheet" href="../docs.css?v=34" />
   </head>
-  <body data-document="interface-reference.html">
+  <body data-document="api-reference.html">
     <main class="document-shell" id="document-shell">
       <aside class="document-toc" id="document-toc">
         <button
@@ -712,7 +712,7 @@ file=&lt;image, video, or audio&gt;</code></pre>
 VIDEOAGENT_WANX_API_KEY=sk-...
 VIDEOAGENT_WANX_BASE_URL=https://dashscope.aliyuncs.com
 VIDEOAGENT_WANX_MODEL=wan2.6-t2v</code></pre>
-<p>Setting <code>VIDEOAGENT_VIDEO_PROVIDER=wanx</code> without a key fails fast at startup with <code>WanxNotConfigured</code>. Job polling maps DashScope <code>PENDING</code>/<code>RUNNING</code> to <code>running</code>, <code>SUCCEEDED</code> to <code>succeeded</code>, and <code>FAILED</code>/<code>CANCELED</code>/<code>UNKNOWN</code> to <code>failed</code>; result URLs expire after 24 hours and are downloaded immediately. See <a href="models.html">docs/models.md</a> for all providers.</p>
+<p>Setting <code>VIDEOAGENT_VIDEO_PROVIDER=wanx</code> without a key fails fast at startup with <code>WanxNotConfigured</code>. Job polling maps DashScope <code>PENDING</code>/<code>RUNNING</code> to <code>running</code>, <code>SUCCEEDED</code> to <code>succeeded</code>, and <code>FAILED</code>/<code>CANCELED</code>/<code>UNKNOWN</code> to <code>failed</code>; result URLs expire after 24 hours and are downloaded immediately. See <a href="models.html">docs/technical/models.md</a> for all providers.</p>
 <h2 id="errors">Errors</h2>
 <p>Errors use the following shape:</p>
 <pre><code class="language-json">{

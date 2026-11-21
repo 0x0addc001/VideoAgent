@@ -1,4 +1,4 @@
-# VideoAgent Testing and TDD
+# VideoAgent Test Plan
 
 | Attribute | Value |
 | --- | --- |

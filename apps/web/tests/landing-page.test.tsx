@@ -328,7 +328,7 @@ describe("LandingPage", () => {
     expect(
       container.querySelector('button[aria-label="Expand document list"]'),
     ).toBeInTheDocument();
-    expect(container.querySelectorAll(".docs-tab-icon")).toHaveLength(8);
+    expect(container.querySelectorAll(".docs-tab-icon")).toHaveLength(9);
     expect(
       [...container.querySelectorAll(".docs-tabs button")].map((button) =>
         button.textContent?.trim(),
@@ -336,13 +336,19 @@ describe("LandingPage", () => {
     ).toEqual([
       "PRD",
       "Playbook",
+      "Ops",
       "Arch",
       "API",
       "Model",
       "Dev",
       "Test",
-      "Ops",
+      "DevOps",
     ]);
+    expect(
+      [...container.querySelectorAll(".docs-group-label")].map((label) =>
+        label.textContent?.trim(),
+      ),
+    ).toEqual(["Product", "Technical"]);
     fireEvent.click(
       [...container.querySelectorAll(".docs-tabs button")].find(
         (button) => button.textContent?.trim() === "Model",
@@ -368,7 +374,12 @@ describe("LandingPage", () => {
       [...container.querySelectorAll(".docs-tabs button")].map((button) =>
         button.textContent?.trim(),
       ),
-    ).toEqual(["产品", "策略", "架构", "接口", "模型", "开发", "测试", "运营"]);
+    ).toEqual(["需求", "策略", "运营", "架构", "接口", "模型", "开发", "测试", "运维"]);
+    expect(
+      [...container.querySelectorAll(".docs-group-label")].map((label) =>
+        label.textContent?.trim(),
+      ),
+    ).toEqual(["产品", "技术"]);
     expect(container.querySelector(".site-header > nav")).toHaveTextContent(
       "Agents",
     );

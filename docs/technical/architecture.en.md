@@ -1,4 +1,4 @@
-# VideoAgent Software Design
+# VideoAgent Architecture
 
 | Attribute | Value |
 | --- | --- |

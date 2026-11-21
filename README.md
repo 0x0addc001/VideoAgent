@@ -8,9 +8,9 @@ The product interface is available in English and Simplified Chinese.
 Documentation includes matching editions in both languages.
 
 [Live project homepage](https://0x0addc001.github.io/VideoAgent/) ·
-[Product requirements](docs/product-requirements.en.md) ·
-[Software design](docs/software-design.en.md) ·
-[API reference](docs/api-reference.md)
+[Product requirements](docs/product/product-requirements.en.md) ·
+[Architecture](docs/technical/architecture.en.md) ·
+[API reference](docs/technical/api-reference.en.md)
 
 ![VideoAgent home](docs/assets/readme-home.png)
 
@@ -313,7 +313,7 @@ VIDEOAGENT_WANX_API_KEY=sk-your-private-key
 VIDEOAGENT_MEDIA_STORAGE=oss
 ```
 
-See [Models](docs/models.en.md) for every video, planner, vision and
+See [Models](docs/technical/models.en.md) for every video, planner, vision and
 storage backend, plus the Alibaba Cloud deployment mapping.
 
 ## Testing
@@ -357,15 +357,20 @@ python scripts\check_secrets.py
 
 ## Documentation
 
-- [Product requirements](docs/product-requirements.en.md)
-- [Playbooks](docs/playbooks.en.md)
-- [Software design](docs/software-design.en.md)
-- [API reference](docs/api-reference.md)
-- [Software implementation](docs/software-implementation.en.md)
-- [Software test and TDD plan](docs/software-test-plan.en.md)
-- [Operations](docs/operations.en.md)
-- [FAQ](docs/faq.en.md)
-- [TODO](docs/todo.en.md)
+**Product**
+
+- [Product requirements](docs/product/product-requirements.en.md)
+- [Playbooks](docs/product/playbooks.en.md)
+- [Operations strategy](docs/product/operations.en.md)
+
+**Technical**
+
+- [Architecture](docs/technical/architecture.en.md)
+- [API reference](docs/technical/api-reference.en.md)
+- [Models and providers](docs/technical/models.en.md)
+- [Implementation](docs/technical/implementation.en.md)
+- [Test plan](docs/technical/test-plan.en.md)
+- [DevOps runbook](docs/technical/devops.en.md)
 
 The documentation build also produces Chinese editions and the static project
 homepage under `.pages-build/`.

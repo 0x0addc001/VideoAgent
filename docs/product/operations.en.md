@@ -6,6 +6,9 @@
 | Updated | 2026-11-05 |
 | Scope | Skills, Videos, Assets, providers, support, metrics |
 
+System reliability, deployment, monitoring and incidents live in the
+[DevOps runbook](../technical/devops.en.md); this document covers product operations only.
+
 ## 1. Operating Model
 
 VideoAgent operates three content layers:

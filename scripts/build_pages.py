@@ -16,43 +16,48 @@ DOCS_ASSET_VERSION = "34"
 DOCUMENTS = {
     "product-requirements": {
         "title": "PRD",
-        "en": "product-requirements.en.md",
-        "zh-CN": "product-requirements.md",
+        "en": "product/product-requirements.en.md",
+        "zh-CN": "product/product-requirements.md",
     },
     "playbooks": {
         "title": "Playbook",
-        "en": "playbooks.en.md",
-        "zh-CN": "playbooks.md",
-    },
-    "software-design": {
-        "title": "Arch",
-        "en": "software-design.en.md",
-        "zh-CN": "software-design.md",
-    },
-    "models": {
-        "title": "Model",
-        "en": "models.en.md",
-        "zh-CN": "models.md",
-    },
-    "interface-reference": {
-        "title": "API",
-        "en": "api-reference.md",
-        "zh-CN": "api-reference.zh.md",
-    },
-    "software-implementation": {
-        "title": "Dev",
-        "en": "software-implementation.en.md",
-        "zh-CN": "software-implementation.md",
-    },
-    "software-test-plan": {
-        "title": "Test",
-        "en": "software-test-plan.en.md",
-        "zh-CN": "software-test-plan.md",
+        "en": "product/playbooks.en.md",
+        "zh-CN": "product/playbooks.md",
     },
     "operations": {
         "title": "Ops",
-        "en": "operations.en.md",
-        "zh-CN": "operations.md",
+        "en": "product/operations.en.md",
+        "zh-CN": "product/operations.md",
+    },
+    "architecture": {
+        "title": "Arch",
+        "en": "technical/architecture.en.md",
+        "zh-CN": "technical/architecture.md",
+    },
+    "api-reference": {
+        "title": "API",
+        "en": "technical/api-reference.en.md",
+        "zh-CN": "technical/api-reference.md",
+    },
+    "models": {
+        "title": "Model",
+        "en": "technical/models.en.md",
+        "zh-CN": "technical/models.md",
+    },
+    "implementation": {
+        "title": "Dev",
+        "en": "technical/implementation.en.md",
+        "zh-CN": "technical/implementation.md",
+    },
+    "test-plan": {
+        "title": "Test",
+        "en": "technical/test-plan.en.md",
+        "zh-CN": "technical/test-plan.md",
+    },
+    "devops": {
+        "title": "DevOps",
+        "en": "technical/devops.en.md",
+        "zh-CN": "technical/devops.md",
     },
 }
 

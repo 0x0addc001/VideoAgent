@@ -667,7 +667,7 @@ Setting `VIDEOAGENT_VIDEO_PROVIDER=wanx` without a key fails fast at startup wit
 `WanxNotConfigured`. Job polling maps DashScope `PENDING`/`RUNNING` to `running`,
 `SUCCEEDED` to `succeeded`, and `FAILED`/`CANCELED`/`UNKNOWN` to `failed`; result
 URLs expire after 24 hours and are downloaded immediately. See
-[docs/models.md](models.md) for all providers.
+[docs/technical/models.md](models.md) for all providers.
 
 ## Errors
 

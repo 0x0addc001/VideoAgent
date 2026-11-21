@@ -3906,6 +3906,20 @@ html[lang="zh-CN"] .hero-copy h1 {
   overflow-y: auto;
 }
 
+.docs-group-label {
+  margin: 10px 14px 2px;
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  opacity: 0.65;
+  text-transform: uppercase;
+}
+
+.docs-body.docs-directory-collapsed .docs-group-label {
+  display: none;
+}
+
 .docs-directory .docs-tabs button {
   width: 100%;
   justify-content: flex-start;

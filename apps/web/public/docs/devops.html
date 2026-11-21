@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="VideoAgent DevOps" />
+    <title>DevOps · VideoAgent</title>
+    <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
+    <link rel="stylesheet" href="../docs.css?v=34" />
+  </head>
+  <body data-document="devops.html">
+    <main class="document-shell" id="document-shell">
+      <aside class="document-toc" id="document-toc">
+        <button
+          class="toc-toggle"
+          id="toc-toggle"
+          type="button"
+          aria-controls="toc-panel"
+          aria-expanded="true"
+          aria-label="Contents"
+        >
+          <span class="toc-toggle-icon" aria-hidden="true">☰</span>
+          <span class="toc-toggle-label">Contents</span>
+          <span class="toc-toggle-chevron" aria-hidden="true">‹</span>
+        </button>
+        <nav class="toc-panel" id="toc-panel" aria-label="Contents">
+          <p class="toc-kicker">CONTENTS</p>
+          <a class="toc-link toc-level-1" href="#videoagent-devops-runbook">VideoAgent DevOps Runbook</a>
+<a class="toc-link toc-level-2" href="#1-environments">1. Environments</a>
+<a class="toc-link toc-level-2" href="#2-deployment-topology">2. Deployment topology</a>
+<a class="toc-link toc-level-2" href="#3-release-procedure">3. Release procedure</a>
+<a class="toc-link toc-level-2" href="#4-configuration-and-secrets">4. Configuration and secrets</a>
+<a class="toc-link toc-level-2" href="#5-health-checks-and-monitoring">5. Health checks and monitoring</a>
+<a class="toc-link toc-level-2" href="#6-backup-and-recovery">6. Backup and recovery</a>
+<a class="toc-link toc-level-2" href="#7-incident-playbook">7. Incident playbook</a>
+<a class="toc-link toc-level-2" href="#8-scaling-and-capacity">8. Scaling and capacity</a>
+<a class="toc-link toc-level-2" href="#9-security">9. Security</a>
+<a class="toc-link toc-level-2" href="#10-on-call-checklist">10. On-call checklist</a>
+        </nav>
+      </aside>
+      <article class="document"><h1 id="videoagent-devops-runbook">VideoAgent DevOps Runbook</h1>
+<div class="table-wrap"><table><thead><tr>
+<th>Attribute</th>
+<th>Value</th>
+</tr></thead><tbody>
+<tr>
+<td>Document version</td>
+<td>v1.0</td>
+</tr>
+<tr>
+<td>Updated</td>
+<td>2026-11-21</td>
+</tr>
+<tr>
+<td>Scope</td>
+<td>Environments, deployment, release, monitoring, backup, incidents, scaling, security</td>
+</tr>
+<tr>
+<td>Audience</td>
+<td>DevOps, SRE, on-call engineers</td>
+</tr>
+</tbody></table></div>
+<p>This runbook covers <strong>system reliability</strong>: how to deploy, release and debug. Product activities, content and credit policy live in <a href="../product/operations.en.html">Operations strategy</a>.</p>
+<h2 id="1-environments">1. Environments</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Environment</th>
+<th>Purpose</th>
+<th>Data</th>
+<th>Access</th>
+</tr></thead><tbody>
+<tr>
+<td>local</td>
+<td>Developer machine, SQLite + local media</td>
+<td>Disposable</td>
+<td>Local</td>
+</tr>
+<tr>
+<td>staging</td>
+<td>Pre-release validation, production-like</td>
+<td>Synthetic</td>
+<td>Internal</td>
+</tr>
+<tr>
+<td>production</td>
+<td>Live service</td>
+<td>Real user data</td>
+<td>Public + bastion</td>
+</tr>
+</tbody></table></div>
+<p>Production runs with <code>VIDEOAGENT_ENVIRONMENT=production</code>, debug output disabled, and secure cookies.</p>
+<h2 id="2-deployment-topology">2. Deployment topology</h2>
+<pre><code class="language-text">Users → SLB/CDN → Next.js (3000) ──/api/account──→ FastAPI (8000)
+                                                    ├─ PostgreSQL / SQLite
+                                                    ├─ Redis (Celery broker)
+                                                    ├─ Celery worker (provider polling)
+                                                    ├─ OSS (durable media)
+                                                    └─ FFmpeg (exports and covers)</code></pre>
+<ul>
+<li>Next.js and FastAPI are stateless and scale horizontally.</li>
+<li>Celery workers share the API image but scale independently with queue depth.</li>
+<li>Locally, <a href="../../deploy/docker-compose.yml">deploy/docker-compose.yml</a> provides PostgreSQL, Redis and MinIO.</li>
+</ul>
+<h2 id="3-release-procedure">3. Release procedure</h2>
+<ol>
+<li>CI must pass: backend <code>pytest / ruff / mypy</code>, frontend <code>vitest / tsc / build</code>.</li>
+<li>Build an immutable image tag; never deploy <code>latest</code>.</li>
+<li>Migrate the database after a backup; abort the release on migration failure.</li>
+<li>Deploy workers first, then roll the API, then the web tier.</li>
+<li>Smoke test: <code>GET /api/v1/health</code>, <code>GET /api/v1/providers/models</code>, sign-in, upload, estimate.</li>
+<li>Watch error rate and latency for 15 minutes before continuing.</li>
+<li>Roll back by image tag; if migrations already ran, use the migration rollback or fix forward.</li>
+</ol>
+<h2 id="4-configuration-and-secrets">4. Configuration and secrets</h2>
+<ul>
+<li>Configuration comes from environment variables or <code>services/api/.env</code> locally; template in</li>
+<p><a href="../../.env.example"><code>.env.example</code></a>.</p>
+<li>Use a RAM sub-account with least privilege for cloud credentials; never the root AccessKey.</li>
+<li>Rotate secrets on leak or staff change, then roll the API and workers.</li>
+<li>Fail fast: <code>VIDEOAGENT_VIDEO_PROVIDER=wanx</code> without a key aborts startup instead of running degraded.</li>
+</ul>
+<h2 id="5-health-checks-and-monitoring">5. Health checks and monitoring</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Signal</th>
+<th>Suggested alert</th>
+<th>Notes</th>
+</tr></thead><tbody>
+<tr>
+<td><code>/api/v1/health</code></td>
+<td>2 consecutive failures</td>
+<td>Database and process liveness</td>
+</tr>
+<tr>
+<td>HTTP 5xx ratio</td>
+<td>&gt; 1% for 5 minutes</td>
+<td>Track API and web separately</td>
+</tr>
+<tr>
+<td>P95 latency</td>
+<td>&gt; 2s for 10 minutes</td>
+<td>Generation and agent routes individually</td>
+</tr>
+<tr>
+<td>Celery queue depth</td>
+<td>&gt; 100 for 10 minutes</td>
+<td>Backlog usually means a slow provider</td>
+</tr>
+<tr>
+<td>Provider timeout rate</td>
+<td>&gt; 10%</td>
+<td>Vendor throttling or outage</td>
+</tr>
+<tr>
+<td>OSS 4xx/5xx</td>
+<td>Any sustained growth</td>
+<td>403 usually means RAM policy or expired AK</td>
+</tr>
+<tr>
+<td>Disk usage</td>
+<td>&gt; 80%</td>
+<td>Local cache and logs</td>
+</tr>
+</tbody></table></div>
+<p>Logs are structured JSON with <code>request_id</code>; API keys, cookies and full command lines are never logged.</p>
+<h2 id="6-backup-and-recovery">6. Backup and recovery</h2>
+<ul>
+<li>PostgreSQL: daily full backup plus continuous WAL, retained 7–30 days; restore drill monthly.</li>
+<li>OSS: versioning enabled; cross-region replication where compliance requires it.</li>
+<li>Targets: RPO ≤ 24h (database), RTO ≤ 2h (core path).</li>
+<li>Restore order: database → OSS verification → API → workers → web.</li>
+</ul>
+<h2 id="7-incident-playbook">7. Incident playbook</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Symptom</th>
+<th>Likely cause</th>
+<th>Action</th>
+</tr></thead><tbody>
+<tr>
+<td>Jobs stuck in <code>running</code></td>
+<td>Slow or throttled provider</td>
+<td>Check provider status, cancel and refund</td>
+</tr>
+<tr>
+<td><code>submission_uncertain</code></td>
+<td>Timeout before a task id</td>
+<td>Never auto-resubmit; reconcile vendor tasks</td>
+</tr>
+<tr>
+<td>OSS 403</td>
+<td>Missing RAM action or expired AK</td>
+<td>Re-run <code>scripts/check-oss.py</code>, fix and restart</td>
+</tr>
+<tr>
+<td>Export failures</td>
+<td>Missing FFmpeg filter or full disk</td>
+<td>Verify <code>ffmpeg -filters</code>, clear <code>.data</code> cache</td>
+</tr>
+<tr>
+<td>Redis unavailable</td>
+<td>Memory or network</td>
+<td>Fall back to synchronous polling, replay later</td>
+</tr>
+<tr>
+<td>Widespread 401</td>
+<td>Session secret changed</td>
+<td>Confirm <code>SESSION_SECRET</code>, force re-login</td>
+</tr>
+</tbody></table></div>
+<h2 id="8-scaling-and-capacity">8. Scaling and capacity</h2>
+<ul>
+<li>API: scale on CPU and P95; keep it stateless and size the DB pool per instance.</li>
+<li>Workers: scale on queue depth while respecting provider RPM limits.</li>
+<li>Media: cap and prune the local cache; durability belongs to OSS.</li>
+<li>Web: serve static assets via CDN; never cache <code>/api/account</code>.</li>
+</ul>
+<h2 id="9-security">9. Security</h2>
+<ul>
+<li>Vulnerabilities: <code>pnpm audit</code> and <code>uv</code> lock review; patch high severity within 24 hours.</li>
+<li>Pre-commit scanning: <code>python scripts/check_secrets.py</code>; CI runs the security workflow.</li>
+<li>Least privilege: OSS grants only <code>PutObject/GetObject/DeleteObject</code> on the business prefix.</li>
+<li>Audit: administrative actions persist to <code>admin_audit_logs</code> for at least 180 days.</li>
+</ul>
+<h2 id="10-on-call-checklist">10. On-call checklist</h2>
+<p><strong>Daily</strong>: health, error rate, queue depth, OSS errors, disk.</p>
+<p><strong>Before release</strong>: green CI, backup done, rollback tag ready, change announcement.</p>
+<p><strong>During an incident</strong>: stop the bleeding (rollback/limit/pause generation) → diagnose → communicate → postmortem.</p>
+<p>Pause generation through the admin runtime switch; estimation and submission are both blocked.</p></article>
+    </main>
+    <script src="../docs.js?v=34"></script>
+  </body>
+</html>

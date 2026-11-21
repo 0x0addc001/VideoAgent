@@ -1,4 +1,4 @@
-# VideoAgent 软件设计说明书
+# VideoAgent 架构设计
 
 | 属性 | 内容 |
 | --- | --- |
@@ -679,7 +679,7 @@ Agent 输出支持三种 Prompt 模式：
 
 ## 20. 测试策略
 
-测试以测试驱动开发为主要工作方式。详细测试范围、测试用例、覆盖目标和质量门禁见 `docs/software-test-plan.md`。
+测试以测试驱动开发为主要工作方式。详细测试范围、测试用例、覆盖目标和质量门禁见 `docs/technical/test-plan.md`。
 
 整体原则：
 

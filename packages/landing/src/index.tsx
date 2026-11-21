@@ -28,6 +28,7 @@ import {
   X,
 } from "lucide-react";
 import {
+  Fragment,
   type CSSProperties,
   FormEvent,
   type KeyboardEvent as ReactKeyboardEvent,
@@ -3377,30 +3378,47 @@ export function LandingPage({
                 className="docs-tabs"
                 role="tablist"
               >
-                {content.documents.map((document) => (
-                  <button
-                    aria-label={
-                      docsLocale === "zh-CN"
-                        ? document.labelZh
-                        : document.label
-                    }
-                    aria-selected={activeDocument === document.path}
-                    key={document.path}
-                    onClick={() => {
-                      setActiveDocument(document.path);
-                      setDocsQuery("");
-                    }}
-                    role="tab"
-                    type="button"
-                  >
-                    <FileText aria-hidden="true" className="docs-tab-icon" />
-                    <span className="docs-tab-label">
-                      {docsLocale === "zh-CN"
-                        ? document.labelZh
-                        : document.label}
-                    </span>
-                  </button>
-                ))}
+                {content.documents.map((document, index) => {
+                  const previous = content.documents[index - 1];
+                  const group =
+                    previous?.group === document.group
+                      ? null
+                      : content.documentGroups.find(
+                          (entry) => entry.id === document.group,
+                        );
+                  return (
+                    <Fragment key={document.path}>
+                      {group ? (
+                        <p className="docs-group-label">
+                          {docsLocale === "zh-CN"
+                            ? group.labelZh
+                            : group.label}
+                        </p>
+                      ) : null}
+                      <button
+                        aria-label={
+                          docsLocale === "zh-CN"
+                            ? document.labelZh
+                            : document.label
+                        }
+                        aria-selected={activeDocument === document.path}
+                        onClick={() => {
+                          setActiveDocument(document.path);
+                          setDocsQuery("");
+                        }}
+                        role="tab"
+                        type="button"
+                      >
+                        <FileText aria-hidden="true" className="docs-tab-icon" />
+                        <span className="docs-tab-label">
+                          {docsLocale === "zh-CN"
+                            ? document.labelZh
+                            : document.label}
+                        </span>
+                      </button>
+                    </Fragment>
+                  );
+                })}
               </div>
             </aside>
             <div className="docs-frame">
