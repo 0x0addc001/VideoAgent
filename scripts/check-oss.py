@@ -11,12 +11,17 @@ The script never prints the AccessKey. It rewrites nothing.
 
 from __future__ import annotations
 
+import os
 import sys
 import uuid
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(REPO_ROOT / "services" / "api" / "src"))
+API_ROOT = REPO_ROOT / "services" / "api"
+sys.path.insert(0, str(API_ROOT / "src"))
+# Settings resolves ".env" against the process working directory, which is the
+# API root when the app runs. Mirror that so the script sees the same config.
+os.chdir(API_ROOT)
 
 from videoagent.config import Settings  # noqa: E402
 from videoagent.services.storage import StorageError, build_storage  # noqa: E402
@@ -37,7 +42,7 @@ def main() -> int:
         print(f"storage configuration error: {exc}")
         return 1
 
-    key = f"{settings.oss_prefix.strip('/')}/healthcheck-{uuid.uuid4().hex}.txt"
+    key = f"healthcheck-{uuid.uuid4().hex}.txt"
     payload = b"videoagent storage check"
     probe = Path("/tmp") / f"videoagent-oss-{uuid.uuid4().hex}.txt"
     restored = probe.with_suffix(".restored.txt")
