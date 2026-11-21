@@ -34,7 +34,7 @@ from videoagent.schemas import (
     ShareLinkRead,
 )
 from videoagent.services.media import (
-    asset_path,
+    asset_file,
     asset_read,
     create_share,
     export_project,
@@ -329,7 +329,7 @@ async def get_asset_content(
         asset_id,
         user.id,
     )
-    path = asset_path(asset, settings)
+    path = await asset_file(asset, settings)
     if not path.exists():
         raise AppError(
             status_code=404,
@@ -393,7 +393,7 @@ async def get_shared_content(
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> FileResponse:
     _, asset = await resolve_share(session, token)
-    path = asset_path(asset, settings)
+    path = await asset_file(asset, settings)
     if not path.exists():
         raise AppError(
             status_code=404,

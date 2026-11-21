@@ -26,6 +26,10 @@ dependencies = [
     "uvicorn[standard]>=0.35.0",
 ]
 
+[project.optional-dependencies]
+# Alibaba Cloud OSS storage backend (VIDEOAGENT_MEDIA_STORAGE=oss).
+oss = ["oss2>=2.19.0"]
+
 [dependency-groups]
 dev = [
     "httpx>=0.28.1",
@@ -76,4 +80,9 @@ python_version = "3.12"
 strict = true
 plugins = ["pydantic.mypy"]
 warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+# Optional dependency, installed with `uv sync --extra oss`.
+module = ["oss2", "oss2.*"]
+ignore_missing_imports = true
 

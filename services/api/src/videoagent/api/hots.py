@@ -12,7 +12,7 @@ from videoagent.config import Settings
 from videoagent.errors import AppError
 from videoagent.models import Asset, HotsLike, HotsPost, User
 from videoagent.schemas import HotsPostList, HotsPostRead, HotsPublishFromAsset
-from videoagent.services.media import asset_path, save_upload
+from videoagent.services.media import asset_file, save_upload
 from videoagent.services.storyboards import owned_project_or_404
 
 router = APIRouter(prefix="/hots", tags=["hots"])
@@ -260,7 +260,7 @@ async def get_hots_video(
             code="HOTS_VIDEO_NOT_FOUND",
             message="The Hots video was not found.",
         )
-    path = asset_path(asset, settings)
+    path = await asset_file(asset, settings)
     if not path.exists():
         raise AppError(
             status_code=404,

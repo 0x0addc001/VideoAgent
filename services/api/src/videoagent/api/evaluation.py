@@ -16,7 +16,7 @@ from videoagent.schemas import (
     VisualReviewModelRead,
     VisualReviewRead,
 )
-from videoagent.services.media import asset_path
+from videoagent.services.media import asset_file
 from videoagent.services.progress import project_progress
 from videoagent.services.storyboards import load_storyboard, owned_project_or_404
 from videoagent.services.visual_review import evaluate_final_cut
@@ -76,7 +76,7 @@ async def review_final_cut(
             code="FINAL_CUT_NOT_FOUND",
             message="The selected final cut was not found.",
         )
-    path = asset_path(asset, settings)
+    path = await asset_file(asset, settings)
     if not path.exists():
         raise AppError(
             status_code=404,

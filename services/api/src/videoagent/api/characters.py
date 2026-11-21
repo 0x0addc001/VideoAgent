@@ -19,7 +19,7 @@ from videoagent.providers.kling_cli import (
 from videoagent.schemas import AssetRead, CharacterGenerationApproval, ModelSelection
 from videoagent.services.credits import refund_credits, reserve_credits
 from videoagent.services.media import (
-    asset_path,
+    asset_file,
     asset_read,
     materialize_character_image,
     save_upload,
@@ -175,7 +175,7 @@ async def generate_character_image(
                 code="REFERENCE_INVALID",
                 message="The selected reference is not an image in this project.",
             )
-        path = asset_path(reference, settings)
+        path = await asset_file(reference, settings)
         if not path.exists():
             raise AppError(
                 status_code=404,

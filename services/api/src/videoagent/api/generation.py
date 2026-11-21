@@ -24,7 +24,7 @@ from videoagent.providers.wanx import WanxVideoProvider
 from videoagent.schemas import GenerationApproval, GenerationJobRead, ModelSelection
 from videoagent.services.credits import refund_credits, reserve_credits
 from videoagent.services.generation_jobs import refresh_generation_job
-from videoagent.services.media import asset_path, materialize_generation_result
+from videoagent.services.media import asset_file, materialize_generation_result
 from videoagent.services.platform_settings import generation_enabled
 from videoagent.services.provider_resolver import resolve_video_provider
 from videoagent.services.storyboards import load_storyboard, owned_project_or_404
@@ -312,7 +312,7 @@ async def generate_shot(
             )
         for reference_id in reference_ids:
             reference_asset = assets_by_id[reference_id]
-            reference_file = asset_path(reference_asset, settings)
+            reference_file = await asset_file(reference_asset, settings)
             if not reference_file.exists():
                 raise AppError(
                     status_code=404,

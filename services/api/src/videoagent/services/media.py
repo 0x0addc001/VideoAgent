@@ -16,6 +16,7 @@ from videoagent.config import Settings
 from videoagent.errors import AppError
 from videoagent.models import Asset, GenerationJob, Project, ShareLink, Shot, Storyboard
 from videoagent.schemas import AssetRead, ExportRequest, ExportResponse
+from videoagent.services.storage import build_storage
 
 ALLOWED_UPLOADS = {
     "image/jpeg": (b"\xff\xd8\xff", ".jpg"),
@@ -75,6 +76,20 @@ def asset_path(asset: Asset, settings: Settings) -> Path:
     return Path(settings.media_dir).expanduser().resolve() / asset.storage_key
 
 
+async def _persist(settings: Settings, storage_key: str, path: Path) -> None:
+    """Mirror a freshly written file into the configured storage backend."""
+    await build_storage(settings).put(storage_key, path)
+
+
+async def asset_file(asset: Asset, settings: Settings) -> Path:
+    """Return a local path, restoring the file from OSS when it is missing."""
+    path = asset_path(asset, settings)
+    if path.exists():
+        return path
+    await build_storage(settings).fetch(asset.storage_key, path)
+    return path
+
+
 def _validate_signature(content_type: str, header: bytes) -> None:
     signature = ALLOWED_UPLOADS.get(content_type)
     if signature is None or not header.startswith(signature[0]):
@@ -128,6 +143,7 @@ async def save_upload(
         storage_key = f"{uuid4().hex}{extension}"
         final_path = media_dir / storage_key
         temp_path.replace(final_path)
+        await _persist(settings, storage_key, final_path)
     except Exception:
         temp_path.unlink(missing_ok=True)
         raise
@@ -236,6 +252,7 @@ async def materialize_visual_image(
         storage_key = f"{resource_type}-{resource_id}-{uuid4().hex}{extension}"
         destination = media_dir / storage_key
         raw_path.replace(destination)
+        await _persist(settings, storage_key, destination)
     except Exception:
         raw_path.unlink(missing_ok=True)
         raise
@@ -305,6 +322,8 @@ async def materialize_generation_result(
             return None
     else:
         return None
+
+    await _persist(settings, storage_key, destination)
 
     asset = Asset(
         owner_id=project.owner_id,
@@ -412,7 +431,7 @@ async def export_project(
             message="Generate every shot before assembling the final cut.",
         )
     assets = [by_shot[shot_id] for shot_id in sorted(by_shot, key=lambda item: shot_order[item])]
-    inputs = [asset_path(asset, settings) for asset in assets]
+    inputs = [await asset_file(asset, settings) for asset in assets]
     if soundtrack := request.soundtrack_asset_id:
         soundtrack_asset = await session.get(Asset, soundtrack)
         if (
@@ -477,7 +496,7 @@ async def export_project(
             command.extend(["-i", str(path)])
         if soundtrack_asset is not None:
             command.extend(
-                ["-stream_loop", "-1", "-i", str(asset_path(soundtrack_asset, settings))]
+                ["-stream_loop", "-1", "-i", str(await asset_file(soundtrack_asset, settings))]
             )
         else:
             command.extend(
@@ -508,6 +527,7 @@ async def export_project(
             ]
         )
         await _run_ffmpeg(command)
+        await _persist(settings, output.name, output)
         asset = Asset(
             owner_id=project.owner_id,
             project_id=project.id,
@@ -532,12 +552,13 @@ async def export_project(
                 "-ss",
                 "0.2",
                 "-i",
-                str(asset_path(created[0], settings)),
+                str(await asset_file(created[0], settings)),
                 "-frames:v",
                 "1",
                 str(cover_path),
             ]
         )
+        await _persist(settings, cover_path.name, cover_path)
         cover_asset = Asset(
             owner_id=project.owner_id,
             project_id=project.id,

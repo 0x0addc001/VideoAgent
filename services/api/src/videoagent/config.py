@@ -1,5 +1,6 @@
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -68,6 +69,12 @@ class Settings(BaseSettings):
     celery_result_backend: str = "redis://localhost:6379/1"
     celery_poll_interval_seconds: int = 5
     media_dir: str = "./.data/media"
+    media_storage: Literal["local", "oss"] = "local"
+    oss_endpoint: str | None = None
+    oss_bucket: str | None = None
+    oss_access_key_id: str | None = None
+    oss_access_key_secret: str | None = None
+    oss_prefix: str = "videoagent"
     max_upload_bytes: int = Field(default=100 * 1024 * 1024, ge=1024)
     ffmpeg_command: str = "ffmpeg"
     ffprobe_command: str = "ffprobe"
