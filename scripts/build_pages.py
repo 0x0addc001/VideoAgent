@@ -19,10 +19,10 @@ DOCUMENTS = {
         "en": "product/product-requirements.en.md",
         "zh-CN": "product/product-requirements.md",
     },
-    "playbooks": {
-        "title": "Playbook",
-        "en": "product/playbooks.en.md",
-        "zh-CN": "product/playbooks.md",
+    "strategy": {
+        "title": "Strategy",
+        "en": "product/strategy.en.md",
+        "zh-CN": "product/strategy.md",
     },
     "operations": {
         "title": "Ops",

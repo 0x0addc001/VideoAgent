@@ -1,15 +1,28 @@
-# VideoAgent Playbooks
+# VideoAgent Strategy
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v1.0 |
-| Updated | 2026-11-04 |
+| Document version | v1.1 |
+| Updated | 2026-11-21 |
 
-A Playbook is a reusable production recipe. It combines a business scenario,
-narrative structure, default production settings, and review policy into an
-editable project starting point.
+A strategy is a system for designing how a business goal gets achieved. A Playbook is
+only one executable template inside that system, not a synonym for it.
 
-## 1. Common Structure
+## 1. Strategy Layers
+
+| Layer | Focus | Typical output |
+| --- | --- | --- |
+| Business | Goal, audience, channel, budget | Scenario choice and success metrics |
+| Gameplay | Narrative structure, hooks, interaction, pacing | Playbooks, hook combinations, series plans |
+| Production | Model routing, duration, frame, asset reuse | Cost and quality balance |
+| Review | Compliance, brand safety, release cadence | Review checklist and fallback |
+
+A Playbook is one executable template inside the gameplay layer: it fixes the default
+Skill, hook, style, frame, duration and review mode for a known scenario so a creator can
+start in one click. The list below is the current Playbook catalogue; new gameplay can be
+added without changing the layer model itself.
+
+## 2. Playbook Structure
 
 Every Playbook includes:
 
@@ -22,7 +35,7 @@ Every Playbook includes:
 - Credit and model-capability constraints
 - Review and fallback rules
 
-## 2. Product Ad
+## 3. Product Ad
 
 For launches, proof-led creative, and performance ads.
 
@@ -33,7 +46,7 @@ For launches, proof-led creative, and performance ads.
 - Skill: `video_agent/product_film`
 - Review: ask first
 
-## 3. Creator Vlog
+## 4. Creator Vlog
 
 For personal stories, lifestyle content, and brand behind-the-scenes.
 
@@ -44,7 +57,7 @@ For personal stories, lifestyle content, and brand behind-the-scenes.
 - Skill: `video_agent/creator_vlog`
 - Review: auto
 
-## 4. Micro Drama
+## 5. Micro Drama
 
 For short-drama scenes, narrative ads, and social cliffhangers.
 
@@ -55,7 +68,7 @@ For short-drama scenes, narrative ads, and social cliffhangers.
 - Skill: `video_agent/short_drama`
 - Review: ask first
 
-## 5. Music Video
+## 6. Music Video
 
 For music promotion, artist visuals, and rhythmic brand content.
 
@@ -66,7 +79,7 @@ For music promotion, artist visuals, and rhythmic brand content.
 - Skill: `video_agent/music_video`
 - Review: ask first
 
-## 6. Localize
+## 7. Localize
 
 For adapting existing footage to another market.
 
@@ -75,7 +88,7 @@ For adapting existing footage to another market.
 - Skill: `video_agent/video_localization`
 - Review: ask first
 
-## 7. Batch Test
+## 8. Batch Test
 
 For creative matrices and Hook testing.
 
@@ -85,7 +98,7 @@ For creative matrices and Hook testing.
 - Skill: `video_agent/batch_variants`
 - Duration: 5 seconds
 
-## 8. Operations
+## 9. Operations
 
 - Every Playbook references an active Skill.
 - Defaults stay aligned with composer fields.

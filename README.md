@@ -360,7 +360,7 @@ python scripts\check_secrets.py
 **Product**
 
 - [Product requirements](docs/product/product-requirements.en.md)
-- [Playbooks](docs/product/playbooks.en.md)
+- [Strategy](docs/product/strategy.en.md)
 - [Operations strategy](docs/product/operations.en.md)
 
 **Technical**

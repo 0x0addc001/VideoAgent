@@ -766,6 +766,9 @@ export function LandingPage({
   const [activeDocument, setActiveDocument] = useState<string>(
     content.documents[0]?.path ?? "",
   );
+  const [collapsedGroups, setCollapsedGroups] = useState<Set<string>>(
+    () => new Set(),
+  );
   const [docsLocale, setDocsLocale] = useState<LandingLocale>(locale);
   const [previewNoticeOpen, setPreviewNoticeOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
@@ -3380,42 +3383,76 @@ export function LandingPage({
               >
                 {content.documents.map((document, index) => {
                   const previous = content.documents[index - 1];
-                  const group =
-                    previous?.group === document.group
-                      ? null
-                      : content.documentGroups.find(
-                          (entry) => entry.id === document.group,
-                        );
+                  const isFirstOfGroup =
+                    !previous || previous.group !== document.group;
+                  const group = content.documentGroups.find(
+                    (entry) => entry.id === document.group,
+                  );
+                  const collapsed = collapsedGroups.has(document.group);
                   return (
                     <Fragment key={document.path}>
-                      {group ? (
-                        <p className="docs-group-label">
-                          {docsLocale === "zh-CN"
-                            ? group.labelZh
-                            : group.label}
-                        </p>
+                      {isFirstOfGroup && group ? (
+                        <button
+                          aria-expanded={!collapsed}
+                          className="docs-group-toggle"
+                          onClick={() =>
+                            setCollapsedGroups((current) => {
+                              const next = new Set(current);
+                              if (next.has(document.group)) {
+                                next.delete(document.group);
+                              } else {
+                                next.add(document.group);
+                              }
+                              return next;
+                            })
+                          }
+                          type="button"
+                        >
+                          {collapsed ? (
+                            <ChevronRight
+                              aria-hidden="true"
+                              className="docs-group-chevron"
+                            />
+                          ) : (
+                            <ChevronDown
+                              aria-hidden="true"
+                              className="docs-group-chevron"
+                            />
+                          )}
+                          <span className="docs-group-name">
+                            {docsLocale === "zh-CN"
+                              ? group.labelZh
+                              : group.label}
+                          </span>
+                        </button>
                       ) : null}
-                      <button
-                        aria-label={
-                          docsLocale === "zh-CN"
-                            ? document.labelZh
-                            : document.label
-                        }
-                        aria-selected={activeDocument === document.path}
-                        onClick={() => {
-                          setActiveDocument(document.path);
-                          setDocsQuery("");
-                        }}
-                        role="tab"
-                        type="button"
-                      >
-                        <FileText aria-hidden="true" className="docs-tab-icon" />
-                        <span className="docs-tab-label">
-                          {docsLocale === "zh-CN"
-                            ? document.labelZh
-                            : document.label}
-                        </span>
-                      </button>
+                      {collapsed ? null : (
+                        <button
+                          aria-label={
+                            docsLocale === "zh-CN"
+                              ? document.labelZh
+                              : document.label
+                          }
+                          aria-selected={activeDocument === document.path}
+                          className="docs-file-tab"
+                          onClick={() => {
+                            setActiveDocument(document.path);
+                            setDocsQuery("");
+                          }}
+                          role="tab"
+                          type="button"
+                        >
+                          <FileText
+                            aria-hidden="true"
+                            className="docs-tab-icon"
+                          />
+                          <span className="docs-tab-label">
+                            {docsLocale === "zh-CN"
+                              ? document.labelZh
+                              : document.label}
+                          </span>
+                        </button>
+                      )}
                     </Fragment>
                   );
                 })}

@@ -330,12 +330,12 @@ describe("LandingPage", () => {
     ).toBeInTheDocument();
     expect(container.querySelectorAll(".docs-tab-icon")).toHaveLength(9);
     expect(
-      [...container.querySelectorAll(".docs-tabs button")].map((button) =>
+      [...container.querySelectorAll('.docs-tabs button[role="tab"]')].map((button) =>
         button.textContent?.trim(),
       ),
     ).toEqual([
-      "PRD",
-      "Playbook",
+      "Product",
+      "Strategy",
       "Ops",
       "Arch",
       "API",
@@ -345,12 +345,30 @@ describe("LandingPage", () => {
       "DevOps",
     ]);
     expect(
-      [...container.querySelectorAll(".docs-group-label")].map((label) =>
+      [...container.querySelectorAll(".docs-group-toggle")].map((label) =>
         label.textContent?.trim(),
       ),
     ).toEqual(["Product", "Technical"]);
     fireEvent.click(
-      [...container.querySelectorAll(".docs-tabs button")].find(
+      [...container.querySelectorAll(".docs-group-toggle")].find(
+        (button) => button.textContent?.trim() === "Technical",
+      )!,
+    );
+    expect(
+      container.querySelectorAll('.docs-tabs button[role="tab"]'),
+    ).toHaveLength(3);
+    expect(
+      [...container.querySelectorAll(".docs-group-toggle")].find(
+        (button) => button.textContent?.trim() === "Technical",
+      ),
+    ).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(
+      [...container.querySelectorAll(".docs-group-toggle")].find(
+        (button) => button.textContent?.trim() === "Technical",
+      )!,
+    );
+    fireEvent.click(
+      [...container.querySelectorAll('.docs-tabs button[role="tab"]')].find(
         (button) => button.textContent?.trim() === "Model",
       )!,
     );
@@ -371,12 +389,12 @@ describe("LandingPage", () => {
       "/docs/models.zh.html?v=34",
     );
     expect(
-      [...container.querySelectorAll(".docs-tabs button")].map((button) =>
+      [...container.querySelectorAll('.docs-tabs button[role="tab"]')].map((button) =>
         button.textContent?.trim(),
       ),
-    ).toEqual(["需求", "策略", "运营", "架构", "接口", "模型", "开发", "测试", "运维"]);
+    ).toEqual(["产品", "策略", "运营", "架构", "接口", "模型", "开发", "测试", "运维"]);
     expect(
-      [...container.querySelectorAll(".docs-group-label")].map((label) =>
+      [...container.querySelectorAll(".docs-group-toggle")].map((label) =>
         label.textContent?.trim(),
       ),
     ).toEqual(["产品", "技术"]);
@@ -394,13 +412,13 @@ describe("LandingPage", () => {
       )!,
     );
     fireEvent.click(
-      [...container.querySelectorAll("#docs .docs-tabs button")].find(
-        (button) => button.textContent?.trim() === "Playbook",
+      [...container.querySelectorAll('#docs .docs-tabs button[role="tab"]')].find(
+        (button) => button.textContent?.trim() === "Strategy",
       )!,
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/playbooks.html?v=34",
+      "/docs/strategy.html?v=34",
     );
 
     fireEvent.click(

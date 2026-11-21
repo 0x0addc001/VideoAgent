@@ -3,12 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="VideoAgent Playbook" />
-    <title>Playbook · VideoAgent</title>
+    <meta name="description" content="VideoAgent Strategy" />
+    <title>Strategy · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
     <link rel="stylesheet" href="../docs.css?v=34" />
   </head>
-  <body data-document="playbooks.zh.html">
+  <body data-document="strategy.zh.html">
     <main class="document-shell" id="document-shell">
       <aside class="document-toc" id="document-toc">
         <button
@@ -25,37 +25,66 @@
         </button>
         <nav class="toc-panel" id="toc-panel" aria-label="目录">
           <p class="toc-kicker">目录</p>
-          <a class="toc-link toc-level-1" href="#videoagent-策略">VideoAgent 策略</a>
-<a class="toc-link toc-level-2" href="#1-通用结构">1. 通用结构</a>
-<a class="toc-link toc-level-2" href="#2-product-ad">2. Product Ad</a>
-<a class="toc-link toc-level-2" href="#3-creator-vlog">3. Creator Vlog</a>
-<a class="toc-link toc-level-2" href="#4-micro-drama">4. Micro Drama</a>
-<a class="toc-link toc-level-2" href="#5-music-video">5. Music Video</a>
-<a class="toc-link toc-level-2" href="#6-localize">6. Localize</a>
-<a class="toc-link toc-level-2" href="#7-batch-test">7. Batch Test</a>
-<a class="toc-link toc-level-2" href="#8-reference-remake">8. Reference Remake</a>
-<a class="toc-link toc-level-2" href="#9-keyframe-story">9. Keyframe Story</a>
-<a class="toc-link toc-level-2" href="#10-product-edit">10. Product Edit</a>
-<a class="toc-link toc-level-2" href="#11-模型与能力路由">11. 模型与能力路由</a>
-<a class="toc-link toc-level-2" href="#12-运营规则">12. 运营规则</a>
+          <a class="toc-link toc-level-1" href="#videoagent-策略设计">VideoAgent 策略设计</a>
+<a class="toc-link toc-level-2" href="#1-策略分层">1. 策略分层</a>
+<a class="toc-link toc-level-2" href="#2-playbook-的通用结构">2. Playbook 的通用结构</a>
+<a class="toc-link toc-level-2" href="#3-product-ad">3. Product Ad</a>
+<a class="toc-link toc-level-2" href="#4-creator-vlog">4. Creator Vlog</a>
+<a class="toc-link toc-level-2" href="#5-micro-drama">5. Micro Drama</a>
+<a class="toc-link toc-level-2" href="#6-music-video">6. Music Video</a>
+<a class="toc-link toc-level-2" href="#7-localize">7. Localize</a>
+<a class="toc-link toc-level-2" href="#8-batch-test">8. Batch Test</a>
+<a class="toc-link toc-level-2" href="#9-reference-remake">9. Reference Remake</a>
+<a class="toc-link toc-level-2" href="#10-keyframe-story">10. Keyframe Story</a>
+<a class="toc-link toc-level-2" href="#11-product-edit">11. Product Edit</a>
+<a class="toc-link toc-level-2" href="#12-模型与能力路由">12. 模型与能力路由</a>
+<a class="toc-link toc-level-2" href="#13-运营规则">13. 运营规则</a>
         </nav>
       </aside>
-      <article class="document"><h1 id="videoagent-策略">VideoAgent 策略</h1>
+      <article class="document"><h1 id="videoagent-策略设计">VideoAgent 策略设计</h1>
 <div class="table-wrap"><table><thead><tr>
 <th>属性</th>
 <th>内容</th>
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v1.0</td>
+<td>v1.1</td>
 </tr>
 <tr>
 <td>更新日期</td>
-<td>2026-11-04</td>
+<td>2026-11-21</td>
 </tr>
 </tbody></table></div>
-<p>策略是可复用的创作方案。它把业务场景、叙事结构、默认制作参数和审核要求 组合成一个可直接进入创作的项目起点。</p>
-<h2 id="1-通用结构">1. 通用结构</h2>
+<p>策略（Strategy）是为达成业务目标而设计的玩法体系。Playbook 只是其中一种可执行模板， 两者不是同义词。</p>
+<h2 id="1-策略分层">1. 策略分层</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>层次</th>
+<th>关注点</th>
+<th>典型产出</th>
+</tr></thead><tbody>
+<tr>
+<td>业务策略</td>
+<td>目标、受众、渠道、预算</td>
+<td>场景选择与成功指标</td>
+</tr>
+<tr>
+<td>玩法策略</td>
+<td>叙事结构、Hook、互动与节奏</td>
+<td>Playbook、Hook 组合、系列企划</td>
+</tr>
+<tr>
+<td>制作策略</td>
+<td>模型路由、时长、画幅、素材复用</td>
+<td>成本与质量平衡</td>
+</tr>
+<tr>
+<td>审核策略</td>
+<td>合规、品牌安全、发布节奏</td>
+<td>审核清单与降级方案</td>
+</tr>
+</tbody></table></div>
+<p>Playbook 是玩法策略中的一种可执行模板：把某一类玩法固化为默认 Skill、Hook、风格、 画幅、时长和审核模式，让创作者一键进入。下面的 Playbook 清单是策略库的当前实现， 新增玩法可以继续扩展，而不必改动分层本身。</p>
+<h2 id="2-playbook-的通用结构">2. Playbook 的通用结构</h2>
 <p>每个策略包含：</p>
 <ul>
 <li>场景名称与目标用户</li>
@@ -67,7 +96,7 @@
 <li>积分和模型能力约束</li>
 <li>审核标准与降级策略</li>
 </ul>
-<h2 id="2-product-ad">2. Product Ad</h2>
+<h2 id="3-product-ad">3. Product Ad</h2>
 <p>适用于新品发布、卖点验证和效果广告。</p>
 <p>默认编排：</p>
 <ul>
@@ -78,7 +107,7 @@
 <li>Skill：<code>video_agent/product_film</code></li>
 <li>审核：生成前确认</li>
 </ul>
-<h2 id="3-creator-vlog">3. Creator Vlog</h2>
+<h2 id="4-creator-vlog">4. Creator Vlog</h2>
 <p>适用于个人叙事、生活方式和品牌幕后内容。</p>
 <p>默认编排：</p>
 <ul>
@@ -89,7 +118,7 @@
 <li>Skill：<code>video_agent/creator_vlog</code></li>
 <li>审核：自动</li>
 </ul>
-<h2 id="4-micro-drama">4. Micro Drama</h2>
+<h2 id="5-micro-drama">5. Micro Drama</h2>
 <p>适用于短剧片段、剧情广告和社交平台悬念内容。</p>
 <p>默认编排：</p>
 <ul>
@@ -100,7 +129,7 @@
 <li>Skill：<code>video_agent/short_drama</code></li>
 <li>审核：生成前确认</li>
 </ul>
-<h2 id="5-music-video">5. Music Video</h2>
+<h2 id="6-music-video">6. Music Video</h2>
 <p>适用于音乐宣发、艺人视觉和节奏型品牌内容。</p>
 <p>默认编排：</p>
 <ul>
@@ -111,7 +140,7 @@
 <li>Skill：<code>video_agent/music_video</code></li>
 <li>审核：生成前确认</li>
 </ul>
-<h2 id="6-localize">6. Localize</h2>
+<h2 id="7-localize">7. Localize</h2>
 <p>适用于已有成片的跨市场改编。</p>
 <p>默认编排：</p>
 <ul>
@@ -120,7 +149,7 @@
 <li>Skill：<code>video_agent/video_localization</code></li>
 <li>审核：生成前确认</li>
 </ul>
-<h2 id="7-batch-test">7. Batch Test</h2>
+<h2 id="8-batch-test">8. Batch Test</h2>
 <p>适用于广告素材矩阵和 Hook 测试。</p>
 <p>默认编排：</p>
 <ul>
@@ -130,7 +159,7 @@
 <li>Skill：<code>video_agent/batch_variants</code></li>
 <li>时长：5 秒</li>
 </ul>
-<h2 id="8-reference-remake">8. Reference Remake</h2>
+<h2 id="9-reference-remake">9. Reference Remake</h2>
 <p>适用于爆款复刻、竞品视觉拆解和跨品类迁移。</p>
 <ul>
 <li>分析参考视频的叙事节奏、镜头顺序、动作与运镜</li>
@@ -139,7 +168,7 @@
 <li>先产出一页镜头对照，再逐镜生成</li>
 <li>Skill：<code>video_agent/reference_remake</code></li>
 </ul>
-<h2 id="9-keyframe-story">9. Keyframe Story</h2>
+<h2 id="10-keyframe-story">10. Keyframe Story</h2>
 <p>适用于最多 30 秒的连续叙事、复杂动作与多节点转场。</p>
 <ul>
 <li>先确定 3 至 5 个关键画面，记录人物状态、场景变化和情节节点</li>
@@ -149,7 +178,7 @@
 <li>文生视频参考规划；已有参考图时自动切换图生视频</li>
 <li>Skill：<code>video_agent/camera_movement</code></li>
 </ul>
-<h2 id="10-product-edit">10. Product Edit</h2>
+<h2 id="11-product-edit">11. Product Edit</h2>
 <p>适用于已有产品素材的二次创作与商业版本改写。</p>
 <ul>
 <li>保留产品身份、动作连续性和核心信息</li>
@@ -158,7 +187,7 @@
 <li>每次只改变一组明确变量，便于比较和审核</li>
 <li>Skill：<code>video_agent/video_edit</code></li>
 </ul>
-<h2 id="11-模型与能力路由">11. 模型与能力路由</h2>
+<h2 id="12-模型与能力路由">12. 模型与能力路由</h2>
 <ul>
 <li>同一 Skill 有多个 Provider 时，按输入模态、时长、画幅、音频、语言、质量与积分整理候选。</li>
 <li>多个模型都可用时，保留项目默认预选并展示全部 <code>服务商/模型</code>，由用户通过估算或生成确认。</li>
@@ -166,7 +195,7 @@
 <li>文生视频与图生视频都有机会在执行前覆盖项目默认模型。</li>
 <li>已计费任务不会在用户不知情时静默切换 Provider。</li>
 </ul>
-<h2 id="12-运营规则">12. 运营规则</h2>
+<h2 id="13-运营规则">13. 运营规则</h2>
 <ul>
 <li>策略必须引用有效 Skill。</li>
 <li>默认参数必须与创作框字段一致。</li>

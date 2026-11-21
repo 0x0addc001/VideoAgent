@@ -3,12 +3,12 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="VideoAgent Playbook" />
-    <title>Playbook · VideoAgent</title>
+    <meta name="description" content="VideoAgent Strategy" />
+    <title>Strategy · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
     <link rel="stylesheet" href="../docs.css?v=34" />
   </head>
-  <body data-document="playbooks.html">
+  <body data-document="strategy.html">
     <main class="document-shell" id="document-shell">
       <aside class="document-toc" id="document-toc">
         <button
@@ -25,33 +25,62 @@
         </button>
         <nav class="toc-panel" id="toc-panel" aria-label="Contents">
           <p class="toc-kicker">CONTENTS</p>
-          <a class="toc-link toc-level-1" href="#videoagent-playbooks">VideoAgent Playbooks</a>
-<a class="toc-link toc-level-2" href="#1-common-structure">1. Common Structure</a>
-<a class="toc-link toc-level-2" href="#2-product-ad">2. Product Ad</a>
-<a class="toc-link toc-level-2" href="#3-creator-vlog">3. Creator Vlog</a>
-<a class="toc-link toc-level-2" href="#4-micro-drama">4. Micro Drama</a>
-<a class="toc-link toc-level-2" href="#5-music-video">5. Music Video</a>
-<a class="toc-link toc-level-2" href="#6-localize">6. Localize</a>
-<a class="toc-link toc-level-2" href="#7-batch-test">7. Batch Test</a>
-<a class="toc-link toc-level-2" href="#8-operations">8. Operations</a>
+          <a class="toc-link toc-level-1" href="#videoagent-strategy">VideoAgent Strategy</a>
+<a class="toc-link toc-level-2" href="#1-strategy-layers">1. Strategy Layers</a>
+<a class="toc-link toc-level-2" href="#2-playbook-structure">2. Playbook Structure</a>
+<a class="toc-link toc-level-2" href="#3-product-ad">3. Product Ad</a>
+<a class="toc-link toc-level-2" href="#4-creator-vlog">4. Creator Vlog</a>
+<a class="toc-link toc-level-2" href="#5-micro-drama">5. Micro Drama</a>
+<a class="toc-link toc-level-2" href="#6-music-video">6. Music Video</a>
+<a class="toc-link toc-level-2" href="#7-localize">7. Localize</a>
+<a class="toc-link toc-level-2" href="#8-batch-test">8. Batch Test</a>
+<a class="toc-link toc-level-2" href="#9-operations">9. Operations</a>
         </nav>
       </aside>
-      <article class="document"><h1 id="videoagent-playbooks">VideoAgent Playbooks</h1>
+      <article class="document"><h1 id="videoagent-strategy">VideoAgent Strategy</h1>
 <div class="table-wrap"><table><thead><tr>
 <th>Attribute</th>
 <th>Value</th>
 </tr></thead><tbody>
 <tr>
 <td>Document version</td>
-<td>v1.0</td>
+<td>v1.1</td>
 </tr>
 <tr>
 <td>Updated</td>
-<td>2026-11-04</td>
+<td>2026-11-21</td>
 </tr>
 </tbody></table></div>
-<p>A Playbook is a reusable production recipe. It combines a business scenario, narrative structure, default production settings, and review policy into an editable project starting point.</p>
-<h2 id="1-common-structure">1. Common Structure</h2>
+<p>A strategy is a system for designing how a business goal gets achieved. A Playbook is only one executable template inside that system, not a synonym for it.</p>
+<h2 id="1-strategy-layers">1. Strategy Layers</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Layer</th>
+<th>Focus</th>
+<th>Typical output</th>
+</tr></thead><tbody>
+<tr>
+<td>Business</td>
+<td>Goal, audience, channel, budget</td>
+<td>Scenario choice and success metrics</td>
+</tr>
+<tr>
+<td>Gameplay</td>
+<td>Narrative structure, hooks, interaction, pacing</td>
+<td>Playbooks, hook combinations, series plans</td>
+</tr>
+<tr>
+<td>Production</td>
+<td>Model routing, duration, frame, asset reuse</td>
+<td>Cost and quality balance</td>
+</tr>
+<tr>
+<td>Review</td>
+<td>Compliance, brand safety, release cadence</td>
+<td>Review checklist and fallback</td>
+</tr>
+</tbody></table></div>
+<p>A Playbook is one executable template inside the gameplay layer: it fixes the default Skill, hook, style, frame, duration and review mode for a known scenario so a creator can start in one click. The list below is the current Playbook catalogue; new gameplay can be added without changing the layer model itself.</p>
+<h2 id="2-playbook-structure">2. Playbook Structure</h2>
 <p>Every Playbook includes:</p>
 <ul>
 <li>Scenario name and target user</li>
@@ -63,7 +92,7 @@
 <li>Credit and model-capability constraints</li>
 <li>Review and fallback rules</li>
 </ul>
-<h2 id="2-product-ad">2. Product Ad</h2>
+<h2 id="3-product-ad">3. Product Ad</h2>
 <p>For launches, proof-led creative, and performance ads.</p>
 <ul>
 <li>Hook: proof first</li>
@@ -73,7 +102,7 @@
 <li>Skill: <code>video_agent/product_film</code></li>
 <li>Review: ask first</li>
 </ul>
-<h2 id="3-creator-vlog">3. Creator Vlog</h2>
+<h2 id="4-creator-vlog">4. Creator Vlog</h2>
 <p>For personal stories, lifestyle content, and brand behind-the-scenes.</p>
 <ul>
 <li>Hook: visual atmosphere</li>
@@ -83,7 +112,7 @@
 <li>Skill: <code>video_agent/creator_vlog</code></li>
 <li>Review: auto</li>
 </ul>
-<h2 id="4-micro-drama">4. Micro Drama</h2>
+<h2 id="5-micro-drama">5. Micro Drama</h2>
 <p>For short-drama scenes, narrative ads, and social cliffhangers.</p>
 <ul>
 <li>Hook: narrative twist</li>
@@ -93,7 +122,7 @@
 <li>Skill: <code>video_agent/short_drama</code></li>
 <li>Review: ask first</li>
 </ul>
-<h2 id="5-music-video">5. Music Video</h2>
+<h2 id="6-music-video">6. Music Video</h2>
 <p>For music promotion, artist visuals, and rhythmic brand content.</p>
 <ul>
 <li>Hook: sound cue</li>
@@ -103,7 +132,7 @@
 <li>Skill: <code>video_agent/music_video</code></li>
 <li>Review: ask first</li>
 </ul>
-<h2 id="6-localize">6. Localize</h2>
+<h2 id="7-localize">7. Localize</h2>
 <p>For adapting existing footage to another market.</p>
 <ul>
 <li>Preserve edit, pacing, and product facts</li>
@@ -111,7 +140,7 @@
 <li>Skill: <code>video_agent/video_localization</code></li>
 <li>Review: ask first</li>
 </ul>
-<h2 id="7-batch-test">7. Batch Test</h2>
+<h2 id="8-batch-test">8. Batch Test</h2>
 <p>For creative matrices and Hook testing.</p>
 <ul>
 <li>Hold product facts and visual identity fixed</li>
@@ -120,7 +149,7 @@
 <li>Skill: <code>video_agent/batch_variants</code></li>
 <li>Duration: 5 seconds</li>
 </ul>
-<h2 id="8-operations">8. Operations</h2>
+<h2 id="9-operations">9. Operations</h2>
 <ul>
 <li>Every Playbook references an active Skill.</li>
 <li>Defaults stay aligned with composer fields.</li>
