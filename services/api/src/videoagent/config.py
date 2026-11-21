@@ -2,8 +2,17 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field
+from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class ExtraModel(BaseModel):
+    """Operator-supplied model appended to the provider catalogue."""
+
+    provider: str
+    model: str
+    label: str
+    kind: Literal["video", "image"] = "video"
 
 
 class Settings(BaseSettings):
@@ -82,6 +91,8 @@ class Settings(BaseSettings):
     generation_rate_limit_per_minute: int = Field(default=30, ge=1)
     upload_rate_limit_per_minute: int = Field(default=20, ge=1)
     starting_user_credits: int = Field(default=0, ge=0)
+    extra_models: list[ExtraModel] = []
+    disabled_models: list[str] = []
 
     @property
     def is_sqlite(self) -> bool:

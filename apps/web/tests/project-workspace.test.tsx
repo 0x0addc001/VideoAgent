@@ -608,6 +608,9 @@ describe("ProjectWorkspace", () => {
           ),
         );
       }
+      if (url.endsWith("/providers/models")) {
+        return Promise.resolve(Response.json({ items: [] }));
+      }
       throw new Error(`Unexpected request: ${init?.method ?? "GET"} ${url}`);
     });
     vi.stubGlobal("fetch", fetchMock);
@@ -1009,6 +1012,9 @@ describe("ProjectWorkspace", () => {
           }),
         );
       }
+      if (url.endsWith("/providers/models")) {
+        return Promise.resolve(Response.json({ items: [] }));
+      }
       throw new Error(`Unexpected request: ${init?.method ?? "GET"} ${url}`);
     });
     vi.stubGlobal("fetch", fetchMock);
@@ -1119,6 +1125,9 @@ describe("ProjectWorkspace", () => {
             500,
           ),
         );
+      }
+      if (url.endsWith("/providers/models")) {
+        return Promise.resolve(Response.json({ items: [] }));
       }
       throw new Error(`Unexpected request: ${init?.method ?? "GET"} ${url}`);
     });

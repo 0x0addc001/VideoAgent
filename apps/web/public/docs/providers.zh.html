@@ -28,6 +28,7 @@
           <a class="toc-link toc-level-1" href="#videoagent-provider-文档">VideoAgent Provider 文档</a>
 <a class="toc-link toc-level-2" href="#1-总览">1. 总览</a>
 <a class="toc-link toc-level-2" href="#2-选择与解析顺序">2. 选择与解析顺序</a>
+<a class="toc-link toc-level-3" href="#2-1-模型目录与前端选择">2.1 模型目录与前端选择</a>
 <a class="toc-link toc-level-2" href="#3-mock-provider">3. Mock Provider</a>
 <a class="toc-link toc-level-2" href="#4-pippit-provider">4. Pippit Provider</a>
 <a class="toc-link toc-level-2" href="#5-kling-provider">5. Kling Provider</a>
@@ -103,6 +104,14 @@
 <li><code>mock</code> 模式直接返回 Mock Provider，不访问任何外部服务。</li>
 <li><code>auto</code> 模式下，Kling 未连接且允许降级时回退到 Mock，并如实告知用户。</li>
 </ol>
+<h3 id="2-1-模型目录与前端选择">2.1 模型目录与前端选择</h3>
+<p>模型不再写死在前端：<code>GET /api/v1/providers/models</code> 返回统一目录 （<code>provider</code> / <code>model</code> / <code>label</code> / <code>display</code> / <code>kind</code>），工作区的视频与图片选择器在挂载时拉取， 接口不可用时回退到打包时的目录。项目 Brief 里的 <code>Provider/Label</code> 标签也通过同一份目录解析。</p>
+<p>运营可以在不改代码的情况下调整目录：</p>
+<pre><code class="language-env"># 追加模型（JSON 数组，kind 为 video 或 image）
+VIDEOAGENT_EXTRA_MODELS=[{&quot;provider&quot;:&quot;wanx&quot;,&quot;model&quot;:&quot;wan2.2-t2v-plus&quot;,&quot;label&quot;:&quot;Wan 2.2 Plus&quot;}]
+# 隐藏默认模型（按 model id 或 &quot;Provider/Label&quot;）
+VIDEOAGENT_DISABLED_MODELS=[&quot;kling-video-v2_5&quot;]</code></pre>
+<p>静态落地页（GitHub Pages）没有 API，仍使用打包目录作为回退。</p>
 <h2 id="3-mock-provider">3. Mock Provider</h2>
 <p>用于离线开发、单元测试和 Playwright E2E，不产生费用。</p>
 <ul>

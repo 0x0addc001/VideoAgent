@@ -28,6 +28,7 @@
           <a class="toc-link toc-level-1" href="#videoagent-providers">VideoAgent Providers</a>
 <a class="toc-link toc-level-2" href="#1-overview">1. Overview</a>
 <a class="toc-link toc-level-2" href="#2-resolution-order">2. Resolution order</a>
+<a class="toc-link toc-level-3" href="#2-1-model-catalogue-and-ui-selection">2.1 Model catalogue and UI selection</a>
 <a class="toc-link toc-level-2" href="#3-mock-provider">3. Mock provider</a>
 <a class="toc-link toc-level-2" href="#4-pippit-provider">4. Pippit provider</a>
 <a class="toc-link toc-level-2" href="#5-kling-provider">5. Kling provider</a>
@@ -104,6 +105,14 @@
 <li>Under <code>auto</code>, an unconnected Kling falls back to Mock when fallback is allowed, and</li>
 <p>the UI says so.</p>
 </ol>
+<h3 id="2-1-model-catalogue-and-ui-selection">2.1 Model catalogue and UI selection</h3>
+<p>Models are no longer baked into the frontend: <code>GET /api/v1/providers/models</code> returns one catalogue (<code>provider</code>, <code>model</code>, <code>label</code>, <code>display</code>, <code>kind</code>). The workspace video and image pickers load it on mount and fall back to the bundled catalogue when the API is unreachable. <code>Provider/Label</code> tags in a project brief resolve through the same catalogue.</p>
+<p>Operators can change the catalogue without code:</p>
+<pre><code class="language-env"># Append models (JSON array; kind is video or image)
+VIDEOAGENT_EXTRA_MODELS=[{&quot;provider&quot;:&quot;wanx&quot;,&quot;model&quot;:&quot;wan2.2-t2v-plus&quot;,&quot;label&quot;:&quot;Wan 2.2 Plus&quot;}]
+# Hide defaults by model id or &quot;Provider/Label&quot;
+VIDEOAGENT_DISABLED_MODELS=[&quot;kling-video-v2_5&quot;]</code></pre>
+<p>The static GitHub Pages landing site has no API and keeps the bundled catalogue.</p>
 <h2 id="3-mock-provider">3. Mock provider</h2>
 <p>Used for offline development, unit tests and Playwright E2E; it never bills anyone.</p>
 <ul>

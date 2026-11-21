@@ -29,6 +29,23 @@
 4. `mock` 模式直接返回 Mock Provider，不访问任何外部服务。
 5. `auto` 模式下，Kling 未连接且允许降级时回退到 Mock，并如实告知用户。
 
+### 2.1 模型目录与前端选择
+
+模型不再写死在前端：`GET /api/v1/providers/models` 返回统一目录
+（`provider` / `model` / `label` / `display` / `kind`），工作区的视频与图片选择器在挂载时拉取，
+接口不可用时回退到打包时的目录。项目 Brief 里的 `Provider/Label` 标签也通过同一份目录解析。
+
+运营可以在不改代码的情况下调整目录：
+
+```env
+# 追加模型（JSON 数组，kind 为 video 或 image）
+VIDEOAGENT_EXTRA_MODELS=[{"provider":"wanx","model":"wan2.2-t2v-plus","label":"Wan 2.2 Plus"}]
+# 隐藏默认模型（按 model id 或 "Provider/Label"）
+VIDEOAGENT_DISABLED_MODELS=["kling-video-v2_5"]
+```
+
+静态落地页（GitHub Pages）没有 API，仍使用打包目录作为回退。
+
 ## 3. Mock Provider
 
 用于离线开发、单元测试和 Playwright E2E，不产生费用。

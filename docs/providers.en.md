@@ -31,6 +31,24 @@ come from environment variables or `.env`; they never enter the code or the repo
 5. Under `auto`, an unconnected Kling falls back to Mock when fallback is allowed, and
    the UI says so.
 
+### 2.1 Model catalogue and UI selection
+
+Models are no longer baked into the frontend: `GET /api/v1/providers/models` returns one
+catalogue (`provider`, `model`, `label`, `display`, `kind`). The workspace video and image
+pickers load it on mount and fall back to the bundled catalogue when the API is
+unreachable. `Provider/Label` tags in a project brief resolve through the same catalogue.
+
+Operators can change the catalogue without code:
+
+```env
+# Append models (JSON array; kind is video or image)
+VIDEOAGENT_EXTRA_MODELS=[{"provider":"wanx","model":"wan2.2-t2v-plus","label":"Wan 2.2 Plus"}]
+# Hide defaults by model id or "Provider/Label"
+VIDEOAGENT_DISABLED_MODELS=["kling-video-v2_5"]
+```
+
+The static GitHub Pages landing site has no API and keeps the bundled catalogue.
+
 ## 3. Mock provider
 
 Used for offline development, unit tests and Playwright E2E; it never bills anyone.

@@ -2,7 +2,8 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends
 
-from videoagent.api.dependencies import get_current_user, get_video_provider
+from videoagent.api.dependencies import get_current_user, get_settings, get_video_provider
+from videoagent.config import Settings
 from videoagent.errors import AppError
 from videoagent.models import User
 from videoagent.providers.base import VideoProvider
@@ -12,6 +13,7 @@ from videoagent.providers.pippit import (
     PippitNotAuthenticated,
     PippitVideoProvider,
 )
+from videoagent.services.model_catalog import model_catalog
 
 router = APIRouter(prefix="/providers", tags=["providers"])
 
@@ -85,3 +87,11 @@ async def pippit_credits(
         "connected": True,
         "credits": credits,
     }
+
+
+@router.get("/models")
+async def list_models(
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> dict[str, object]:
+    """Public catalogue so the UI can render model choices without hardcoding."""
+    return {"items": [option.as_dict() for option in model_catalog(settings)]}

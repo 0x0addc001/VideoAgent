@@ -269,8 +269,10 @@ Authors cannot create engagement against their own content. The UI exposes
 top-three reward projections; credit settlement remains an audited operating
 action.
 
-The Model selector uses the verified live catalogue: eight Kling video models,
-eight Pippit video models, and two Wanx video models, plus Auto. Options use `Provider/Model` naming
+The Model selector is driven by `GET /providers/models`: eight Kling video models,
+eight Pippit video models, and two Wanx video models, adjustable through
+`VIDEOAGENT_EXTRA_MODELS` and `VIDEOAGENT_DISABLED_MODELS`, with the bundled
+catalogue as the offline fallback. Options use `Provider/Model` naming
 so users can distinguish model families.
 
 The Agents composer includes production playbooks for product ads, creator

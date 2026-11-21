@@ -54,6 +54,7 @@ import {
   FormEvent,
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -326,31 +327,47 @@ type VisualReview = {
 
 const API_BASE_URL = resolveApiBaseUrl();
 const PRODUCTION_SETTINGS_MARKER = /\n+\s*Production settings:/i;
-const VIDEO_MODEL_OPTIONS = landingContent.en.composer.models.filter(
-  (option) => option.id !== "auto",
-);
-const IMAGE_MODEL_OPTIONS = [
-  {
-    id: "kling-image-v3_0",
-    label: "Kling/Kling Image 3.0",
-    provider: "Kling",
-  },
+type ModelChoice = { id: string; label: string; provider: string };
+
+const FALLBACK_VIDEO_MODELS: ModelChoice[] = landingContent.en.composer.models
+  .filter((option) => option.id !== "auto")
+  .map((option) => ({
+    id: option.id,
+    label: option.label,
+    provider: option.provider,
+  }));
+
+const FALLBACK_IMAGE_MODELS: ModelChoice[] = [
+  { id: "kling-image-v3_0", label: "Kling/Kling Image 3.0", provider: "Kling" },
   {
     id: "kling-image-v3_0_omni",
     label: "Kling/Kling Image 3.0 Omni",
     provider: "Kling",
   },
-  {
-    id: "kling-image-o1",
-    label: "Kling/Kling Image O1",
-    provider: "Kling",
-  },
-  {
-    id: "kling-image-v2_1",
-    label: "Kling/Kling Image 2.1",
-    provider: "Kling",
-  },
-] as const;
+  { id: "kling-image-o1", label: "Kling/Kling Image O1", provider: "Kling" },
+  { id: "kling-image-v2_1", label: "Kling/Kling Image 2.1", provider: "Kling" },
+];
+
+type ModelCataloguePayload = {
+  items?: Array<{
+    provider?: unknown;
+    model?: unknown;
+    display?: unknown;
+    kind?: unknown;
+  }>;
+};
+
+function catalogueEntries(payload: ModelCataloguePayload | null, kind: string) {
+  if (!payload?.items) return [] as ModelChoice[];
+  return payload.items.flatMap((item) =>
+    typeof item.provider === "string" &&
+    typeof item.model === "string" &&
+    typeof item.display === "string" &&
+    item.kind === kind
+      ? [{ id: item.model, label: item.display, provider: item.provider }]
+      : [],
+  );
+}
 
 function parseCostEstimate(payload: unknown): CostEstimate {
   if (!payload || typeof payload !== "object") {
@@ -383,18 +400,6 @@ function optionalFetch(
   return Promise.resolve()
     .then(() => fetch(input, init))
     .catch(() => null);
-}
-
-function selectedModelRoute(modelId: string) {
-  if (modelId === "project") return {};
-  const option = [...VIDEO_MODEL_OPTIONS, ...IMAGE_MODEL_OPTIONS].find(
-    (item) => item.id === modelId,
-  );
-  if (!option) return {};
-  return {
-    provider: option.provider.toLowerCase() as "kling" | "pippit" | "wanx",
-    model: option.id,
-  };
 }
 
 function taskTypeForBrief(brief: string): "auto" | "reference" | "edit" | "extend" {
@@ -1861,6 +1866,49 @@ export function ProjectWorkspace({
   const t = useTranslations("workspace");
   const locale = useLocale();
   const [project, setProject] = useState<Project | null>(null);
+  const [modelChoices, setModelChoices] = useState<{
+    video: ModelChoice[];
+    image: ModelChoice[];
+  }>({ video: FALLBACK_VIDEO_MODELS, image: FALLBACK_IMAGE_MODELS });
+
+  const selectedModelRoute = useCallback(
+    (modelId: string) => {
+      if (modelId === "project") return {};
+      const option = [...modelChoices.video, ...modelChoices.image].find(
+        (item) => item.id === modelId,
+      );
+      if (!option) return {};
+      return {
+        provider: option.provider.toLowerCase() as "kling" | "pippit" | "wanx",
+        model: option.id,
+      };
+    },
+    [modelChoices],
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    try {
+      fetch(`${API_BASE_URL}/providers/models`)
+        .then((response) => (response.ok ? response.json() : null))
+        .then((payload: ModelCataloguePayload | null) => {
+          if (cancelled) return;
+          const video = catalogueEntries(payload, "video");
+          const image = catalogueEntries(payload, "image");
+          if (video.length === 0 && image.length === 0) return;
+          setModelChoices((current) => ({
+            video: video.length > 0 ? video : current.video,
+            image: image.length > 0 ? image : current.image,
+          }));
+        })
+        .catch(() => undefined);
+    } catch {
+      // Keep the bundled fallback catalogue when the API is unreachable.
+    }
+    return () => {
+      cancelled = true;
+    };
+  }, []);
   const [storyboard, setStoryboard] = useState<Storyboard | null>(null);
   const [storyboardVersions, setStoryboardVersions] = useState<
     StoryboardVersion[]
@@ -1893,11 +1941,11 @@ export function ProjectWorkspace({
     null,
   );
   const [characterGenerationModel, setCharacterGenerationModel] = useState<string>(
-    IMAGE_MODEL_OPTIONS[0].id,
+    FALLBACK_IMAGE_MODELS[0].id,
   );
   const [sceneDraft, setSceneDraft] = useState<SceneDraft | null>(null);
   const [sceneGenerationModel, setSceneGenerationModel] = useState<string>(
-    IMAGE_MODEL_OPTIONS[0].id,
+    FALLBACK_IMAGE_MODELS[0].id,
   );
   const [sceneEstimate, setSceneEstimate] = useState<CostEstimate | null>(null);
   const [characterEstimate, setCharacterEstimate] = useState<CostEstimate | null>(
@@ -4172,7 +4220,7 @@ export function ProjectWorkspace({
                           setCharacterGenerationModel(value);
                           setCharacterEstimate(null);
                         }}
-                        options={IMAGE_MODEL_OPTIONS}
+                        options={modelChoices.image}
                         value={characterGenerationModel}
                       />
                     </div>
@@ -4364,7 +4412,7 @@ export function ProjectWorkspace({
                           setSceneGenerationModel(value);
                           setSceneEstimate(null);
                         }}
-                        options={IMAGE_MODEL_OPTIONS}
+                        options={modelChoices.image}
                         value={sceneGenerationModel}
                       />
                     </div>
@@ -4550,7 +4598,7 @@ export function ProjectWorkspace({
                           setShotGenerationModel(value);
                           setEstimate(null);
                         }}
-                        options={VIDEO_MODEL_OPTIONS}
+                        options={modelChoices.video}
                         value={shotGenerationModel}
                       />
                       <div className="mt-3 grid gap-3 sm:grid-cols-3">

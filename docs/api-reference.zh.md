@@ -595,6 +595,30 @@ VideoAgent 使用服务端 `@klingai/cli-cn` 连接国内站 `https://klingai.co
 锁定允许使用的国内账号。当前 CLI 用户可通过 `kling who_am_i` 与 `kling account`
 只读核验身份和余额。
 
+## Model Catalogue（模型目录）
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/providers/models` | 公开的视频与图片可选模型目录 |
+
+每项包含 `provider`、`model`、`label`、`display` 与 `kind`（`video` / `image`）。
+目录是工作区选择器与 Brief 中 `Provider/Label` 解析的唯一来源；运营用
+`VIDEOAGENT_EXTRA_MODELS` 追加、用 `VIDEOAGENT_DISABLED_MODELS` 隐藏。
+
+```json
+{
+  "items": [
+    {
+      "provider": "wanx",
+      "model": "wan2.6-t2v",
+      "label": "Wan 2.6",
+      "display": "Wanx/Wan 2.6",
+      "kind": "video"
+    }
+  ]
+}
+```
+
 ## Wanx Provider
 
 Wanx 通过阿里云百炼（DashScope）HTTP 接口接入，不使用本地 CLI。Key 只存在于服务端，

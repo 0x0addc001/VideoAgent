@@ -25,6 +25,7 @@ from videoagent.schemas import GenerationApproval, GenerationJobRead, ModelSelec
 from videoagent.services.credits import refund_credits, reserve_credits
 from videoagent.services.generation_jobs import refresh_generation_job
 from videoagent.services.media import asset_file, materialize_generation_result
+from videoagent.services.model_catalog import resolve_model_id
 from videoagent.services.platform_settings import generation_enabled
 from videoagent.services.provider_resolver import resolve_video_provider
 from videoagent.services.storyboards import load_storyboard, owned_project_or_404
@@ -71,34 +72,6 @@ async def require_vision_objects(
         )
 
 
-KLING_MODEL_ALIASES = {
-    "Kling Video 4.0": "kling-video-v4_0",
-    "Kling Video 4.0 Flash": "kling-video-v4_0_flash",
-    "Kling Video 3.0 Omni": "kling-video-v3_0_omni",
-    "Kling Video 3.0": "kling-video-v3_0",
-    "Kling Video 3.0 Turbo": "kling-video-v3_0_turbo",
-    "Kling Video O1": "kling-video-o1",
-    "Kling Video 2.6": "kling-video-v2_6",
-    "Kling Video 2.5": "kling-video-v2_5",
-}
-PIPPIT_MODEL_ALIASES = {
-    "Seedance 2.5 Draft": "Seedance_2.5_draft",
-    "Seedance 2.5": "Seedance_2.5",
-    "Seedance 2.0 Fast VIP": "seedance2.0_fast_vision",
-    "Seedance 2.0 VIP": "seedance2.0_vision",
-    "Seedance 2.0 Mini Preview": "Seedance_2.0_mini_lite",
-    "Seedance 2.0 Mini": "Seedance_2.0_mini",
-    "Wan 3.0": "wan3.0",
-    "HappyHorse 1.1": "happyhorse-1.1",
-}
-WANX_MODEL_ALIASES = {
-    "Wan 2.6": "wan2.6-t2v",
-    "Wan 2.2 Plus": "wan2.2-t2v-plus",
-    "Wan 3.0 Prime": "wan3.0-video-prime",
-    "Wanx 2.1 Plus": "wanx2.1-t2v-plus",
-}
-
-
 def provider_request(
     shot: Shot,
     *,
@@ -134,12 +107,7 @@ def selected_model(project: Project) -> tuple[str | None, str | None]:
     if match is None:
         return None, None
     provider = match.group(1).lower()
-    label = match.group(2).strip()
-    aliases = {
-        "kling": KLING_MODEL_ALIASES,
-        "pippit": PIPPIT_MODEL_ALIASES,
-    }.get(provider, WANX_MODEL_ALIASES)
-    return provider, aliases.get(label, label)
+    return provider, resolve_model_id(provider, match.group(2))
 
 
 async def provider_for_project(

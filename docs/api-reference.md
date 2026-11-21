@@ -626,6 +626,31 @@ VideoAgent uses the server-owned China-region `@klingai/cli-cn` package and the
 Operators can use `kling who_am_i` and `kling account` for read-only identity
 and credit checks.
 
+## Model Catalogue
+
+| Method | Path | Purpose |
+| --- | --- | --- |
+| `GET` | `/providers/models` | Public list of selectable video and image models |
+
+Each item carries `provider`, `model`, `label`, `display`, and `kind` (`video` or
+`image`). The catalogue is the single source of truth for the workspace pickers and
+for resolving `Provider/Label` brief tags; operators extend it with
+`VIDEOAGENT_EXTRA_MODELS` and hide entries with `VIDEOAGENT_DISABLED_MODELS`.
+
+```json
+{
+  "items": [
+    {
+      "provider": "wanx",
+      "model": "wan2.6-t2v",
+      "label": "Wan 2.6",
+      "display": "Wanx/Wan 2.6",
+      "kind": "video"
+    }
+  ]
+}
+```
+
 ## Wanx Provider
 
 Wanx runs over Alibaba Cloud Model Studio (DashScope) instead of a local CLI. The

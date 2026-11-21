@@ -61,6 +61,7 @@
 <a class="toc-link toc-level-2" href="#administration">Administration</a>
 <a class="toc-link toc-level-2" href="#pippit-provider">Pippit Provider</a>
 <a class="toc-link toc-level-2" href="#kling-provider">Kling Provider</a>
+<a class="toc-link toc-level-2" href="#model-catalogue">Model Catalogue</a>
 <a class="toc-link toc-level-2" href="#wanx-provider">Wanx Provider</a>
 <a class="toc-link toc-level-2" href="#errors">Errors</a>
         </nav>
@@ -681,6 +682,30 @@ file=&lt;image, video, or audio&gt;</code></pre>
 <p>If the server CLI is not logged in, the credits endpoint returns <code>connected: false</code> and <code>credits: null</code>. A missing binary returns <code>503</code>; an upstream CLI failure returns <code>502</code>.</p>
 <h2 id="kling-provider">Kling Provider</h2>
 <p>VideoAgent uses the server-owned China-region <code>@klingai/cli-cn</code> package and the <code>https://klingai.com/mcp</code> endpoint. Kling tokens never reach the browser. <code>VIDEOAGENT_KLING_EXPECTED_USER_ID</code> pins the authorized domestic account. Operators can use <code>kling who_am_i</code> and <code>kling account</code> for read-only identity and credit checks.</p>
+<h2 id="model-catalogue">Model Catalogue</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Method</th>
+<th>Path</th>
+<th>Purpose</th>
+</tr></thead><tbody>
+<tr>
+<td><code>GET</code></td>
+<td><code>/providers/models</code></td>
+<td>Public list of selectable video and image models</td>
+</tr>
+</tbody></table></div>
+<p>Each item carries <code>provider</code>, <code>model</code>, <code>label</code>, <code>display</code>, and <code>kind</code> (<code>video</code> or <code>image</code>). The catalogue is the single source of truth for the workspace pickers and for resolving <code>Provider/Label</code> brief tags; operators extend it with <code>VIDEOAGENT_EXTRA_MODELS</code> and hide entries with <code>VIDEOAGENT_DISABLED_MODELS</code>.</p>
+<pre><code class="language-json">{
+  &quot;items&quot;: [
+    {
+      &quot;provider&quot;: &quot;wanx&quot;,
+      &quot;model&quot;: &quot;wan2.6-t2v&quot;,
+      &quot;label&quot;: &quot;Wan 2.6&quot;,
+      &quot;display&quot;: &quot;Wanx/Wan 2.6&quot;,
+      &quot;kind&quot;: &quot;video&quot;
+    }
+  ]
+}</code></pre>
 <h2 id="wanx-provider">Wanx Provider</h2>
 <p>Wanx runs over Alibaba Cloud Model Studio (DashScope) instead of a local CLI. The server owns the key and clients only see <code>provider: &quot;wanx&quot;</code>.</p>
 <pre><code class="language-env">VIDEOAGENT_VIDEO_PROVIDER=wanx
