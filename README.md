@@ -300,6 +300,22 @@ Restart the API after changing `.env`. If a provider does not support OpenAI
 JSON Schema structured output, VideoAgent falls back to plain chat plus strict
 JSON parsing and Pydantic validation.
 
+### Alibaba Cloud (Model Studio)
+
+The planner and visual review also work against DashScope's OpenAI-compatible
+endpoint, `VIDEOAGENT_VIDEO_PROVIDER=wanx` switches generation to Tongyi Wanx,
+and `VIDEOAGENT_MEDIA_STORAGE=oss` mirrors media into Object Storage Service:
+
+```env
+VIDEOAGENT_LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+VIDEOAGENT_VIDEO_PROVIDER=wanx
+VIDEOAGENT_WANX_API_KEY=sk-your-private-key
+VIDEOAGENT_MEDIA_STORAGE=oss
+```
+
+See [Alibaba Cloud integration](docs/alibaba-cloud.en.md) for the provider,
+storage and deployment mapping.
+
 ## Testing
 
 Backend:
