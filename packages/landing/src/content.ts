@@ -265,6 +265,8 @@ export const landingContent = {
         },
         { id: "wan3.0", label: "Pippit/Wan 3.0", provider: "Pippit" },
         { id: "happyhorse-1.1", label: "Pippit/HappyHorse 1.1", provider: "Pippit" },
+        { id: "wan2.6-t2v", label: "Wanx/Wan 2.6", provider: "Wanx" },
+        { id: "wan3.0-video-prime", label: "Wanx/Wan 3.0 Prime", provider: "Wanx" },
       ] as const satisfies readonly LandingModel[],
       resolutions: ["720p", "1080p"],
       audioOptions: [
@@ -962,6 +964,8 @@ export const landingContent = {
         },
         { id: "wan3.0", label: "Pippit/Wan 3.0", provider: "Pippit" },
         { id: "happyhorse-1.1", label: "Pippit/HappyHorse 1.1", provider: "Pippit" },
+        { id: "wan2.6-t2v", label: "Wanx/Wan 2.6", provider: "Wanx" },
+        { id: "wan3.0-video-prime", label: "Wanx/Wan 3.0 Prime", provider: "Wanx" },
       ] as const satisfies readonly LandingModel[],
       resolutions: ["720p", "1080p"],
       audioOptions: [

@@ -392,7 +392,7 @@ function selectedModelRoute(modelId: string) {
   );
   if (!option) return {};
   return {
-    provider: option.provider.toLowerCase() as "kling" | "pippit",
+    provider: option.provider.toLowerCase() as "kling" | "pippit" | "wanx",
     model: option.id,
   };
 }
