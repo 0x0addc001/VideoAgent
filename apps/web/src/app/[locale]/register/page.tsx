@@ -1,4 +1,5 @@
-import { ArrowLeft } from "lucide-react";
+import { Fragment } from "react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { AuthForm } from "@/components/auth-form";
 import { Link } from "@/i18n/navigation";
@@ -24,14 +25,16 @@ export default async function RegisterPage({
           <p className="max-w-md text-4xl font-medium leading-tight tracking-[-0.04em]">
             {t("registerSubtitle")}
           </p>
-          <div className="mt-10 flex gap-2">
+          <div className="mt-10 flex flex-wrap items-center gap-2">
             {["Brief", "Storyboard", "Review", "Export"].map((item, index) => (
-              <div
-                className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/50"
-                key={item}
-              >
-                {String(index + 1).padStart(2, "0")} {item}
-              </div>
+              <Fragment key={item}>
+                {index > 0 ? (
+                  <ArrowRight aria-hidden className="h-3.5 w-3.5 text-white/25" />
+                ) : null}
+                <span className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs text-white/50">
+                  {item}
+                </span>
+              </Fragment>
             ))}
           </div>
         </div>
