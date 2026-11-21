@@ -1,13 +1,15 @@
-# VideoAgent Operations Strategy
+# VideoAgent Operations and Strategy
 
 | Attribute | Value |
 | --- | --- |
-| Document version | v2.3 |
-| Updated | 2026-11-05 |
-| Scope | Skills, Videos, Assets, providers, support, metrics |
+| Document version | v3.0 |
+| Updated | 2026-11-21 |
+| Scope | Operating model, strategy layers, Playbooks, provider cost, content and Skills, release, monitoring, support, metrics |
 
-System reliability, deployment, monitoring and incidents live in the
-[DevOps runbook](../technical/devops.en.md); this document covers product operations only.
+This document merges the previous Operations Strategy and Strategy Design notes: it
+describes the operating model and strategy layers, the Playbook catalogue, and the
+day-to-day operating process. System reliability, deployment and incidents live in the
+[DevOps runbook](../tech/devops.en.md).
 
 ## 1. Operating Model
 
@@ -18,25 +20,106 @@ VideoAgent operates three content layers:
 2. User-published Skills and Videos entries.
 3. Project outputs stored in Assets.
 
-## 2. Release Readiness
+## 2. Strategy Layers
 
-- Complete authentication and credit-usage acceptance.
-- Verify Pippit CLI authorization and Kling China-region CLI OAuth.
-- Publish PRD, Playbook, Arch, API, Model, Dev, Test, and Ops.
-- Verify English and Chinese Docs switching.
-- Verify project creation, storyboard planning, generation approval, and job
-  polling with the configured provider.
-- Verify upload, generated-result materialization, FFmpeg delivery, download,
-  and share revocation.
-- Verify per-user credit reservation, failure refunds, and Provider-account
-  reconciliation.
-- Run Playwright with the Mock Provider as a no-fee end-to-end release gate.
-- Confirm provider credentials never appear in browser bundles, logs, or API
-  responses.
-- Configure `VIDEOAGENT_ADMIN_EMAILS` and verify at least one administrator can
-  sign in.
+| Layer | Focus | Typical output |
+| --- | --- | --- |
+| Business | Goal, audience, channel, budget | Scenario choice and success metrics |
+| Gameplay | Narrative structure, hooks, interaction, pacing | Playbooks, hook combinations, series plans |
+| Production | Model routing, duration, frame, asset reuse | Cost and quality balance |
+| Review | Compliance, brand safety, release cadence | Review checklist and fallback |
 
-## 3. Official Skill Operations
+A Playbook is one executable template inside the gameplay layer: it fixes the default
+Skill, hook, style, frame, duration and review mode for a known scenario so a creator can
+start in one click. The list below is the current Playbook catalogue; new gameplay can be
+added without changing the layer model itself.
+
+## 3. Playbook Structure
+
+Every Playbook includes:
+
+- Scenario name and target user
+- Business objective and core message
+- Default Skill, Hook, style, frame, duration, and review mode
+- Input requirements and optional references
+- Recommended narrative beats
+- Output and delivery format
+- Credit and model-capability constraints
+- Review and fallback rules
+
+### 3.1 Strategy rules
+
+- Every Playbook references an active Skill.
+- Defaults stay aligned with composer fields.
+- Unsupported model capabilities trigger explicit adjustment or fallback.
+- Version changes update PRD, Arch, and Test.
+
+## 4. Playbook Catalogue
+
+### 4.1 Product Ad
+
+For launches, proof-led creative, and performance ads.
+
+- Hook: proof first
+- Structure: Hook → use case → proof → hero packshot
+- Frame: 9:16
+- Duration: 10 seconds
+- Skill: `video_agent/product_film`
+- Review: ask first
+
+### 4.2 Creator Vlog
+
+For personal stories, lifestyle content, and brand behind-the-scenes.
+
+- Hook: visual atmosphere
+- Structure: context → journey → emotional turn → personal close
+- Frame: 9:16
+- Duration: 10 seconds
+- Skill: `video_agent/creator_vlog`
+- Review: auto
+
+### 4.3 Micro Drama
+
+For short-drama scenes, narrative ads, and social cliffhangers.
+
+- Hook: narrative twist
+- Structure: setup → escalation → cliffhanger or reveal
+- Frame: 9:16
+- Duration: 10 seconds
+- Skill: `video_agent/short_drama`
+- Review: ask first
+
+### 4.4 Music Video
+
+For music promotion, artist visuals, and rhythmic brand content.
+
+- Hook: sound cue
+- Structure: visual motif → performance → rhythmic escalation → return
+- Frame: 16:9
+- Duration: 10 seconds
+- Skill: `video_agent/music_video`
+- Review: ask first
+
+### 4.5 Localize
+
+For adapting existing footage to another market.
+
+- Preserve edit, pacing, and product facts
+- Adapt language, voice, subtitles, and presenter
+- Skill: `video_agent/video_localization`
+- Review: ask first
+
+### 4.6 Batch Test
+
+For creative matrices and Hook testing.
+
+- Hold product facts and visual identity fixed
+- Vary Hook, scene, and expression
+- Produce labeled, comparable variants
+- Skill: `video_agent/batch_variants`
+- Duration: 5 seconds
+
+## 5. Official Skill Operations
 
 - Provider-native capabilities use their provider namespace, such as `kling`;
   cross-provider workflows use `video_agent`.
@@ -48,7 +131,7 @@ VideoAgent operates three content layers:
   fields.
 - External Agent handoff uses an explicit MCP or CLI contract.
 
-### 3.1 Skill and Videos Leaderboards
+### 5.1 Skill and Videos Leaderboards
 
 - Skills use six categories: Generation, Story, Workflow, Post, Review, and
   Utility. Videos uses Vlog, Product, Drama, Music, Localization, and Campaign.
@@ -68,7 +151,7 @@ VideoAgent operates three content layers:
   devices, and publication history, remove confirmed invalid interactions, and
   retain the operating audit trail.
 
-## 4. Asset Operations
+## 6. Asset Operations
 
 - Assets contains only the current user's work.
 - Public and private permissions are explicit.
@@ -79,7 +162,7 @@ VideoAgent operates three content layers:
   by default and can be revoked.
 - Check Asset, share-link, and project references before deleting media.
 
-## 5. Provider and Cost Operations
+## 7. Provider and Cost Operations
 
 - Pippit CLI and Kling China-region CLI are available through the provider boundary.
 - Wanx runs over the Alibaba Cloud Model Studio async API and needs
@@ -97,7 +180,7 @@ VideoAgent operates three content layers:
   protection.
 - Preserve provider task references for reconciliation.
 
-### 5.1 Administration Console
+### 7.1 Administration Console
 
 - Administration URL: `/en/admin`.
 - Keep new-user credits at zero for launch and grant them through user
@@ -110,7 +193,25 @@ VideoAgent operates three content layers:
 - The administrator allowlist is environment-owned and requires an API restart
   after changes.
 
-## 6. Release Procedure
+## 8. Release Readiness
+
+- Complete authentication and credit-usage acceptance.
+- Verify Pippit CLI authorization and Kling China-region CLI OAuth.
+- Publish PRD, Playbook, Arch, API, Model, Dev, Test, and Ops.
+- Verify English and Chinese Docs switching.
+- Verify project creation, storyboard planning, generation approval, and job
+  polling with the configured provider.
+- Verify upload, generated-result materialization, FFmpeg delivery, download,
+  and share revocation.
+- Verify per-user credit reservation, failure refunds, and Provider-account
+  reconciliation.
+- Run Playwright with the Mock Provider as a no-fee end-to-end release gate.
+- Confirm provider credentials never appear in browser bundles, logs, or API
+  responses.
+- Configure `VIDEOAGENT_ADMIN_EMAILS` and verify at least one administrator can
+  sign in.
+
+## 9. Release Procedure
 
 1. Run backend tests, frontend tests, Playwright E2E, type checks, builds, and
    Docs generation.
@@ -119,7 +220,7 @@ VideoAgent operates three content layers:
 4. Validate English and Chinese Docs, search, navigation, and responsive layout.
 5. Record the release commit.
 
-## 7. Monitoring
+## 10. Monitoring
 
 - Registration and login success rate.
 - Project creation success rate.
@@ -132,7 +233,7 @@ VideoAgent operates three content layers:
 - Upload rejection rate, export latency, and share access or revocation counts.
 - Docs search usage and broken document links.
 
-## 8. Support
+## 11. Support
 
 Support triage order:
 
@@ -145,7 +246,7 @@ Support triage order:
 
 Support never asks users for access keys, cookies, or CLI session files.
 
-## 9. Incident Response
+## 12. Incident Response
 
 - Disable billable generation before retrying an uncertain provider incident.
 - Preserve job records and provider task references.
@@ -156,7 +257,7 @@ Support never asks users for access keys, cookies, or CLI session files.
 - For suspicious registration or credit use: pause generation, close
   registration, disable accounts, and inspect jobs plus audit logs.
 
-## 10. Success Metrics
+## 13. Success Metrics
 
 - Activation: first project created within the first session.
 - Creation: successful storyboard within five minutes.

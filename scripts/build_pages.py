@@ -19,11 +19,6 @@ DOCUMENTS = {
         "en": "product/product-requirements.en.md",
         "zh-CN": "product/product-requirements.md",
     },
-    "strategy": {
-        "title": "Strategy",
-        "en": "product/strategy.en.md",
-        "zh-CN": "product/strategy.md",
-    },
     "operations": {
         "title": "Ops",
         "en": "product/operations.en.md",
@@ -31,33 +26,33 @@ DOCUMENTS = {
     },
     "architecture": {
         "title": "Arch",
-        "en": "technical/architecture.en.md",
-        "zh-CN": "technical/architecture.md",
+        "en": "tech/architecture.en.md",
+        "zh-CN": "tech/architecture.md",
     },
     "api-reference": {
         "title": "API",
-        "en": "technical/api-reference.en.md",
-        "zh-CN": "technical/api-reference.md",
+        "en": "tech/api-reference.en.md",
+        "zh-CN": "tech/api-reference.md",
     },
     "models": {
         "title": "Model",
-        "en": "technical/models.en.md",
-        "zh-CN": "technical/models.md",
+        "en": "tech/models.en.md",
+        "zh-CN": "tech/models.md",
     },
     "implementation": {
         "title": "Dev",
-        "en": "technical/implementation.en.md",
-        "zh-CN": "technical/implementation.md",
+        "en": "tech/implementation.en.md",
+        "zh-CN": "tech/implementation.md",
     },
     "test-plan": {
         "title": "Test",
-        "en": "technical/test-plan.en.md",
-        "zh-CN": "technical/test-plan.md",
+        "en": "tech/test-plan.en.md",
+        "zh-CN": "tech/test-plan.md",
     },
     "devops": {
         "title": "DevOps",
-        "en": "technical/devops.en.md",
-        "zh-CN": "technical/devops.md",
+        "en": "tech/devops.en.md",
+        "zh-CN": "tech/devops.md",
     },
 }
 

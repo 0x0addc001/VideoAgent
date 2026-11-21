@@ -25,40 +25,54 @@
         </button>
         <nav class="toc-panel" id="toc-panel" aria-label="目录">
           <p class="toc-kicker">目录</p>
-          <a class="toc-link toc-level-1" href="#videoagent-运营策略">VideoAgent 运营策略</a>
+          <a class="toc-link toc-level-1" href="#videoagent-运营与策略">VideoAgent 运营与策略</a>
 <a class="toc-link toc-level-2" href="#1-运营模型">1. 运营模型</a>
-<a class="toc-link toc-level-2" href="#2-发布准备">2. 发布准备</a>
-<a class="toc-link toc-level-2" href="#3-官方-skill-运营">3. 官方 Skill 运营</a>
-<a class="toc-link toc-level-3" href="#3-1-skill-与-videos-榜单">3.1 Skill 与 Videos 榜单</a>
-<a class="toc-link toc-level-2" href="#4-assets-运营">4. Assets 运营</a>
-<a class="toc-link toc-level-2" href="#5-provider-与成本运营">5. Provider 与成本运营</a>
-<a class="toc-link toc-level-3" href="#5-1-管理后台">5.1 管理后台</a>
-<a class="toc-link toc-level-2" href="#6-发布流程">6. 发布流程</a>
-<a class="toc-link toc-level-2" href="#7-监控指标">7. 监控指标</a>
-<a class="toc-link toc-level-2" href="#8-用户支持">8. 用户支持</a>
-<a class="toc-link toc-level-2" href="#9-故障处理">9. 故障处理</a>
-<a class="toc-link toc-level-2" href="#10-成功指标">10. 成功指标</a>
+<a class="toc-link toc-level-2" href="#2-策略分层">2. 策略分层</a>
+<a class="toc-link toc-level-2" href="#3-playbook-的通用结构">3. Playbook 的通用结构</a>
+<a class="toc-link toc-level-3" href="#3-1-策略运营规则">3.1 策略运营规则</a>
+<a class="toc-link toc-level-2" href="#4-playbook-目录">4. Playbook 目录</a>
+<a class="toc-link toc-level-3" href="#4-1-product-ad">4.1 Product Ad</a>
+<a class="toc-link toc-level-3" href="#4-2-creator-vlog">4.2 Creator Vlog</a>
+<a class="toc-link toc-level-3" href="#4-3-micro-drama">4.3 Micro Drama</a>
+<a class="toc-link toc-level-3" href="#4-4-music-video">4.4 Music Video</a>
+<a class="toc-link toc-level-3" href="#4-5-localize">4.5 Localize</a>
+<a class="toc-link toc-level-3" href="#4-6-batch-test">4.6 Batch Test</a>
+<a class="toc-link toc-level-3" href="#4-7-reference-remake">4.7 Reference Remake</a>
+<a class="toc-link toc-level-3" href="#4-8-keyframe-story">4.8 Keyframe Story</a>
+<a class="toc-link toc-level-3" href="#4-9-product-edit">4.9 Product Edit</a>
+<a class="toc-link toc-level-2" href="#5-模型与能力路由">5. 模型与能力路由</a>
+<a class="toc-link toc-level-2" href="#6-官方-skill-运营">6. 官方 Skill 运营</a>
+<a class="toc-link toc-level-3" href="#6-1-skill-与-videos-榜单">6.1 Skill 与 Videos 榜单</a>
+<a class="toc-link toc-level-2" href="#7-assets-运营">7. Assets 运营</a>
+<a class="toc-link toc-level-2" href="#8-provider-与成本运营">8. Provider 与成本运营</a>
+<a class="toc-link toc-level-3" href="#8-1-管理后台">8.1 管理后台</a>
+<a class="toc-link toc-level-2" href="#9-发布准备">9. 发布准备</a>
+<a class="toc-link toc-level-2" href="#10-发布流程">10. 发布流程</a>
+<a class="toc-link toc-level-2" href="#11-监控指标">11. 监控指标</a>
+<a class="toc-link toc-level-2" href="#12-用户支持">12. 用户支持</a>
+<a class="toc-link toc-level-2" href="#13-故障处理">13. 故障处理</a>
+<a class="toc-link toc-level-2" href="#14-成功指标">14. 成功指标</a>
         </nav>
       </aside>
-      <article class="document"><h1 id="videoagent-运营策略">VideoAgent 运营策略</h1>
+      <article class="document"><h1 id="videoagent-运营与策略">VideoAgent 运营与策略</h1>
 <div class="table-wrap"><table><thead><tr>
 <th>属性</th>
 <th>内容</th>
 </tr></thead><tbody>
 <tr>
 <td>文档版本</td>
-<td>v2.3</td>
+<td>v3.0</td>
 </tr>
 <tr>
 <td>更新日期</td>
-<td>2026-11-05</td>
+<td>2026-11-21</td>
 </tr>
 <tr>
 <td>范围</td>
-<td>Skills、Videos、Assets、Provider、支持、指标</td>
+<td>运营模型、策略分层、Playbook、Provider 成本、内容与 Skill、发布、监控、支持、指标</td>
 </tr>
 </tbody></table></div>
-<p>系统可靠性、部署、监控与故障处理见 <a href="../technical/devops.html">运维手册</a>；本文件只覆盖产品层面的运营。</p>
+<p>本文件合并了原「运营策略」与「策略设计」两份文档：先说明运营模型与策略体系，再给出 Playbook 目录，最后是日常运营流程。系统可靠性、部署与故障处理见 <a href="../tech/devops.html">运维手册</a>。</p>
 <h2 id="1-运营模型">1. 运营模型</h2>
 <p>VideoAgent 按三层内容运营：</p>
 <ol>
@@ -67,20 +81,154 @@
 <li>用户发布的 Skill 与 Videos 作品。</li>
 <li>项目产出的 Assets 成品与半成品。</li>
 </ol>
-<h2 id="2-发布准备">2. 发布准备</h2>
+<h2 id="2-策略分层">2. 策略分层</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>层次</th>
+<th>关注点</th>
+<th>典型产出</th>
+</tr></thead><tbody>
+<tr>
+<td>业务策略</td>
+<td>目标、受众、渠道、预算</td>
+<td>场景选择与成功指标</td>
+</tr>
+<tr>
+<td>玩法策略</td>
+<td>叙事结构、Hook、互动与节奏</td>
+<td>Playbook、Hook 组合、系列企划</td>
+</tr>
+<tr>
+<td>制作策略</td>
+<td>模型路由、时长、画幅、素材复用</td>
+<td>成本与质量平衡</td>
+</tr>
+<tr>
+<td>审核策略</td>
+<td>合规、品牌安全、发布节奏</td>
+<td>审核清单与降级方案</td>
+</tr>
+</tbody></table></div>
+<p>Playbook 是玩法策略中的一种可执行模板：把某一类玩法固化为默认 Skill、Hook、风格、 画幅、时长和审核模式，让创作者一键进入。下面的 Playbook 清单是策略库的当前实现， 新增玩法可以继续扩展，而不必改动分层本身。</p>
+<h2 id="3-playbook-的通用结构">3. Playbook 的通用结构</h2>
+<p>每个策略包含：</p>
 <ul>
-<li>完成认证和积分消耗验收。</li>
-<li>确认 Pippit CLI 授权与 Kling 国内版 CLI OAuth。</li>
-<li>发布 PRD、策略、Arch、API、Model、Dev、Test、Ops 八份文档。</li>
-<li>验证中英文文档切换。</li>
-<li>验证项目创建、故事板规划、生成审批和任务轮询。</li>
-<li>验证上传、生成结果落地、FFmpeg 合成、下载与分享撤销。</li>
-<li>验证用户积分预扣、失败退款和 Provider 账户对账。</li>
-<li>执行 Playwright + Mock Provider 无费用 E2E。</li>
-<li>确认浏览器包、日志和 API 响应中不存在 Provider 凭据。</li>
-<li>配置 <code>VIDEOAGENT_ADMIN_EMAILS</code> 并确认至少一个管理员账号可登录。</li>
+<li>场景名称与目标用户</li>
+<li>业务目标与核心信息</li>
+<li>默认 Skill、Hook、风格、画幅、时长和审核模式</li>
+<li>输入要求与可选参考素材</li>
+<li>推荐叙事节拍</li>
+<li>输出与交付形式</li>
+<li>积分和模型能力约束</li>
+<li>审核标准与降级策略</li>
 </ul>
-<h2 id="3-官方-skill-运营">3. 官方 Skill 运营</h2>
+<h3 id="3-1-策略运营规则">3.1 策略运营规则</h3>
+<ul>
+<li>策略必须引用有效 Skill。</li>
+<li>默认参数必须与创作框字段一致。</li>
+<li>模型能力不足时先降级或要求用户调整，不静默切换。</li>
+<li>版本变化需要同步 PRD、Arch 和 Test。</li>
+</ul>
+<h2 id="4-playbook-目录">4. Playbook 目录</h2>
+<h3 id="4-1-product-ad">4.1 Product Ad</h3>
+<p>适用于新品发布、卖点验证和效果广告。</p>
+<p>默认编排：</p>
+<ul>
+<li>Hook：效果实证</li>
+<li>结构：Hook → 使用场景 → 价值证明 → 产品主视觉</li>
+<li>画幅：9:16</li>
+<li>时长：10 秒</li>
+<li>Skill：<code>video_agent/product_film</code></li>
+<li>审核：生成前确认</li>
+</ul>
+<h3 id="4-2-creator-vlog">4.2 Creator Vlog</h3>
+<p>适用于个人叙事、生活方式和品牌幕后内容。</p>
+<p>默认编排：</p>
+<ul>
+<li>Hook：视觉氛围</li>
+<li>结构：进入情境 → 日常推进 → 情绪转折 → 个人收束</li>
+<li>画幅：9:16</li>
+<li>时长：10 秒</li>
+<li>Skill：<code>video_agent/creator_vlog</code></li>
+<li>审核：自动</li>
+</ul>
+<h3 id="4-3-micro-drama">4.3 Micro Drama</h3>
+<p>适用于短剧片段、剧情广告和社交平台悬念内容。</p>
+<p>默认编排：</p>
+<ul>
+<li>Hook：叙事反转</li>
+<li>结构：建立人物 → 激化冲突 → 悬念或反转</li>
+<li>画幅：9:16</li>
+<li>时长：10 秒</li>
+<li>Skill：<code>video_agent/short_drama</code></li>
+<li>审核：生成前确认</li>
+</ul>
+<h3 id="4-4-music-video">4.4 Music Video</h3>
+<p>适用于音乐宣发、艺人视觉和节奏型品牌内容。</p>
+<p>默认编排：</p>
+<ul>
+<li>Hook：声音开场</li>
+<li>结构：视觉母题 → 表演 → 节奏升级 → 回到母题</li>
+<li>画幅：16:9</li>
+<li>时长：10 秒</li>
+<li>Skill：<code>video_agent/music_video</code></li>
+<li>审核：生成前确认</li>
+</ul>
+<h3 id="4-5-localize">4.5 Localize</h3>
+<p>适用于已有成片的跨市场改编。</p>
+<p>默认编排：</p>
+<ul>
+<li>保留原剪辑、节奏和产品事实</li>
+<li>适配语言、声音、字幕和人物形象</li>
+<li>Skill：<code>video_agent/video_localization</code></li>
+<li>审核：生成前确认</li>
+</ul>
+<h3 id="4-6-batch-test">4.6 Batch Test</h3>
+<p>适用于广告素材矩阵和 Hook 测试。</p>
+<p>默认编排：</p>
+<ul>
+<li>固定产品事实和视觉识别</li>
+<li>变化 Hook、场景和表达方式</li>
+<li>生成带标签的可比较版本</li>
+<li>Skill：<code>video_agent/batch_variants</code></li>
+<li>时长：5 秒</li>
+</ul>
+<h3 id="4-7-reference-remake">4.7 Reference Remake</h3>
+<p>适用于爆款复刻、竞品视觉拆解和跨品类迁移。</p>
+<ul>
+<li>分析参考视频的叙事节奏、镜头顺序、动作与运镜</li>
+<li>锁定可替换项：产品、人物、场景、服装和品牌信息</li>
+<li>复用节奏与构图，但不复制受保护的角色、商标或独特表达</li>
+<li>先产出一页镜头对照，再逐镜生成</li>
+<li>Skill：<code>video_agent/reference_remake</code></li>
+</ul>
+<h3 id="4-8-keyframe-story">4.8 Keyframe Story</h3>
+<p>适用于最多 30 秒的连续叙事、复杂动作与多节点转场。</p>
+<ul>
+<li>先确定 3 至 5 个关键画面，记录人物状态、场景变化和情节节点</li>
+<li>保持人物身份、空间方向、道具和光线连续</li>
+<li>用运镜连接关键帧，减少无意义硬切</li>
+<li>支持 21:9、16:9、9:16 与 1:1</li>
+<li>文生视频参考规划；已有参考图时自动切换图生视频</li>
+<li>Skill：<code>video_agent/camera_movement</code></li>
+</ul>
+<h3 id="4-9-product-edit">4.9 Product Edit</h3>
+<p>适用于已有产品素材的二次创作与商业版本改写。</p>
+<ul>
+<li>保留产品身份、动作连续性和核心信息</li>
+<li>可替换环境、光线、天气、材质、景别与视角</li>
+<li>结合图片参考锁定产品外观，结合视频参考保持动作</li>
+<li>每次只改变一组明确变量，便于比较和审核</li>
+<li>Skill：<code>video_agent/video_edit</code></li>
+</ul>
+<h2 id="5-模型与能力路由">5. 模型与能力路由</h2>
+<ul>
+<li>同一 Skill 有多个 Provider 时，按输入模态、时长、画幅、音频、语言、质量与积分整理候选。</li>
+<li>多个模型都可用时，保留项目默认预选并展示全部 <code>服务商/模型</code>，由用户通过估算或生成确认。</li>
+<li>Character 与 Scene 使用图片模型选择；Shot 使用视频模型选择。</li>
+<li>文生视频与图生视频都有机会在执行前覆盖项目默认模型。</li>
+<li>已计费任务不会在用户不知情时静默切换 Provider。</li>
+</ul>
+<h2 id="6-官方-skill-运营">6. 官方 Skill 运营</h2>
 <ul>
 <li>原厂商能力使用厂商 user_id（如 <code>kling</code>）；跨 Provider 工作流使用 <code>video_agent</code>。</li>
 <li>Skill ID 稳定、小写，并使用下划线分隔。</li>
@@ -90,7 +238,7 @@
 <li>场景策略引用有效 Skill，并与创作框字段保持一致。</li>
 <li>外部 Agent 接力使用明确的 MCP 或 CLI 契约。</li>
 </ul>
-<h3 id="3-1-skill-与-videos-榜单">3.1 Skill 与 Videos 榜单</h3>
+<h3 id="6-1-skill-与-videos-榜单">6.1 Skill 与 Videos 榜单</h3>
 <ul>
 <li>Skills 固定使用六个分类：生成、叙事、工作流、后期、评估、工具；Videos 固定使用</li>
 <p>Vlog、产品、短剧、音乐、本地化、营销。</p>
@@ -106,7 +254,7 @@
 <li>发现刷榜时先冻结当期结算，再结合用户、互动时间、设备与发布记录复核；确认违规</li>
 <p>后移除互动并记录运营审计。</p>
 </ul>
-<h2 id="4-assets-运营">4. Assets 运营</h2>
+<h2 id="7-assets-运营">7. Assets 运营</h2>
 <ul>
 <li>Assets 只展示当前用户自己的作品。</li>
 <li>每项明确 private 或 public。</li>
@@ -116,7 +264,7 @@
 <li>上传和导出资产按用户隔离；分享链接默认限时 24 小时，支持主动撤销。</li>
 <li>清理媒体前先检查 Asset、分享链接和项目引用，避免不可恢复的断链。</li>
 </ul>
-<h2 id="5-provider-与成本运营">5. Provider 与成本运营</h2>
+<h2 id="8-provider-与成本运营">8. Provider 与成本运营</h2>
 <ul>
 <li>Pippit CLI 与 Kling 国内版 CLI 通过统一 Provider 边界提供能力。</li>
 <li>Wanx 通过阿里云百炼 DashScope 异步接口提供视频生成，需要 <code>VIDEOAGENT_WANX_API_KEY</code>，且 Key、Endpoint 与模型同地域。</li>
@@ -129,7 +277,7 @@
 <li>监控 Provider 错误率、超时率、不确定提交和重复提交拦截。</li>
 <li>保留 Provider Task Reference 以支持对账。</li>
 </ul>
-<h3 id="5-1-管理后台">5.1 管理后台</h3>
+<h3 id="8-1-管理后台">8.1 管理后台</h3>
 <ul>
 <li>管理入口：<code>/en/admin</code>。</li>
 <li>上线前将新用户初始积分设为 <code>0</code>，通过用户管理逐个发放。</li>
@@ -139,7 +287,20 @@
 <li>所有账号、积分、邀请和设置变更均记录在管理审计日志中。</li>
 <li>管理员白名单保存在环境变量，变更后需要重启 API 服务。</li>
 </ul>
-<h2 id="6-发布流程">6. 发布流程</h2>
+<h2 id="9-发布准备">9. 发布准备</h2>
+<ul>
+<li>完成认证和积分消耗验收。</li>
+<li>确认 Pippit CLI 授权与 Kling 国内版 CLI OAuth。</li>
+<li>发布 PRD、策略、Arch、API、Model、Dev、Test、Ops 八份文档。</li>
+<li>验证中英文文档切换。</li>
+<li>验证项目创建、故事板规划、生成审批和任务轮询。</li>
+<li>验证上传、生成结果落地、FFmpeg 合成、下载与分享撤销。</li>
+<li>验证用户积分预扣、失败退款和 Provider 账户对账。</li>
+<li>执行 Playwright + Mock Provider 无费用 E2E。</li>
+<li>确认浏览器包、日志和 API 响应中不存在 Provider 凭据。</li>
+<li>配置 <code>VIDEOAGENT_ADMIN_EMAILS</code> 并确认至少一个管理员账号可登录。</li>
+</ul>
+<h2 id="10-发布流程">10. 发布流程</h2>
 <ol>
 <li>运行后端测试、前端测试、Playwright E2E、类型检查、构建和文档生成。</li>
 <li>检查敏感信息和依赖安全扫描。</li>
@@ -147,7 +308,7 @@
 <li>验证中英文 Docs、搜索、导航和响应式布局。</li>
 <li>记录发布 Commit。</li>
 </ol>
-<h2 id="7-监控指标">7. 监控指标</h2>
+<h2 id="11-监控指标">11. 监控指标</h2>
 <ul>
 <li>注册和登录成功率。</li>
 <li>项目创建成功率。</li>
@@ -160,7 +321,7 @@
 <li>上传拒绝率、导出耗时、分享链接访问与撤销次数。</li>
 <li>文档搜索使用量和失效链接。</li>
 </ul>
-<h2 id="8-用户支持">8. 用户支持</h2>
+<h2 id="12-用户支持">12. 用户支持</h2>
 <p>问题优先级：</p>
 <ol>
 <li>登录和 Session 异常。</li>
@@ -171,7 +332,7 @@
 <li>视觉与文案问题。</li>
 </ol>
 <p>不得要求用户提供 Access Key、Cookie 或 CLI 登录文件。</p>
-<h2 id="9-故障处理">9. 故障处理</h2>
+<h2 id="13-故障处理">13. 故障处理</h2>
 <ul>
 <li>Provider 状态不确定时先停止计费生成，再排查。</li>
 <li>保留任务记录和 Provider Task ID。</li>
@@ -181,7 +342,7 @@
 <li>分享 Token 泄露时立即撤销链接，并检查异常访问计数。</li>
 <li>发现异常注册或积分消耗时：暂停生成 → 关闭注册 → 停用账号 → 检查审计与任务。</li>
 </ul>
-<h2 id="10-成功指标">10. 成功指标</h2>
+<h2 id="14-成功指标">14. 成功指标</h2>
 <ul>
 <li>激活：首次会话内完成项目创建。</li>
 <li>创作：五分钟内生成故事板。</li>

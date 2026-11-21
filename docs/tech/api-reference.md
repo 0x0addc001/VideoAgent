@@ -635,7 +635,7 @@ VIDEOAGENT_WANX_MODEL=wan2.6-t2v
 `WanxNotConfigured` 明确失败。任务轮询把 DashScope 的 `PENDING`/`RUNNING` 映射为
 `running`，`SUCCEEDED` 映射为 `succeeded`，`FAILED`/`CANCELED`/`UNKNOWN` 映射为
 `failed`；结果链接 24 小时后失效，服务会立即下载转存。完整 Provider 说明见
-[docs/technical/models.md](models.md)。
+[docs/tech/models.md](models.md)。
 
 ## 错误格式
 

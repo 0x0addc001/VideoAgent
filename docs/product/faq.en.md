@@ -640,5 +640,5 @@ overrides it. Moving to Wanx only needs `VIDEOAGENT_VIDEO_PROVIDER=wanx` and
 `VIDEOAGENT_WANX_API_KEY` — no code change. LLM switching works the same way through
 `VIDEOAGENT_LLM_BASE_URL` and the model name. Media storage is controlled by
 `VIDEOAGENT_MEDIA_STORAGE`: `local` is the default, while `oss` requires
-`uv sync --extra oss` plus endpoint, bucket and AK/SK. See `docs/technical/models.md` for
+`uv sync --extra oss` plus endpoint, bucket and AK/SK. See `docs/tech/models.md` for
 the full list.

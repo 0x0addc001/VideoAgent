@@ -328,14 +328,13 @@ describe("LandingPage", () => {
     expect(
       container.querySelector('button[aria-label="Expand document list"]'),
     ).toBeInTheDocument();
-    expect(container.querySelectorAll(".docs-tab-icon")).toHaveLength(9);
+    expect(container.querySelectorAll(".docs-tab-icon")).toHaveLength(8);
     expect(
       [...container.querySelectorAll('.docs-tabs button[role="tab"]')].map((button) =>
         button.textContent?.trim(),
       ),
     ).toEqual([
       "Product",
-      "Strategy",
       "Ops",
       "Arch",
       "API",
@@ -348,23 +347,23 @@ describe("LandingPage", () => {
       [...container.querySelectorAll(".docs-group-toggle")].map((label) =>
         label.textContent?.trim(),
       ),
-    ).toEqual(["Product", "Technical"]);
+    ).toEqual(["Product", "Tech"]);
     fireEvent.click(
       [...container.querySelectorAll(".docs-group-toggle")].find(
-        (button) => button.textContent?.trim() === "Technical",
+        (button) => button.textContent?.trim() === "Tech",
       )!,
     );
     expect(
       container.querySelectorAll('.docs-tabs button[role="tab"]'),
-    ).toHaveLength(3);
+    ).toHaveLength(2);
     expect(
       [...container.querySelectorAll(".docs-group-toggle")].find(
-        (button) => button.textContent?.trim() === "Technical",
+        (button) => button.textContent?.trim() === "Tech",
       ),
     ).toHaveAttribute("aria-expanded", "false");
     fireEvent.click(
       [...container.querySelectorAll(".docs-group-toggle")].find(
-        (button) => button.textContent?.trim() === "Technical",
+        (button) => button.textContent?.trim() === "Tech",
       )!,
     );
     fireEvent.click(
@@ -392,7 +391,7 @@ describe("LandingPage", () => {
       [...container.querySelectorAll('.docs-tabs button[role="tab"]')].map((button) =>
         button.textContent?.trim(),
       ),
-    ).toEqual(["产品", "策略", "运营", "架构", "接口", "模型", "开发", "测试", "运维"]);
+    ).toEqual(["产品", "运营", "架构", "接口", "模型", "开发", "测试", "运维"]);
     expect(
       [...container.querySelectorAll(".docs-group-toggle")].map((label) =>
         label.textContent?.trim(),
@@ -413,12 +412,12 @@ describe("LandingPage", () => {
     );
     fireEvent.click(
       [...container.querySelectorAll('#docs .docs-tabs button[role="tab"]')].find(
-        (button) => button.textContent?.trim() === "Strategy",
+        (button) => button.textContent?.trim() === "Ops",
       )!,
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/strategy.html?v=34",
+      "/docs/operations.html?v=34",
     );
 
     fireEvent.click(

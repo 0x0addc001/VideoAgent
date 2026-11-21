@@ -571,4 +571,4 @@ Provider 状态。Redis 恢复后再根据持久化任务做补偿，而不是�
 `VIDEOAGENT_VIDEO_PROVIDER=wanx` 与 `VIDEOAGENT_WANX_API_KEY`，无需改代码；切换 LLM 同理，
 改 `VIDEOAGENT_LLM_BASE_URL` 与模型名即可。媒体存储由 `VIDEOAGENT_MEDIA_STORAGE` 控制：
 `local` 是默认值，`oss` 需要先 `uv sync --extra oss` 并配置 Endpoint、Bucket、AK/SK。
-完整清单见 `docs/technical/models.md`。
+完整清单见 `docs/tech/models.md`。

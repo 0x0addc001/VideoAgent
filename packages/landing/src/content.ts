@@ -710,11 +710,10 @@ export const landingContent = {
     },
     documentGroups: [
       { id: "product", label: "Product", labelZh: "产品" },
-      { id: "technical", label: "Technical", labelZh: "技术" },
+      { id: "technical", label: "Tech", labelZh: "技术" },
     ],
     documents: [
       { path: "product-requirements.html", label: "Product", labelZh: "产品", group: "product" },
-      { path: "strategy.html", label: "Strategy", labelZh: "策略", group: "product" },
       { path: "operations.html", label: "Ops", labelZh: "运营", group: "product" },
       { path: "architecture.html", label: "Arch", labelZh: "架构", group: "technical" },
       { path: "api-reference.html", label: "API", labelZh: "接口", group: "technical" },
@@ -1408,11 +1407,10 @@ export const landingContent = {
     },
     documentGroups: [
       { id: "product", label: "Product", labelZh: "产品" },
-      { id: "technical", label: "Technical", labelZh: "技术" },
+      { id: "technical", label: "Tech", labelZh: "技术" },
     ],
     documents: [
       { path: "product-requirements.html", label: "Product", labelZh: "产品", group: "product" },
-      { path: "strategy.html", label: "Strategy", labelZh: "策略", group: "product" },
       { path: "operations.html", label: "Ops", labelZh: "运营", group: "product" },
       { path: "architecture.html", label: "Arch", labelZh: "架构", group: "technical" },
       { path: "api-reference.html", label: "API", labelZh: "接口", group: "technical" },
