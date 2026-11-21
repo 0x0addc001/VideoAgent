@@ -477,7 +477,7 @@ class VisualReviewModelList(BaseModel):
     items: list[VisualReviewModelRead]
 
 
-GenerationProvider = Literal["kling", "pippit"]
+GenerationProvider = Literal["kling", "pippit", "wanx"]
 
 
 class ModelSelection(BaseModel):

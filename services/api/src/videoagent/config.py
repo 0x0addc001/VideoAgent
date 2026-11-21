@@ -43,6 +43,11 @@ class Settings(BaseSettings):
     pippit_video_model: str | None = None
     pippit_video_resolution: str | None = None
     pippit_timeout_seconds: int = Field(default=180, ge=10, le=1800)
+    wanx_api_key: str | None = None
+    wanx_base_url: str = "https://dashscope.aliyuncs.com"
+    wanx_model: str = "wan2.6-t2v"
+    wanx_resolution: str | None = None
+    wanx_timeout_seconds: int = Field(default=300, ge=10, le=1800)
     kling_backend: str = "cli"
     kling_cli_command: str = "kling"
     kling_cli_timeout_seconds: int = Field(default=180, ge=10, le=1800)

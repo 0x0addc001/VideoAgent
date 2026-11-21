@@ -9,6 +9,7 @@ from videoagent.providers.kling_cli import KlingCLIVideoProvider
 from videoagent.providers.mcp_client import StreamableHTTPToolClient
 from videoagent.providers.mock import MockVideoProvider
 from videoagent.providers.oauth import KlingOAuthGateway
+from videoagent.providers.wanx import WanxVideoProvider
 from videoagent.services.provider_credentials import resolve_kling_access_token
 
 
@@ -24,6 +25,15 @@ async def resolve_video_provider(
     mode = settings.video_provider.lower()
     if mode == "mock":
         return MockVideoProvider()
+
+    if mode in {"wanx", "dashscope"}:
+        return WanxVideoProvider(
+            api_key=settings.wanx_api_key,
+            base_url=settings.wanx_base_url,
+            model=settings.wanx_model,
+            resolution=settings.wanx_resolution,
+            timeout_seconds=settings.wanx_timeout_seconds,
+        )
 
     if settings.kling_backend.lower() == "cli":
         return KlingCLIVideoProvider(

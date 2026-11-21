@@ -20,6 +20,7 @@ from videoagent.models import Asset, GenerationJob, Project, Shot, Storyboard, U
 from videoagent.providers.base import CostEstimate, GenerationRequest, VideoProvider
 from videoagent.providers.oauth import KlingOAuthGateway
 from videoagent.providers.pippit import PippitVideoProvider
+from videoagent.providers.wanx import WanxVideoProvider
 from videoagent.schemas import GenerationApproval, GenerationJobRead, ModelSelection
 from videoagent.services.credits import refund_credits, reserve_credits
 from videoagent.services.generation_jobs import refresh_generation_job
@@ -90,6 +91,12 @@ PIPPIT_MODEL_ALIASES = {
     "Wan 3.0": "wan3.0",
     "HappyHorse 1.1": "happyhorse-1.1",
 }
+WANX_MODEL_ALIASES = {
+    "Wan 2.6": "wan2.6-t2v",
+    "Wan 2.2 Plus": "wan2.2-t2v-plus",
+    "Wan 3.0 Prime": "wan3.0-video-prime",
+    "Wanx 2.1 Plus": "wanx2.1-t2v-plus",
+}
 
 
 def provider_request(
@@ -123,12 +130,15 @@ def provider_request(
 
 
 def selected_model(project: Project) -> tuple[str | None, str | None]:
-    match = re.search(r"(?:^|·\s*)(Kling|Pippit)/([^·\n]+)", project.brief)
+    match = re.search(r"(?:^|·\s*)(Kling|Pippit|Wanx)/([^·\n]+)", project.brief)
     if match is None:
         return None, None
     provider = match.group(1).lower()
     label = match.group(2).strip()
-    aliases = KLING_MODEL_ALIASES if provider == "kling" else PIPPIT_MODEL_ALIASES
+    aliases = {
+        "kling": KLING_MODEL_ALIASES,
+        "pippit": PIPPIT_MODEL_ALIASES,
+    }.get(provider, WANX_MODEL_ALIASES)
     return provider, aliases.get(label, label)
 
 
@@ -159,6 +169,19 @@ async def provider_for_project(
                     resolution=settings.pippit_video_resolution,
                     access_key=settings.pippit_access_key,
                     timeout_seconds=settings.pippit_timeout_seconds,
+                ),
+                model,
+            )
+        return default_provider, model
+    if provider_name == "wanx":
+        if default_provider.name != "wanx":
+            return (
+                WanxVideoProvider(
+                    api_key=settings.wanx_api_key,
+                    base_url=settings.wanx_base_url,
+                    model=settings.wanx_model,
+                    resolution=settings.wanx_resolution,
+                    timeout_seconds=settings.wanx_timeout_seconds,
                 ),
                 model,
             )
@@ -440,6 +463,14 @@ async def get_job(
             settings=settings,
             gateway=gateway,
             allow_mock=False,
+        )
+    elif job.provider == "wanx" and provider.name != "wanx":
+        selected_provider = WanxVideoProvider(
+            api_key=settings.wanx_api_key,
+            base_url=settings.wanx_base_url,
+            model=settings.wanx_model,
+            resolution=settings.wanx_resolution,
+            timeout_seconds=settings.wanx_timeout_seconds,
         )
     else:
         selected_provider = provider
