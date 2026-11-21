@@ -79,6 +79,10 @@ VideoAgent operates three content layers:
 ## 5. Provider and Cost Operations
 
 - Pippit CLI and Kling China-region CLI are available through the provider boundary.
+- Wanx runs over the Alibaba Cloud Model Studio async API and needs
+  `VIDEOAGENT_WANX_API_KEY`; key, endpoint and model must share a region.
+- Media defaults to local storage; enabling OSS requires `uv sync --extra oss`
+  on the API host plus bucket and AK/SK configuration.
 - Billable generation requires explicit user approval.
 - Provider submission uses database idempotency keys.
 - Credits and provider status are read server-side.

@@ -6,9 +6,9 @@
 | 更新日期 | 2026-11-06 |
 | 后端框架 | Python + FastAPI |
 | 前端框架 | Next.js + TypeScript |
-| 模型 | Pippit/Seedance 2.5 Draft、Pippit/Seedance 2.5、Pippit/Seedance 2.0 Fast VIP、Pippit/Seedance 2.0 VIP、Pippit/Seedance 2.0 Mini 体验版、Pippit/Seedance 2.0 Mini、Pippit/Wan 3.0、Pippit/HappyHorse 1.1、Kling/Kling Video 2.5、Kling/Kling Video 2.6、Kling/Kling Video O1、Kling/Kling Video 3.0、Kling/Kling Video 3.0 Omni、Kling/Kling Video 3.0 Turbo、Kling/Kling Video 4.0、Kling/Kling Video 4.0 Flash、Kling/Kling 2.6 Motion Control、Kling/Kling 3.0 Motion Control、Kling/Kling Image 3.0 Omni、Kling/Kling Image O1、Kling/Kling Image 3.0、Kling/Kling Image 2.1 |
+| 模型 | Pippit/Seedance 2.5 Draft、Pippit/Seedance 2.5、Pippit/Seedance 2.0 Fast VIP、Pippit/Seedance 2.0 VIP、Pippit/Seedance 2.0 Mini 体验版、Pippit/Seedance 2.0 Mini、Pippit/Wan 3.0、Pippit/HappyHorse 1.1、Kling/Kling Video 2.5、Kling/Kling Video 2.6、Kling/Kling Video O1、Kling/Kling Video 3.0、Kling/Kling Video 3.0 Omni、Kling/Kling Video 3.0 Turbo、Kling/Kling Video 4.0、Kling/Kling Video 4.0 Flash、Kling/Kling 2.6 Motion Control、Kling/Kling 3.0 Motion Control、Kling/Kling Image 3.0 Omni、Kling/Kling Image O1、Kling/Kling Image 3.0、Kling/Kling Image 2.1、Wanx/Wan 2.6、Wanx/Wan 3.0 Prime |
 
-VideoAgent 通过统一 Provider 边界集成 Pippit CLI 与 Kling 国内版 CLI。Pippit 提供视频提交、任务查询和积分能力，Kling CLI 通过国内站 MCP 提供文本生成视频、任务查询、动作控制和多模态参考能力。
+VideoAgent 通过统一 Provider 边界集成 Pippit CLI 与 Kling 国内版 CLI。Pippit 提供视频提交、任务查询和积分能力，Kling CLI 通过国内站 MCP 提供文本生成视频、任务查询、动作控制和多模态参考能力。Wanx 通过阿里云百炼（DashScope）HTTP 接口提供异步视频生成。
 
 ## 1. 文档目的
 
@@ -34,7 +34,7 @@ VideoAgent 是一个面向内容创作者、营销人员和普通用户的 AI �
 
 - 首页采用左侧导航、连续视频背景、居中创作框、场景策略、Hook 控制和自定义透明下拉控件。
 - 创作输入框随内容行数自动向下增高；示例灵感仅在输入为空时显示，策略保持可切换。
-- 模型选择器使用实时核验目录：Kling 8 个视频模型、Pippit 8 个视频模型，另有 Auto；选项统一使用 `服务商/模型` 格式。
+- 模型选择器使用实时核验目录：Kling 8 个、Pippit 8 个、Wanx 2 个视频模型，另有 Auto；选项统一使用 `服务商/模型` 格式。
 - 搜索、语言、通知、积分和头像使用半透明表面；头像菜单左右边缘对齐导航栏的 13px 内边距，并沿用导航字号。菜单包含语言、通知、积分与带图标的账户操作，通知行带向右展开图标，齿轮位于头像行右端；语言行使用向右图标，点击后在头像菜单右侧独立打开浮层并纵向排列 English 与中文。
 - Videos 展示作者与喜欢数，并支持发布。
 - 支持项目创建、编辑、恢复和删除。
@@ -124,7 +124,7 @@ GET /jobs/{job_id} → FastAPI 查询 Provider → 更新数据库 → 返回最
 | Agent | LangGraph |
 | 模型调用 | LangChain OpenAI-compatible Provider |
 | 数据校验 | Pydantic v2 |
-| 视频服务 | Pippit CLI、Kling 国内版 CLI、Mock Provider |
+| 视频服务 | Pippit CLI、Kling 国内版 CLI、Wanx（DashScope）、Mock Provider |
 | 服务端授权 | Pippit CLI 凭据与 Kling 国内版 CLI OAuth |
 | MCP | Python MCP SDK |
 | 数据库 | SQLite |
@@ -757,7 +757,7 @@ Markdown 文档在构建时生成 HTML，并复制到 `public/docs`。
 6. 生成任务不会因自动重试造成重复扣费。
 7. 制作进度条根据工作流和 Shot 完成状态实时轮询；视觉评估只作用于 Final Cut。
 8. Videos 的作者、喜欢数、发布入口和预览可用。
-9. Mock Provider、Pippit Fake CLI 和 Kling Provider 契约测试全部通过。
+9. Mock Provider、Pippit Fake CLI、Kling Provider 和 Wanx（MockTransport）契约测试全部通过。
 10. Playwright 使用 Mock Provider 完成注册、创作、上传、生成、导出、下载和分享。
 11. 生成预扣积分，失败或取消时幂等退款。
 12. 分享链接可撤销，私有资产不能由其他用户通过内容路由读取。

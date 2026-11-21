@@ -1,0 +1,217 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="VideoAgent Provider" />
+    <title>Provider · VideoAgent</title>
+    <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
+    <link rel="stylesheet" href="../docs.css?v=34" />
+  </head>
+  <body data-document="providers.html">
+    <main class="document-shell" id="document-shell">
+      <aside class="document-toc" id="document-toc">
+        <button
+          class="toc-toggle"
+          id="toc-toggle"
+          type="button"
+          aria-controls="toc-panel"
+          aria-expanded="true"
+          aria-label="Contents"
+        >
+          <span class="toc-toggle-icon" aria-hidden="true">☰</span>
+          <span class="toc-toggle-label">Contents</span>
+          <span class="toc-toggle-chevron" aria-hidden="true">‹</span>
+        </button>
+        <nav class="toc-panel" id="toc-panel" aria-label="Contents">
+          <p class="toc-kicker">CONTENTS</p>
+          <a class="toc-link toc-level-1" href="#videoagent-providers">VideoAgent Providers</a>
+<a class="toc-link toc-level-2" href="#1-overview">1. Overview</a>
+<a class="toc-link toc-level-2" href="#2-resolution-order">2. Resolution order</a>
+<a class="toc-link toc-level-2" href="#3-mock-provider">3. Mock provider</a>
+<a class="toc-link toc-level-2" href="#4-pippit-provider">4. Pippit provider</a>
+<a class="toc-link toc-level-2" href="#5-kling-provider">5. Kling provider</a>
+<a class="toc-link toc-level-2" href="#6-wanx-provider-alibaba-cloud-model-studio-tongyi-wanx">6. Wanx provider (Alibaba Cloud Model Studio / Tongyi Wanx)</a>
+<a class="toc-link toc-level-2" href="#7-planner-and-vision-review-llm-provider">7. Planner and vision review (LLM provider)</a>
+<a class="toc-link toc-level-2" href="#8-media-storage">8. Media storage</a>
+<a class="toc-link toc-level-2" href="#9-adding-a-provider">9. Adding a provider</a>
+<a class="toc-link toc-level-2" href="#10-known-limits">10. Known limits</a>
+        </nav>
+      </aside>
+      <article class="document"><h1 id="videoagent-providers">VideoAgent Providers</h1>
+<div class="table-wrap"><table><thead><tr>
+<th>Attribute</th>
+<th>Value</th>
+</tr></thead><tbody>
+<tr>
+<td>Document version</td>
+<td>v1.0</td>
+</tr>
+<tr>
+<td>Updated</td>
+<td>2026-11-21</td>
+</tr>
+<tr>
+<td>Scope</td>
+<td>Video generation providers, planner and vision review, media storage, configuration and troubleshooting</td>
+</tr>
+</tbody></table></div>
+<p>This is the single entry point for provider documentation: video generation, LLM, visual review and media storage live here instead of being spread across files.</p>
+<h2 id="1-overview">1. Overview</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Provider</th>
+<th>Transport</th>
+<th>Capabilities</th>
+<th>Auth</th>
+<th>Configuration prefix</th>
+</tr></thead><tbody>
+<tr>
+<td><code>mock</code></td>
+<td>In-process</td>
+<td>Text-to-video, image-to-video (bundled sample media)</td>
+<td>None</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>pippit</code></td>
+<td>CLI subprocess</td>
+<td>Text/image-to-video, task queries, credit balance</td>
+<td>Server-owned CLI login</td>
+<td><code>VIDEOAGENT_PIPPIT_*</code></td>
+</tr>
+<tr>
+<td><code>kling</code></td>
+<td>CLI or MCP</td>
+<td>Text/image-to-video, motion control, ordered multimodal references</td>
+<td>China-region CLI OAuth or per-user MCP token</td>
+<td><code>VIDEOAGENT_KLING_*</code></td>
+</tr>
+<tr>
+<td><code>wanx</code></td>
+<td>HTTP (DashScope)</td>
+<td>Text/image-to-video, multi-shot narration</td>
+<td>Server API key</td>
+<td><code>VIDEOAGENT_WANX_*</code></td>
+</tr>
+</tbody></table></div>
+<p>The planner and visual review speak the OpenAI-compatible protocol (DeepSeek, Qwen, and others), and media storage has <code>local</code> and <code>oss</code> backends. Credentials only ever come from environment variables or <code>.env</code>; they never enter the code or the repository.</p>
+<h2 id="2-resolution-order">2. Resolution order</h2>
+<ol>
+<li><code>VIDEOAGENT_VIDEO_PROVIDER</code> selects the default provider (<code>mock</code>, <code>pippit</code>, <code>kling</code>, <code>wanx</code>).</li>
+<li>A <code>Provider/Model</code> tag in the project brief (for example <code>Wanx/Wan 2.6</code>) overrides it.</li>
+<li>An explicit <code>provider</code> sent by the client during estimate or generation overrides both.</li>
+<li><code>mock</code> short-circuits to the in-process provider and touches no external service.</li>
+<li>Under <code>auto</code>, an unconnected Kling falls back to Mock when fallback is allowed, and</li>
+<p>the UI says so.</p>
+</ol>
+<h2 id="3-mock-provider">3. Mock provider</h2>
+<p>Used for offline development, unit tests and Playwright E2E; it never bills anyone.</p>
+<ul>
+<li>Config: <code>VIDEOAGENT_VIDEO_PROVIDER=mock</code></li>
+<li>Behaviour: submit returns <code>mock-&lt;uuid&gt;</code>, polling succeeds immediately against a bundled sample.</li>
+<li>Limits: it does not reproduce real provider timeouts, quotas or error codes.</li>
+</ul>
+<h2 id="4-pippit-provider">4. Pippit provider</h2>
+<p>The server owns the Pippit CLI session, so browsers only see VideoAgent sessions.</p>
+<pre><code class="language-env">VIDEOAGENT_VIDEO_PROVIDER=pippit
+VIDEOAGENT_PIPPIT_CLI_COMMAND=pippit-tool-cli
+VIDEOAGENT_PIPPIT_VIDEO_MODEL=
+VIDEOAGENT_PIPPIT_VIDEO_RESOLUTION=
+VIDEOAGENT_PIPPIT_TIMEOUT_SECONDS=180
+VIDEOAGENT_PIPPIT_ACCESS_KEY=      # CI only; prefer the browser login</code></pre>
+<ul>
+<li>Submit: <code>generate-video</code> with prompt, duration, ratio, model and multimodal references.</li>
+<li>Poll: <code>query-result --thread-id --run-id</code>; the task id is a JSON reference to both</li>
+<p>fields, so jobs survive restarts.</p>
+<li>Account: <code>GET /providers/pippit</code> for status, <code>GET /providers/pippit/credits</code> for balance.</li>
+<li>Errors: missing binary → <code>503</code>, not logged in → <code>409</code>, upstream failure → <code>502</code>.</li>
+</ul>
+<h2 id="5-kling-provider">5. Kling provider</h2>
+<p>Two backends selected by <code>VIDEOAGENT_KLING_BACKEND</code>:</p>
+<pre><code class="language-env">VIDEOAGENT_KLING_BACKEND=cli          # cli | mcp
+VIDEOAGENT_KLING_CLI_COMMAND=kling
+VIDEOAGENT_KLING_CLI_TIMEOUT_SECONDS=180
+VIDEOAGENT_KLING_EXPECTED_USER_ID=    # pins the authorized China-region account</code></pre>
+<ul>
+<li><code>cli</code>: runs <code>@klingai/cli-cn</code>; best for developer machines and single-host deploys.</li>
+<li><code>mcp</code>: connects to <code>https://klingai.com/mcp</code> with the current user's OAuth token,</li>
+<p>encrypted at rest by <code>provider_credentials</code> and never exposed to the browser.</p>
+<li>An unconnected account without fallback returns <code>409 KLING_NOT_CONNECTED</code>.</li>
+<li><code>kling who_am_i</code> and <code>kling account</code> provide read-only identity and credit checks.</li>
+</ul>
+<h2 id="6-wanx-provider-alibaba-cloud-model-studio-tongyi-wanx">6. Wanx provider (Alibaba Cloud Model Studio / Tongyi Wanx)</h2>
+<p>Pure HTTP with asynchronous tasks: submit returns a <code>task_id</code>, polling returns <code>video_url</code>.</p>
+<pre><code class="language-env">VIDEOAGENT_VIDEO_PROVIDER=wanx
+VIDEOAGENT_WANX_API_KEY=sk-...
+VIDEOAGENT_WANX_BASE_URL=https://dashscope.aliyuncs.com
+VIDEOAGENT_WANX_MODEL=wan2.6-t2v
+VIDEOAGENT_WANX_TIMEOUT_SECONDS=300</code></pre>
+<ul>
+<li><strong>Same region is mandatory</strong>: key, endpoint and model must match; workspace domains look</li>
+<p>like <code>https://{WorkspaceId}.cn-beijing.maas.aliyuncs.com</code>.</p>
+<li><strong>Clamped parameters</strong>: duration 2–15s; ratios 16:9, 9:16, 1:1, 4:3, 3:4 only, so a</li>
+<p>project's 21:9 falls back to 16:9.</p>
+<li><strong>Image-to-video</strong>: public URLs pass through; local references are base64 data URIs, so</li>
+<p>very large images should go through OSS and a public URL instead.</p>
+<li><strong>Result URLs expire after 24 hours</strong>: <code>materialize_generation_result</code> downloads and</li>
+<p>persists them immediately.</p>
+<li><strong>Model aliases</strong>: <code>WANX_MODEL_ALIASES</code> maps labels such as <code>Wanx/Wan 2.6</code> to model ids.</li>
+<li>Unit tests use <code>httpx.MockTransport</code> and cover submission, status mapping, error codes</li>
+<p>and local image encoding.</p>
+</ul>
+<h2 id="7-planner-and-vision-review-llm-provider">7. Planner and vision review (LLM provider)</h2>
+<p>Both are OpenAI-compatible: switch vendors with <code>base_url</code>, <code>api_key</code> and <code>model</code>.</p>
+<pre><code class="language-env"># DeepSeek (default)
+VIDEOAGENT_LLM_BASE_URL=https://api.deepseek.com/v1
+VIDEOAGENT_LLM_MODEL=deepseek-flash
+
+# Qwen
+VIDEOAGENT_LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+VIDEOAGENT_LLM_MODEL=qwen-plus
+
+# Vision review
+VIDEOAGENT_VISION_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+VIDEOAGENT_VISION_MODELS=[&quot;qwen-vl-max&quot;]</code></pre>
+<ul>
+<li>Without a key the deterministic local planner runs; nothing is called silently.</li>
+<li>A remote planner timeout or unparsable answer falls back locally and is reported in the</li>
+<p>agent trace.</p>
+<li>Visual review only runs on an exported film; with no evaluator configured the UI says so</li>
+<p>instead of inventing scores.</p>
+</ul>
+<h2 id="8-media-storage">8. Media storage</h2>
+<pre><code class="language-env">VIDEOAGENT_MEDIA_STORAGE=local        # local | oss
+VIDEOAGENT_MEDIA_DIR=.data/media
+VIDEOAGENT_OSS_ENDPOINT=
+VIDEOAGENT_OSS_BUCKET=
+VIDEOAGENT_OSS_ACCESS_KEY_ID=
+VIDEOAGENT_OSS_ACCESS_KEY_SECRET=
+VIDEOAGENT_OSS_PREFIX=videoagent</code></pre>
+<ul>
+<li><code>local</code>: the media directory is the durable copy; this is the default.</li>
+<li><code>oss</code>: writes are mirrored (uploads, generated images, generated videos, exports,</li>
+<p>covers) and reads restore on a cache miss. FFmpeg always works on local files.</p>
+<li>Run <code>cd services/api &amp;&amp; uv sync --extra oss</code> first; missing credentials raise a</li>
+<p><code>StorageError</code> rather than silently degrading.</p>
+</ul>
+<h2 id="9-adding-a-provider">9. Adding a provider</h2>
+<ol>
+<li>Implement <code>name / estimate / submit / status</code> under <code>providers/</code>.</li>
+<li>Register the mode in <code>providers/factory.py</code> and, for per-user auth, in</li>
+<p><code>services/provider_resolver.py</code>.</p>
+<li>Add a <code>VIDEOAGENT_</code>-prefixed setting and an empty example in <code>.env.example</code>.</li>
+<li>If model aliases are needed, extend the alias table and the <code>Provider/Model</code> regex in</li>
+<p><code>api/generation.py</code>.</p>
+<li>Write contract tests with MockTransport or a fake CLI; never require a paid call.</li>
+</ol>
+<h2 id="10-known-limits">10. Known limits</h2>
+<ul>
+<li>Live Wanx, Kling MCP and Pippit runs need real keys or sessions; CI only runs contract tests.</li>
+<li>The OSS backend is unit-tested against a fake SDK, not a live bucket in CI.</li>
+<li>Wanx cannot produce 21:9; crop at export time instead of relying on the provider.</li>
+</ul>
+<p>References: <a href="https://www.alibabacloud.com/help/en/model-studio/qwen-api-via-openai-chat-completions">DashScope OpenAI-compatible API</a>, <a href="https://help.aliyun.com/zh/model-studio/text-to-video-api-reference">Wanx text-to-video API</a>, <a href="https://help.aliyun.com/zh/oss/developer-reference/python-sdk/">OSS Python SDK</a></p></article>
+    </main>
+    <script src="../docs.js?v=34"></script>
+  </body>
+</html>

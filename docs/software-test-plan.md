@@ -38,7 +38,7 @@
 - 项目所有权、重命名和归档。
 - 故事板替换与版本。
 - 确定性 Planner 与 Fake LLM 的 Agent 规划。
-- Mock、Pippit 和 Kling Provider 契约。
+- Mock、Pippit、Kling 和 Wanx Provider 契约。
 - 积分估算、审批、幂等和任务状态。
 - Provider 状态与积分。
 - 健康检查。
@@ -88,6 +88,9 @@ Pippit 测试使用本地 Fake CLI，覆盖状态、积分、提交、查询、�
 
 Kling 国内版另使用依赖注入测试覆盖 `text_to_video`、`query_tasks`、
 `who_am_i` 和 `account`，测试不实际提交生成任务。
+
+Wanx 测试使用 `httpx.MockTransport` 覆盖异步提交、状态映射、错误码和本地参考图编码，
+不访问真实 DashScope。媒体存储使用假 `oss2` 模块验证 OSS 调用路径，默认仍是本地存储。
 
 ## 6. API 测试
 

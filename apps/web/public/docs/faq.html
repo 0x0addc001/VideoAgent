@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent FAQ" />
     <title>FAQ · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=33" />
+    <link rel="stylesheet" href="../docs.css?v=34" />
   </head>
   <body data-document="faq.html">
     <main class="document-shell" id="document-shell">
@@ -50,6 +50,7 @@
 <a class="toc-link toc-level-2" href="#q22-which-multimodal-production-capabilities-are-available">Q22. Which multimodal production capabilities are available?</a>
 <a class="toc-link toc-level-2" href="#q23-how-do-celery-and-redis-work-together-in-videoagent">Q23. How do Celery and Redis work together in VideoAgent?</a>
 <a class="toc-link toc-level-2" href="#q24-where-is-the-agent-s-core-code">Q24. Where is the Agent's core code?</a>
+<a class="toc-link toc-level-2" href="#q25-how-do-i-switch-video-providers-or-move-media-to-oss">Q25. How do I switch video providers or move media to OSS?</a>
         </nav>
       </aside>
       <article class="document"><h1 id="videoagent-faq">VideoAgent FAQ</h1>
@@ -288,8 +289,10 @@
 <li><code>apps/web/src/components/project-workspace.tsx</code>: Agent chat, approvals,</li>
 <p>execution trace, error dialogs, and workspace interactions.</p>
 </ul>
-<p>The primary path is message ingestion → Context assembly → Skill resolution → LangGraph planning → <code>StoryboardPlan</code> validation → Direction/Vision state persistence → streamable reply. If the remote planner times out or returns unparseable output, the response explicitly states that the local planner was used; the request never waits indefinitely.</p></article>
+<p>The primary path is message ingestion → Context assembly → Skill resolution → LangGraph planning → <code>StoryboardPlan</code> validation → Direction/Vision state persistence → streamable reply. If the remote planner times out or returns unparseable output, the response explicitly states that the local planner was used; the request never waits indefinitely.</p>
+<h2 id="q25-how-do-i-switch-video-providers-or-move-media-to-oss">Q25. How do I switch video providers or move media to OSS?</h2>
+<p><code>VIDEOAGENT_VIDEO_PROVIDER</code> chooses the default provider (<code>mock</code>, <code>pippit</code>, <code>kling</code>, <code>wanx</code>); a <code>Provider/Model</code> tag in the project brief or an explicit client selection overrides it. Moving to Wanx only needs <code>VIDEOAGENT_VIDEO_PROVIDER=wanx</code> and <code>VIDEOAGENT_WANX_API_KEY</code> — no code change. LLM switching works the same way through <code>VIDEOAGENT_LLM_BASE_URL</code> and the model name. Media storage is controlled by <code>VIDEOAGENT_MEDIA_STORAGE</code>: <code>local</code> is the default, while <code>oss</code> requires <code>uv sync --extra oss</code> plus endpoint, bucket and AK/SK. See <code>docs/providers.md</code> for the full list.</p></article>
     </main>
-    <script src="../docs.js?v=33"></script>
+    <script src="../docs.js?v=34"></script>
   </body>
 </html>

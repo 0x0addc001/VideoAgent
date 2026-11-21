@@ -595,6 +595,24 @@ VideoAgent 使用服务端 `@klingai/cli-cn` 连接国内站 `https://klingai.co
 锁定允许使用的国内账号。当前 CLI 用户可通过 `kling who_am_i` 与 `kling account`
 只读核验身份和余额。
 
+## Wanx Provider
+
+Wanx 通过阿里云百炼（DashScope）HTTP 接口接入，不使用本地 CLI。Key 只存在于服务端，
+客户端看到的始终是 `provider: "wanx"`。
+
+```env
+VIDEOAGENT_VIDEO_PROVIDER=wanx
+VIDEOAGENT_WANX_API_KEY=sk-...
+VIDEOAGENT_WANX_BASE_URL=https://dashscope.aliyuncs.com
+VIDEOAGENT_WANX_MODEL=wan2.6-t2v
+```
+
+设置了 `VIDEOAGENT_VIDEO_PROVIDER=wanx` 但没有 Key 时，服务在启动阶段以
+`WanxNotConfigured` 明确失败。任务轮询把 DashScope 的 `PENDING`/`RUNNING` 映射为
+`running`，`SUCCEEDED` 映射为 `succeeded`，`FAILED`/`CANCELED`/`UNKNOWN` 映射为
+`failed`；结果链接 24 小时后失效，服务会立即下载转存。完整 Provider 说明见
+[docs/providers.md](providers.md)。
+
 ## 错误格式
 
 ```json

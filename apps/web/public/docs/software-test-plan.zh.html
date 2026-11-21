@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Test" />
     <title>Test · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=33" />
+    <link rel="stylesheet" href="../docs.css?v=34" />
   </head>
   <body data-document="software-test-plan.zh.html">
     <main class="document-shell" id="document-shell">
@@ -82,7 +82,7 @@
 <li>项目所有权、重命名和归档。</li>
 <li>故事板替换与版本。</li>
 <li>确定性 Planner 与 Fake LLM 的 Agent 规划。</li>
-<li>Mock、Pippit 和 Kling Provider 契约。</li>
+<li>Mock、Pippit、Kling 和 Wanx Provider 契约。</li>
 <li>积分估算、审批、幂等和任务状态。</li>
 <li>Provider 状态与积分。</li>
 <li>健康检查。</li>
@@ -127,6 +127,7 @@
 </ul>
 <p>Pippit 测试使用本地 Fake CLI，覆盖状态、积分、提交、查询、超时、缺失二进制、 无效 JSON 和缺失任务 ID。Kling 测试使用 Fake MCP Client，覆盖文生视频、 图生视频、动作控制、任务状态映射和结果提取。</p>
 <p>Kling 国内版另使用依赖注入测试覆盖 <code>text_to_video</code>、<code>query_tasks</code>、 <code>who_am_i</code> 和 <code>account</code>，测试不实际提交生成任务。</p>
+<p>Wanx 测试使用 <code>httpx.MockTransport</code> 覆盖异步提交、状态映射、错误码和本地参考图编码， 不访问真实 DashScope。媒体存储使用假 <code>oss2</code> 模块验证 OSS 调用路径，默认仍是本地存储。</p>
 <h2 id="6-api-测试">6. API 测试</h2>
 <p>必须验证：</p>
 <ul>
@@ -286,6 +287,6 @@ Playwright + Mock Provider E2E
 <li>付费 Provider 测试保持人工开启。</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=33"></script>
+    <script src="../docs.js?v=34"></script>
   </body>
 </html>

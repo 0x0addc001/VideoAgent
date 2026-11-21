@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent FAQ" />
     <title>FAQ · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=33" />
+    <link rel="stylesheet" href="../docs.css?v=34" />
   </head>
   <body data-document="faq.zh.html">
     <main class="document-shell" id="document-shell">
@@ -50,6 +50,7 @@
 <a class="toc-link toc-level-2" href="#q22-videoagent-现在支持哪些多模态制作能力">Q22. VideoAgent 现在支持哪些多模态制作能力？</a>
 <a class="toc-link toc-level-2" href="#q23-celery-和-redis-在-videoagent-中如何配合">Q23. Celery 和 Redis 在 VideoAgent 中如何配合？</a>
 <a class="toc-link toc-level-2" href="#q24-videoagent-的核心代码在哪里">Q24. VideoAgent 的核心代码在哪里？</a>
+<a class="toc-link toc-level-2" href="#q25-如何切换视频-provider-或把媒体迁移到-oss">Q25. 如何切换视频 Provider，或把媒体迁移到 OSS？</a>
         </nav>
       </aside>
       <article class="document"><h1 id="videoagent-客服-faq">VideoAgent 客服 FAQ</h1>
@@ -288,8 +289,10 @@
 <li><code>apps/web/src/components/project-workspace.tsx</code>：Agent 对话、审批、执行轨迹、</li>
 <p>错误弹窗和项目画布交互。</p>
 </ul>
-<p>主链路是：接收消息 → 构建 Context → 解析 Skill → LangGraph 规划 → 校验 <code>StoryboardPlan</code> → 持久化 Direction/Vision 状态 → 返回可流式展示的回复。远程 Planner 超时或返回不可解析结果时，服务端明确提示本次使用本地 Planner 兜底，不会让请求无限等待。</p></article>
+<p>主链路是：接收消息 → 构建 Context → 解析 Skill → LangGraph 规划 → 校验 <code>StoryboardPlan</code> → 持久化 Direction/Vision 状态 → 返回可流式展示的回复。远程 Planner 超时或返回不可解析结果时，服务端明确提示本次使用本地 Planner 兜底，不会让请求无限等待。</p>
+<h2 id="q25-如何切换视频-provider-或把媒体迁移到-oss">Q25. 如何切换视频 Provider，或把媒体迁移到 OSS？</h2>
+<p>默认 Provider 由 <code>VIDEOAGENT_VIDEO_PROVIDER</code> 决定（<code>mock</code>、<code>pippit</code>、<code>kling</code>、<code>wanx</code>）， 项目 Brief 中的 <code>Provider/模型</code> 标签和前端显式选择会覆盖默认值。切到 Wanx 只需 <code>VIDEOAGENT_VIDEO_PROVIDER=wanx</code> 与 <code>VIDEOAGENT_WANX_API_KEY</code>，无需改代码；切换 LLM 同理， 改 <code>VIDEOAGENT_LLM_BASE_URL</code> 与模型名即可。媒体存储由 <code>VIDEOAGENT_MEDIA_STORAGE</code> 控制： <code>local</code> 是默认值，<code>oss</code> 需要先 <code>uv sync --extra oss</code> 并配置 Endpoint、Bucket、AK/SK。 完整清单见 <code>docs/providers.md</code>。</p></article>
     </main>
-    <script src="../docs.js?v=33"></script>
+    <script src="../docs.js?v=34"></script>
   </body>
 </html>

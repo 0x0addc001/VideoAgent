@@ -52,6 +52,8 @@ shows the account email and a sign-out action.
   audio, and review settings.
 - The Model selector lists every currently available video model as
   `Provider/Model`.
+- Video generation covers four provider families: Mock, Pippit (CLI), Kling
+  (CLI/MCP), and Wanx (Alibaba Cloud Model Studio).
 - Character and Scene pages expose image-model selection; Shot pages expose
   video-model selection for both text-to-video and image-to-video. “Project
   default” inherits the initial choice, and changing a model invalidates the

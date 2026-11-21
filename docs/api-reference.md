@@ -626,6 +626,24 @@ VideoAgent uses the server-owned China-region `@klingai/cli-cn` package and the
 Operators can use `kling who_am_i` and `kling account` for read-only identity
 and credit checks.
 
+## Wanx Provider
+
+Wanx runs over Alibaba Cloud Model Studio (DashScope) instead of a local CLI. The
+server owns the key and clients only see `provider: "wanx"`.
+
+```env
+VIDEOAGENT_VIDEO_PROVIDER=wanx
+VIDEOAGENT_WANX_API_KEY=sk-...
+VIDEOAGENT_WANX_BASE_URL=https://dashscope.aliyuncs.com
+VIDEOAGENT_WANX_MODEL=wan2.6-t2v
+```
+
+Setting `VIDEOAGENT_VIDEO_PROVIDER=wanx` without a key fails fast at startup with
+`WanxNotConfigured`. Job polling maps DashScope `PENDING`/`RUNNING` to `running`,
+`SUCCEEDED` to `succeeded`, and `FAILED`/`CANCELED`/`UNKNOWN` to `failed`; result
+URLs expire after 24 hours and are downloaded immediately. See
+[docs/providers.md](providers.md) for all providers.
+
 ## Errors
 
 Errors use the following shape:

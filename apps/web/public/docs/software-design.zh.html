@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Arch" />
     <title>Arch · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=33" />
+    <link rel="stylesheet" href="../docs.css?v=34" />
   </head>
   <body data-document="software-design.zh.html">
     <main class="document-shell" id="document-shell">
@@ -97,10 +97,10 @@
 </tr>
 <tr>
 <td>模型</td>
-<td>Pippit/Seedance 2.5 Draft、Pippit/Seedance 2.5、Pippit/Seedance 2.0 Fast VIP、Pippit/Seedance 2.0 VIP、Pippit/Seedance 2.0 Mini 体验版、Pippit/Seedance 2.0 Mini、Pippit/Wan 3.0、Pippit/HappyHorse 1.1、Kling/Kling Video 2.5、Kling/Kling Video 2.6、Kling/Kling Video O1、Kling/Kling Video 3.0、Kling/Kling Video 3.0 Omni、Kling/Kling Video 3.0 Turbo、Kling/Kling Video 4.0、Kling/Kling Video 4.0 Flash、Kling/Kling 2.6 Motion Control、Kling/Kling 3.0 Motion Control、Kling/Kling Image 3.0 Omni、Kling/Kling Image O1、Kling/Kling Image 3.0、Kling/Kling Image 2.1</td>
+<td>Pippit/Seedance 2.5 Draft、Pippit/Seedance 2.5、Pippit/Seedance 2.0 Fast VIP、Pippit/Seedance 2.0 VIP、Pippit/Seedance 2.0 Mini 体验版、Pippit/Seedance 2.0 Mini、Pippit/Wan 3.0、Pippit/HappyHorse 1.1、Kling/Kling Video 2.5、Kling/Kling Video 2.6、Kling/Kling Video O1、Kling/Kling Video 3.0、Kling/Kling Video 3.0 Omni、Kling/Kling Video 3.0 Turbo、Kling/Kling Video 4.0、Kling/Kling Video 4.0 Flash、Kling/Kling 2.6 Motion Control、Kling/Kling 3.0 Motion Control、Kling/Kling Image 3.0 Omni、Kling/Kling Image O1、Kling/Kling Image 3.0、Kling/Kling Image 2.1、Wanx/Wan 2.6、Wanx/Wan 3.0 Prime</td>
 </tr>
 </tbody></table></div>
-<p>VideoAgent 通过统一 Provider 边界集成 Pippit CLI 与 Kling 国内版 CLI。Pippit 提供视频提交、任务查询和积分能力，Kling CLI 通过国内站 MCP 提供文本生成视频、任务查询、动作控制和多模态参考能力。</p>
+<p>VideoAgent 通过统一 Provider 边界集成 Pippit CLI 与 Kling 国内版 CLI。Pippit 提供视频提交、任务查询和积分能力，Kling CLI 通过国内站 MCP 提供文本生成视频、任务查询、动作控制和多模态参考能力。Wanx 通过阿里云百炼（DashScope）HTTP 接口提供异步视频生成。</p>
 <h2 id="1-文档目的">1. 文档目的</h2>
 <p>本文档描述 VideoAgent 的产品目标、系统架构、核心模块、Agent 编排、数据模型、接口规范、Pippit CLI 与 Kling 国内版 CLI 集成、安全策略、测试策略及部署方式，供产品、前端、后端、测试和运维研发人员共同参考。</p>
 <h2 id="2-产品概述">2. 产品概述</h2>
@@ -119,7 +119,7 @@
 <ul>
 <li>首页采用左侧导航、连续视频背景、居中创作框、场景策略、Hook 控制和自定义透明下拉控件。</li>
 <li>创作输入框随内容行数自动向下增高；示例灵感仅在输入为空时显示，策略保持可切换。</li>
-<li>模型选择器使用实时核验目录：Kling 8 个视频模型、Pippit 8 个视频模型，另有 Auto；选项统一使用 <code>服务商/模型</code> 格式。</li>
+<li>模型选择器使用实时核验目录：Kling 8 个、Pippit 8 个、Wanx 2 个视频模型，另有 Auto；选项统一使用 <code>服务商/模型</code> 格式。</li>
 <li>搜索、语言、通知、积分和头像使用半透明表面；头像菜单左右边缘对齐导航栏的 13px 内边距，并沿用导航字号。菜单包含语言、通知、积分与带图标的账户操作，通知行带向右展开图标，齿轮位于头像行右端；语言行使用向右图标，点击后在头像菜单右侧独立打开浮层并纵向排列 English 与中文。</li>
 <li>Videos 展示作者与喜欢数，并支持发布。</li>
 <li>支持项目创建、编辑、恢复和删除。</li>
@@ -224,7 +224,7 @@
 </tr>
 <tr>
 <td>视频服务</td>
-<td>Pippit CLI、Kling 国内版 CLI、Mock Provider</td>
+<td>Pippit CLI、Kling 国内版 CLI、Wanx（DashScope）、Mock Provider</td>
 </tr>
 <tr>
 <td>服务端授权</td>
@@ -1201,7 +1201,7 @@ Celery + Redis</code></pre>
 <li>生成任务不会因自动重试造成重复扣费。</li>
 <li>制作进度条根据工作流和 Shot 完成状态实时轮询；视觉评估只作用于 Final Cut。</li>
 <li>Videos 的作者、喜欢数、发布入口和预览可用。</li>
-<li>Mock Provider、Pippit Fake CLI 和 Kling Provider 契约测试全部通过。</li>
+<li>Mock Provider、Pippit Fake CLI、Kling Provider 和 Wanx（MockTransport）契约测试全部通过。</li>
 <li>Playwright 使用 Mock Provider 完成注册、创作、上传、生成、导出、下载和分享。</li>
 <li>生成预扣积分，失败或取消时幂等退款。</li>
 <li>分享链接可撤销，私有资产不能由其他用户通过内容路由读取。</li>
@@ -1246,6 +1246,6 @@ Celery + Redis</code></pre>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=33"></script>
+    <script src="../docs.js?v=34"></script>
   </body>
 </html>

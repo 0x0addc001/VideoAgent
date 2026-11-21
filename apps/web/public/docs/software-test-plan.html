@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Test" />
     <title>Test · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=33" />
+    <link rel="stylesheet" href="../docs.css?v=34" />
   </head>
   <body data-document="software-test-plan.html">
     <main class="document-shell" id="document-shell">
@@ -82,7 +82,7 @@
 <li>Project ownership, rename, and archive.</li>
 <li>Storyboard replacement and versioning.</li>
 <li>Agent planning with deterministic and fake LLM behavior.</li>
-<li>Mock, Pippit, and Kling Provider contracts.</li>
+<li>Mock, Pippit, Kling, and Wanx Provider contracts.</li>
 <li>Estimate, approval, idempotency, and job status.</li>
 <li>Provider status and credits.</li>
 <li>Health endpoint.</li>
@@ -128,6 +128,7 @@
 <li>The same idempotency key does not submit twice.</li>
 </ul>
 <p>Pippit tests use a local fake CLI and cover status, credits, submit, query, timeout, missing binary, invalid JSON, and missing task IDs. Kling tests use a fake MCP client and cover text-to-video, image-to-video, motion control, task-state mapping, and result extraction.</p>
+<p>Wanx tests use <code>httpx.MockTransport</code> to cover async submission, status mapping, error codes, and local reference-image encoding without touching DashScope. Media storage tests use a fake <code>oss2</code> module to exercise the OSS path; local storage remains the default.</p>
 <h2 id="6-api-tests">6. API Tests</h2>
 <p>Required assertions:</p>
 <ul>
@@ -327,6 +328,6 @@ secret and dependency scans</code></pre>
 <li>Paid Provider tests remain opt-in.</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=33"></script>
+    <script src="../docs.js?v=34"></script>
   </body>
 </html>

@@ -6,7 +6,7 @@
 | Updated | 2026-11-06 |
 | Backend framework | Python + FastAPI |
 | Frontend framework | Next.js + TypeScript |
-| Model | Pippit/Seedance 2.5 Draft, Pippit/Seedance 2.5, Pippit/Seedance 2.0 Fast VIP, Pippit/Seedance 2.0 VIP, Pippit/Seedance 2.0 Mini Preview, Pippit/Seedance 2.0 Mini, Pippit/Wan 3.0, Pippit/HappyHorse 1.1, Kling/Kling Video 2.5, Kling/Kling Video 2.6, Kling/Kling Video O1, Kling/Kling Video 3.0, Kling/Kling Video 3.0 Omni, Kling/Kling Video 3.0 Turbo, Kling/Kling Video 4.0, Kling/Kling Video 4.0 Flash, Kling/Kling 2.6 Motion Control, Kling/Kling 3.0 Motion Control, Kling/Kling Image 3.0 Omni, Kling/Kling Image O1, Kling/Kling Image 3.0, Kling/Kling Image 2.1 |
+| Model | Pippit/Seedance 2.5 Draft, Pippit/Seedance 2.5, Pippit/Seedance 2.0 Fast VIP, Pippit/Seedance 2.0 VIP, Pippit/Seedance 2.0 Mini Preview, Pippit/Seedance 2.0 Mini, Pippit/Wan 3.0, Pippit/HappyHorse 1.1, Kling/Kling Video 2.5, Kling/Kling Video 2.6, Kling/Kling Video O1, Kling/Kling Video 3.0, Kling/Kling Video 3.0 Omni, Kling/Kling Video 3.0 Turbo, Kling/Kling Video 4.0, Kling/Kling Video 4.0 Flash, Kling/Kling 2.6 Motion Control, Kling/Kling 3.0 Motion Control, Kling/Kling Image 3.0 Omni, Kling/Kling Image O1, Kling/Kling Image 3.0, Kling/Kling Image 2.1, Wanx/Wan 2.6, Wanx/Wan 3.0 Prime |
 
 ## 1. Purpose
 
@@ -20,7 +20,7 @@ boundaries, runtime flow, provider adapters, and engineering conventions.
 - Home composer with Skill and Hook selectors, six production playbooks, and
   transparent custom dropdowns.
 - Auto-growing prompt textarea with idea suggestions rendered only in the empty state.
-- Complete live video-model catalogue with provider-labelled Pippit and Kling options.
+- Complete live video-model catalogue with provider-labelled Pippit, Kling, and Wanx options.
 - Flat searchable Skills catalogue using `user_id/skill_id`, plus user publishing.
 - Searchable Videos feed with looping video playback, Skill-backed scenario
   reuse, and publishing.
@@ -35,7 +35,7 @@ boundaries, runtime flow, provider adapters, and engineering conventions.
 - LangGraph single-node storyboard planning.
 - OpenAI-compatible and deterministic local planners.
 - Cost estimate and explicit generation approval.
-- Pippit CLI, China-region Kling CLI, and Mock Provider adapters.
+- Pippit CLI, China-region Kling CLI, Wanx (DashScope), and Mock Provider adapters.
 - Celery polling with Redis.
 - Per-user credit reservations and idempotent refunds.
 - Image, video, and audio uploads with MIME, signature, and size validation.

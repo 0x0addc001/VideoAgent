@@ -34,6 +34,7 @@
 | TODO-PROVIDER-003 | Provider 取消与统一错误模型 | 两类 Provider 均支持取消、超时、限流和可重试错误分类 | P0 |
 | TODO-PROVIDER-004 | 自动模型路由与降级 | 按任务、预算和可用性选择模型，并保留用户显式选择 | P1 |
 | TODO-PROVIDER-005 | Take 管理 | 一个镜头可保存多个候选版本、评分和选择记录 | P1 |
+| TODO-PROVIDER-006 | Wanx 真实生成验收 | 使用有效 DashScope API Key 完成一次万相文生视频、轮询、下载与转存 | P0 |
 
 ## 4. 媒体与交付
 
@@ -76,4 +77,5 @@
 | TODO-QA-002 | Provider Contract Matrix | 覆盖 Pippit、Kling 和 Mock 的统一行为 | P0 |
 | TODO-QA-003 | 付费生成验收 | 在明确预算和用户批准下完成一次端到端生成 | P0 |
 | TODO-QA-004 | 故障演练 | 覆盖 Worker 中断、重复投递、SSE 重连和下载失败 | P1 |
+| TODO-QA-005 | OSS 桶集成测试 | 在真实 Bucket 上验证上传、回源与删除，覆盖签名与权限 | P1 |
 

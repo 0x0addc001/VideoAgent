@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Dev" />
     <title>Dev · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=33" />
+    <link rel="stylesheet" href="../docs.css?v=34" />
   </head>
   <body data-document="software-implementation.zh.html">
     <main class="document-shell" id="document-shell">
@@ -88,7 +88,7 @@
 </tr>
 <tr>
 <td>模型</td>
-<td>Pippit/Seedance 2.5 Draft、Pippit/Seedance 2.5、Pippit/Seedance 2.0 Fast VIP、Pippit/Seedance 2.0 VIP、Pippit/Seedance 2.0 Mini 体验版、Pippit/Seedance 2.0 Mini、Pippit/Wan 3.0、Pippit/HappyHorse 1.1、Kling/Kling Video 2.5、Kling/Kling Video 2.6、Kling/Kling Video O1、Kling/Kling Video 3.0、Kling/Kling Video 3.0 Omni、Kling/Kling Video 3.0 Turbo、Kling/Kling Video 4.0、Kling/Kling Video 4.0 Flash、Kling/Kling 2.6 Motion Control、Kling/Kling 3.0 Motion Control、Kling/Kling Image 3.0 Omni、Kling/Kling Image O1、Kling/Kling Image 3.0、Kling/Kling Image 2.1</td>
+<td>Pippit/Seedance 2.5 Draft、Pippit/Seedance 2.5、Pippit/Seedance 2.0 Fast VIP、Pippit/Seedance 2.0 VIP、Pippit/Seedance 2.0 Mini 体验版、Pippit/Seedance 2.0 Mini、Pippit/Wan 3.0、Pippit/HappyHorse 1.1、Kling/Kling Video 2.5、Kling/Kling Video 2.6、Kling/Kling Video O1、Kling/Kling Video 3.0、Kling/Kling Video 3.0 Omni、Kling/Kling Video 3.0 Turbo、Kling/Kling Video 4.0、Kling/Kling Video 4.0 Flash、Kling/Kling 2.6 Motion Control、Kling/Kling 3.0 Motion Control、Kling/Kling Image 3.0 Omni、Kling/Kling Image O1、Kling/Kling Image 3.0、Kling/Kling Image 2.1、Wanx/Wan 2.6、Wanx/Wan 3.0 Prime</td>
 </tr>
 </tbody></table></div>
 <h2 id="1-文档目的">1. 文档目的</h2>
@@ -100,7 +100,7 @@
 <li>蓝色播放键品牌、无框标签页图标和激活图标填充/线框反转。</li>
 <li>首页连续视频轮播、流式主标语、Skill/Hook 选择器、场景策略、自定义透明下拉和 Action 生成入口。</li>
 <li>创作输入框根据 <code>scrollHeight</code> 自动增高，并在输入非空时隐藏示例灵感；策略保持可用，重复点击当前项会恢复应用前草稿。</li>
-<li>模型下拉框使用统一模型元数据，展示 Pippit 8 个、Kling 8 个当前可用的视频模型及 Provider。</li>
+<li>模型下拉框使用统一模型元数据，展示 Pippit 8 个、Kling 8 个、Wanx 2 个当前可用的视频模型及 Provider。</li>
 <li>Skills 使用单一可搜索目录，显示 <code>user_id/skill_id</code>；原厂商能力使用厂商命名空间（如 <code>kling</code>），跨 Provider 工作流使用 <code>video_agent</code>。</li>
 <li>Skills 提供分类筛选、综合榜单、点赞和去重使用信号；公开 Skill 对其他登录用户可见，作者不能给自己点赞。</li>
 <li>Videos 支持搜索、循环视频、作者、喜欢数、发布，以及带 Skill 的场景复用。</li>
@@ -127,6 +127,7 @@
 <li>Mock Provider。</li>
 <li>Pippit CLI 视频提交、任务查询和余额读取。</li>
 <li>Kling 国内版 CLI 文本生成视频、任务查询、动作控制和多模态参考。</li>
+<li>Wanx（阿里云百炼 / DashScope）异步视频生成、任务轮询与结果转存。</li>
 <li>任务状态 API 刷新。</li>
 <li>Celery 后台轮询。</li>
 <li>实时制作进度轮询与 Final Cut 视觉模型评估。</li>
@@ -1340,6 +1341,6 @@ pnpm --dir apps/web build</code></pre>
 <li>设计或实现边界变化已更新本文档。</li>
 </ul></article>
     </main>
-    <script src="../docs.js?v=33"></script>
+    <script src="../docs.js?v=34"></script>
   </body>
 </html>

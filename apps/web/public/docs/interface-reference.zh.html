@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent API" />
     <title>API · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=33" />
+    <link rel="stylesheet" href="../docs.css?v=34" />
   </head>
   <body data-document="interface-reference.zh.html">
     <main class="document-shell" id="document-shell">
@@ -61,6 +61,7 @@
 <a class="toc-link toc-level-2" href="#管理后台">管理后台</a>
 <a class="toc-link toc-level-2" href="#pippit-provider">Pippit Provider</a>
 <a class="toc-link toc-level-2" href="#kling-provider">Kling Provider</a>
+<a class="toc-link toc-level-2" href="#wanx-provider">Wanx Provider</a>
 <a class="toc-link toc-level-2" href="#错误格式">错误格式</a>
         </nav>
       </aside>
@@ -685,6 +686,13 @@ file=&lt;图片、视频或音频&gt;</code></pre>
 }</code></pre>
 <h2 id="kling-provider">Kling Provider</h2>
 <p>VideoAgent 使用服务端 <code>@klingai/cli-cn</code> 连接国内站 <code>https://klingai.com/mcp</code>。 浏览器不会接收到 Kling Token。管理员可通过 <code>VIDEOAGENT_KLING_EXPECTED_USER_ID</code> 锁定允许使用的国内账号。当前 CLI 用户可通过 <code>kling who_am_i</code> 与 <code>kling account</code> 只读核验身份和余额。</p>
+<h2 id="wanx-provider">Wanx Provider</h2>
+<p>Wanx 通过阿里云百炼（DashScope）HTTP 接口接入，不使用本地 CLI。Key 只存在于服务端， 客户端看到的始终是 <code>provider: &quot;wanx&quot;</code>。</p>
+<pre><code class="language-env">VIDEOAGENT_VIDEO_PROVIDER=wanx
+VIDEOAGENT_WANX_API_KEY=sk-...
+VIDEOAGENT_WANX_BASE_URL=https://dashscope.aliyuncs.com
+VIDEOAGENT_WANX_MODEL=wan2.6-t2v</code></pre>
+<p>设置了 <code>VIDEOAGENT_VIDEO_PROVIDER=wanx</code> 但没有 Key 时，服务在启动阶段以 <code>WanxNotConfigured</code> 明确失败。任务轮询把 DashScope 的 <code>PENDING</code>/<code>RUNNING</code> 映射为 <code>running</code>，<code>SUCCEEDED</code> 映射为 <code>succeeded</code>，<code>FAILED</code>/<code>CANCELED</code>/<code>UNKNOWN</code> 映射为 <code>failed</code>；结果链接 24 小时后失效，服务会立即下载转存。完整 Provider 说明见 <a href="providers.html">docs/providers.md</a>。</p>
 <h2 id="错误格式">错误格式</h2>
 <pre><code class="language-json">{
   &quot;error&quot;: {
@@ -741,6 +749,6 @@ file=&lt;图片、视频或音频&gt;</code></pre>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=33"></script>
+    <script src="../docs.js?v=34"></script>
   </body>
 </html>

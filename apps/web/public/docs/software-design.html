@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Arch" />
     <title>Arch · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=33" />
+    <link rel="stylesheet" href="../docs.css?v=34" />
   </head>
   <body data-document="software-design.html">
     <main class="document-shell" id="document-shell">
@@ -73,10 +73,10 @@
 </tr>
 <tr>
 <td>Model</td>
-<td>Pippit/Seedance 2.5 Draft, Pippit/Seedance 2.5, Pippit/Seedance 2.0 Fast VIP, Pippit/Seedance 2.0 VIP, Pippit/Seedance 2.0 Mini Preview, Pippit/Seedance 2.0 Mini, Pippit/Wan 3.0, Pippit/HappyHorse 1.1, Kling/Kling Video 2.5, Kling/Kling Video 2.6, Kling/Kling Video O1, Kling/Kling Video 3.0, Kling/Kling Video 3.0 Omni, Kling/Kling Video 3.0 Turbo, Kling/Kling Video 4.0, Kling/Kling Video 4.0 Flash, Kling/Kling 2.6 Motion Control, Kling/Kling 3.0 Motion Control, Kling/Kling Image 3.0 Omni, Kling/Kling Image O1, Kling/Kling Image 3.0, Kling/Kling Image 2.1</td>
+<td>Pippit/Seedance 2.5 Draft, Pippit/Seedance 2.5, Pippit/Seedance 2.0 Fast VIP, Pippit/Seedance 2.0 VIP, Pippit/Seedance 2.0 Mini Preview, Pippit/Seedance 2.0 Mini, Pippit/Wan 3.0, Pippit/HappyHorse 1.1, Kling/Kling Video 2.5, Kling/Kling Video 2.6, Kling/Kling Video O1, Kling/Kling Video 3.0, Kling/Kling Video 3.0 Omni, Kling/Kling Video 3.0 Turbo, Kling/Kling Video 4.0, Kling/Kling Video 4.0 Flash, Kling/Kling 2.6 Motion Control, Kling/Kling 3.0 Motion Control, Kling/Kling Image 3.0 Omni, Kling/Kling Image O1, Kling/Kling Image 3.0, Kling/Kling Image 2.1, Wanx/Wan 2.6, Wanx/Wan 3.0 Prime</td>
 </tr>
 </tbody></table></div>
-<p>VideoAgent integrates Pippit CLI and the China-region Kling CLI behind one provider boundary. Pippit provides video submission, task queries, and credits. Kling CLI provides text-to-video, image-to-video, motion control, and ordered multimodal reference tools.</p>
+<p>VideoAgent integrates Pippit CLI and the China-region Kling CLI behind one provider boundary. Pippit provides video submission, task queries, and credits. Kling CLI provides text-to-video, image-to-video, motion control, and ordered multimodal reference tools. Wanx adds an asynchronous HTTP provider through Alibaba Cloud Model Studio.</p>
 <h2 id="1-purpose">1. Purpose</h2>
 <p>This document describes VideoAgent's product architecture, core modules, directing workflow, data model, API contracts, provider integrations, security, testing, and deployment.</p>
 <h2 id="2-product-overview">2. Product Overview</h2>
@@ -186,7 +186,7 @@ Celery Worker + Redis
 </tr>
 <tr>
 <td>Video providers</td>
-<td>Pippit CLI, Kling China CLI, Mock Provider</td>
+<td>Pippit CLI, Kling China CLI, Wanx (DashScope), Mock Provider</td>
 </tr>
 <tr>
 <td>Media</td>
@@ -353,7 +353,7 @@ query-result</code></pre>
 <p>Review uses the same task-oriented card structure as other Skills.</p>
 <p>Selecting a skill preloads a concrete prompt in the Agents composer. The Agents composer also includes a Skill selector. Signed-in users can publish a skill under their own <code>&lt;user_id&gt;/&lt;skill_id&gt;</code> namespace. Public Skills are discoverable to other signed-in users.</p>
 <p>The catalogue classifies Skills as Generation, Story, Workflow, Post, Review, or Utility. Engagement is stored as one <code>skill_engagement_likes</code> row per user and stable Skill key and one <code>skill_engagement_usages</code> row per user and key. The leaderboard score combines these de-duplicated signals as <code>uses × 2 + likes × 3</code>. Videos ranks by one <code>hots_likes</code> row per user and post. Authors cannot create engagement against their own content. The UI exposes top-three reward projections; credit settlement remains an audited operating action.</p>
-<p>The Model selector uses the verified live catalogue: eight Kling video models and eight Pippit video models, plus Auto. Options use <code>Provider/Model</code> naming so users can distinguish model families.</p>
+<p>The Model selector uses the verified live catalogue: eight Kling video models, eight Pippit video models, and two Wanx video models, plus Auto. Options use <code>Provider/Model</code> naming so users can distinguish model families.</p>
 <p>The Agents composer includes production playbooks for product ads, creator vlogs, micro drama, music videos, localization, and batch variants. Selecting a playbook sets the prompt, Skill, Hook, style, frame, duration, and review mode as one coherent starting point. Playbooks use toggle behavior: selecting the active playbook again restores the pre-playbook draft. Hook controls the first-three-second strategy: visual impact, narrative twist, spoken hook, sound cue, or proof first.</p>
 <h2 id="10-data-model">10. Data Model</h2>
 <div class="table-wrap"><table><thead><tr>
@@ -712,6 +712,6 @@ Celery + Redis</code></pre>
 <p>with every mutation recorded in the audit log.</p>
 </ol></article>
     </main>
-    <script src="../docs.js?v=33"></script>
+    <script src="../docs.js?v=34"></script>
   </body>
 </html>

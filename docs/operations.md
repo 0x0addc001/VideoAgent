@@ -67,6 +67,8 @@ VideoAgent 按三层内容运营：
 ## 5. Provider 与成本运营
 
 - Pippit CLI 与 Kling 国内版 CLI 通过统一 Provider 边界提供能力。
+- Wanx 通过阿里云百炼 DashScope 异步接口提供视频生成，需要 `VIDEOAGENT_WANX_API_KEY`，且 Key、Endpoint 与模型同地域。
+- 媒体默认本地存储；启用 OSS 需在 API 主机执行 `uv sync --extra oss` 并配置 Bucket 与 AK/SK。
 - 计费生成必须获得用户明确批准。
 - Provider 提交使用数据库幂等键。
 - 积分和 Provider 状态由服务端读取。

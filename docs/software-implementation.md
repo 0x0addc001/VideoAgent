@@ -6,7 +6,7 @@
 | 更新日期 | 2026-11-06 |
 | 后端框架 | Python + FastAPI |
 | 前端框架 | Next.js + TypeScript |
-| 模型 | Pippit/Seedance 2.5 Draft、Pippit/Seedance 2.5、Pippit/Seedance 2.0 Fast VIP、Pippit/Seedance 2.0 VIP、Pippit/Seedance 2.0 Mini 体验版、Pippit/Seedance 2.0 Mini、Pippit/Wan 3.0、Pippit/HappyHorse 1.1、Kling/Kling Video 2.5、Kling/Kling Video 2.6、Kling/Kling Video O1、Kling/Kling Video 3.0、Kling/Kling Video 3.0 Omni、Kling/Kling Video 3.0 Turbo、Kling/Kling Video 4.0、Kling/Kling Video 4.0 Flash、Kling/Kling 2.6 Motion Control、Kling/Kling 3.0 Motion Control、Kling/Kling Image 3.0 Omni、Kling/Kling Image O1、Kling/Kling Image 3.0、Kling/Kling Image 2.1 |
+| 模型 | Pippit/Seedance 2.5 Draft、Pippit/Seedance 2.5、Pippit/Seedance 2.0 Fast VIP、Pippit/Seedance 2.0 VIP、Pippit/Seedance 2.0 Mini 体验版、Pippit/Seedance 2.0 Mini、Pippit/Wan 3.0、Pippit/HappyHorse 1.1、Kling/Kling Video 2.5、Kling/Kling Video 2.6、Kling/Kling Video O1、Kling/Kling Video 3.0、Kling/Kling Video 3.0 Omni、Kling/Kling Video 3.0 Turbo、Kling/Kling Video 4.0、Kling/Kling Video 4.0 Flash、Kling/Kling 2.6 Motion Control、Kling/Kling 3.0 Motion Control、Kling/Kling Image 3.0 Omni、Kling/Kling Image O1、Kling/Kling Image 3.0、Kling/Kling Image 2.1、Wanx/Wan 2.6、Wanx/Wan 3.0 Prime |
 
 ## 1. 文档目的
 
@@ -19,7 +19,7 @@
 - 蓝色播放键品牌、无框标签页图标和激活图标填充/线框反转。
 - 首页连续视频轮播、流式主标语、Skill/Hook 选择器、场景策略、自定义透明下拉和 Action 生成入口。
 - 创作输入框根据 `scrollHeight` 自动增高，并在输入非空时隐藏示例灵感；策略保持可用，重复点击当前项会恢复应用前草稿。
-- 模型下拉框使用统一模型元数据，展示 Pippit 8 个、Kling 8 个当前可用的视频模型及 Provider。
+- 模型下拉框使用统一模型元数据，展示 Pippit 8 个、Kling 8 个、Wanx 2 个当前可用的视频模型及 Provider。
 - Skills 使用单一可搜索目录，显示 `user_id/skill_id`；原厂商能力使用厂商命名空间（如 `kling`），跨 Provider 工作流使用 `video_agent`。
 - Skills 提供分类筛选、综合榜单、点赞和去重使用信号；公开 Skill 对其他登录用户可见，作者不能给自己点赞。
 - Videos 支持搜索、循环视频、作者、喜欢数、发布，以及带 Skill 的场景复用。
@@ -46,6 +46,7 @@
 - Mock Provider。
 - Pippit CLI 视频提交、任务查询和余额读取。
 - Kling 国内版 CLI 文本生成视频、任务查询、动作控制和多模态参考。
+- Wanx（阿里云百炼 / DashScope）异步视频生成、任务轮询与结果转存。
 - 任务状态 API 刷新。
 - Celery 后台轮询。
 - 实时制作进度轮询与 Final Cut 视觉模型评估。

@@ -34,6 +34,7 @@
 | TODO-PROVIDER-003 | Provider cancellation and unified errors | Both providers support cancel, timeout, throttling, and retry classification | P0 |
 | TODO-PROVIDER-004 | Automatic routing and fallback | Tasks select models by task, budget, and availability while respecting explicit choice | P1 |
 | TODO-PROVIDER-005 | Take management | Each shot stores alternate takes, scores, and selection history | P1 |
+| TODO-PROVIDER-006 | Wanx live acceptance | Complete an approved Wanx text-to-video run with polling, download, and persistence using a real DashScope key | P0 |
 
 ## 4. Media and Delivery
 
@@ -76,4 +77,5 @@
 | TODO-QA-002 | Provider contract matrix | Cover unified behavior across Pippit, Kling, and Mock | P0 |
 | TODO-QA-003 | Paid generation acceptance | Complete one end-to-end generation with an explicit budget and approval | P0 |
 | TODO-QA-004 | Failure exercises | Cover worker interruption, duplicate delivery, SSE reconnect, and download failure | P1 |
+| TODO-QA-005 | OSS bucket integration | Validate upload, restore, and delete against a real bucket, including signing and permissions | P1 |
 

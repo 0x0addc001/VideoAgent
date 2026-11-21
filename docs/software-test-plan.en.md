@@ -40,7 +40,7 @@ Backend:
 - Project ownership, rename, and archive.
 - Storyboard replacement and versioning.
 - Agent planning with deterministic and fake LLM behavior.
-- Mock, Pippit, and Kling Provider contracts.
+- Mock, Pippit, Kling, and Wanx Provider contracts.
 - Estimate, approval, idempotency, and job status.
 - Provider status and credits.
 - Health endpoint.
@@ -90,6 +90,11 @@ Pippit tests use a local fake CLI and cover status, credits, submit, query,
 timeout, missing binary, invalid JSON, and missing task IDs. Kling tests use a
 fake MCP client and cover text-to-video, image-to-video, motion control,
 task-state mapping, and result extraction.
+
+Wanx tests use `httpx.MockTransport` to cover async submission, status mapping,
+error codes, and local reference-image encoding without touching DashScope. Media
+storage tests use a fake `oss2` module to exercise the OSS path; local storage
+remains the default.
 
 ## 6. API Tests
 

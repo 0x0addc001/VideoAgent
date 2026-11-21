@@ -44,6 +44,7 @@ Docs
 - 首页提供醒目的创作输入框。
 - 创作框支持 Skill、Hook、风格、画幅、时长、模型、清晰度、音频和审核设定。
 - 模型选择器展示全部当前可用的视频模型，格式为 `服务商/模型`。
+- 视频生成覆盖 Mock、Pippit（CLI）、Kling（CLI/MCP）与 Wanx（阿里云百炼）四类 Provider。
 - Character 与 Scene 页面提供图片模型选择，Shot 页面为文生视频和图生视频提供视频模型
   选择；“Project default”继承项目初始选择，切换模型会使旧积分估算失效。
 - 同一 Skill 有多个 Provider 时，任务页展示已知的 `服务商/模型`，项目默认模型保持预选；

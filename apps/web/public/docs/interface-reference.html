@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent API" />
     <title>API · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=33" />
+    <link rel="stylesheet" href="../docs.css?v=34" />
   </head>
   <body data-document="interface-reference.html">
     <main class="document-shell" id="document-shell">
@@ -61,6 +61,7 @@
 <a class="toc-link toc-level-2" href="#administration">Administration</a>
 <a class="toc-link toc-level-2" href="#pippit-provider">Pippit Provider</a>
 <a class="toc-link toc-level-2" href="#kling-provider">Kling Provider</a>
+<a class="toc-link toc-level-2" href="#wanx-provider">Wanx Provider</a>
 <a class="toc-link toc-level-2" href="#errors">Errors</a>
         </nav>
       </aside>
@@ -680,6 +681,13 @@ file=&lt;image, video, or audio&gt;</code></pre>
 <p>If the server CLI is not logged in, the credits endpoint returns <code>connected: false</code> and <code>credits: null</code>. A missing binary returns <code>503</code>; an upstream CLI failure returns <code>502</code>.</p>
 <h2 id="kling-provider">Kling Provider</h2>
 <p>VideoAgent uses the server-owned China-region <code>@klingai/cli-cn</code> package and the <code>https://klingai.com/mcp</code> endpoint. Kling tokens never reach the browser. <code>VIDEOAGENT_KLING_EXPECTED_USER_ID</code> pins the authorized domestic account. Operators can use <code>kling who_am_i</code> and <code>kling account</code> for read-only identity and credit checks.</p>
+<h2 id="wanx-provider">Wanx Provider</h2>
+<p>Wanx runs over Alibaba Cloud Model Studio (DashScope) instead of a local CLI. The server owns the key and clients only see <code>provider: &quot;wanx&quot;</code>.</p>
+<pre><code class="language-env">VIDEOAGENT_VIDEO_PROVIDER=wanx
+VIDEOAGENT_WANX_API_KEY=sk-...
+VIDEOAGENT_WANX_BASE_URL=https://dashscope.aliyuncs.com
+VIDEOAGENT_WANX_MODEL=wan2.6-t2v</code></pre>
+<p>Setting <code>VIDEOAGENT_VIDEO_PROVIDER=wanx</code> without a key fails fast at startup with <code>WanxNotConfigured</code>. Job polling maps DashScope <code>PENDING</code>/<code>RUNNING</code> to <code>running</code>, <code>SUCCEEDED</code> to <code>succeeded</code>, and <code>FAILED</code>/<code>CANCELED</code>/<code>UNKNOWN</code> to <code>failed</code>; result URLs expire after 24 hours and are downloaded immediately. See <a href="providers.html">docs/providers.md</a> for all providers.</p>
 <h2 id="errors">Errors</h2>
 <p>Errors use the following shape:</p>
 <pre><code class="language-json">{
@@ -737,6 +745,6 @@ file=&lt;image, video, or audio&gt;</code></pre>
 </tr>
 </tbody></table></div></article>
     </main>
-    <script src="../docs.js?v=33"></script>
+    <script src="../docs.js?v=34"></script>
   </body>
 </html>

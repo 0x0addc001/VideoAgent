@@ -6,7 +6,7 @@
     <meta name="description" content="VideoAgent Dev" />
     <title>Dev · VideoAgent</title>
     <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
-    <link rel="stylesheet" href="../docs.css?v=33" />
+    <link rel="stylesheet" href="../docs.css?v=34" />
   </head>
   <body data-document="software-implementation.html">
     <main class="document-shell" id="document-shell">
@@ -69,7 +69,7 @@
 </tr>
 <tr>
 <td>Model</td>
-<td>Pippit/Seedance 2.5 Draft, Pippit/Seedance 2.5, Pippit/Seedance 2.0 Fast VIP, Pippit/Seedance 2.0 VIP, Pippit/Seedance 2.0 Mini Preview, Pippit/Seedance 2.0 Mini, Pippit/Wan 3.0, Pippit/HappyHorse 1.1, Kling/Kling Video 2.5, Kling/Kling Video 2.6, Kling/Kling Video O1, Kling/Kling Video 3.0, Kling/Kling Video 3.0 Omni, Kling/Kling Video 3.0 Turbo, Kling/Kling Video 4.0, Kling/Kling Video 4.0 Flash, Kling/Kling 2.6 Motion Control, Kling/Kling 3.0 Motion Control, Kling/Kling Image 3.0 Omni, Kling/Kling Image O1, Kling/Kling Image 3.0, Kling/Kling Image 2.1</td>
+<td>Pippit/Seedance 2.5 Draft, Pippit/Seedance 2.5, Pippit/Seedance 2.0 Fast VIP, Pippit/Seedance 2.0 VIP, Pippit/Seedance 2.0 Mini Preview, Pippit/Seedance 2.0 Mini, Pippit/Wan 3.0, Pippit/HappyHorse 1.1, Kling/Kling Video 2.5, Kling/Kling Video 2.6, Kling/Kling Video O1, Kling/Kling Video 3.0, Kling/Kling Video 3.0 Omni, Kling/Kling Video 3.0 Turbo, Kling/Kling Video 4.0, Kling/Kling Video 4.0 Flash, Kling/Kling 2.6 Motion Control, Kling/Kling 3.0 Motion Control, Kling/Kling Image 3.0 Omni, Kling/Kling Image O1, Kling/Kling Image 3.0, Kling/Kling Image 2.1, Wanx/Wan 2.6, Wanx/Wan 3.0 Prime</td>
 </tr>
 </tbody></table></div>
 <h2 id="1-purpose">1. Purpose</h2>
@@ -81,7 +81,7 @@
 <li>Home composer with Skill and Hook selectors, six production playbooks, and</li>
 <p>transparent custom dropdowns.</p>
 <li>Auto-growing prompt textarea with idea suggestions rendered only in the empty state.</li>
-<li>Complete live video-model catalogue with provider-labelled Pippit and Kling options.</li>
+<li>Complete live video-model catalogue with provider-labelled Pippit, Kling, and Wanx options.</li>
 <li>Flat searchable Skills catalogue using <code>user_id/skill_id</code>, plus user publishing.</li>
 <li>Searchable Videos feed with looping video playback, Skill-backed scenario</li>
 <p>reuse, and publishing.</p>
@@ -95,7 +95,7 @@
 <li>LangGraph single-node storyboard planning.</li>
 <li>OpenAI-compatible and deterministic local planners.</li>
 <li>Cost estimate and explicit generation approval.</li>
-<li>Pippit CLI, China-region Kling CLI, and Mock Provider adapters.</li>
+<li>Pippit CLI, China-region Kling CLI, Wanx (DashScope), and Mock Provider adapters.</li>
 <li>Celery polling with Redis.</li>
 <li>Per-user credit reservations and idempotent refunds.</li>
 <li>Image, video, and audio uploads with MIME, signature, and size validation.</li>
@@ -789,6 +789,6 @@ pnpm test:e2e
 python scripts\build_pages.py</code></pre>
 <p>Backend coverage currently consists of 71 tests, frontend coverage consists of 30 Vitest tests, and Playwright contains seven no-fee browser flows. Playwright uses the Mock Provider for generation and therefore never consumes real Provider credits.</p></article>
     </main>
-    <script src="../docs.js?v=33"></script>
+    <script src="../docs.js?v=34"></script>
   </body>
 </html>

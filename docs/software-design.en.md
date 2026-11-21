@@ -6,12 +6,13 @@
 | Updated | 2026-11-06 |
 | Backend framework | Python + FastAPI |
 | Frontend framework | Next.js + TypeScript |
-| Model | Pippit/Seedance 2.5 Draft, Pippit/Seedance 2.5, Pippit/Seedance 2.0 Fast VIP, Pippit/Seedance 2.0 VIP, Pippit/Seedance 2.0 Mini Preview, Pippit/Seedance 2.0 Mini, Pippit/Wan 3.0, Pippit/HappyHorse 1.1, Kling/Kling Video 2.5, Kling/Kling Video 2.6, Kling/Kling Video O1, Kling/Kling Video 3.0, Kling/Kling Video 3.0 Omni, Kling/Kling Video 3.0 Turbo, Kling/Kling Video 4.0, Kling/Kling Video 4.0 Flash, Kling/Kling 2.6 Motion Control, Kling/Kling 3.0 Motion Control, Kling/Kling Image 3.0 Omni, Kling/Kling Image O1, Kling/Kling Image 3.0, Kling/Kling Image 2.1 |
+| Model | Pippit/Seedance 2.5 Draft, Pippit/Seedance 2.5, Pippit/Seedance 2.0 Fast VIP, Pippit/Seedance 2.0 VIP, Pippit/Seedance 2.0 Mini Preview, Pippit/Seedance 2.0 Mini, Pippit/Wan 3.0, Pippit/HappyHorse 1.1, Kling/Kling Video 2.5, Kling/Kling Video 2.6, Kling/Kling Video O1, Kling/Kling Video 3.0, Kling/Kling Video 3.0 Omni, Kling/Kling Video 3.0 Turbo, Kling/Kling Video 4.0, Kling/Kling Video 4.0 Flash, Kling/Kling 2.6 Motion Control, Kling/Kling 3.0 Motion Control, Kling/Kling Image 3.0 Omni, Kling/Kling Image O1, Kling/Kling Image 3.0, Kling/Kling Image 2.1, Wanx/Wan 2.6, Wanx/Wan 3.0 Prime |
 
 VideoAgent integrates Pippit CLI and the China-region Kling CLI behind one
 provider boundary. Pippit provides video submission, task queries, and credits.
 Kling CLI provides text-to-video, image-to-video, motion control, and ordered
-multimodal reference tools.
+multimodal reference tools. Wanx adds an asynchronous HTTP provider through
+Alibaba Cloud Model Studio.
 
 ## 1. Purpose
 
@@ -110,7 +111,7 @@ Celery Worker + Redis
 | Agent | LangGraph, LangChain OpenAI-compatible provider |
 | Database | SQLAlchemy 2 Async, SQLite |
 | Jobs | Celery with Redis |
-| Video providers | Pippit CLI, Kling China CLI, Mock Provider |
+| Video providers | Pippit CLI, Kling China CLI, Wanx (DashScope), Mock Provider |
 | Media | FFmpeg, local filesystem storage |
 | Testing | pytest, Vitest, Testing Library, Playwright |
 | Quality | Ruff, mypy, TypeScript |
@@ -268,8 +269,8 @@ Authors cannot create engagement against their own content. The UI exposes
 top-three reward projections; credit settlement remains an audited operating
 action.
 
-The Model selector uses the verified live catalogue: eight Kling video models
-and eight Pippit video models, plus Auto. Options use `Provider/Model` naming
+The Model selector uses the verified live catalogue: eight Kling video models,
+eight Pippit video models, and two Wanx video models, plus Auto. Options use `Provider/Model` naming
 so users can distinguish model families.
 
 The Agents composer includes production playbooks for product ads, creator

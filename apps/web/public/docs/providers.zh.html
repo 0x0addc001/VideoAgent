@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="VideoAgent Provider" />
+    <title>Provider · VideoAgent</title>
+    <link rel="icon" href="../brand-mark.svg?v=13" type="image/svg+xml" />
+    <link rel="stylesheet" href="../docs.css?v=34" />
+  </head>
+  <body data-document="providers.zh.html">
+    <main class="document-shell" id="document-shell">
+      <aside class="document-toc" id="document-toc">
+        <button
+          class="toc-toggle"
+          id="toc-toggle"
+          type="button"
+          aria-controls="toc-panel"
+          aria-expanded="true"
+          aria-label="目录"
+        >
+          <span class="toc-toggle-icon" aria-hidden="true">☰</span>
+          <span class="toc-toggle-label">目录</span>
+          <span class="toc-toggle-chevron" aria-hidden="true">‹</span>
+        </button>
+        <nav class="toc-panel" id="toc-panel" aria-label="目录">
+          <p class="toc-kicker">目录</p>
+          <a class="toc-link toc-level-1" href="#videoagent-provider-文档">VideoAgent Provider 文档</a>
+<a class="toc-link toc-level-2" href="#1-总览">1. 总览</a>
+<a class="toc-link toc-level-2" href="#2-选择与解析顺序">2. 选择与解析顺序</a>
+<a class="toc-link toc-level-2" href="#3-mock-provider">3. Mock Provider</a>
+<a class="toc-link toc-level-2" href="#4-pippit-provider">4. Pippit Provider</a>
+<a class="toc-link toc-level-2" href="#5-kling-provider">5. Kling Provider</a>
+<a class="toc-link toc-level-2" href="#6-wanx-provider-阿里云百炼-通义万相">6. Wanx Provider（阿里云百炼 / 通义万相）</a>
+<a class="toc-link toc-level-2" href="#7-规划器与视觉评审-llm-provider">7. 规划器与视觉评审（LLM Provider）</a>
+<a class="toc-link toc-level-2" href="#8-媒体存储">8. 媒体存储</a>
+<a class="toc-link toc-level-2" href="#9-新增一个-provider">9. 新增一个 Provider</a>
+<a class="toc-link toc-level-2" href="#10-已知限制">10. 已知限制</a>
+        </nav>
+      </aside>
+      <article class="document"><h1 id="videoagent-provider-文档">VideoAgent Provider 文档</h1>
+<div class="table-wrap"><table><thead><tr>
+<th>属性</th>
+<th>内容</th>
+</tr></thead><tbody>
+<tr>
+<td>文档版本</td>
+<td>v1.0</td>
+</tr>
+<tr>
+<td>更新日期</td>
+<td>2026-11-21</td>
+</tr>
+<tr>
+<td>范围</td>
+<td>视频生成 Provider、规划器与视觉评审、媒体存储、配置与排查</td>
+</tr>
+</tbody></table></div>
+<p>本文件是 Provider 相关内容的唯一入口：视频生成、LLM、视觉评审和媒体存储都在这里说明， 不再分散到各文档。</p>
+<h2 id="1-总览">1. 总览</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>Provider</th>
+<th>接入方式</th>
+<th>能力</th>
+<th>鉴权</th>
+<th>配置前缀</th>
+</tr></thead><tbody>
+<tr>
+<td><code>mock</code></td>
+<td>进程内</td>
+<td>文生视频、图生视频（本地样例素材）</td>
+<td>无</td>
+<td>—</td>
+</tr>
+<tr>
+<td><code>pippit</code></td>
+<td>CLI 子进程</td>
+<td>文生/图生视频、任务查询、积分余额</td>
+<td>服务端 CLI 登录</td>
+<td><code>VIDEOAGENT_PIPPIT_*</code></td>
+</tr>
+<tr>
+<td><code>kling</code></td>
+<td>CLI 或 MCP</td>
+<td>文生/图生视频、动作控制、多模态参考</td>
+<td>国内版 CLI OAuth 或用户 MCP Token</td>
+<td><code>VIDEOAGENT_KLING_*</code></td>
+</tr>
+<tr>
+<td><code>wanx</code></td>
+<td>HTTP（DashScope）</td>
+<td>文生/图生视频、多镜头叙事</td>
+<td>服务端 API Key</td>
+<td><code>VIDEOAGENT_WANX_*</code></td>
+</tr>
+</tbody></table></div>
+<p>规划器与视觉评审走 OpenAI 兼容协议（DeepSeek、通义千问等），媒体存储有 <code>local</code> 与 <code>oss</code> 两种后端。所有凭据只来自环境变量或 <code>.env</code>，不进入代码和仓库。</p>
+<h2 id="2-选择与解析顺序">2. 选择与解析顺序</h2>
+<ol>
+<li><code>VIDEOAGENT_VIDEO_PROVIDER</code> 决定默认 Provider（<code>mock</code> / <code>pippit</code> / <code>kling</code> / <code>wanx</code>）。</li>
+<li>项目 Brief 中的 <code>Provider/模型</code> 标签（如 <code>Wanx/Wan 2.6</code>）优先于默认值。</li>
+<li>前端在估算或生成时显式提交的 <code>provider</code> 再次覆盖。</li>
+<li><code>mock</code> 模式直接返回 Mock Provider，不访问任何外部服务。</li>
+<li><code>auto</code> 模式下，Kling 未连接且允许降级时回退到 Mock，并如实告知用户。</li>
+</ol>
+<h2 id="3-mock-provider">3. Mock Provider</h2>
+<p>用于离线开发、单元测试和 Playwright E2E，不产生费用。</p>
+<ul>
+<li>配置：<code>VIDEOAGENT_VIDEO_PROVIDER=mock</code></li>
+<li>行为：提交返回 <code>mock-&lt;uuid&gt;</code>，轮询立即成功并指向仓库内置样例视频。</li>
+<li>限制：不验证真实 Provider 的时限、配额和错误码。</li>
+</ul>
+<h2 id="4-pippit-provider">4. Pippit Provider</h2>
+<p>服务端持有 Pippit CLI 的登录态，浏览器只拿到 VideoAgent 自己的会话。</p>
+<pre><code class="language-env">VIDEOAGENT_VIDEO_PROVIDER=pippit
+VIDEOAGENT_PIPPIT_CLI_COMMAND=pippit-tool-cli
+VIDEOAGENT_PIPPIT_VIDEO_MODEL=
+VIDEOAGENT_PIPPIT_VIDEO_RESOLUTION=
+VIDEOAGENT_PIPPIT_TIMEOUT_SECONDS=180
+VIDEOAGENT_PIPPIT_ACCESS_KEY=      # 仅 CI 使用，优先浏览器登录</code></pre>
+<ul>
+<li>提交：<code>generate-video</code>，携带提示词、时长、比例、模型与多模态参考文件。</li>
+<li>查询：<code>query-result --thread-id --run-id</code>，<code>task_id</code> 是这两个字段的 JSON 引用，可跨重启恢复。</li>
+<li>账号：<code>GET /providers/pippit</code> 读状态，<code>GET /providers/pippit/credits</code> 读余额。</li>
+<li>错误：CLI 缺失 → <code>503</code>；未登录 → <code>409</code>；上游失败 → <code>502</code>。</li>
+</ul>
+<h2 id="5-kling-provider">5. Kling Provider</h2>
+<p>两种后端，由 <code>VIDEOAGENT_KLING_BACKEND</code> 选择：</p>
+<pre><code class="language-env">VIDEOAGENT_KLING_BACKEND=cli          # cli | mcp
+VIDEOAGENT_KLING_CLI_COMMAND=kling
+VIDEOAGENT_KLING_CLI_TIMEOUT_SECONDS=180
+VIDEOAGENT_KLING_EXPECTED_USER_ID=    # 固定已授权的国内版账号</code></pre>
+<ul>
+<li><code>cli</code>：调用国内版 <code>@klingai/cli-cn</code>，适合开发机和单机部署。</li>
+<li><code>mcp</code>：用当前用户的 OAuth Token 连接 <code>https://klingai.com/mcp</code>，Token 由</li>
+<p><code>provider_credentials</code> 加密存储，不落浏览器。</p>
+<li>未连接且不可降级时返回 <code>409 KLING_NOT_CONNECTED</code>。</li>
+<li>可用 <code>kling who_am_i</code> 与 <code>kling account</code> 做只读核对。</li>
+</ul>
+<h2 id="6-wanx-provider-阿里云百炼-通义万相">6. Wanx Provider（阿里云百炼 / 通义万相）</h2>
+<p>纯 HTTP，异步任务：提交拿 <code>task_id</code>，轮询取 <code>video_url</code>。</p>
+<pre><code class="language-env">VIDEOAGENT_VIDEO_PROVIDER=wanx
+VIDEOAGENT_WANX_API_KEY=sk-...
+VIDEOAGENT_WANX_BASE_URL=https://dashscope.aliyuncs.com
+VIDEOAGENT_WANX_MODEL=wan2.6-t2v
+VIDEOAGENT_WANX_TIMEOUT_SECONDS=300</code></pre>
+<ul>
+<li><strong>地域必须一致</strong>：API Key、Endpoint、模型跨地域会失败；业务空间专属域名形如</li>
+<p><code>https://{WorkspaceId}.cn-beijing.maas.aliyuncs.com</code>。</p>
+<li><strong>参数收敛</strong>：时长夹到 2–15 秒；比例只接受 16:9 / 9:16 / 1:1 / 4:3 / 3:4，项目的 21:9</li>
+<p>回退为 16:9。</p>
+<li><strong>图生视频</strong>：公网图片 URL 原样传递；本地参考图编码为 base64 data URI，超大图建议先传</li>
+<p>OSS 再传 URL。</p>
+<li><strong>结果 24 小时失效</strong>：<code>materialize_generation_result</code> 立即下载并转存到媒体存储。</li>
+<li><strong>模型别名</strong>：<code>WANX_MODEL_ALIASES</code> 把 <code>Wanx/Wan 2.6</code>、<code>Wanx/Wan 3.0 Prime</code> 等标签映射到</li>
+<p>模型 ID。</p>
+<li>单测使用 <code>httpx.MockTransport</code>，覆盖提交、状态映射、错误码和本地图片编码。</li>
+</ul>
+<h2 id="7-规划器与视觉评审-llm-provider">7. 规划器与视觉评审（LLM Provider）</h2>
+<p>两者都是 OpenAI 兼容接口，改 <code>base_url</code> + <code>api_key</code> + <code>model</code> 即可切换厂商。</p>
+<pre><code class="language-env"># DeepSeek（默认）
+VIDEOAGENT_LLM_BASE_URL=https://api.deepseek.com/v1
+VIDEOAGENT_LLM_MODEL=deepseek-flash
+
+# 通义千问
+VIDEOAGENT_LLM_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+VIDEOAGENT_LLM_MODEL=qwen-plus
+
+# 视觉评审
+VIDEOAGENT_VISION_BASE_URL=https://dashscope.aliyuncs.com/compatible-mode/v1
+VIDEOAGENT_VISION_MODELS=[&quot;qwen-vl-max&quot;]</code></pre>
+<ul>
+<li>不配置 Key 时使用确定性的本地 Planner，不会静默调用外部模型。</li>
+<li>远程 Planner 超时或返回不可解析结果时，回退本地 Planner 并在 Agent 轨迹中说明。</li>
+<li>视觉评审只对已导出的成片运行；未配置评估器时明确提示，不伪造分数。</li>
+</ul>
+<h2 id="8-媒体存储">8. 媒体存储</h2>
+<pre><code class="language-env">VIDEOAGENT_MEDIA_STORAGE=local        # local | oss
+VIDEOAGENT_MEDIA_DIR=.data/media
+VIDEOAGENT_OSS_ENDPOINT=
+VIDEOAGENT_OSS_BUCKET=
+VIDEOAGENT_OSS_ACCESS_KEY_ID=
+VIDEOAGENT_OSS_ACCESS_KEY_SECRET=
+VIDEOAGENT_OSS_PREFIX=videoagent</code></pre>
+<ul>
+<li><code>local</code>：媒体目录即持久层，默认行为。</li>
+<li><code>oss</code>：写入时镜像（上传、生成图、生成视频、成片、封面），读取缺失时回源；FFmpeg 始终</li>
+<p>处理本地文件。</p>
+<li>启用前先 <code>cd services/api &amp;&amp; uv sync --extra oss</code>；缺凭据抛 <code>StorageError</code>，不静默降级。</li>
+</ul>
+<h2 id="9-新增一个-provider">9. 新增一个 Provider</h2>
+<ol>
+<li>在 <code>providers/</code> 实现 <code>name / estimate / submit / status</code> 四个成员。</li>
+<li>在 <code>providers/factory.py</code> 注册模式，必要时在 <code>services/provider_resolver.py</code> 处理用户级鉴权。</li>
+<li>在 <code>config.py</code> 用 <code>VIDEOAGENT_</code> 前缀增加配置，并在 <code>.env.example</code> 留空示例。</li>
+<li>如果支持模型别名，加入 <code>api/generation.py</code> 的别名表与 <code>Provider/模型</code> 正则。</li>
+<li>用 MockTransport 或 Fake CLI 写契约测试，不依赖真实付费调用。</li>
+</ol>
+<h2 id="10-已知限制">10. 已知限制</h2>
+<ul>
+<li>Wanx、Kling MCP、Pippit 的真实联调需要各自的 Key 或登录态，CI 只跑契约测试。</li>
+<li>OSS 后端仅对假 SDK 做过单测，未在 CI 上跑真实 Bucket。</li>
+<li>万相不支持 21:9；需要 21:9 时请在导出阶段裁切，而不是依赖 Provider。</li>
+</ul>
+<p>参考：<a href="https://www.alibabacloud.com/help/zh/model-studio/qwen-api-via-openai-chat-completions">DashScope OpenAI 兼容接口</a>、 <a href="https://help.aliyun.com/zh/model-studio/text-to-video-api-reference">万相文生视频 API</a>、 <a href="https://help.aliyun.com/zh/oss/developer-reference/python-sdk/">OSS Python SDK</a></p></article>
+    </main>
+    <script src="../docs.js?v=34"></script>
+  </body>
+</html>
