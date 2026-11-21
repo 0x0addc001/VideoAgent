@@ -1,4 +1,4 @@
-# VideoAgent Product Requirements
+# VideoAgent Product Requirements Document
 
 | Attribute | Value |
 | --- | --- |

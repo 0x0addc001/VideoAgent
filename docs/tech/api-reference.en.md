@@ -1,4 +1,4 @@
-# VideoAgent API Reference
+# VideoAgent APIs Document
 
 | Attribute | Value |
 | --- | --- |

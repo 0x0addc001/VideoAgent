@@ -1,4 +1,4 @@
-# VideoAgent Test Plan
+# VideoAgent Test Document
 
 | Attribute | Value |
 | --- | --- |

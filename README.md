@@ -10,7 +10,7 @@ Documentation includes matching editions in both languages.
 [Live project homepage](https://0x0addc001.github.io/VideoAgent/) ·
 [Product requirements](docs/product/product-requirements.en.md) ·
 [Architecture](docs/tech/architecture.en.md) ·
-[API reference](docs/tech/api-reference.en.md)
+[APIs](docs/tech/api-reference.en.md)
 
 ![VideoAgent home](docs/assets/readme-home.png)
 
@@ -360,16 +360,16 @@ python scripts\check_secrets.py
 **Product**
 
 - [Product requirements](docs/product/product-requirements.en.md)
-- [Operations and strategy](docs/product/operations.en.md)
+- [Operations and Strategies](docs/product/operations.en.md)
 
 **Tech**
 
 - [Architecture](docs/tech/architecture.en.md)
-- [API reference](docs/tech/api-reference.en.md)
+- [APIs](docs/tech/api-reference.en.md)
 - [Models and providers](docs/tech/models.en.md)
 - [Implementation](docs/tech/implementation.en.md)
-- [Test plan](docs/tech/test-plan.en.md)
-- [DevOps runbook](docs/tech/devops.en.md)
+- [Test](docs/tech/test-plan.en.md)
+- [DevOps](docs/tech/devops.en.md)
 
 The documentation build also produces Chinese editions and the static project
 homepage under `.pages-build/`.

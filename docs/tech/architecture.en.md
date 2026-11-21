@@ -1,4 +1,4 @@
-# VideoAgent Architecture
+# VideoAgent Architecture Document
 
 | Attribute | Value |
 | --- | --- |

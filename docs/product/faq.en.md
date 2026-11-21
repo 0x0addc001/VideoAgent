@@ -1,4 +1,4 @@
-# VideoAgent FAQ
+# VideoAgent FAQ Document
 
 | Attribute | Value |
 | --- | --- |

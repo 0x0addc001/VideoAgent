@@ -1,4 +1,4 @@
-# VideoAgent Operations and Strategy
+# VideoAgent Operations and Strategies Document
 
 | Attribute | Value |
 | --- | --- |

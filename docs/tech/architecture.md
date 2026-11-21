@@ -1,4 +1,4 @@
-# VideoAgent 架构设计
+# VideoAgent 架构设计文档
 
 | 属性 | 内容 |
 | --- | --- |
