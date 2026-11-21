@@ -19,7 +19,7 @@ VideoAgent 按三层内容运营：
 
 - 完成认证和积分消耗验收。
 - 确认 Pippit CLI 授权与 Kling 国内版 CLI OAuth。
-- 发布 PRD、策略、Arch、API、Dev、Test、Ops、FAQ、TODO 九份文档。
+- 发布 PRD、策略、Arch、API、Model、Dev、Test、Ops 八份文档。
 - 验证中英文文档切换。
 - 验证项目创建、故事板规划、生成审批和任务轮询。
 - 验证上传、生成结果落地、FFmpeg 合成、下载与分享撤销。

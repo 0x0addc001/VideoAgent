@@ -215,8 +215,7 @@ TODO
 | Dev | 开发 |
 | Test | 测试 |
 | Ops | 运营 |
-| FAQ | 客服 |
-| TODO | 待办 |
+| Model | 模型 |
 
 文档要求：
 
@@ -271,7 +270,7 @@ TODO
 8. Videos 卡片自动播放，标题位于作者与喜欢数上方。
 9. Assets 通过 Video/Skill 内部分页区分类型，并展示权限和 `yyyy-mm-dd` 编辑时间。
 10. Assets 使用瀑布流；Video 悬浮预览，Skill 卡片不显示封面。
-11. Docs 依次包含 PRD、策略、Arch、API、Dev、Test、Ops、FAQ、TODO。
+11. Docs 依次包含 PRD、策略、Arch、API、Model、Dev、Test、Ops。
 12. Docs 默认打开 PRD；左侧文档目录默认与导航等宽且可拖拽，搜索和双语切换可用。
 13. 头像根据登录状态提供登录、注册或退出。
 14. 创作策略可填充提示词和推荐制作参数。

@@ -13,7 +13,7 @@ These conventions apply to everyone (including coding agents) changing this repo
 
 - Docs are bilingual: `docs/<name>.md` is Simplified Chinese and `docs/<name>.en.md` is
   English. Change both.
-- Provider documentation lives in `docs/providers.md` and `docs/providers.en.md`. Describe
+- Provider and model documentation lives in `docs/models.md` and `docs/models.en.md`. Describe
   new video, planner, vision or storage backends there rather than adding provider sections
   to other documents.
 - Register a new document in `DOCUMENTS` in `scripts/build_pages.py`, then rebuild the

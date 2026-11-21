@@ -717,7 +717,7 @@ file=&lt;图片、视频或音频&gt;</code></pre>
 VIDEOAGENT_WANX_API_KEY=sk-...
 VIDEOAGENT_WANX_BASE_URL=https://dashscope.aliyuncs.com
 VIDEOAGENT_WANX_MODEL=wan2.6-t2v</code></pre>
-<p>设置了 <code>VIDEOAGENT_VIDEO_PROVIDER=wanx</code> 但没有 Key 时，服务在启动阶段以 <code>WanxNotConfigured</code> 明确失败。任务轮询把 DashScope 的 <code>PENDING</code>/<code>RUNNING</code> 映射为 <code>running</code>，<code>SUCCEEDED</code> 映射为 <code>succeeded</code>，<code>FAILED</code>/<code>CANCELED</code>/<code>UNKNOWN</code> 映射为 <code>failed</code>；结果链接 24 小时后失效，服务会立即下载转存。完整 Provider 说明见 <a href="providers.html">docs/providers.md</a>。</p>
+<p>设置了 <code>VIDEOAGENT_VIDEO_PROVIDER=wanx</code> 但没有 Key 时，服务在启动阶段以 <code>WanxNotConfigured</code> 明确失败。任务轮询把 DashScope 的 <code>PENDING</code>/<code>RUNNING</code> 映射为 <code>running</code>，<code>SUCCEEDED</code> 映射为 <code>succeeded</code>，<code>FAILED</code>/<code>CANCELED</code>/<code>UNKNOWN</code> 映射为 <code>failed</code>；结果链接 24 小时后失效，服务会立即下载转存。完整 Provider 说明见 <a href="models.html">docs/models.md</a>。</p>
 <h2 id="错误格式">错误格式</h2>
 <pre><code class="language-json">{
   &quot;error&quot;: {

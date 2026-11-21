@@ -271,8 +271,7 @@ English labels and Chinese short labels:
 | Dev | 开发 |
 | Test | 测试 |
 | Ops | 运营 |
-| FAQ | 客服 |
-| TODO | 待办 |
+| Model | 模型 |
 
 Docs requirements:
 
@@ -342,7 +341,7 @@ Docs requirements:
 9. Assets uses internal Video and Skill tabs and shows permission and
     `yyyy-mm-dd` edit time.
 10. Assets uses a waterfall layout; videos preview on hover and Skill cards have no cover.
-11. Docs includes PRD, Playbook, Arch, API, Dev, Test, Ops, FAQ, and TODO in order.
+11. Docs includes PRD, Playbook, Arch, API, Model, Dev, Test, and Ops in order.
 12. Docs opens on PRD, uses a resizable left directory matching navigation
     width by default, and supports search plus bilingual switching.
 13. Avatar provides login, registration, or sign-out based on session state.

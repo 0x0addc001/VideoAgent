@@ -29,10 +29,10 @@ DOCUMENTS = {
         "en": "software-design.en.md",
         "zh-CN": "software-design.md",
     },
-    "providers": {
-        "title": "Provider",
-        "en": "providers.en.md",
-        "zh-CN": "providers.md",
+    "models": {
+        "title": "Model",
+        "en": "models.en.md",
+        "zh-CN": "models.md",
     },
     "interface-reference": {
         "title": "API",
@@ -53,16 +53,6 @@ DOCUMENTS = {
         "title": "Ops",
         "en": "operations.en.md",
         "zh-CN": "operations.md",
-    },
-    "faq": {
-        "title": "FAQ",
-        "en": "faq.en.md",
-        "zh-CN": "faq.md",
-    },
-    "todo": {
-        "title": "TODO",
-        "en": "todo.en.md",
-        "zh-CN": "todo.md",
     },
 }
 

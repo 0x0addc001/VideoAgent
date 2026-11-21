@@ -19,7 +19,7 @@ VideoAgent operates three content layers:
 
 - Complete authentication and credit-usage acceptance.
 - Verify Pippit CLI authorization and Kling China-region CLI OAuth.
-- Publish PRD, Playbook, Arch, API, Dev, Test, Ops, FAQ, and TODO.
+- Publish PRD, Playbook, Arch, API, Model, Dev, Test, and Ops.
 - Verify English and Chinese Docs switching.
 - Verify project creation, storyboard planning, generation approval, and job
   polling with the configured provider.

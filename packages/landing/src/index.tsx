@@ -308,7 +308,7 @@ const HERO_LINE_TWO: HeroPart[] = [
   { text: "Director", accent: true },
 ];
 
-const DOCS_ASSET_VERSION = "33";
+const DOCS_ASSET_VERSION = "34";
 
 function heroPartsLength(parts: readonly HeroPart[]) {
   return parts.reduce((total, part) => total + Array.from(part.text).length, 0);

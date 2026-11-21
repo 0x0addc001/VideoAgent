@@ -312,7 +312,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/product-requirements.html?v=33",
+      "/docs/product-requirements.html?v=34",
     );
     expect(container.querySelector('[data-testid="docs-directory"]')).toBeInTheDocument();
     expect(container.querySelector("#docs .docs-search-wrap + .docs-body")).toBeInTheDocument();
@@ -328,7 +328,7 @@ describe("LandingPage", () => {
     expect(
       container.querySelector('button[aria-label="Expand document list"]'),
     ).toBeInTheDocument();
-    expect(container.querySelectorAll(".docs-tab-icon")).toHaveLength(9);
+    expect(container.querySelectorAll(".docs-tab-icon")).toHaveLength(8);
     expect(
       [...container.querySelectorAll(".docs-tabs button")].map((button) =>
         button.textContent?.trim(),
@@ -338,20 +338,19 @@ describe("LandingPage", () => {
       "Playbook",
       "Arch",
       "API",
+      "Model",
       "Dev",
       "Test",
       "Ops",
-      "FAQ",
-      "TODO",
     ]);
     fireEvent.click(
       [...container.querySelectorAll(".docs-tabs button")].find(
-        (button) => button.textContent?.trim() === "FAQ",
+        (button) => button.textContent?.trim() === "Model",
       )!,
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/faq.html?v=33",
+      "/docs/models.html?v=34",
     );
 
     fireEvent.click(container.querySelector(".profile-trigger")!);
@@ -363,13 +362,13 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/faq.zh.html?v=33",
+      "/docs/models.zh.html?v=34",
     );
     expect(
       [...container.querySelectorAll(".docs-tabs button")].map((button) =>
         button.textContent?.trim(),
       ),
-    ).toEqual(["产品", "策略", "架构", "接口", "开发", "测试", "运营", "客服", "待办"]);
+    ).toEqual(["产品", "策略", "架构", "接口", "模型", "开发", "测试", "运营"]);
     expect(container.querySelector(".site-header > nav")).toHaveTextContent(
       "Agents",
     );
@@ -390,7 +389,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/playbooks.html?v=33",
+      "/docs/playbooks.html?v=34",
     );
 
     fireEvent.click(
@@ -405,7 +404,7 @@ describe("LandingPage", () => {
     );
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/product-requirements.html?v=33",
+      "/docs/product-requirements.html?v=34",
     );
   });
 
@@ -1226,7 +1225,7 @@ describe("LandingPage", () => {
     fireEvent.click(container.querySelector(".docs-search-results button")!);
     expect(container.querySelector("#docs iframe")).toHaveAttribute(
       "src",
-      "/docs/operations.html?v=33",
+      "/docs/operations.html?v=34",
     );
   });
 

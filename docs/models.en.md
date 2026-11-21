@@ -1,4 +1,4 @@
-# VideoAgent Providers
+# VideoAgent Models
 
 | Attribute | Value |
 | --- | --- |

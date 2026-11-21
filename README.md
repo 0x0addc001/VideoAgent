@@ -313,7 +313,7 @@ VIDEOAGENT_WANX_API_KEY=sk-your-private-key
 VIDEOAGENT_MEDIA_STORAGE=oss
 ```
 
-See [Providers](docs/providers.en.md) for every video, planner, vision and
+See [Models](docs/models.en.md) for every video, planner, vision and
 storage backend, plus the Alibaba Cloud deployment mapping.
 
 ## Testing
