@@ -159,6 +159,40 @@ VIDEOAGENT_OSS_PREFIX=videoagent
 - Run `cd services/api && uv sync --extra oss` first; missing credentials raise a
   `StorageError` rather than silently degrading.
 
+### 8.1 Create the bucket and a RAM user
+
+**Do not use the root account AccessKey.** Production and team environments should use a
+RAM user restricted to one bucket and prefix.
+
+1. Enable OSS and create a bucket:
+   - Same region as the API and Model Studio (for example `oss-cn-beijing`).
+   - Access control: **private** — the app proxies downloads through its own API.
+   - Static website hosting is not required.
+2. Create a RAM user: RAM console → Users → Create User, tick "OpenAPI access", generate an
+   AccessKey only (no console password).
+3. Attach a custom least-privilege policy scoped to the prefix this repository uses:
+
+```json
+{
+  "Version": "1",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["oss:PutObject", "oss:GetObject", "oss:DeleteObject"],
+      "Resource": ["acs:oss:*:*:your-bucket/videoagent/*"]
+    }
+  ]
+}
+```
+
+4. Fill group 4 in `.env` and run `cd services/api && uv sync --extra oss`.
+5. Verify with `uv run --project services/api python scripts/check-oss.py`; it performs a
+   put → get → delete round trip and prints the bucket and endpoint.
+
+Notes: when ECS and the bucket share a region, the internal endpoint
+(`https://oss-cn-beijing-internal.aliyuncs.com`) avoids public traffic; local development
+must use the public endpoint. Only static AK/SK are supported today; STS is not wired yet.
+
 ## 9. Adding a provider
 
 1. Implement `name / estimate / submit / status` under `providers/`.

@@ -151,6 +151,39 @@ VIDEOAGENT_OSS_PREFIX=videoagent
   处理本地文件。
 - 启用前先 `cd services/api && uv sync --extra oss`；缺凭据抛 `StorageError`，不静默降级。
 
+### 8.1 创建 Bucket 与 RAM 子账号
+
+**不要用主账号 AccessKey。** 生产与团队环境用 RAM 子账号，权限限定到 Bucket + 前缀。
+
+1. 开通 OSS，创建 Bucket：
+   - 地域与 API/百炼一致（例如北京 `oss-cn-beijing`）。
+   - 读写权限选**私有**——应用通过自己的 API 代理下载，不需要公共读。
+   - 不需要开启静态网站托管。
+2. 创建 RAM 用户：控制台 → RAM 访问控制 → 用户 → 创建用户，勾选「OpenAPI 调用访问」，
+   只生成 AccessKey，不创建控制台登录密码。
+3. 给该用户绑定自定义策略（最小权限，只覆盖本仓库使用的前缀）：
+
+```json
+{
+  "Version": "1",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": ["oss:PutObject", "oss:GetObject", "oss:DeleteObject"],
+      "Resource": ["acs:oss:*:*:your-bucket/videoagent/*"]
+    }
+  ]
+}
+```
+
+4. 填 `.env` 第 4 组，执行 `cd services/api && uv sync --extra oss`。
+5. 验证：`uv run --project services/api python scripts/check-oss.py` 会做一次
+   put → get → delete 往返，并打印 Bucket 与 Endpoint。
+
+补充：ECS 与 Bucket 同地域时可用内网 Endpoint
+（`https://oss-cn-beijing-internal.aliyuncs.com`）省流量；本地开发必须用公网 Endpoint。
+当前只支持静态 AK/SK，尚未接入 STS 临时凭证。
+
 ## 9. 新增一个 Provider
 
 1. 在 `providers/` 实现 `name / estimate / submit / status` 四个成员。

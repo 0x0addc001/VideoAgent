@@ -35,6 +35,7 @@
 <a class="toc-link toc-level-2" href="#6-wanx-provider-alibaba-cloud-model-studio-tongyi-wanx">6. Wanx provider (Alibaba Cloud Model Studio / Tongyi Wanx)</a>
 <a class="toc-link toc-level-2" href="#7-planner-and-vision-review-llm-provider">7. Planner and vision review (LLM provider)</a>
 <a class="toc-link toc-level-2" href="#8-media-storage">8. Media storage</a>
+<a class="toc-link toc-level-3" href="#8-1-create-the-bucket-and-a-ram-user">8.1 Create the bucket and a RAM user</a>
 <a class="toc-link toc-level-2" href="#9-adding-a-provider">9. Adding a provider</a>
 <a class="toc-link toc-level-2" href="#10-known-limits">10. Known limits</a>
         </nav>
@@ -203,6 +204,37 @@ VIDEOAGENT_OSS_PREFIX=videoagent</code></pre>
 <li>Run <code>cd services/api &amp;&amp; uv sync --extra oss</code> first; missing credentials raise a</li>
 <p><code>StorageError</code> rather than silently degrading.</p>
 </ul>
+<h3 id="8-1-create-the-bucket-and-a-ram-user">8.1 Create the bucket and a RAM user</h3>
+<p><strong>Do not use the root account AccessKey.</strong> Production and team environments should use a RAM user restricted to one bucket and prefix.</p>
+<ol>
+<li>Enable OSS and create a bucket:</li>
+</ol>
+<ul>
+<li>Same region as the API and Model Studio (for example <code>oss-cn-beijing</code>).</li>
+<li>Access control: <strong>private</strong> — the app proxies downloads through its own API.</li>
+<li>Static website hosting is not required.</li>
+</ul>
+<ol>
+<li>Create a RAM user: RAM console → Users → Create User, tick "OpenAPI access", generate an</li>
+<p>AccessKey only (no console password).</p>
+<li>Attach a custom least-privilege policy scoped to the prefix this repository uses:</li>
+</ol>
+<pre><code class="language-json">{
+  &quot;Version&quot;: &quot;1&quot;,
+  &quot;Statement&quot;: [
+    {
+      &quot;Effect&quot;: &quot;Allow&quot;,
+      &quot;Action&quot;: [&quot;oss:PutObject&quot;, &quot;oss:GetObject&quot;, &quot;oss:DeleteObject&quot;],
+      &quot;Resource&quot;: [&quot;acs:oss:*:*:your-bucket/videoagent/*&quot;]
+    }
+  ]
+}</code></pre>
+<ol>
+<li>Fill group 4 in <code>.env</code> and run <code>cd services/api &amp;&amp; uv sync --extra oss</code>.</li>
+<li>Verify with <code>uv run --project services/api python scripts/check-oss.py</code>; it performs a</li>
+<p>put → get → delete round trip and prints the bucket and endpoint.</p>
+</ol>
+<p>Notes: when ECS and the bucket share a region, the internal endpoint (<code>https://oss-cn-beijing-internal.aliyuncs.com</code>) avoids public traffic; local development must use the public endpoint. Only static AK/SK are supported today; STS is not wired yet.</p>
 <h2 id="9-adding-a-provider">9. Adding a provider</h2>
 <ol>
 <li>Implement <code>name / estimate / submit / status</code> under <code>providers/</code>.</li>
