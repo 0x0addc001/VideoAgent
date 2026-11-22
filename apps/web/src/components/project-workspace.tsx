@@ -87,6 +87,15 @@ type Shot = {
   status: string;
 };
 
+type ModelRecommendation = {
+  provider: string;
+  model: string;
+  display: string;
+  estimated_credits: number;
+  score: number;
+  reasons: string[];
+};
+
 type Character = {
   id: string;
   index: number;
@@ -736,6 +745,20 @@ export function workspaceCopy(locale: string) {
         sceneName: "场地名称",
         sceneDescription: "场地描述",
         videoModel: "视频模型",
+        autoModel: "自动推荐",
+        autoHint: "根据时长、比例、参考图和偏好自动推荐模型",
+        preference: "偏好",
+        preferenceBudget: "省预算",
+        preferenceBalanced: "均衡",
+        preferenceQuality: "画质优先",
+        recommendedModel: "推荐",
+        reasonRatio: "原生比例",
+        reasonDuration: "时长满足",
+        reasonReferences: "支持参考图",
+        reasonAudio: "支持音频",
+        reasonCheapest: "成本最低",
+        reasonQuality: "画质最高",
+        reasonMock: "Mock 模式",
         taskType: "任务类型",
         audio: "音频",
         shotAudio: "镜头声音",
@@ -887,6 +910,20 @@ export function workspaceCopy(locale: string) {
         sceneName: "Scene name",
         sceneDescription: "Scene description",
         videoModel: "Video model",
+        autoModel: "Auto (recommended)",
+        autoHint: "Recommended from duration, aspect ratio, references and preference",
+        preference: "Preference",
+        preferenceBudget: "Save budget",
+        preferenceBalanced: "Balanced",
+        preferenceQuality: "Best quality",
+        recommendedModel: "Recommended",
+        reasonRatio: "native ratio",
+        reasonDuration: "supports duration",
+        reasonReferences: "supports references",
+        reasonAudio: "supports audio",
+        reasonCheapest: "lowest cost",
+        reasonQuality: "highest quality",
+        reasonMock: "mock mode",
         taskType: "Task type",
         audio: "Audio",
         shotAudio: "Shot audio",
@@ -1928,6 +1965,11 @@ export function ProjectWorkspace({
   const [estimate, setEstimate] = useState<CostEstimate | null>(null);
   const [shotDraft, setShotDraft] = useState<ShotDraft | null>(null);
   const [shotGenerationModel, setShotGenerationModel] = useState("project");
+  const [shotPreference, setShotPreference] = useState<
+    "budget" | "balanced" | "quality"
+  >("balanced");
+  const [shotRecommendation, setShotRecommendation] =
+    useState<ModelRecommendation | null>(null);
   const [shotTaskType, setShotTaskType] = useState<
     "auto" | "reference" | "edit" | "extend"
   >("auto");
@@ -3107,6 +3149,63 @@ export function ProjectWorkspace({
     }
   }
 
+  function shotModelRoute() {
+    if (shotGenerationModel === "auto") {
+      if (!shotRecommendation || shotRecommendation.provider === "mock") {
+        return {};
+      }
+      return {
+        provider: shotRecommendation.provider as "kling" | "pippit" | "wanx",
+        model: shotRecommendation.model,
+      };
+    }
+    return selectedModelRoute(shotGenerationModel);
+  }
+
+  useEffect(() => {
+    const shot = canvasShot ?? selectedShot;
+    if (shotGenerationModel !== "auto" || !shot) {
+      setShotRecommendation(null);
+      return;
+    }
+    let cancelled = false;
+    const prompt = shotDraft?.prompt_en ?? shot.prompt_en ?? "";
+    const referenceCount = referencedAssets(prompt).filter((asset) =>
+      asset.content_type.startsWith("image/"),
+    ).length;
+    fetch(`${API_BASE_URL}/shots/${shot.id}/model-recommendation`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        generation_mode: shotDraft?.generation_mode ?? shot.generation_mode,
+        duration_seconds: shotDraft?.duration_seconds ?? shot.duration_seconds,
+        aspect_ratio: shotDraft?.aspect_ratio ?? shot.aspect_ratio,
+        reference_image_count: referenceCount,
+        audio_enabled: shotAudioMode === "on",
+        preference: shotPreference,
+      }),
+    })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload: { recommended?: ModelRecommendation } | null) => {
+        if (!cancelled) setShotRecommendation(payload?.recommended ?? null);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    shotGenerationModel,
+    shotPreference,
+    shotAudioMode,
+    shotDraft?.duration_seconds,
+    shotDraft?.aspect_ratio,
+    shotDraft?.generation_mode,
+    shotDraft?.prompt_en,
+    canvasShot?.id,
+    selectedShot?.id,
+  ]);
+
   async function estimateShot() {
     const shot = canvasShot ?? selectedShot;
     if (!shot) {
@@ -3126,7 +3225,7 @@ export function ProjectWorkspace({
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(selectedModelRoute(shotGenerationModel)),
+        body: JSON.stringify(shotModelRoute()),
       });
       if (!response.ok) throw new Error("estimate-failed");
       setEstimate(parseCostEstimate(await response.json()));
@@ -3169,7 +3268,7 @@ export function ProjectWorkspace({
         audio_enabled:
           shotAudioMode === "auto" ? null : shotAudioMode === "on",
         resolution: shotResolution === "auto" ? null : shotResolution,
-        ...selectedModelRoute(shotGenerationModel),
+        ...shotModelRoute(),
       }),
     });
     if (!response.ok) {
@@ -3222,7 +3321,7 @@ export function ProjectWorkspace({
             method: "POST",
             credentials: "include",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(selectedModelRoute(shotGenerationModel)),
+            body: JSON.stringify(shotModelRoute()),
           },
         );
         if (!estimateResponse.ok) throw new Error("estimate-failed");
@@ -3260,7 +3359,7 @@ export function ProjectWorkspace({
           method: "POST",
           credentials: "include",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(selectedModelRoute(shotGenerationModel)),
+          body: JSON.stringify(shotModelRoute()),
         },
       );
       if (!estimateResponse.ok) throw new Error("estimate-failed");
@@ -3805,6 +3904,19 @@ export function ProjectWorkspace({
   }
 
   const copy = workspaceCopy(locale);
+
+  function reasonLabel(code: string) {
+    const labels: Record<string, string> = {
+      ratio_native: copy.reasonRatio,
+      duration_fits: copy.reasonDuration,
+      references_supported: copy.reasonReferences,
+      audio_supported: copy.reasonAudio,
+      cheapest: copy.reasonCheapest,
+      highest_quality: copy.reasonQuality,
+      mock_provider: copy.reasonMock,
+    };
+    return labels[code] ?? code;
+  }
   const canvasTitle = copy.storyboard;
   const activeDocumentMode =
     selectedCanvas.kind === "document" ? selectedCanvas.document : null;
@@ -4598,9 +4710,59 @@ export function ProjectWorkspace({
                           setShotGenerationModel(value);
                           setEstimate(null);
                         }}
-                        options={modelChoices.video}
+                        options={[
+                          { id: "auto", label: copy.autoModel, provider: "" },
+                          ...modelChoices.video,
+                        ]}
                         value={shotGenerationModel}
                       />
+                      {shotGenerationModel === "auto" ? (
+                        <div className="mt-3 rounded-xl border border-white/[0.07] bg-white/[0.02] px-3 py-2 text-[12px] text-white/45">
+                          {shotRecommendation ? (
+                            <>
+                              <span className="text-white/35">
+                                {copy.recommendedModel}：
+                              </span>
+                              <span className="text-[#4facff]">
+                                {shotRecommendation.display}
+                              </span>
+                              <span className="ml-2 text-white/30">
+                                {shotRecommendation.reasons
+                                  .map((code) => reasonLabel(code))
+                                  .join(" · ")}
+                              </span>
+                            </>
+                          ) : (
+                            copy.autoHint
+                          )}
+                          <div className="mt-2 flex items-center gap-2">
+                            <span>{copy.preference}</span>
+                            <select
+                              aria-label={copy.preference}
+                              className="rounded-lg border border-white/[0.09] bg-[#11100d] px-2 py-1 text-[12px] text-white/72 outline-none"
+                              onChange={(event) =>
+                                setShotPreference(
+                                  event.target.value as
+                                    | "budget"
+                                    | "balanced"
+                                    | "quality",
+                                )
+                              }
+                              value={shotPreference}
+                            >
+                              <option value="budget">
+                                {copy.preferenceBudget}
+                              </option>
+                              <option value="balanced">
+                                {copy.preferenceBalanced}
+                              </option>
+                              <option value="quality">
+                                {copy.preferenceQuality}
+                              </option>
+                            </select>
+                          </div>
+                        </div>
+                      ) : null}
                       <div className="mt-3 grid gap-3 sm:grid-cols-3">
                         <label className="text-[12px] text-white/38">
                           <span>{copy.taskType}</span>

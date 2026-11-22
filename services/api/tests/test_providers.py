@@ -53,7 +53,11 @@ async def test_model_catalogue_lists_every_provider_without_auth(client):
     providers = {item["provider"] for item in items}
     assert providers == {"kling", "pippit", "wanx"}
     wanx = [item for item in items if item["provider"] == "wanx"]
-    assert [item["model"] for item in wanx] == ["wan2.6-t2v", "wan3.0-video-prime"]
+    assert [item["model"] for item in wanx] == [
+        "wan2.6-t2v",
+        "wan2.7-t2v",
+        "wan3.0-video-prime",
+    ]
     assert all(item["display"].startswith(item["provider"].title() + "/") for item in items)
 
 

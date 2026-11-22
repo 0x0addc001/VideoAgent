@@ -313,3 +313,26 @@ async def test_polling_refreshes_running_job_and_completes_shot(app, client):
 
     storyboard = await client.get(f"/api/v1/projects/{job['project_id']}/storyboard")
     assert storyboard.json()["shots"][0]["status"] == "completed"
+
+
+@pytest.mark.api
+async def test_model_recommendation_returns_a_reasoned_candidate(client):
+    _, shot = await project_with_shot(client)
+
+    response = await client.post(
+        f"/api/v1/shots/{shot['id']}/model-recommendation",
+        json={
+            "generation_mode": "text_to_video",
+            "duration_seconds": 5,
+            "aspect_ratio": "9:16",
+            "reference_image_count": 0,
+            "audio_enabled": False,
+            "preference": "balanced",
+        },
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["recommended"]["provider"] == "mock"
+    assert payload["recommended"]["reasons"] == ["mock_provider"]
+    assert payload["applied"]["aspect_ratio"] == "9:16"

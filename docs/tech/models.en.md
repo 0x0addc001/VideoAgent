@@ -49,6 +49,48 @@ VIDEOAGENT_DISABLED_MODELS=["kling-video-v2_5"]
 
 The static GitHub Pages landing site has no API and keeps the bundled catalogue.
 
+### 2.2 Auto recommendation
+
+The composer's Auto no longer picks a model at project creation. At the shot stage the
+user fills in the options and the server recommends a model:
+
+| Input | Meaning |
+| --- | --- |
+| `generation_mode` | text-to-video / image-to-video |
+| `duration_seconds` | 1–30 seconds |
+| `aspect_ratio` | 16:9, 21:9, 9:16, 1:1, … |
+| `reference_image_count` | number of reference images |
+| `audio_enabled` | whether audio is required |
+| `preference` | `budget`, `balanced`, `quality` |
+
+Routing first hard-filters by capability (mode, maximum duration, native ratio, reference
+slots, audio, provider availability), then scores the survivors by preference (cost,
+quality tier, parameter fit) and returns the best pick plus alternatives:
+
+```json
+{
+  "recommended": {
+    "provider": "wanx",
+    "model": "wan2.7-t2v",
+    "display": "Wanx/Wan 2.7",
+    "estimated_credits": 5,
+    "score": 66,
+    "reasons": ["ratio_native", "duration_fits", "cheapest"]
+  },
+  "alternatives": [],
+  "applied": { "duration_seconds": 5, "aspect_ratio": "9:16", "preference": "balanced" }
+}
+```
+
+Reason codes: `ratio_native`, `duration_fits`, `references_supported`, `audio_supported`,
+`cheapest`, `highest_quality`, `mock_provider`; the UI localizes them.
+
+Endpoint: `POST /api/v1/shots/{shot_id}/model-recommendation`. Choosing “Auto” on the shot
+page refreshes the recommendation as duration, ratio, references or preference change, and
+estimate plus generation reuse the same `provider/model` so the model never switches
+silently. `GET /providers/models` also exposes each model's `modes`, `max_duration`,
+`ratios`, `max_references`, `supports_audio`, `credits_per_second` and `quality_tier`.
+
 ## 3. Mock provider
 
 Used for offline development, unit tests and Playwright E2E; it never bills anyone.

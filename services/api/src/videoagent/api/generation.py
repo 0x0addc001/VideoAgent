@@ -21,11 +21,19 @@ from videoagent.providers.base import CostEstimate, GenerationRequest, VideoProv
 from videoagent.providers.oauth import KlingOAuthGateway
 from videoagent.providers.pippit import PippitVideoProvider
 from videoagent.providers.wanx import WanxVideoProvider
-from videoagent.schemas import GenerationApproval, GenerationJobRead, ModelSelection
+from videoagent.schemas import (
+    GenerationApproval,
+    GenerationJobRead,
+    ModelRecommendationRead,
+    ModelRecommendationRequest,
+    ModelRecommendationResponse,
+    ModelSelection,
+)
 from videoagent.services.credits import refund_credits, reserve_credits
 from videoagent.services.generation_jobs import refresh_generation_job
 from videoagent.services.media import asset_file, materialize_generation_result
 from videoagent.services.model_catalog import resolve_model_id
+from videoagent.services.model_router import RoutingRequest, recommend_models
 from videoagent.services.platform_settings import generation_enabled
 from videoagent.services.provider_resolver import resolve_video_provider
 from videoagent.services.storyboards import load_storyboard, owned_project_or_404
@@ -164,6 +172,37 @@ async def provider_for_project(
         allow_mock=False,
     )
     return provider, model
+
+
+@router.post(
+    "/shots/{shot_id}/model-recommendation",
+    response_model=ModelRecommendationResponse,
+)
+async def recommend_shot_model(
+    shot_id: UUID,
+    payload: ModelRecommendationRequest,
+    user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> ModelRecommendationResponse:
+    await owned_shot_or_404(session, shot_id, user.id)
+    candidates = recommend_models(
+        settings=settings,
+        request=RoutingRequest(
+            generation_mode=payload.generation_mode,
+            duration_seconds=payload.duration_seconds,
+            aspect_ratio=payload.aspect_ratio,
+            reference_image_count=payload.reference_image_count,
+            audio_enabled=payload.audio_enabled,
+            preference=payload.preference,
+        ),
+    )
+    reads = [ModelRecommendationRead.model_validate(item.as_dict()) for item in candidates]
+    return ModelRecommendationResponse(
+        recommended=reads[0],
+        alternatives=reads[1:],
+        applied=payload,
+    )
 
 
 @router.post("/shots/{shot_id}/estimate", response_model=CostEstimate)

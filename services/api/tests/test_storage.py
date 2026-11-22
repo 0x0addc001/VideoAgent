@@ -68,7 +68,14 @@ async def test_local_backend_fetches_existing_files(tmp_path):
 
 @pytest.mark.unit
 def test_oss_backend_requires_credentials(tmp_path):
-    settings = Settings(media_dir=str(tmp_path), media_storage="oss")
+    settings = Settings(
+        media_dir=str(tmp_path),
+        media_storage="oss",
+        oss_endpoint=None,
+        oss_bucket=None,
+        oss_access_key_id=None,
+        oss_access_key_secret=None,
+    )
 
     with pytest.raises(StorageError, match="VIDEOAGENT_OSS_ENDPOINT"):
         build_storage(settings)

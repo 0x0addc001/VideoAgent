@@ -29,6 +29,7 @@
 <a class="toc-link toc-level-2" href="#1-总览">1. 总览</a>
 <a class="toc-link toc-level-2" href="#2-选择与解析顺序">2. 选择与解析顺序</a>
 <a class="toc-link toc-level-3" href="#2-1-模型目录与前端选择">2.1 模型目录与前端选择</a>
+<a class="toc-link toc-level-3" href="#2-2-自动推荐-auto">2.2 自动推荐（Auto）</a>
 <a class="toc-link toc-level-2" href="#3-mock-provider">3. Mock Provider</a>
 <a class="toc-link toc-level-2" href="#4-pippit-provider">4. Pippit Provider</a>
 <a class="toc-link toc-level-2" href="#5-kling-provider">5. Kling Provider</a>
@@ -113,6 +114,52 @@ VIDEOAGENT_EXTRA_MODELS=[{&quot;provider&quot;:&quot;wanx&quot;,&quot;model&quot
 # 隐藏默认模型（按 model id 或 &quot;Provider/Label&quot;）
 VIDEOAGENT_DISABLED_MODELS=[&quot;kling-video-v2_5&quot;]</code></pre>
 <p>静态落地页（GitHub Pages）没有 API，仍使用打包目录作为回退。</p>
+<h3 id="2-2-自动推荐-auto">2.2 自动推荐（Auto）</h3>
+<p>创作框的 Auto 不在项目创建时决定模型；到镜头阶段由用户填写选项，服务端按选项推荐：</p>
+<div class="table-wrap"><table><thead><tr>
+<th>输入</th>
+<th>说明</th>
+</tr></thead><tbody>
+<tr>
+<td><code>generation_mode</code></td>
+<td>文生视频 / 图生视频</td>
+</tr>
+<tr>
+<td><code>duration_seconds</code></td>
+<td>1–30 秒</td>
+</tr>
+<tr>
+<td><code>aspect_ratio</code></td>
+<td>16:9 / 21:9 / 9:16 / 1:1 等</td>
+</tr>
+<tr>
+<td><code>reference_image_count</code></td>
+<td>参考图数量</td>
+</tr>
+<tr>
+<td><code>audio_enabled</code></td>
+<td>是否需要音频</td>
+</tr>
+<tr>
+<td><code>preference</code></td>
+<td><code>budget</code> / <code>balanced</code> / <code>quality</code></td>
+</tr>
+</tbody></table></div>
+<p>路由先按能力硬过滤（模式、时长上限、原生比例、参考图槽位、音频、Provider 是否可用）， 再按偏好加权打分（预算、画质档位、参数贴合度），返回首选与候补：</p>
+<pre><code class="language-json">{
+  &quot;recommended&quot;: {
+    &quot;provider&quot;: &quot;wanx&quot;,
+    &quot;model&quot;: &quot;wan2.7-t2v&quot;,
+    &quot;display&quot;: &quot;Wanx/Wan 2.7&quot;,
+    &quot;estimated_credits&quot;: 5,
+    &quot;score&quot;: 66,
+    &quot;reasons&quot;: [&quot;ratio_native&quot;, &quot;duration_fits&quot;, &quot;cheapest&quot;]
+  },
+  &quot;alternatives&quot;: [],
+  &quot;applied&quot;: { &quot;duration_seconds&quot;: 5, &quot;aspect_ratio&quot;: &quot;9:16&quot;, &quot;preference&quot;: &quot;balanced&quot; }
+}</code></pre>
+<p>理由码：<code>ratio_native</code>、<code>duration_fits</code>、<code>references_supported</code>、<code>audio_supported</code>、 <code>cheapest</code>、<code>highest_quality</code>、<code>mock_provider</code>；前端按当前语言渲染。</p>
+<p>接口：<code>POST /api/v1/shots/{shot_id}/model-recommendation</code>。镜头页选择「自动推荐」后， 时长、比例、参考图或偏好变化会实时刷新推荐，估算与生成复用同一个 <code>provider/model</code>， 不会静默换模型。<code>GET /providers/models</code> 同时返回每个模型的 <code>modes</code>、<code>max_duration</code>、 <code>ratios</code>、<code>max_references</code>、<code>supports_audio</code>、<code>credits_per_second</code>、<code>quality_tier</code>。</p>
 <h2 id="3-mock-provider">3. Mock Provider</h2>
 <p>用于离线开发、单元测试和 Playwright E2E，不产生费用。</p>
 <ul>

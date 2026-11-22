@@ -1,3 +1,10 @@
+import os
+
+# Keep unit tests independent from a developer's local services/api/.env.
+os.environ.setdefault("VIDEOAGENT_MEDIA_STORAGE", "local")
+os.environ.setdefault("VIDEOAGENT_VISION_MODELS", "[]")
+os.environ.setdefault("VIDEOAGENT_EXTRA_MODELS", "[]")
+
 from collections.abc import AsyncIterator
 from pathlib import Path
 

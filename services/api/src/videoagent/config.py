@@ -13,6 +13,16 @@ class ExtraModel(BaseModel):
     model: str
     label: str
     kind: Literal["video", "image"] = "video"
+    modes: list[Literal["text_to_video", "image_to_video"]] = [
+        "text_to_video",
+        "image_to_video",
+    ]
+    max_duration: int = Field(default=15, ge=1, le=120)
+    ratios: list[str] = ["16:9", "9:16", "1:1", "4:3", "3:4"]
+    max_references: int = Field(default=0, ge=0, le=50)
+    supports_audio: bool = False
+    credits_per_second: int = Field(default=1, ge=1, le=1000)
+    quality_tier: int = Field(default=2, ge=1, le=3)
 
 
 class Settings(BaseSettings):

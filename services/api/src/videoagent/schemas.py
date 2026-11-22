@@ -485,6 +485,31 @@ class ModelSelection(BaseModel):
     model: str | None = Field(default=None, min_length=1, max_length=200)
 
 
+class ModelRecommendationRequest(BaseModel):
+    generation_mode: Literal["text_to_video", "image_to_video"] = "text_to_video"
+    duration_seconds: int = Field(default=5, ge=1, le=30)
+    aspect_ratio: str = Field(default="16:9", max_length=8)
+    reference_image_count: int = Field(default=0, ge=0, le=20)
+    audio_enabled: bool = False
+    preference: Literal["budget", "balanced", "quality"] = "balanced"
+
+
+class ModelRecommendationRead(BaseModel):
+    provider: str
+    model: str
+    label: str
+    display: str
+    estimated_credits: int
+    score: int
+    reasons: list[str]
+
+
+class ModelRecommendationResponse(BaseModel):
+    recommended: ModelRecommendationRead
+    alternatives: list[ModelRecommendationRead]
+    applied: ModelRecommendationRequest
+
+
 class GenerationApproval(ModelSelection):
     approved: bool
     generation_mode: GenerationMode = "text_to_video"

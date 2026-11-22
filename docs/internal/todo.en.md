@@ -32,7 +32,7 @@
 | TODO-PROVIDER-001 | China-region Kling acceptance | Complete an approved text-to-video, poll, download, and credit reconciliation through the domestic CLI | P0 |
 | TODO-PROVIDER-002 | Provider capability discovery | Duration, aspect, audio, reference inputs, and output capabilities are server-discovered | P0 |
 | TODO-PROVIDER-003 | Provider cancellation and unified errors | Both providers support cancel, timeout, throttling, and retry classification | P0 |
-| TODO-PROVIDER-004 | Automatic routing and fallback | Tasks select models by task, budget, and availability while respecting explicit choice | P1 |
+| TODO-PROVIDER-004 | Routing enhancements | Add latency, availability and failure-rate weights on top of capability filtering and preference scoring, with explicit fallback when nothing matches | P1 |
 | TODO-PROVIDER-005 | Take management | Each shot stores alternate takes, scores, and selection history | P1 |
 | TODO-PROVIDER-006 | Wanx live acceptance | Complete an approved Wanx text-to-video run with polling, download, and persistence using a real DashScope key | P0 |
 

@@ -46,6 +46,45 @@ VIDEOAGENT_DISABLED_MODELS=["kling-video-v2_5"]
 
 静态落地页（GitHub Pages）没有 API，仍使用打包目录作为回退。
 
+### 2.2 自动推荐（Auto）
+
+创作框的 Auto 不在项目创建时决定模型；到镜头阶段由用户填写选项，服务端按选项推荐：
+
+| 输入 | 说明 |
+| --- | --- |
+| `generation_mode` | 文生视频 / 图生视频 |
+| `duration_seconds` | 1–30 秒 |
+| `aspect_ratio` | 16:9 / 21:9 / 9:16 / 1:1 等 |
+| `reference_image_count` | 参考图数量 |
+| `audio_enabled` | 是否需要音频 |
+| `preference` | `budget` / `balanced` / `quality` |
+
+路由先按能力硬过滤（模式、时长上限、原生比例、参考图槽位、音频、Provider 是否可用），
+再按偏好加权打分（预算、画质档位、参数贴合度），返回首选与候补：
+
+```json
+{
+  "recommended": {
+    "provider": "wanx",
+    "model": "wan2.7-t2v",
+    "display": "Wanx/Wan 2.7",
+    "estimated_credits": 5,
+    "score": 66,
+    "reasons": ["ratio_native", "duration_fits", "cheapest"]
+  },
+  "alternatives": [],
+  "applied": { "duration_seconds": 5, "aspect_ratio": "9:16", "preference": "balanced" }
+}
+```
+
+理由码：`ratio_native`、`duration_fits`、`references_supported`、`audio_supported`、
+`cheapest`、`highest_quality`、`mock_provider`；前端按当前语言渲染。
+
+接口：`POST /api/v1/shots/{shot_id}/model-recommendation`。镜头页选择「自动推荐」后，
+时长、比例、参考图或偏好变化会实时刷新推荐，估算与生成复用同一个 `provider/model`，
+不会静默换模型。`GET /providers/models` 同时返回每个模型的 `modes`、`max_duration`、
+`ratios`、`max_references`、`supports_audio`、`credits_per_second`、`quality_tier`。
+
 ## 3. Mock Provider
 
 用于离线开发、单元测试和 Playwright E2E，不产生费用。

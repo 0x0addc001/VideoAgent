@@ -29,6 +29,7 @@
 <a class="toc-link toc-level-2" href="#1-overview">1. Overview</a>
 <a class="toc-link toc-level-2" href="#2-resolution-order">2. Resolution order</a>
 <a class="toc-link toc-level-3" href="#2-1-model-catalogue-and-ui-selection">2.1 Model catalogue and UI selection</a>
+<a class="toc-link toc-level-3" href="#2-2-auto-recommendation">2.2 Auto recommendation</a>
 <a class="toc-link toc-level-2" href="#3-mock-provider">3. Mock provider</a>
 <a class="toc-link toc-level-2" href="#4-pippit-provider">4. Pippit provider</a>
 <a class="toc-link toc-level-2" href="#5-kling-provider">5. Kling provider</a>
@@ -114,6 +115,52 @@ VIDEOAGENT_EXTRA_MODELS=[{&quot;provider&quot;:&quot;wanx&quot;,&quot;model&quot
 # Hide defaults by model id or &quot;Provider/Label&quot;
 VIDEOAGENT_DISABLED_MODELS=[&quot;kling-video-v2_5&quot;]</code></pre>
 <p>The static GitHub Pages landing site has no API and keeps the bundled catalogue.</p>
+<h3 id="2-2-auto-recommendation">2.2 Auto recommendation</h3>
+<p>The composer's Auto no longer picks a model at project creation. At the shot stage the user fills in the options and the server recommends a model:</p>
+<div class="table-wrap"><table><thead><tr>
+<th>Input</th>
+<th>Meaning</th>
+</tr></thead><tbody>
+<tr>
+<td><code>generation_mode</code></td>
+<td>text-to-video / image-to-video</td>
+</tr>
+<tr>
+<td><code>duration_seconds</code></td>
+<td>1–30 seconds</td>
+</tr>
+<tr>
+<td><code>aspect_ratio</code></td>
+<td>16:9, 21:9, 9:16, 1:1, …</td>
+</tr>
+<tr>
+<td><code>reference_image_count</code></td>
+<td>number of reference images</td>
+</tr>
+<tr>
+<td><code>audio_enabled</code></td>
+<td>whether audio is required</td>
+</tr>
+<tr>
+<td><code>preference</code></td>
+<td><code>budget</code>, <code>balanced</code>, <code>quality</code></td>
+</tr>
+</tbody></table></div>
+<p>Routing first hard-filters by capability (mode, maximum duration, native ratio, reference slots, audio, provider availability), then scores the survivors by preference (cost, quality tier, parameter fit) and returns the best pick plus alternatives:</p>
+<pre><code class="language-json">{
+  &quot;recommended&quot;: {
+    &quot;provider&quot;: &quot;wanx&quot;,
+    &quot;model&quot;: &quot;wan2.7-t2v&quot;,
+    &quot;display&quot;: &quot;Wanx/Wan 2.7&quot;,
+    &quot;estimated_credits&quot;: 5,
+    &quot;score&quot;: 66,
+    &quot;reasons&quot;: [&quot;ratio_native&quot;, &quot;duration_fits&quot;, &quot;cheapest&quot;]
+  },
+  &quot;alternatives&quot;: [],
+  &quot;applied&quot;: { &quot;duration_seconds&quot;: 5, &quot;aspect_ratio&quot;: &quot;9:16&quot;, &quot;preference&quot;: &quot;balanced&quot; }
+}</code></pre>
+<p>Reason codes: <code>ratio_native</code>, <code>duration_fits</code>, <code>references_supported</code>, <code>audio_supported</code>, <code>cheapest</code>, <code>highest_quality</code>, <code>mock_provider</code>; the UI localizes them.</p>
+<p>Endpoint: <code>POST /api/v1/shots/{shot_id}/model-recommendation</code>. Choosing “Auto” on the shot page refreshes the recommendation as duration, ratio, references or preference change, and estimate plus generation reuse the same <code>provider/model</code> so the model never switches silently. <code>GET /providers/models</code> also exposes each model's <code>modes</code>, <code>max_duration</code>, <code>ratios</code>, <code>max_references</code>, <code>supports_audio</code>, <code>credits_per_second</code> and <code>quality_tier</code>.</p>
 <h2 id="3-mock-provider">3. Mock provider</h2>
 <p>Used for offline development, unit tests and Playwright E2E; it never bills anyone.</p>
 <ul>
