@@ -80,6 +80,7 @@ export const landingContent = {
       frameLabel: "Frame",
       lengthLabel: "Length",
       modelLabel: "Model",
+      autoLabel: "Auto (per shot)",
       resolutionLabel: "Quality",
       audioLabel: "Audio",
       reviewLabel: "Review",
@@ -216,7 +217,7 @@ export const landingContent = {
         { id: "product", label: "Product" },
       ],
       models: [
-        { id: "auto", label: "Auto", provider: "" },
+        { id: "auto", label: "Auto (per shot)", provider: "" },
         { id: "kling-video-v4_0", label: "Kling/Kling Video 4.0", provider: "Kling" },
         {
           id: "kling-video-v4_0_flash",
@@ -266,6 +267,7 @@ export const landingContent = {
         { id: "wan3.0", label: "Pippit/Wan 3.0", provider: "Pippit" },
         { id: "happyhorse-1.1", label: "Pippit/HappyHorse 1.1", provider: "Pippit" },
         { id: "wan2.6-t2v", label: "Wanx/Wan 2.6", provider: "Wanx" },
+        { id: "wan2.7-t2v", label: "Wanx/Wan 2.7", provider: "Wanx" },
         { id: "wan3.0-video-prime", label: "Wanx/Wan 3.0 Prime", provider: "Wanx" },
       ] as const satisfies readonly LandingModel[],
       resolutions: ["720p", "1080p"],
@@ -782,6 +784,7 @@ export const landingContent = {
       frameLabel: "画幅",
       lengthLabel: "时长",
       modelLabel: "模型",
+      autoLabel: "自动（按镜头推荐）",
       resolutionLabel: "清晰度",
       audioLabel: "音频",
       reviewLabel: "审核",
@@ -918,7 +921,7 @@ export const landingContent = {
         { id: "product", label: "产品片" },
       ],
       models: [
-        { id: "auto", label: "自动", provider: "" },
+        { id: "auto", label: "自动（按镜头推荐）", provider: "" },
         { id: "kling-video-v4_0", label: "Kling/Kling Video 4.0", provider: "Kling" },
         {
           id: "kling-video-v4_0_flash",
@@ -968,6 +971,7 @@ export const landingContent = {
         { id: "wan3.0", label: "Pippit/Wan 3.0", provider: "Pippit" },
         { id: "happyhorse-1.1", label: "Pippit/HappyHorse 1.1", provider: "Pippit" },
         { id: "wan2.6-t2v", label: "Wanx/Wan 2.6", provider: "Wanx" },
+        { id: "wan2.7-t2v", label: "Wanx/Wan 2.7", provider: "Wanx" },
         { id: "wan3.0-video-prime", label: "Wanx/Wan 3.0 Prime", provider: "Wanx" },
       ] as const satisfies readonly LandingModel[],
       resolutions: ["720p", "1080p"],

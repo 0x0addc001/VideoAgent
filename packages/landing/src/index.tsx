@@ -2793,7 +2793,7 @@ export function LandingPage({
                 menuWidth={340}
                 onChange={setModel}
                 options={[
-                  { label: "Auto", value: "auto" },
+                  { label: content.composer.autoLabel, value: "auto" },
                   ...content.composer.models
                     .filter((option) => option.id !== "auto")
                     .map((option) => ({

@@ -486,9 +486,9 @@ describe("LandingPage", () => {
     fireEvent.click(modelTrigger);
 
     const options = [...document.querySelectorAll(".composer-select-option")];
-    expect(options).toHaveLength(19);
+    expect(options).toHaveLength(20);
     expect(options.map((option) => option.textContent)).toEqual([
-      "Auto",
+      "Auto (per shot)",
       "Kling/Kling Video 4.0",
       "Kling/Kling Video 4.0 Flash",
       "Kling/Kling Video 3.0 Omni",
@@ -506,6 +506,7 @@ describe("LandingPage", () => {
       "Pippit/Wan 3.0",
       "Pippit/HappyHorse 1.1",
       "Wanx/Wan 2.6",
+      "Wanx/Wan 2.7",
       "Wanx/Wan 3.0 Prime",
     ]);
 
