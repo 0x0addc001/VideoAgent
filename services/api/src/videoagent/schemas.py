@@ -276,6 +276,7 @@ JobStatus = Literal[
 
 
 class ShotInput(BaseModel):
+    name: str | None = Field(default=None, max_length=120)
     description: str = Field(min_length=1, max_length=500)
     prompt_en: str = Field(min_length=1, max_length=4000)
     prompt_zh: str | None = Field(default=None, max_length=4000)
@@ -285,6 +286,7 @@ class ShotInput(BaseModel):
 
 
 class ShotUpdate(BaseModel):
+    name: str | None = Field(default=None, max_length=120)
     description: str | None = Field(default=None, min_length=1, max_length=500)
     prompt_en: str | None = Field(default=None, min_length=1, max_length=4000)
     prompt_zh: str | None = Field(default=None, max_length=4000)
@@ -356,6 +358,7 @@ class ShotRead(BaseModel):
 
     id: UUID
     index: int
+    name: str | None = None
     description: str
     prompt_en: str
     prompt_zh: str | None

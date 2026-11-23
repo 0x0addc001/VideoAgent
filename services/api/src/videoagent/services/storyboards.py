@@ -18,9 +18,9 @@ from videoagent.models import (
 )
 from videoagent.schemas import CharacterInput, SceneInput, ShotInput
 from videoagent.services.naming import (
+    character_label,
     compact_name,
     is_generic,
-    pick_character_name,
     sanitize_name,
 )
 
@@ -145,13 +145,14 @@ async def replace_storyboard(
         used_character_names: set[str] = set()
         for index, character_data in enumerate(characters):
             name = (
-                pick_character_name(
+                character_label(
                     character_data.description,
                     character_data.prompt_zh or "",
+                    character_data.prompt_en,
                 )
                 if is_generic(character_data.name)
                 else compact_name(character_data.name)
-            ) or "角色"
+            ) or "人物"
             if name.casefold() in used_character_names:
                 name = f"{name} · {index + 1}"
             used_character_names.add(name.casefold())
@@ -213,6 +214,7 @@ async def replace_storyboard(
         else:
             retained_shot_ids.add(saved_shot.id)
         saved_shot.index = index
+        saved_shot.name = shot_data.name
         saved_shot.description = shot_data.description
         saved_shot.prompt_en = shot_data.prompt_en
         saved_shot.prompt_zh = shot_data.prompt_zh

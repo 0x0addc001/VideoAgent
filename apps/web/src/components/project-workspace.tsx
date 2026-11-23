@@ -43,6 +43,7 @@ import {
   TriangleAlert,
   Trash2,
   Upload,
+  UserRound,
   Video,
   WandSparkles,
   Wrench,
@@ -80,6 +81,7 @@ type Project = {
 type Shot = {
   id: string;
   index: number;
+  name?: string | null;
   description: string;
   prompt_en: string;
   prompt_zh: string | null;
@@ -1536,21 +1538,12 @@ function AssetResultList({
               title={asset.filename}
               type="button"
             >
-              {asset.content_type.startsWith("video/") ? (
-                <video
-                  className="h-full w-full object-cover"
-                  muted
-                  preload="metadata"
-                  src={`${source}#t=0.1`}
-                />
-              ) : (
-                <img
-                  alt={asset.filename}
-                  className="h-full w-full object-cover"
-                  loading="lazy"
-                  src={source}
-                />
-              )}
+              <img
+                alt={asset.filename}
+                className="h-full w-full object-cover"
+                loading="lazy"
+                src={`/api/account/assets/${asset.id}/thumbnail`}
+              />
               {designated ? (
                 <span className="absolute right-1 top-1 grid size-4 place-items-center rounded-full bg-emerald-500 text-[#08110a]">
                   <Check className="h-3 w-3" strokeWidth={3} />
@@ -1774,7 +1767,7 @@ function AssetsTree({
                         }
                         type="button"
                       >
-                        <Folder className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
+                        <UserRound className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
                         <span className="truncate">{character.name}</span>
                       </button>
                         <div className="mt-1 pl-2">
@@ -1835,7 +1828,7 @@ function AssetsTree({
                         }
                         type="button"
                       >
-                        <Folder className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
+                        <MapPin className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
                         <span className="truncate">{scene.name}</span>
                       </button>
                       <div className="mt-1 pl-2">
@@ -1886,12 +1879,12 @@ function AssetsTree({
                         }
                         type="button"
                       >
-                        <Folder className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
+                        <Clapperboard className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
                         <span
                           className="truncate text-[11px] text-white/45"
                           title={shot.description}
                         >
-                          {shortLabel(shot.description)}
+                          {shot.name || shortLabel(shot.description)}
                         </span>
                       </button>
                       <div className="pl-6">
@@ -4456,7 +4449,7 @@ export function ProjectWorkspace({
                               className="truncate text-[12px] font-semibold text-[#6eb8ff]"
                               title={shot.description}
                             >
-                              {shortLabel(shot.description)}
+                              {shot.name || shortLabel(shot.description)}
                             </span>
                             <span className="flex flex-wrap items-center justify-end gap-2">
                               <span className="rounded-md border border-white/[0.08] bg-white/[0.025] px-2.5 py-1 text-[12px] text-white/38">
@@ -4851,7 +4844,7 @@ export function ProjectWorkspace({
                           className="max-w-[60%] truncate rounded-full bg-black/25 px-3 py-1.5 text-[12px] font-semibold backdrop-blur"
                           title={canvasShot.description}
                         >
-                          {shortLabel(canvasShot.description)}
+                          {canvasShot.name || shortLabel(canvasShot.description)}
                         </span>
                         {canvasShot.status === "completed" ? (
                           <span className="grid size-8 place-items-center rounded-full bg-emerald-400 text-[#122016]">

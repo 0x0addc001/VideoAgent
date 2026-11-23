@@ -276,6 +276,7 @@ class Shot(Base):
         index=True,
     )
     index: Mapped[int] = mapped_column(Integer)
+    name: Mapped[str | None] = mapped_column(String(120), nullable=True)
     description: Mapped[str] = mapped_column(Text)
     prompt_en: Mapped[str] = mapped_column(Text)
     prompt_zh: Mapped[str | None] = mapped_column(Text, nullable=True)

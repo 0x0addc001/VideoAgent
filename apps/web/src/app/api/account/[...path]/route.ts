@@ -32,7 +32,8 @@ function allowed(
     return (
       ALLOWED_GET_PATHS.has(path) ||
       (path.startsWith("hots/") && path.endsWith("/video")) ||
-      (path.startsWith("assets/") && path.endsWith("/content"))
+      (path.startsWith("assets/") &&
+        (path.endsWith("/content") || path.endsWith("/thumbnail")))
     );
   }
   if (method === "POST") return ALLOWED_POST_PATHS.has(path);

@@ -1,4 +1,8 @@
+import asyncio
+import logging
+import shutil
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Annotated, Literal, cast
 from uuid import UUID
 
@@ -42,6 +46,8 @@ from videoagent.services.media import (
     save_upload,
 )
 from videoagent.services.storyboards import owned_project_or_404
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(tags=["assets"])
 
@@ -384,6 +390,62 @@ async def revoke_share(
         )
     share.revoked_at = datetime.now(UTC)
     await session.commit()
+
+
+@router.get("/assets/{asset_id}/thumbnail")
+async def get_asset_thumbnail(
+    asset_id: UUID,
+    user: Annotated[User, Depends(get_current_user)],
+    session: Annotated[AsyncSession, Depends(get_session)],
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> FileResponse:
+    asset = await owned_asset_or_404(session, asset_id, user.id)
+    path = await asset_file(asset, settings)
+    if not path.exists():
+        raise AppError(
+            status_code=404,
+            code="ASSET_FILE_NOT_FOUND",
+            message="The asset file was not found.",
+        )
+    if asset.content_type.startswith("image/"):
+        return FileResponse(path, media_type=asset.content_type)
+    if not asset.content_type.startswith("video/"):
+        raise AppError(
+            status_code=415,
+            code="THUMBNAIL_UNSUPPORTED",
+            message="Only images and videos have thumbnails.",
+        )
+    thumbnails = Path(settings.media_dir).expanduser().resolve() / "thumbnails"  # noqa: ASYNC240
+    thumbnails.mkdir(parents=True, exist_ok=True)
+    thumbnail = thumbnails / f"{asset.id}.jpg"
+    if not thumbnail.exists() or thumbnail.stat().st_mtime < path.stat().st_mtime:
+        ffmpeg = shutil.which("ffmpeg") or "ffmpeg"
+        process = await asyncio.create_subprocess_exec(
+            ffmpeg,
+            "-y",
+            "-ss",
+            "0.1",
+            "-i",
+            str(path),
+            "-frames:v",
+            "1",
+            "-vf",
+            "scale=320:-2",
+            "-q:v",
+            "5",
+            str(thumbnail),
+            stdout=asyncio.subprocess.DEVNULL,
+            stderr=asyncio.subprocess.PIPE,
+        )
+        _, stderr = await process.communicate()
+        if process.returncode != 0 or not thumbnail.exists():
+            logger.warning("thumbnail extraction failed: %s", stderr.decode()[-300:])
+            raise AppError(
+                status_code=500,
+                code="THUMBNAIL_FAILED",
+                message="The video cover could not be generated.",
+            )
+    return FileResponse(thumbnail, media_type="image/jpeg")
 
 
 @router.get("/shares/{token}/content")

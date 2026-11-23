@@ -1,11 +1,9 @@
 import pytest
 
 from videoagent.services.naming import (
-    PERSON_NAMES_EN,
-    PERSON_NAMES_ZH,
+    character_label,
     compact_name,
     is_generic,
-    pick_character_name,
 )
 
 
@@ -26,8 +24,6 @@ def test_generic_names_are_detected():
 
 @pytest.mark.unit
 def test_character_names_follow_the_source_language():
-    chinese = pick_character_name("故事围绕雨夜咖啡师展开")
-    english = pick_character_name("A barista working the night shift")
-
-    assert chinese in PERSON_NAMES_ZH
-    assert english in PERSON_NAMES_EN
+    assert character_label("故事围绕雨夜咖啡师展开") == "咖啡师"
+    assert character_label("A black man working the night shift") == "black man"
+    assert character_label("A quiet forest") == "Person"
