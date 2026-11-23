@@ -34,14 +34,14 @@ describe("ProjectWorkspace", () => {
 
     expect(copy.agent).toBe("小秘");
     expect(copy.skills).toBe("技能");
-    expect(copy.settings).toBe("设定");
-    expect(copy.outline).toBe("大纲");
-    expect(copy.script).toBe("剧本");
+    expect(copy.settings).toBe("配置");
+    expect(copy.outline).toBe("接口");
+    expect(copy.script).toBe("实现");
     expect(copy.character).toBe("角色");
     expect(copy.scene).toBe("场地");
     expect(copy.finalCuts).toBe("成片");
-    expect(copy.saveDirection).toBe("保存方向");
-    expect(copy.saveSettings).toBe("保存设定");
+    expect(copy.saveDirection).toBe("保存过程");
+    expect(copy.saveSettings).toBe("保存配置");
     expect(copy.open).toBe("打开");
     expect(copy.prompt).toBe("提示词");
     expect(copy.results).toBe("资产");
@@ -647,9 +647,9 @@ describe("ProjectWorkspace", () => {
       screen.getAllByRole("heading", { name: "Copenhagen morning" }),
     ).not.toHaveLength(0);
     expect(screen.getAllByText("Recents").length).toBeGreaterThan(0);
-    expect(screen.getByRole("button", { name: "Definition" })).toBeVisible();
-    expect(screen.getByRole("button", { name: "Settings" })).toBeVisible();
-    expect(screen.getByRole("button", { name: "Object" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Procedures" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Configs" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Objects" })).toBeVisible();
     expect(screen.getByTestId("workspace-header-canvas")).toHaveTextContent(
       "Storyboard",
     );
@@ -699,7 +699,7 @@ describe("ProjectWorkspace", () => {
     );
     expect(screen.queryByText("2 shots")).not.toBeInTheDocument();
     expect(document.querySelector(".max-h-64")).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Settings" }));
+    fireEvent.click(screen.getByRole("button", { name: "Configs" }));
     expect(screen.getByTestId("workspace-header-canvas")).toHaveTextContent(
       "Storyboard",
     );
@@ -710,11 +710,11 @@ describe("ProjectWorkspace", () => {
     expect(screen.queryByText("Director direction")).not.toBeInTheDocument();
     expect(screen.queryByText("Agent prompt")).not.toBeInTheDocument();
     expect(screen.queryByText("Director answer")).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Outlines" }));
+    fireEvent.click(screen.getByRole("button", { name: "Interfaces" }));
     expect(
       document.querySelector('[data-document-mode="outline"]'),
     ).toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: "Scripts" }));
+    fireEvent.click(screen.getByRole("button", { name: "Implementations" }));
     expect(
       document.querySelector('[data-document-mode="script"]'),
     ).toBeInTheDocument();

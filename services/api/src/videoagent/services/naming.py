@@ -24,6 +24,8 @@ GENERIC_NAMES = {
 }
 CJK_LIMIT = 5
 WORD_LIMIT = 2
+PERSON_NAMES_ZH = ("林夏", "陈默", "苏晚", "周野", "顾言", "沈星")
+PERSON_NAMES_EN = ("Ava", "Milo", "Nora", "Kai", "Iris", "Leo")
 
 
 def compact_name(text: str, *, cjk_limit: int = CJK_LIMIT, word_limit: int = WORD_LIMIT) -> str:
@@ -33,6 +35,17 @@ def compact_name(text: str, *, cjk_limit: int = CJK_LIMIT, word_limit: int = WOR
     if CJK_PATTERN.search(cleaned):
         return cleaned.replace(" ", "")[:cjk_limit]
     return " ".join(cleaned.split()[:word_limit])
+
+
+def is_generic(name: str | None) -> bool:
+    return not (name or "").strip() or (name or "").strip().casefold() in GENERIC_NAMES
+
+
+def pick_character_name(*texts: str) -> str:
+    sample = " ".join(text for text in texts if text)
+    pool = PERSON_NAMES_ZH if CJK_PATTERN.search(sample) else PERSON_NAMES_EN
+    index = sum(ord(char) for char in sample) % len(pool)
+    return pool[index]
 
 
 def _fallback(text: str, chinese: str, english: str) -> str:

@@ -643,9 +643,9 @@ export function workspaceCopy(locale: string) {
         skills: "技能",
         hots: "视频",
         agent: "小秘",
-        direction: "定义",
+        direction: "过程",
         vision: "对象",
-        settings: "设定",
+        settings: "配置",
         settingAttributes: "属性",
         description: "描述",
         generation: "生成",
@@ -661,12 +661,12 @@ export function workspaceCopy(locale: string) {
         restoreConfirm: "回滚到这个故事板版本？当前未保存的修改会被替换。",
         thinking: "思考中",
         noAssets: "当前对话还没有资产。",
-        brief: "方向",
+        brief: "过程",
         storyboard: "故事板",
-        script: "剧本",
+        script: "实现",
         scripts: "剧本",
         shots: "镜头",
-        outline: "大纲",
+        outline: "接口",
         media: "媒体",
         uploads: "上传素材",
         generated: "生成素材",
@@ -728,11 +728,11 @@ export function workspaceCopy(locale: string) {
         readyMessage: "剧本已批准。选择镜头即可估算和生成。",
         projectDefault: "项目默认",
         open: "打开",
-        saveDirection: "保存方向",
-        saveSettings: "保存设定",
+        saveDirection: "保存过程",
+        saveSettings: "保存配置",
         saveDocument: "保存文档",
-        saveOutline: "保存大纲",
-        saveScript: "保存剧本",
+        saveOutline: "保存接口",
+        saveScript: "保存实现",
         characterName: "角色名称",
         imageModel: "图片模型",
         prompt: "提示词",
@@ -813,9 +813,9 @@ export function workspaceCopy(locale: string) {
         skills: "Skills",
         hots: "Videos",
         agent: "Agents",
-        direction: "Definition",
-        vision: "Object",
-        settings: "Settings",
+        direction: "Procedures",
+        vision: "Objects",
+        settings: "Configs",
         settingAttributes: "Attributes",
         description: "Description",
         generation: "Generation",
@@ -832,12 +832,12 @@ export function workspaceCopy(locale: string) {
           "Restore this storyboard version? Unsaved current changes will be replaced.",
         thinking: "Thinking",
         noAssets: "No assets in this conversation yet.",
-        brief: "Definition",
+        brief: "Procedure",
         storyboard: "Storyboard",
-        script: "Scripts",
+        script: "Implementations",
         scripts: "Scripts",
         shots: "Shots",
-        outline: "Outlines",
+        outline: "Interfaces",
         media: "Media",
         uploads: "Uploads",
         generated: "Generated",
@@ -900,11 +900,11 @@ export function workspaceCopy(locale: string) {
         readyMessage: "The script is approved. Choose a shot to estimate and generate.",
         projectDefault: "Project default",
         open: "Open",
-        saveDirection: "Save direction",
-        saveSettings: "Save settings",
+        saveDirection: "Save procedure",
+        saveSettings: "Save configs",
         saveDocument: "Save document",
-        saveOutline: "Save outline",
-        saveScript: "Save script",
+        saveOutline: "Save interface",
+        saveScript: "Save implementation",
         characterName: "Character name",
         imageModel: "Image model",
         prompt: "Prompt",
@@ -1386,6 +1386,17 @@ function ApprovalCard({
       </div>
     </div>
   );
+}
+
+function shortLabel(text: string): string {
+  const cleaned = (text ?? "")
+    .replace(/[\s，。！？、；：,.!?;:“”"'（）()\[\]]+/g, " ")
+    .trim();
+  if (!cleaned) return "";
+  if (/[\u4e00-\u9fff]/.test(cleaned)) {
+    return cleaned.replace(/\s+/g, "").slice(0, 5);
+  }
+  return cleaned.split(/\s+/).slice(0, 2).join(" ");
 }
 
 function AssetResultList({
@@ -1876,8 +1887,11 @@ function AssetsTree({
                         type="button"
                       >
                         <Folder className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
-                        <span className="truncate text-[11px] text-white/45">
-                          {shot.description}
+                        <span
+                          className="truncate text-[11px] text-white/45"
+                          title={shot.description}
+                        >
+                          {shortLabel(shot.description)}
                         </span>
                       </button>
                       <div className="pl-6">
@@ -4438,8 +4452,11 @@ export function ProjectWorkspace({
                           }}
                         >
                           <div className="flex items-center justify-between gap-4">
-                            <span className="truncate text-[12px] font-semibold text-[#6eb8ff]">
-                              {shot.description}
+                            <span
+                              className="truncate text-[12px] font-semibold text-[#6eb8ff]"
+                              title={shot.description}
+                            >
+                              {shortLabel(shot.description)}
                             </span>
                             <span className="flex flex-wrap items-center justify-end gap-2">
                               <span className="rounded-md border border-white/[0.08] bg-white/[0.025] px-2.5 py-1 text-[12px] text-white/38">
@@ -4830,8 +4847,11 @@ export function ProjectWorkspace({
                   <div className="aspect-video overflow-hidden rounded-2xl border border-white/[0.08] bg-[radial-gradient(circle_at_72%_20%,rgba(22,119,255,0.26),transparent_28%),linear-gradient(145deg,#13213d,#080c13)] p-6">
                     <div className="flex h-full flex-col justify-between">
                       <div className="flex items-center justify-between">
-                        <span className="max-w-[60%] truncate rounded-full bg-black/25 px-3 py-1.5 text-[12px] font-semibold backdrop-blur">
-                          {canvasShot.description}
+                        <span
+                          className="max-w-[60%] truncate rounded-full bg-black/25 px-3 py-1.5 text-[12px] font-semibold backdrop-blur"
+                          title={canvasShot.description}
+                        >
+                          {shortLabel(canvasShot.description)}
                         </span>
                         {canvasShot.status === "completed" ? (
                           <span className="grid size-8 place-items-center rounded-full bg-emerald-400 text-[#122016]">

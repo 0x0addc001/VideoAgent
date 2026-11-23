@@ -17,7 +17,12 @@ from videoagent.models import (
     Storyboard,
 )
 from videoagent.schemas import CharacterInput, SceneInput, ShotInput
-from videoagent.services.naming import sanitize_name
+from videoagent.services.naming import (
+    compact_name,
+    is_generic,
+    pick_character_name,
+    sanitize_name,
+)
 
 
 async def project_access_permission(
@@ -139,10 +144,14 @@ async def replace_storyboard(
         retained_character_ids: set[UUID] = set()
         used_character_names: set[str] = set()
         for index, character_data in enumerate(characters):
-            name = sanitize_name(
-                character_data.name,
-                description=character_data.description,
-            )
+            name = (
+                pick_character_name(
+                    character_data.description,
+                    character_data.prompt_zh or "",
+                )
+                if is_generic(character_data.name)
+                else compact_name(character_data.name)
+            ) or "角色"
             if name.casefold() in used_character_names:
                 name = f"{name} · {index + 1}"
             used_character_names.add(name.casefold())

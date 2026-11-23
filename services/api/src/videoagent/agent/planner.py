@@ -8,6 +8,7 @@ from pydantic import BaseModel
 
 from videoagent.config import Settings
 from videoagent.schemas import CharacterInput, SceneInput, ShotInput, StoryboardReplace
+from videoagent.services.naming import pick_character_name
 
 logger = logging.getLogger(__name__)
 
@@ -131,8 +132,9 @@ class LocalStoryboardPlanner:
                 generation_mode="text_to_video",
             ),
         ]
-        character_name = _compact_name(subject, 8 if chinese else 3) or (
-            "角色" if chinese else "Character"
+        character_name = pick_character_name(
+            subject,
+            f"角色定妆照：{subject}" if chinese else "",
         )
         character_description = (
             f"故事的核心人物，围绕“{subject}”展开。"
@@ -155,7 +157,7 @@ class LocalStoryboardPlanner:
             )
         ]
         scene_location = "电影感室内创作空间" if chinese else "Cinematic interior studio"
-        scene_name = _compact_name(scene_location, 8 if chinese else 3) or (
+        scene_name = _compact_name(scene_location, 5 if chinese else 2) or (
             "场景" if chinese else "Scene"
         )
         scenes = [
