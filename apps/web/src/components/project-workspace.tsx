@@ -1,5 +1,7 @@
 "use client";
 
+import { createPortal } from "react-dom";
+
 import {
   ArrowLeft,
   ArrowUp,
@@ -641,8 +643,8 @@ export function workspaceCopy(locale: string) {
         skills: "技能",
         hots: "视频",
         agent: "小秘",
-        direction: "创作方向",
-        vision: "视觉",
+        direction: "定义",
+        vision: "对象",
         settings: "设定",
         settingAttributes: "属性",
         description: "描述",
@@ -777,6 +779,7 @@ export function workspaceCopy(locale: string) {
         designatedBadge: "已指定",
         defaultHint: "默认使用第一个结果，点击其他结果可切换。",
         designateAsset: "指定为参考",
+        renameAsset: "重命名",
         openAsset: "打开",
         deleteAsset: "删除",
         shareAccess: "协作权限",
@@ -810,8 +813,8 @@ export function workspaceCopy(locale: string) {
         skills: "Skills",
         hots: "Videos",
         agent: "Agents",
-        direction: "Directions",
-        vision: "Visions",
+        direction: "Definition",
+        vision: "Object",
         settings: "Settings",
         settingAttributes: "Attributes",
         description: "Description",
@@ -829,7 +832,7 @@ export function workspaceCopy(locale: string) {
           "Restore this storyboard version? Unsaved current changes will be replaced.",
         thinking: "Thinking",
         noAssets: "No assets in this conversation yet.",
-        brief: "Direction",
+        brief: "Definition",
         storyboard: "Storyboard",
         script: "Scripts",
         scripts: "Scripts",
@@ -948,6 +951,7 @@ export function workspaceCopy(locale: string) {
         designatedBadge: "Selected",
         defaultHint: "The first result is the default; click another result to switch.",
         designateAsset: "Use as reference",
+        renameAsset: "Rename",
         openAsset: "Open",
         deleteAsset: "Delete",
         shareAccess: "Collaboration access",
@@ -1424,127 +1428,128 @@ function AssetResultList({
   if (assets.length === 0) return null;
   const fallbackId = assets[0]?.id;
   const effectiveSelectedId = selectedAssetId ?? fallbackId;
-
-  function closeMenu() {
-    setMenu(null);
-  }
+  const menuLayer =
+    menu && typeof document !== "undefined"
+      ? createPortal(
+          <div
+            className="fixed z-[100] min-w-44 rounded-xl border border-white/[0.12] bg-[#15120e] p-1 shadow-2xl"
+            onPointerDown={(event) => event.stopPropagation()}
+            style={{
+              left: Math.min(menu.x, window.innerWidth - 200),
+              top: Math.min(menu.y, window.innerHeight - 220),
+            }}
+          >
+            <button
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[12px] text-white/72 hover:bg-white/[0.06] hover:text-white"
+              onClick={() => {
+                onSelect(menu.asset.id);
+                setMenu(null);
+              }}
+              type="button"
+            >
+              {copy.designateAsset}
+            </button>
+            <button
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[12px] text-white/72 hover:bg-white/[0.06] hover:text-white"
+              onClick={() => {
+                onOpen(menu.asset);
+                setMenu(null);
+              }}
+              type="button"
+            >
+              {copy.openAsset}
+            </button>
+            <button
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[12px] text-white/72 hover:bg-white/[0.06] hover:text-white"
+              onClick={() => {
+                void navigator.clipboard?.writeText(menu.asset.id);
+                setMenu(null);
+              }}
+              type="button"
+            >
+              {copy.copyId}
+            </button>
+            <a
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[12px] text-white/72 hover:bg-white/[0.06] hover:text-white"
+              download={menu.asset.filename}
+              href={`/api/account/assets/${menu.asset.id}/content`}
+              onClick={() => setMenu(null)}
+            >
+              {copy.download}
+            </a>
+            <button
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[12px] text-red-300/80 hover:bg-red-400/10 hover:text-red-300"
+              onClick={() => {
+                onDelete(menu.asset);
+                setMenu(null);
+              }}
+              type="button"
+            >
+              {copy.deleteAsset}
+            </button>
+          </div>,
+          document.body,
+        )
+      : null;
 
   return (
     <>
       <div className="space-y-1">
         {assets.length > 1 && !selectedAssetId ? (
-          <p className="px-2 pb-1 text-[11px] text-amber-200/60">
+          <p className="px-1 pb-1 text-[10px] leading-4 text-amber-200/60">
             {copy.defaultHint}
           </p>
         ) : null}
-        {assets.map((asset, index) => {
+        {assets.map((asset) => {
           const designated = effectiveSelectedId === asset.id;
+          const source = `/api/account/assets/${asset.id}/content`;
           return (
-            <div
+            <button
+              aria-label={asset.filename}
+              aria-pressed={designated}
               className={cn(
-                "flex items-center gap-2 rounded-lg px-2 py-1.5",
+                "group relative block w-full overflow-hidden rounded-lg border transition",
                 designated
-                  ? "bg-[#1677ff]/[0.12] text-white"
-                  : "bg-white/[0.02] text-white/52",
+                  ? "border-emerald-400/70"
+                  : "border-white/[0.06] hover:border-white/[0.18]",
               )}
               key={asset.id}
+              onClick={() => {
+                onSelect(asset.id);
+                onOpen(asset);
+              }}
               onContextMenu={(event) => {
                 event.preventDefault();
                 setMenu({ asset, x: event.clientX, y: event.clientY });
               }}
+              title={asset.filename}
+              type="button"
             >
-              <button
-                aria-label={`Set ${asset.filename} as the reference`}
-                aria-pressed={designated}
-                className="flex min-w-0 flex-1 items-center gap-2 text-left text-[12px] hover:text-white/82"
-                onClick={() => {
-                  onSelect(asset.id);
-                  onOpen(asset);
-                }}
-                type="button"
-              >
-                {asset.content_type.startsWith("video/") ? (
-                  <Film className="h-3.5 w-3.5 shrink-0 text-[#4facff]" />
-                ) : (
-                  <Image className="h-3.5 w-3.5 shrink-0 text-[#4facff]" />
-                )}
-                <span className="truncate">{asset.filename}</span>
-                <span className="shrink-0 text-[11px] text-white/28">
-                  @{asset.id.slice(0, 8)}
+              {asset.content_type.startsWith("video/") ? (
+                <video
+                  className="h-12 w-full object-cover"
+                  muted
+                  preload="metadata"
+                  src={source}
+                />
+              ) : (
+                <img
+                  alt={asset.filename}
+                  className="h-12 w-full object-cover"
+                  loading="lazy"
+                  src={source}
+                />
+              )}
+              {designated ? (
+                <span className="absolute right-1 top-1 grid size-4 place-items-center rounded-full bg-emerald-500 text-[#08110a]">
+                  <Check className="h-3 w-3" strokeWidth={3} />
                 </span>
-                <span className="shrink-0 rounded-md border border-white/[0.1] px-1.5 py-0.5 text-[10px]">
-                  {selectedAssetId
-                    ? designated
-                      ? copy.designatedBadge
-                      : ""
-                    : index === 0
-                      ? copy.defaultBadge
-                      : ""}
-                </span>
-              </button>
-            </div>
+              ) : null}
+            </button>
           );
         })}
       </div>
-      {menu ? (
-        <div
-          className="fixed z-50 min-w-44 rounded-xl border border-white/[0.12] bg-[#15120e] p-1 shadow-2xl"
-          onPointerDown={(event) => event.stopPropagation()}
-          style={{
-            left: Math.min(menu.x, window.innerWidth - 200),
-            top: Math.min(menu.y, window.innerHeight - 220),
-          }}
-        >
-          <button
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[12px] text-white/72 hover:bg-white/[0.06] hover:text-white"
-            onClick={() => {
-              onSelect(menu.asset.id);
-              closeMenu();
-            }}
-            type="button"
-          >
-            {copy.designateAsset}
-          </button>
-          <button
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[12px] text-white/72 hover:bg-white/[0.06] hover:text-white"
-            onClick={() => {
-              onOpen(menu.asset);
-              closeMenu();
-            }}
-            type="button"
-          >
-            {copy.openAsset}
-          </button>
-          <button
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[12px] text-white/72 hover:bg-white/[0.06] hover:text-white"
-            onClick={() => {
-              void navigator.clipboard?.writeText(menu.asset.id);
-              closeMenu();
-            }}
-            type="button"
-          >
-            {copy.copyId}
-          </button>
-          <a
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[12px] text-white/72 hover:bg-white/[0.06] hover:text-white"
-            download={menu.asset.filename}
-            href={`/api/account/assets/${menu.asset.id}/content`}
-            onClick={closeMenu}
-          >
-            {copy.download}
-          </a>
-          <button
-            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[12px] text-red-300/80 hover:bg-red-400/10 hover:text-red-300"
-            onClick={() => {
-              onDelete(menu.asset);
-              closeMenu();
-            }}
-            type="button"
-          >
-            {copy.deleteAsset}
-          </button>
-        </div>
-      ) : null}
+      {menuLayer}
     </>
   );
 }
@@ -1864,6 +1869,7 @@ function AssetsTree({
                             ? "bg-[#1677ff]/[0.08] text-white"
                             : "text-white/58 hover:bg-white/[0.03] hover:text-white/78",
                         )}
+                        aria-label={`${copy.shot} ${shot.index + 1}`}
                         onClick={() =>
                           onSelect({ kind: "shot", shotId: shot.id })
                         }
@@ -1871,7 +1877,10 @@ function AssetsTree({
                       >
                         <Folder className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
                         <span className="truncate font-medium">
-                          {copy.shot} {shot.index + 1}
+                          <span className="shrink-0">{copy.shot} {shot.index + 1}</span>
+                          <span className="truncate text-[10px] text-white/28">
+                            {shot.description}
+                          </span>
                         </span>
                       </button>
                       <div className="pl-6">
@@ -5155,10 +5164,10 @@ export function ProjectWorkspace({
                       </div>
                     )}
                   </div>
-                  <div className="mt-5 flex items-center justify-between gap-4">
+                  <div className="group mt-5 flex items-center justify-between gap-4">
                     <div>
                       <form
-                        className="flex items-center gap-2"
+                        className="flex min-w-0 items-center gap-1.5"
                         onSubmit={(event) => {
                           event.preventDefault();
                           const form = new FormData(event.currentTarget);
@@ -5169,16 +5178,18 @@ export function ProjectWorkspace({
                         }}
                       >
                         <input
-                          className="min-w-0 flex-1 rounded-lg border border-white/[0.08] bg-white/[0.025] px-3 py-2 text-[15px] font-medium text-white/82 outline-none"
+                          aria-label={copy.renameAsset}
+                          className="min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-1 py-1 text-[15px] font-medium text-white/82 outline-none hover:border-white/[0.08] focus:border-[#1677ff]/40"
                           defaultValue={selectedAsset.filename}
+                          key={selectedAsset.id}
                           name="filename"
+                          onBlur={(event) => {
+                            const next = event.target.value.trim();
+                            if (next && next !== selectedAsset.filename) {
+                              void renameProjectAsset(selectedAsset, next);
+                            }
+                          }}
                         />
-                        <button
-                          className="rounded-lg border border-white/[0.09] px-3 py-2 text-[12px] text-white/52 hover:text-white"
-                          type="submit"
-                        >
-                          {copy.save}
-                        </button>
                       </form>
                       <div className="mt-2 flex flex-wrap gap-2">
                         <span className="rounded-md border border-white/[0.08] bg-white/[0.025] px-2.5 py-1 text-[12px] text-white/38">
@@ -5189,26 +5200,26 @@ export function ProjectWorkspace({
                         </span>
                         <button
                           aria-label={copy.copyId}
-                          className="flex items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.025] px-2.5 py-1 text-[12px] text-[#8fdcff] hover:text-white"
+                          className="grid size-6 place-items-center rounded-md text-white/30 hover:bg-white/[0.05] hover:text-white"
                           onClick={() =>
                             void navigator.clipboard?.writeText(selectedAsset.id)
                           }
-                          title={selectedAsset.id}
+                          title={`@${selectedAsset.id.slice(0, 8)}`}
                           type="button"
                         >
-                          @{selectedAsset.id.slice(0, 8)}
                           <Copy className="h-3 w-3" />
                         </button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1.5 opacity-0 transition group-hover:opacity-100">
                       <a
-                        className="flex items-center gap-2 rounded-lg border border-white/[0.09] px-3 py-2 text-[11px] text-white/55 hover:text-white"
+                        aria-label={copy.download}
+                        className="grid size-8 place-items-center rounded-lg border border-white/[0.09] text-white/45 hover:text-white"
                         download={selectedAsset.filename}
                         href={mediaUrl(selectedAsset.content_url)}
+                        title={copy.download}
                       >
                         <Download className="h-3.5 w-3.5" />
-                        {copy.download}
                       </a>
                       <button
                         aria-label={`Delete ${selectedAsset.filename}`}

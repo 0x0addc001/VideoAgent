@@ -136,15 +136,20 @@ async def replace_storyboard(
         if existing_characters:
             await session.flush()
         retained_character_ids: set[UUID] = set()
+        used_character_names: set[str] = set()
         for index, character_data in enumerate(characters):
-            saved_character = characters_by_name.get(character_data.name.strip().casefold())
+            name = character_data.name.strip()
+            if name.casefold() in used_character_names:
+                name = f"{name} · {index + 1}"
+            used_character_names.add(name.casefold())
+            saved_character = characters_by_name.get(name.casefold())
             if saved_character is None:
                 saved_character = Character(storyboard_id=storyboard.id)
                 session.add(saved_character)
             else:
                 retained_character_ids.add(saved_character.id)
             saved_character.index = index
-            saved_character.name = character_data.name
+            saved_character.name = name
             saved_character.description = character_data.description
             saved_character.prompt_en = character_data.prompt_en
             saved_character.prompt_zh = character_data.prompt_zh
@@ -162,15 +167,20 @@ async def replace_storyboard(
         if existing_scenes:
             await session.flush()
         retained_scene_ids: set[UUID] = set()
+        used_scene_names: set[str] = set()
         for index, scene_data in enumerate(scenes):
-            saved_scene = scenes_by_name.get(scene_data.name.strip().casefold())
+            name = scene_data.name.strip()
+            if name.casefold() in used_scene_names:
+                name = f"{name} · {index + 1}"
+            used_scene_names.add(name.casefold())
+            saved_scene = scenes_by_name.get(name.casefold())
             if saved_scene is None:
                 saved_scene = Scene(storyboard_id=storyboard.id)
                 session.add(saved_scene)
             else:
                 retained_scene_ids.add(saved_scene.id)
             saved_scene.index = index
-            saved_scene.name = scene_data.name
+            saved_scene.name = name
             saved_scene.description = scene_data.description
             saved_scene.location = scene_data.location
             saved_scene.prompt_en = scene_data.prompt_en

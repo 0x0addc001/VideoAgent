@@ -647,9 +647,9 @@ describe("ProjectWorkspace", () => {
       screen.getAllByRole("heading", { name: "Copenhagen morning" }),
     ).not.toHaveLength(0);
     expect(screen.getAllByText("Recents").length).toBeGreaterThan(0);
-    expect(screen.getByRole("button", { name: "Directions" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Definition" })).toBeVisible();
     expect(screen.getByRole("button", { name: "Settings" })).toBeVisible();
-    expect(screen.getByRole("button", { name: "Visions" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Object" })).toBeVisible();
     expect(screen.getByTestId("workspace-header-canvas")).toHaveTextContent(
       "Storyboard",
     );

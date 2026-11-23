@@ -122,7 +122,12 @@ class LocalStoryboardPlanner:
                 generation_mode="text_to_video",
             ),
         ]
-        character_name = "主角" if chinese else "Lead"
+        short_subject = " ".join(subject.split())[:16].strip()
+        character_name = (
+            (f"主角·{short_subject}" if chinese and short_subject else "主角")
+            if chinese
+            else (f"Lead · {short_subject}" if short_subject else "Lead")
+        )
         character_description = (
             f"故事的核心人物，围绕“{subject}”展开。"
             if chinese
@@ -143,7 +148,11 @@ class LocalStoryboardPlanner:
                 ),
             )
         ]
-        scene_name = "主场景" if chinese else "Primary set"
+        scene_name = (
+            (f"主场景·{short_subject}" if chinese and short_subject else "主场景")
+            if chinese
+            else (f"Primary set · {short_subject}" if short_subject else "Primary set")
+        )
         scene_location = "电影感室内创作空间" if chinese else "Cinematic interior studio"
         scenes = [
             SceneInput(
