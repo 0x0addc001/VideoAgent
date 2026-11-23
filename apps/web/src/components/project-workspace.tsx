@@ -2311,7 +2311,7 @@ export function ProjectWorkspace({
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView?.({ block: "end" });
-  }, [agentActivities, messages, pendingDecision]);
+  }, [agentActivities, messages, pendingDecision, workflow?.stage, workflow?.status]);
 
   useEffect(() => {
     if (!project || !agentActivityRunId || !isWorking) return;
@@ -3984,12 +3984,16 @@ export function ProjectWorkspace({
           )}
           style={
             {
-              "--assets-pane-width": assetsPaneWidth
-                ? `${assetsPaneWidth}px`
-                : "25vw",
-              "--agent-pane-width": agentPaneWidth
-                ? `${agentPaneWidth}px`
-                : "25vw",
+              "--assets-pane-width": assetsPanelCollapsed
+                ? "58px"
+                : assetsPaneWidth
+                  ? `${assetsPaneWidth}px`
+                  : "25vw",
+              "--agent-pane-width": agentPanelCollapsed
+                ? "58px"
+                : agentPaneWidth
+                  ? `${agentPaneWidth}px`
+                  : "25vw",
             } as CSSProperties
           }
         >
@@ -5518,12 +5522,10 @@ export function ProjectWorkspace({
                   {pendingDecision}
                 </div>
               ) : null}
-              <div ref={messagesEndRef} />
-            </div>
-            {canEdit &&
+              {canEdit &&
             workflow?.status === "awaiting_approval" &&
             workflow.stage !== "ready" ? (
-              <div className="shrink-0 border-t border-white/[0.07] p-3">
+              <div className="mr-3">
                 <ApprovalCard
                   copy={copy}
                   customOpen={customDecisionOpen}
@@ -5538,6 +5540,8 @@ export function ProjectWorkspace({
                 />
               </div>
             ) : null}
+              <div ref={messagesEndRef} />
+            </div>
             <div className="shrink-0 border-t border-white/[0.07] p-3">
               <label className="block rounded-2xl border border-white/[0.09] bg-white/[0.025] p-3 focus-within:border-[#1677ff]/35">
                 <span className="sr-only">{t("agent")}</span>

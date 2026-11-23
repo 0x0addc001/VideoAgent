@@ -1034,9 +1034,24 @@ describe("ProjectWorkspace", () => {
     expect(
       container.querySelector('.streaming-text[data-animate="true"]'),
     ).not.toBeInTheDocument();
-    fireEvent.click(
-      screen.getByRole("button", { name: "Continue with this direction" }),
-    );
+    const grid = container.querySelector(".workspace-grid") as HTMLElement;
+    fireEvent.click(screen.getByRole("button", { name: "Collapse assets" }));
+    expect(grid).toHaveClass("assets-collapsed");
+    expect(grid.style.getPropertyValue("--assets-pane-width")).toBe("58px");
+    fireEvent.click(screen.getByRole("button", { name: "Expand assets" }));
+    expect(grid).not.toHaveClass("assets-collapsed");
+    expect(grid.style.getPropertyValue("--assets-pane-width")).not.toBe("58px");
+
+    const approvalButton = screen.getByRole("button", {
+      name: "Continue with this direction",
+    });
+    const scrollRegion = screen
+      .getByLabelText("Review the overall creative direction.")
+      .closest(".overflow-y-auto");
+    expect(scrollRegion).not.toBeNull();
+    expect(scrollRegion).toContainElement(approvalButton);
+
+    fireEvent.click(approvalButton);
 
     expect(
       await screen.findByRole("button", { name: "Add another story beat" }),
