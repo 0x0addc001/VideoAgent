@@ -1997,6 +1997,10 @@ export function ProjectWorkspace({
   const [isWorking, setIsWorking] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [generationErrorOpen, setGenerationErrorOpen] = useState(false);
+  const [generationErrorTarget, setGenerationErrorTarget] = useState<
+    "shot" | "character" | "scene"
+  >("shot");
+  const [generationNotice, setGenerationNotice] = useState<string | null>(null);
   const [generationErrorMessage, setGenerationErrorMessage] = useState<string | null>(
     null,
   );
@@ -2310,6 +2314,12 @@ export function ProjectWorkspace({
   }, [historyCollapsed]);
 
   useEffect(() => {
+    if (!generationNotice) return;
+    const timer = window.setTimeout(() => setGenerationNotice(null), 4000);
+    return () => window.clearTimeout(timer);
+  }, [generationNotice]);
+
+  useEffect(() => {
     messagesEndRef.current?.scrollIntoView?.({ block: "end" });
   }, [agentActivities, messages, pendingDecision, workflow?.stage, workflow?.status]);
 
@@ -2359,8 +2369,11 @@ export function ProjectWorkspace({
             : current,
         );
         setActiveJob(null);
+        setGenerationNotice(generationSuccessText("shot"));
         void refreshAssets();
       } else if (["failed", "cancelled"].includes(job.status)) {
+        setGenerationErrorTarget("shot");
+        setGenerationErrorMessage(generationFailureText("shot"));
         setGenerationErrorOpen(true);
         setActiveJob(null);
       } else {
@@ -3332,10 +3345,11 @@ export function ProjectWorkspace({
         await refreshAssets();
       }
     } catch (error) {
+      setGenerationErrorTarget("shot");
       setGenerationErrorMessage(
         error instanceof Error && error.message !== "generation-failed"
           ? error.message
-          : t("generationError"),
+          : generationFailureText("shot"),
       );
       setGenerationErrorOpen(true);
     } finally {
@@ -3386,10 +3400,11 @@ export function ProjectWorkspace({
       ]);
       setMobilePanel("canvas");
     } catch (error) {
+      setGenerationErrorTarget("shot");
       setGenerationErrorMessage(
         error instanceof Error && error.message !== "generation-failed"
           ? error.message
-          : t("generationError"),
+          : generationFailureText("shot"),
       );
       setGenerationErrorOpen(true);
     } finally {
@@ -3632,11 +3647,13 @@ export function ProjectWorkspace({
       }
       const asset = (await response.json()) as Asset;
       setAssets((current) => [asset, ...current]);
+      setGenerationNotice(generationSuccessText("scene"));
     } catch (error) {
+      setGenerationErrorTarget("scene");
       setGenerationErrorMessage(
         error instanceof Error && error.message !== "scene-generation-failed"
           ? error.message
-          : t("generationError"),
+          : generationFailureText("scene"),
       );
       setGenerationErrorOpen(true);
     } finally {
@@ -3706,11 +3723,13 @@ export function ProjectWorkspace({
       }
       const asset = (await response.json()) as Asset;
       setAssets((current) => [asset, ...current]);
+      setGenerationNotice(generationSuccessText("character"));
     } catch (error) {
+      setGenerationErrorTarget("character");
       setGenerationErrorMessage(
         error instanceof Error && error.message !== "character-generation-failed"
           ? error.message
-          : t("generationError"),
+          : generationFailureText("character"),
       );
       setGenerationErrorOpen(true);
     } finally {
@@ -3904,6 +3923,18 @@ export function ProjectWorkspace({
   }
 
   const copy = workspaceCopy(locale);
+
+  function generationFailureText(target: "shot" | "character" | "scene") {
+    if (target === "character") return t("characterGenerationFailed");
+    if (target === "scene") return t("sceneGenerationFailed");
+    return t("shotGenerationFailed");
+  }
+
+  function generationSuccessText(target: "shot" | "character" | "scene") {
+    if (target === "character") return t("characterGenerationSucceeded");
+    if (target === "scene") return t("sceneGenerationSucceeded");
+    return t("shotGenerationSucceeded");
+  }
 
   function reasonLabel(code: string) {
     const labels: Record<string, string> = {
@@ -5753,6 +5784,14 @@ export function ProjectWorkspace({
         </div>
       ) : null}
 
+      {generationNotice ? (
+        <div
+          aria-live="polite"
+          className="fixed bottom-6 right-6 z-50 rounded-xl border border-emerald-400/25 bg-[#0f1a14]/95 px-4 py-3 text-[13px] text-emerald-200 shadow-xl"
+        >
+          {generationNotice}
+        </div>
+      ) : null}
       {generationErrorOpen ? (
         <div
           className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-5 backdrop-blur-sm"
@@ -5767,7 +5806,7 @@ export function ProjectWorkspace({
             role="dialog"
           >
             <h2 id="generation-error-title" className="text-xl font-semibold">
-              {t("generationError")}
+              {generationFailureText(generationErrorTarget)}
             </h2>
             {generationErrorMessage ? (
               <p className="mt-3 whitespace-pre-wrap text-[12px] leading-6 text-white/48">
