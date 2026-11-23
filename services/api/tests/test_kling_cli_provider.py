@@ -182,3 +182,33 @@ async def test_kling_cli_generates_character_image_with_reference(monkeypatch):
             "--poll=60",
         )
     ]
+
+
+@pytest.mark.unit
+async def test_kling_cli_passes_every_reference_image_in_order(monkeypatch):
+    provider = KlingCLIVideoProvider(command=("kling",))
+    calls: list[tuple[str, ...]] = []
+
+    async def capture(*args: str) -> dict[str, object]:
+        calls.append(args)
+        return {
+            "generationId": "image-generation-2",
+            "status": "succeeded",
+            "works": [{"url": "https://cdn.example.com/scene.png"}],
+        }
+
+    monkeypatch.setattr(provider, "_run_json", capture)
+    await provider.generate_image(
+        prompt="A rainy street with Mara",
+        generation_mode="image_to_image",
+        reference_image_path="C:/media/scene.png",
+        reference_image_paths=["C:/media/mara.png", "C:/media/street.png"],
+    )
+
+    args = calls[0]
+    images = [args[index + 1] for index, value in enumerate(args) if value == "--image"]
+    assert images == [
+        "C:/media/mara.png",
+        "C:/media/street.png",
+        "C:/media/scene.png",
+    ]

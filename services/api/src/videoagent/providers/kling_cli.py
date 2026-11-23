@@ -191,12 +191,21 @@ class KlingCLIVideoProvider:
         prompt: str,
         generation_mode: str,
         reference_image_path: str | None = None,
+        reference_image_paths: Sequence[str] | None = None,
         model: str = DEFAULT_KLING_IMAGE_MODEL,
         aspect_ratio: str = "3:4",
     ) -> str:
         if generation_mode not in {"text_to_image", "image_to_image"}:
             raise KlingCLIError(f"Unsupported Kling image generation mode: {generation_mode}")
-        if generation_mode == "image_to_image" and not reference_image_path:
+        images = list(
+            dict.fromkeys(
+                [
+                    *(reference_image_paths or []),
+                    *([reference_image_path] if reference_image_path else []),
+                ]
+            )
+        )
+        if generation_mode == "image_to_image" and not images:
             raise KlingCLIError("Kling image-to-image requires a reference image.")
         args = [
             "--quiet",
@@ -208,8 +217,8 @@ class KlingCLIVideoProvider:
             "--img_resolution",
             "2k",
         ]
-        if reference_image_path:
-            args.extend(["--image", reference_image_path])
+        for image_path in images:
+            args.extend(["--image", image_path])
         args.extend([prompt, "--poll=60"])
         body = await self._run_json(*args)
         result = _result_url(body)

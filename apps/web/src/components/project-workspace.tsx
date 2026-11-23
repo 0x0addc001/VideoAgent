@@ -773,6 +773,9 @@ export function workspaceCopy(locale: string) {
         saveShot: "保存镜头",
         saveScene: "保存场地",
         copyId: "复制 ID",
+        defaultBadge: "默认",
+        designatedBadge: "已指定",
+        defaultHint: "默认使用第一个结果，点击其他结果可切换。",
         shareAccess: "协作权限",
         collaborationLink: "协作链接",
         titleLabel: "标题",
@@ -938,6 +941,9 @@ export function workspaceCopy(locale: string) {
         saveShot: "Save shot",
         saveScene: "Save scene",
         copyId: "Copy ID",
+        defaultBadge: "Default",
+        designatedBadge: "Selected",
+        defaultHint: "The first result is the default; click another result to switch.",
         shareAccess: "Collaboration access",
         collaborationLink: "Collaboration link",
         titleLabel: "Title",
@@ -1374,35 +1380,49 @@ function ApprovalCard({
 
 function AssetResultList({
   assets,
+  copy,
   selectedAssetId,
   onDelete,
   onOpen,
   onSelect,
 }: {
   assets: Asset[];
+  copy: ReturnType<typeof workspaceCopy>;
   selectedAssetId?: string;
   onDelete: (asset: Asset) => void;
   onOpen: (asset: Asset) => void;
   onSelect: (assetId: string | null) => void;
 }) {
   if (assets.length === 0) return null;
+  const fallbackId = assets[0]?.id;
+  const effectiveSelectedId = selectedAssetId ?? fallbackId;
   return (
     <div className="space-y-1">
-      {assets.map((asset) => (
+      {assets.length > 1 && !selectedAssetId ? (
+        <p className="px-2 pb-1 text-[11px] text-amber-200/60">
+          {copy.defaultHint}
+        </p>
+      ) : null}
+      {assets.map((asset, index) => {
+        const designated = effectiveSelectedId === asset.id;
+        return (
         <div
-          className="flex items-center gap-2 rounded-lg bg-white/[0.02] px-2 py-1.5"
+          className={cn(
+            "flex items-center gap-2 rounded-lg px-2 py-1.5",
+            designated
+              ? "bg-[#1677ff]/[0.12] text-white"
+              : "bg-white/[0.02] text-white/52",
+          )}
           key={asset.id}
         >
-          <input
-            aria-label={`Select ${asset.id} as final`}
-            checked={selectedAssetId === asset.id}
-            className="size-4 accent-[#1677ff]"
-            onChange={(event) => onSelect(event.target.checked ? asset.id : null)}
-            type="checkbox"
-          />
           <button
-            className="flex min-w-0 flex-1 items-center gap-2 text-left text-[12px] text-white/52 hover:text-white/82"
-            onClick={() => onOpen(asset)}
+            aria-label={`Set ${asset.filename} as the reference`}
+            aria-pressed={designated}
+            className="flex min-w-0 flex-1 items-center gap-2 text-left text-[12px] hover:text-white/82"
+            onClick={() => {
+              onSelect(asset.id);
+              onOpen(asset);
+            }}
             type="button"
           >
             {asset.content_type.startsWith("video/") ? (
@@ -1413,6 +1433,15 @@ function AssetResultList({
             <span className="truncate">{asset.filename}</span>
             <span className="shrink-0 text-[11px] text-white/28">
               @{asset.id.slice(0, 8)}
+            </span>
+            <span className="shrink-0 rounded-md border border-white/[0.1] px-1.5 py-0.5 text-[10px]">
+              {selectedAssetId
+                ? designated
+                  ? copy.designatedBadge
+                  : ""
+                : index === 0
+                  ? copy.defaultBadge
+                  : ""}
             </span>
           </button>
           <button
@@ -1433,7 +1462,8 @@ function AssetResultList({
             <Trash2 className="h-3.5 w-3.5" />
           </button>
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -1652,6 +1682,7 @@ function AssetsTree({
                       </button>
                         <div className="mt-1 pl-2">
                           <AssetResultList
+  copy={copy}
                             assets={sourceAssets.filter(
                               (asset) =>
                                 asset.content_type.startsWith("image/") &&
@@ -1712,6 +1743,7 @@ function AssetsTree({
                       </button>
                       <div className="mt-1 pl-2">
                         <AssetResultList
+  copy={copy}
                           assets={sourceAssets.filter(
                             (asset) =>
                               asset.content_type.startsWith("image/") &&
@@ -1763,6 +1795,7 @@ function AssetsTree({
                       </button>
                       <div className="pl-6">
                         <AssetResultList
+  copy={copy}
                           assets={sourceAssets.filter(
                             (asset) => asset.shot_id === shot.id,
                           )}
@@ -3631,14 +3664,32 @@ export function ProjectWorkspace({
       const saved = await saveSceneDraft(scene);
       if (!saved) return;
       const reference = referencedAsset(saved.prompt_en, "image/");
+      const scenePrompt = `${saved.prompt_en} ${scene.description}`.toLowerCase();
+      const characterRefs = (storyboard?.characters ?? [])
+        .filter(
+          (entry) =>
+            entry.name && scenePrompt.includes(entry.name.toLowerCase()),
+        )
+        .map((entry) => selectedResourceAssets[`character:${entry.id}`])
+        .filter((id): id is string => Boolean(id));
+      const sceneRef = selectedResourceAssets[`scene:${scene.id}`];
+      const referenceIds = Array.from(
+        new Set([
+          ...(reference ? [reference.id] : []),
+          ...(sceneRef ? [sceneRef] : []),
+          ...characterRefs,
+        ]),
+      );
       const response = await fetch(`${API_BASE_URL}/scenes/${scene.id}/generate`, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           approved: true,
-          generation_mode: reference ? "image_to_image" : "text_to_image",
-          reference_asset_id: reference?.id ?? null,
+          generation_mode:
+            referenceIds.length > 0 ? "image_to_image" : "text_to_image",
+          reference_asset_id: referenceIds[0] ?? null,
+          reference_asset_ids: referenceIds,
           ...selectedModelRoute(sceneGenerationModel),
         }),
       });
@@ -3707,6 +3758,13 @@ export function ProjectWorkspace({
       const saved = await saveCharacterDraft(character);
       if (!saved) return;
       const reference = referencedAsset(saved.prompt_en, "image/");
+      const ownRef = selectedResourceAssets[`character:${character.id}`];
+      const referenceIds = Array.from(
+        new Set([
+          ...(reference ? [reference.id] : []),
+          ...(ownRef ? [ownRef] : []),
+        ]),
+      );
       const response = await fetch(
         `${API_BASE_URL}/characters/${character.id}/generate`,
         {
@@ -3715,8 +3773,10 @@ export function ProjectWorkspace({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             approved: true,
-            generation_mode: reference ? "image_to_image" : "text_to_image",
-            reference_asset_id: reference?.id ?? null,
+            generation_mode:
+              referenceIds.length > 0 ? "image_to_image" : "text_to_image",
+            reference_asset_id: referenceIds[0] ?? null,
+            reference_asset_ids: referenceIds,
             ...selectedModelRoute(characterGenerationModel),
           }),
         },
@@ -4461,6 +4521,7 @@ export function ProjectWorkspace({
                       {copy.results}
                     </p>
                     <AssetResultList
+  copy={copy}
                       assets={assets.filter(
                         (asset) =>
                           asset.content_type.startsWith("image/") &&
@@ -4631,6 +4692,7 @@ export function ProjectWorkspace({
                       {copy.results}
                     </p>
                     <AssetResultList
+  copy={copy}
                       assets={assets.filter(
                         (asset) =>
                           asset.content_type.startsWith("image/") &&
@@ -4969,6 +5031,7 @@ export function ProjectWorkspace({
                       {copy.results}
                     </p>
                     <AssetResultList
+  copy={copy}
                       assets={assets.filter(
                         (asset) =>
                           asset.shot_id === canvasShot.id &&
@@ -5044,14 +5107,16 @@ export function ProjectWorkspace({
                           {(selectedAsset.byte_size / 1024 / 1024).toFixed(1)} MB
                         </span>
                         <button
-                          className="rounded-md border border-white/[0.08] bg-white/[0.025] px-2.5 py-1 text-[12px] text-[#8fdcff] hover:text-white"
+                          aria-label={copy.copyId}
+                          className="flex items-center gap-1.5 rounded-md border border-white/[0.08] bg-white/[0.025] px-2.5 py-1 text-[12px] text-[#8fdcff] hover:text-white"
                           onClick={() =>
                             void navigator.clipboard?.writeText(selectedAsset.id)
                           }
                           title={selectedAsset.id}
                           type="button"
                         >
-                          {copy.copyId} @{selectedAsset.id.slice(0, 8)}
+                          @{selectedAsset.id.slice(0, 8)}
+                          <Copy className="h-3 w-3" />
                         </button>
                       </div>
                     </div>

@@ -9,15 +9,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from videoagent.api.dependencies import get_current_user, get_session, get_settings
 from videoagent.config import Settings
 from videoagent.errors import AppError
-from videoagent.models import Asset, Project, Scene, Storyboard, User
+from videoagent.models import Project, Scene, Storyboard, User
 from videoagent.providers.base import CostEstimate
 from videoagent.providers.kling_cli import KlingCLIError, KlingCLIVideoProvider
 from videoagent.providers.wanx_image import WanxImageError, WanxImageProvider
 from videoagent.schemas import AssetRead, CharacterGenerationApproval, ModelSelection
 from videoagent.services.credits import refund_credits, reserve_credits
 from videoagent.services.image_models import resolve_image_model
+from videoagent.services.image_references import resolve_reference_paths
 from videoagent.services.media import (
-    asset_file,
     asset_read,
     materialize_visual_image,
     save_upload,
@@ -136,35 +136,19 @@ async def generate_scene_image(
             code="GENERATION_DISABLED",
             message="Image generation is temporarily unavailable.",
         )
-    reference_path: str | None = None
+    reference_paths: list[str] = []
     if payload.generation_mode == "image_to_image":
-        if payload.reference_asset_id is None:
-            raise AppError(
-                status_code=422,
-                code="REFERENCE_REQUIRED",
-                message="Reference-image generation requires an image.",
-            )
-        reference = await session.scalar(
-            select(Asset).where(
-                Asset.id == payload.reference_asset_id,
-                Asset.project_id == project.id,
-                Asset.deleted_at.is_(None),
-            )
+        asset_ids: list[UUID] = []
+        if payload.reference_asset_id is not None:
+            asset_ids.append(payload.reference_asset_id)
+        asset_ids.extend(payload.reference_asset_ids)
+        reference_paths = await resolve_reference_paths(
+            session,
+            project_id=project.id,
+            asset_ids=asset_ids,
+            settings=settings,
         )
-        if reference is None or not reference.content_type.startswith("image/"):
-            raise AppError(
-                status_code=422,
-                code="REFERENCE_INVALID",
-                message="The selected reference is not an image in this project.",
-            )
-        path = await asset_file(reference, settings)
-        if not path.exists():
-            raise AppError(
-                status_code=404,
-                code="REFERENCE_FILE_NOT_FOUND",
-                message="The selected reference image file is unavailable.",
-            )
-        reference_path = str(path)
+
     try:
         build_storage(settings)
     except StorageError as exc:
@@ -193,7 +177,8 @@ async def generate_scene_image(
             ).generate_image(
                 prompt=scene.prompt_en,
                 generation_mode=payload.generation_mode,
-                reference_image_path=reference_path,
+                reference_image_path=reference_paths[0] if reference_paths else None,
+                reference_image_paths=reference_paths,
                 model=model,
             )
         else:
@@ -204,7 +189,8 @@ async def generate_scene_image(
             result_url = await provider.generate_image(
                 prompt=scene.prompt_en,
                 generation_mode=payload.generation_mode,
-                reference_image_path=reference_path,
+                reference_image_path=reference_paths[0] if reference_paths else None,
+                reference_image_paths=reference_paths,
                 model=model,
             )
         asset = await materialize_visual_image(

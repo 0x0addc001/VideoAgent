@@ -81,6 +81,7 @@ class WanxImageProvider:
         prompt: str,
         generation_mode: str,
         reference_image_path: str | None,
+        reference_image_paths: list[str] | None = None,
         model: str,
     ) -> str:
         if generation_mode != "text_to_image":
@@ -88,7 +89,7 @@ class WanxImageProvider:
                 "Wanx image models currently support text-to-image only; "
                 "pick a Kling image model for reference-image generation."
             )
-        del reference_image_path
+        del reference_image_path, reference_image_paths
         if model.startswith("wan2.7-image"):
             return await self._generate_multimodal(model=model, prompt=prompt)
         submitted = await self._request(

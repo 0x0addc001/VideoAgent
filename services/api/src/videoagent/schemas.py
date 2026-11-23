@@ -527,6 +527,7 @@ class CharacterGenerationApproval(ModelSelection):
     approved: bool
     generation_mode: ImageGenerationMode = "text_to_image"
     reference_asset_id: UUID | None = None
+    reference_asset_ids: list[UUID] = []
 
 
 class GenerationJobRead(BaseModel):
