@@ -12,6 +12,15 @@ from videoagent.schemas import CharacterInput, SceneInput, ShotInput, Storyboard
 logger = logging.getLogger(__name__)
 
 
+def _compact_name(text: str, limit: int) -> str:
+    cleaned = re.sub(r"[\s，。！？、；：,.!?;:]+", " ", text).strip()
+    if not cleaned:
+        return ""
+    if re.search(r"[\u4e00-\u9fff]", cleaned):
+        return cleaned.replace(" ", "")[:limit]
+    return " ".join(cleaned.split()[:limit])
+
+
 class StoryboardPlan(BaseModel):
     assistant_message: str
     storyboard: StoryboardReplace
@@ -122,11 +131,8 @@ class LocalStoryboardPlanner:
                 generation_mode="text_to_video",
             ),
         ]
-        short_subject = " ".join(subject.split())[:16].strip()
-        character_name = (
-            (f"主角·{short_subject}" if chinese and short_subject else "主角")
-            if chinese
-            else (f"Lead · {short_subject}" if short_subject else "Lead")
+        character_name = _compact_name(subject, 8 if chinese else 3) or (
+            "角色" if chinese else "Character"
         )
         character_description = (
             f"故事的核心人物，围绕“{subject}”展开。"
@@ -148,12 +154,10 @@ class LocalStoryboardPlanner:
                 ),
             )
         ]
-        scene_name = (
-            (f"主场景·{short_subject}" if chinese and short_subject else "主场景")
-            if chinese
-            else (f"Primary set · {short_subject}" if short_subject else "Primary set")
-        )
         scene_location = "电影感室内创作空间" if chinese else "Cinematic interior studio"
+        scene_name = _compact_name(scene_location, 8 if chinese else 3) or (
+            "场景" if chinese else "Scene"
+        )
         scenes = [
             SceneInput(
                 name=scene_name,

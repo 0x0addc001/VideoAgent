@@ -1527,7 +1527,7 @@ function AssetResultList({
             >
               {asset.content_type.startsWith("video/") ? (
                 <video
-                  className="h-12 w-full object-cover"
+                  className="h-8 w-full bg-black/40 object-contain"
                   muted
                   preload="metadata"
                   src={source}
@@ -1535,7 +1535,7 @@ function AssetResultList({
               ) : (
                 <img
                   alt={asset.filename}
-                  className="h-12 w-full object-cover"
+                  className="h-8 w-full bg-black/40 object-contain"
                   loading="lazy"
                   src={source}
                 />
@@ -1876,11 +1876,8 @@ function AssetsTree({
                         type="button"
                       >
                         <Folder className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
-                        <span className="truncate font-medium">
-                          <span className="shrink-0">{copy.shot} {shot.index + 1}</span>
-                          <span className="truncate text-[10px] text-white/28">
-                            {shot.description}
-                          </span>
+                        <span className="truncate text-[11px] text-white/45">
+                          {shot.description}
                         </span>
                       </button>
                       <div className="pl-6">
@@ -4418,8 +4415,8 @@ export function ProjectWorkspace({
                           }}
                         >
                           <div className="flex items-center justify-between gap-4">
-                            <span className="text-[12px] font-semibold text-[#6eb8ff]">
-                              {copy.shot} {shot.index + 1}
+                            <span className="truncate text-[12px] font-semibold text-[#6eb8ff]">
+                              {shot.description}
                             </span>
                             <span className="flex flex-wrap items-center justify-end gap-2">
                               <span className="rounded-md border border-white/[0.08] bg-white/[0.025] px-2.5 py-1 text-[12px] text-white/38">
@@ -4814,8 +4811,8 @@ export function ProjectWorkspace({
                   <div className="aspect-video overflow-hidden rounded-2xl border border-white/[0.08] bg-[radial-gradient(circle_at_72%_20%,rgba(22,119,255,0.26),transparent_28%),linear-gradient(145deg,#13213d,#080c13)] p-6">
                     <div className="flex h-full flex-col justify-between">
                       <div className="flex items-center justify-between">
-                        <span className="rounded-full bg-black/25 px-3 py-1.5 text-[12px] font-semibold backdrop-blur">
-                          {copy.shot} {canvasShot.index + 1}
+                        <span className="max-w-[60%] truncate rounded-full bg-black/25 px-3 py-1.5 text-[12px] font-semibold backdrop-blur">
+                          {canvasShot.description}
                         </span>
                         {canvasShot.status === "completed" ? (
                           <span className="grid size-8 place-items-center rounded-full bg-emerald-400 text-[#122016]">
@@ -5164,54 +5161,22 @@ export function ProjectWorkspace({
                       </div>
                     )}
                   </div>
-                  <div className="group mt-5 flex items-center justify-between gap-4">
-                    <div>
-                      <form
-                        className="flex min-w-0 items-center gap-1.5"
-                        onSubmit={(event) => {
-                          event.preventDefault();
-                          const form = new FormData(event.currentTarget);
-                          void renameProjectAsset(
-                            selectedAsset,
-                            String(form.get("filename") ?? ""),
-                          );
-                        }}
-                      >
-                        <input
-                          aria-label={copy.renameAsset}
-                          className="min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-1 py-1 text-[15px] font-medium text-white/82 outline-none hover:border-white/[0.08] focus:border-[#1677ff]/40"
-                          defaultValue={selectedAsset.filename}
-                          key={selectedAsset.id}
-                          name="filename"
-                          onBlur={(event) => {
-                            const next = event.target.value.trim();
-                            if (next && next !== selectedAsset.filename) {
-                              void renameProjectAsset(selectedAsset, next);
-                            }
-                          }}
-                        />
-                      </form>
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        <span className="rounded-md border border-white/[0.08] bg-white/[0.025] px-2.5 py-1 text-[12px] text-white/38">
-                          {selectedAsset.content_type}
-                        </span>
-                        <span className="rounded-md border border-white/[0.08] bg-white/[0.025] px-2.5 py-1 text-[12px] text-white/38">
-                          {(selectedAsset.byte_size / 1024 / 1024).toFixed(1)} MB
-                        </span>
-                        <button
-                          aria-label={copy.copyId}
-                          className="grid size-6 place-items-center rounded-md text-white/30 hover:bg-white/[0.05] hover:text-white"
-                          onClick={() =>
-                            void navigator.clipboard?.writeText(selectedAsset.id)
-                          }
-                          title={`@${selectedAsset.id.slice(0, 8)}`}
-                          type="button"
-                        >
-                          <Copy className="h-3 w-3" />
-                        </button>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-1.5 opacity-0 transition group-hover:opacity-100">
+                  <div className="mt-4 flex items-center justify-between gap-3">
+                    <button
+                      aria-label={copy.copyId}
+                      className="flex min-w-0 items-center gap-1.5 rounded-lg px-2 py-1.5 font-mono text-[13px] text-white/58 hover:bg-white/[0.05] hover:text-white"
+                      onClick={() =>
+                        void navigator.clipboard?.writeText(selectedAsset.id)
+                      }
+                      title={copy.copyId}
+                      type="button"
+                    >
+                      <span className="truncate">
+                        @{selectedAsset.id.slice(0, 8)}
+                      </span>
+                      <Copy className="h-3 w-3" />
+                    </button>
+                    <div className="flex items-center gap-1.5">
                       <a
                         aria-label={copy.download}
                         className="grid size-8 place-items-center rounded-lg border border-white/[0.09] text-white/45 hover:text-white"
@@ -5222,9 +5187,10 @@ export function ProjectWorkspace({
                         <Download className="h-3.5 w-3.5" />
                       </a>
                       <button
-                        aria-label={`Delete ${selectedAsset.filename}`}
-                        className="grid size-9 place-items-center rounded-lg border border-white/[0.09] text-white/38 hover:border-red-400/30 hover:text-red-300"
+                        aria-label={copy.deleteAsset}
+                        className="grid size-8 place-items-center rounded-lg border border-white/[0.09] text-white/38 hover:border-red-400/30 hover:text-red-300"
                         onClick={() => void deleteProjectAsset(selectedAsset)}
+                        title={copy.deleteAsset}
                         type="button"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
