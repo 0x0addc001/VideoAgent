@@ -101,6 +101,7 @@ class Settings(BaseSettings):
     generation_rate_limit_per_minute: int = Field(default=30, ge=1)
     upload_rate_limit_per_minute: int = Field(default=20, ge=1)
     starting_user_credits: int = Field(default=0, ge=0)
+    cli_model_discovery_enabled: bool = True
     extra_models: list[ExtraModel] = []
     disabled_models: list[str] = []
 

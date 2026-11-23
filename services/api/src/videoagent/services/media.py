@@ -5,6 +5,7 @@ import shutil
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Literal
+from urllib.parse import unquote
 from uuid import UUID, uuid4
 
 import httpx
@@ -167,6 +168,14 @@ async def save_upload(
     return asset
 
 
+def file_result_path(value: str | None) -> Path | None:
+    """Resolve a ``file://`` provider result to a local path."""
+    if not value or not value.startswith("file://"):
+        return None
+    path = Path(unquote(value[len("file://") :]))
+    return path if path.is_file() else None
+
+
 def _mock_source() -> Path:
     repository = Path(__file__).resolve().parents[5]
     return repository / "apps" / "web" / "public" / "media" / "vlog-hero.mp4"
@@ -320,6 +329,8 @@ async def materialize_generation_result(
     elif job.result_url.startswith(("http://", "https://")):
         if not await _download(job.result_url, destination, settings):
             return None
+    elif (local := file_result_path(job.result_url)) is not None:
+        shutil.copyfile(local, destination)
     else:
         return None
 

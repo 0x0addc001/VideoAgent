@@ -93,13 +93,20 @@ silently. `GET /providers/models` also exposes each model's `modes`, `max_durati
 
 ### 2.3 Model discovery
 
-On startup the service calls Model Studio's OpenAI-compatible `/models` endpoint (191
-models at the time of writing) and adds the **image** models it exposes (for example
+The catalogue has three sources:
+
+1. **Static catalogue** for accurate labels, capabilities and cost baselines.
+2. **CLI discovery**: at startup `pippit-tool-cli model` and `kling --quiet who_am_i`
+   contribute the models those CLIs actually expose (including new ones); Pippit draft
+   preview models are skipped for now.
+3. **Model Studio discovery**: the OpenAI-compatible `/models` endpoint (191 models at the
+   time of writing) adds the **image** models it exposes (for example
 `wan2.7-image`, `wan2.7-image-pro`). `qwen-image-*` and `z-image-*` use other image APIs
 and are not wired yet). That endpoint does **not** list video
-models, so the video catalogue stays curated here. Discovery results are cached for ten
-minutes and failures fall back to the static catalogue; `GET /providers/models` merges both
-so the UI picks up new models without code changes.
+models, so the video catalogue stays curated here. Results are cached for ten minutes and any
+source failure falls back to the catalogue already available; `GET /providers/models` merges
+all three so the UI picks up new models without code changes. Set
+`VIDEOAGENT_CLI_MODEL_DISCOVERY_ENABLED=false` to disable CLI discovery.
 
 ## 3. Mock provider
 
@@ -127,6 +134,10 @@ VIDEOAGENT_PIPPIT_ACCESS_KEY=      # CI only; prefer the browser login
   fields, so jobs survive restarts.
 - Account: `GET /providers/pippit` for status, `GET /providers/pippit/credits` for balance.
 - Errors: missing binary → `503`, not logged in → `409`, upstream failure → `502`.
+- **CLI compatibility (1.0.57+)**: `query-result` requires `--download-dir` and
+  `generate-video` requires an explicit `--resolution` (720p by default). Results prefer the
+  CLI-downloaded `output_path` because `download_url` can return 403. The two-phase
+  `Seedance_2.5_draft` preview flow is not wired yet, so that model is hidden.
 
 ## 5. Kling provider
 

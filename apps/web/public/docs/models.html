@@ -164,7 +164,14 @@ VIDEOAGENT_DISABLED_MODELS=[&quot;kling-video-v2_5&quot;]</code></pre>
 <p>Reason codes: <code>ratio_native</code>, <code>duration_fits</code>, <code>references_supported</code>, <code>audio_supported</code>, <code>cheapest</code>, <code>highest_quality</code>, <code>mock_provider</code>; the UI localizes them.</p>
 <p>Endpoint: <code>POST /api/v1/shots/{shot_id}/model-recommendation</code>. Choosing “Auto” on the shot page refreshes the recommendation as duration, ratio, references or preference change, and estimate plus generation reuse the same <code>provider/model</code> so the model never switches silently. <code>GET /providers/models</code> also exposes each model's <code>modes</code>, <code>max_duration</code>, <code>ratios</code>, <code>max_references</code>, <code>supports_audio</code>, <code>credits_per_second</code> and <code>quality_tier</code>.</p>
 <h3 id="2-3-model-discovery">2.3 Model discovery</h3>
-<p>On startup the service calls Model Studio's OpenAI-compatible <code>/models</code> endpoint (191 models at the time of writing) and adds the <strong>image</strong> models it exposes (for example <code>wan2.7-image</code>, <code>wan2.7-image-pro</code>). <code>qwen-image-*</code> and <code>z-image-*</code> use other image APIs and are not wired yet). That endpoint does <strong>not</strong> list video models, so the video catalogue stays curated here. Discovery results are cached for ten minutes and failures fall back to the static catalogue; <code>GET /providers/models</code> merges both so the UI picks up new models without code changes.</p>
+<p>The catalogue has three sources:</p>
+<ol>
+<li><strong>Static catalogue</strong> for accurate labels, capabilities and cost baselines.</li>
+<li><strong>CLI discovery</strong>: at startup <code>pippit-tool-cli model</code> and <code>kling --quiet who_am_i</code></li>
+<p>contribute the models those CLIs actually expose (including new ones); Pippit draft preview models are skipped for now.</p>
+<li><strong>Model Studio discovery</strong>: the OpenAI-compatible <code>/models</code> endpoint (191 models at the</li>
+<p>time of writing) adds the <strong>image</strong> models it exposes (for example <code>wan2.7-image</code>, <code>wan2.7-image-pro</code>). <code>qwen-image-*</code> and <code>z-image-*</code> use other image APIs and are not wired yet). That endpoint does <strong>not</strong> list video models, so the video catalogue stays curated here. Results are cached for ten minutes and any source failure falls back to the catalogue already available; <code>GET /providers/models</code> merges all three so the UI picks up new models without code changes. Set <code>VIDEOAGENT_CLI_MODEL_DISCOVERY_ENABLED=false</code> to disable CLI discovery.</p>
+</ol>
 <h2 id="3-mock-provider">3. Mock provider</h2>
 <p>Used for offline development, unit tests and Playwright E2E; it never bills anyone.</p>
 <ul>
@@ -186,6 +193,8 @@ VIDEOAGENT_PIPPIT_ACCESS_KEY=      # CI only; prefer the browser login</code></p
 <p>fields, so jobs survive restarts.</p>
 <li>Account: <code>GET /providers/pippit</code> for status, <code>GET /providers/pippit/credits</code> for balance.</li>
 <li>Errors: missing binary → <code>503</code>, not logged in → <code>409</code>, upstream failure → <code>502</code>.</li>
+<li><strong>CLI compatibility (1.0.57+)</strong>: <code>query-result</code> requires <code>--download-dir</code> and</li>
+<p><code>generate-video</code> requires an explicit <code>--resolution</code> (720p by default). Results prefer the CLI-downloaded <code>output_path</code> because <code>download_url</code> can return 403. The two-phase <code>Seedance_2.5_draft</code> preview flow is not wired yet, so that model is hidden.</p>
 </ul>
 <h2 id="5-kling-provider">5. Kling provider</h2>
 <p>Two backends selected by <code>VIDEOAGENT_KLING_BACKEND</code>:</p>

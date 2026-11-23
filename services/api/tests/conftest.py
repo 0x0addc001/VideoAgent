@@ -4,6 +4,7 @@ import os
 os.environ.setdefault("VIDEOAGENT_MEDIA_STORAGE", "local")
 os.environ.setdefault("VIDEOAGENT_VISION_MODELS", "[]")
 os.environ.setdefault("VIDEOAGENT_EXTRA_MODELS", "[]")
+os.environ.setdefault("VIDEOAGENT_CLI_MODEL_DISCOVERY_ENABLED", "false")
 
 from collections.abc import AsyncIterator
 from pathlib import Path

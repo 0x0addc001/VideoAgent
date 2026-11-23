@@ -165,7 +165,7 @@ async def test_pippit_clamps_short_shots_to_the_model_minimum(monkeypatch):
 
 
 @pytest.mark.unit
-async def test_pippit_auto_model_uses_the_draft_default(monkeypatch):
+async def test_pippit_auto_model_uses_the_final_default(monkeypatch):
     client = PippitVideoProvider(
         command=(sys.executable, str(FAKE_CLI)),
         model=None,
@@ -180,4 +180,34 @@ async def test_pippit_auto_model_uses_the_draft_default(monkeypatch):
     monkeypatch.setattr(client, "_run_json", capture)
     await client.submit(request())
 
-    assert calls[0][calls[0].index("--model") + 1] == "Seedance_2.5_draft"
+    assert calls[0][calls[0].index("--model") + 1] == "Seedance_2.5"
+
+
+@pytest.mark.unit
+def test_pippit_prefers_the_locally_downloaded_result(tmp_path):
+    from videoagent.providers.pippit import _video_url
+
+    local = tmp_path / "clip.mp4"
+    local.write_bytes(b"video")
+
+    url = _video_url(
+        {
+            "videos": [
+                {
+                    "download_url": "https://example.com/clip.mp4",
+                    "output_path": str(local),
+                }
+            ]
+        }
+    )
+
+    assert url == f"file://{local.resolve()}"
+
+
+@pytest.mark.unit
+def test_pippit_falls_back_to_download_url_without_a_local_file():
+    from videoagent.providers.pippit import _video_url
+
+    url = _video_url({"videos": [{"download_url": "https://example.com/clip.mp4"}]})
+
+    assert url == "https://example.com/clip.mp4"

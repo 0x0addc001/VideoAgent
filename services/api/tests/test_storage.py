@@ -145,3 +145,15 @@ async def test_asset_file_restores_missing_files_from_storage(tmp_path, monkeypa
     assert path == tmp_path.resolve() / "generated-7.mp4"
     assert path.exists()
     assert fetched == [("generated-7.mp4", path)]
+
+
+@pytest.mark.unit
+def test_file_result_path_resolves_local_provider_results(tmp_path):
+    from videoagent.services.media import file_result_path
+
+    video = tmp_path / "clip.mp4"
+    video.write_bytes(b"video")
+
+    assert file_result_path(f"file://{video}") == video
+    assert file_result_path("https://example.com/clip.mp4") is None
+    assert file_result_path(f"file://{tmp_path / 'missing.mp4'}") is None

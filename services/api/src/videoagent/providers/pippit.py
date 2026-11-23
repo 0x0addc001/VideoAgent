@@ -2,7 +2,9 @@ import asyncio
 import json
 import os
 import shutil
+import tempfile
 from collections.abc import Sequence
+from pathlib import Path
 from typing import Any
 
 from videoagent.providers.base import CostEstimate, GenerationRequest, ProviderJob
@@ -76,6 +78,13 @@ def _video_url(payload: dict[str, Any]) -> str | None:
     for item in videos:
         if not isinstance(item, dict):
             continue
+        # query-result already downloaded the artifact; download_url often
+        # rejects plain HTTP clients (403), so the local file is authoritative.
+        output_path = item.get("output_path")
+        if isinstance(output_path, str) and output_path:
+            path = Path(output_path).expanduser()
+            if path.is_file():
+                return f"file://{path.resolve()}"
         for key in ("download_url", "url"):
             value = item.get(key)
             if isinstance(value, str) and value:
@@ -100,6 +109,7 @@ class PippitVideoProvider:
         self._resolution = resolution
         self._access_key = access_key
         self._timeout_seconds = timeout_seconds
+        self._download_dir = tempfile.mkdtemp(prefix="videoagent-pippit-")
 
     async def _run_json(self, *args: str) -> dict[str, Any]:
         environment = os.environ.copy()
@@ -165,11 +175,10 @@ class PippitVideoProvider:
             "--source",
             "videoagent",
         ]
-        model = request.model or self._model or "Seedance_2.5_draft"
+        model = request.model or self._model or "Seedance_2.5"
         args.extend(["--model", model])
-        resolution = request.resolution or self._resolution
-        if resolution:
-            args.extend(["--resolution", resolution])
+        resolution = request.resolution or self._resolution or "720p"
+        args.extend(["--resolution", resolution])
         if request.task_type != "auto":
             args.extend(["--task-type", request.task_type])
         for path in request.reference_image_paths:
@@ -201,10 +210,19 @@ class PippitVideoProvider:
             thread_id,
             "--run-id",
             run_id,
+            "--download-dir",
+            self._download_dir,
         )
         if payload.get("error_message"):
             return ProviderJob(provider=self.name, task_id=task_id, status="failed")
-        if payload.get("completed") is not True:
+        status = str(payload.get("status") or "")
+        if status in {"failed", "canceled", "input_required", "interrupted"}:
+            return ProviderJob(
+                provider=self.name,
+                task_id=task_id,
+                status="failed" if status != "canceled" else "cancelled",
+            )
+        if status != "succeeded" and payload.get("completed") is not True:
             return ProviderJob(provider=self.name, task_id=task_id, status="running")
         result_url = _video_url(payload)
         return ProviderJob(

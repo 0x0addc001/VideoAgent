@@ -142,7 +142,6 @@ VIDEO_MODELS: tuple[ModelOption, ...] = (
     _kling("kling-video-v2_6", "Kling Video 2.6", credits=1, tier=2),
     _kling("kling-video-v2_5", "Kling Video 2.5", credits=1, tier=1),
     # Pippit
-    _pippit("Seedance_2.5_draft", "Seedance 2.5 Draft", tier=1),
     _pippit("Seedance_2.5", "Seedance 2.5"),
     _pippit("seedance2.0_fast_vision", "Seedance 2.0 Fast VIP", tier=1),
     _pippit("seedance2.0_vision", "Seedance 2.0 VIP"),
@@ -193,9 +192,15 @@ def model_catalog(settings: Settings | None = None) -> list[ModelOption]:
             if option.model not in disabled and option.display not in disabled
         ]
 
+    from videoagent.services.cli_model_discovery import cli_models
     from videoagent.services.model_discovery import discovered_models
 
     seen = {(option.provider, option.model) for option in options}
+    for discovered in cli_models():
+        key = (discovered.provider, discovered.model)
+        if key not in seen:
+            options.append(discovered)
+            seen.add(key)
     for discovered in discovered_models():
         key = (discovered.provider, discovered.model)
         if key not in seen:

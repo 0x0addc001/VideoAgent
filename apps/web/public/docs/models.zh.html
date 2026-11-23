@@ -163,7 +163,14 @@ VIDEOAGENT_DISABLED_MODELS=[&quot;kling-video-v2_5&quot;]</code></pre>
 <p>理由码：<code>ratio_native</code>、<code>duration_fits</code>、<code>references_supported</code>、<code>audio_supported</code>、 <code>cheapest</code>、<code>highest_quality</code>、<code>mock_provider</code>；前端按当前语言渲染。</p>
 <p>接口：<code>POST /api/v1/shots/{shot_id}/model-recommendation</code>。镜头页选择「自动推荐」后， 时长、比例、参考图或偏好变化会实时刷新推荐，估算与生成复用同一个 <code>provider/model</code>， 不会静默换模型。<code>GET /providers/models</code> 同时返回每个模型的 <code>modes</code>、<code>max_duration</code>、 <code>ratios</code>、<code>max_references</code>、<code>supports_audio</code>、<code>credits_per_second</code>、<code>quality_tier</code>。</p>
 <h3 id="2-3-模型发现">2.3 模型发现</h3>
-<p>启动时会调用百炼的 OpenAI 兼容 <code>/models</code>（当前返回 191 个模型）补充<strong>图像模型</strong> （如 <code>wan2.7-image</code>、<code>wan2.7-image-pro</code>）。<code>qwen-image-*</code>、<code>z-image-*</code> 走其他图像 接口，暂未接入。该接口<strong>不返回视频模型</strong>， 视频目录仍由本文件维护。发现结果缓存 10 分钟，失败时静默回退静态目录； <code>GET /providers/models</code> 合并两部分，前端无需改代码即可看到新模型。</p>
+<p>目录有三个来源：</p>
+<ol>
+<li><strong>静态目录</strong>：准确的标签、能力与价格基线；</li>
+<li><strong>CLI 发现</strong>：启动时运行 <code>pippit-tool-cli model</code> 和 <code>kling --quiet who_am_i</code>，</li>
+<p>把 CLI 实际开放的模型（含新模型）并入目录，Pippit 的 draft 样片模型暂不纳入；</p>
+<li><strong>百炼发现</strong>：调用 OpenAI 兼容 <code>/models</code>（当前返回 191 个模型）补充<strong>图像模型</strong></li>
+<p>（如 <code>wan2.7-image</code>、<code>wan2.7-image-pro</code>）。<code>qwen-image-*</code>、<code>z-image-*</code> 走其他图像 接口，暂未接入。该接口<strong>不返回视频模型</strong>， 视频目录仍由本文件维护。发现结果缓存 10 分钟，任一来源失败都静默回退到已有目录；<code>GET /providers/models</code> 合并三部分，前端无需改代码即可看到新模型。可用 <code>VIDEOAGENT_CLI_MODEL_DISCOVERY_ENABLED=false</code> 关闭 CLI 发现。</p>
+</ol>
 <h2 id="3-mock-provider">3. Mock Provider</h2>
 <p>用于离线开发、单元测试和 Playwright E2E，不产生费用。</p>
 <ul>
@@ -184,6 +191,8 @@ VIDEOAGENT_PIPPIT_ACCESS_KEY=      # 仅 CI 使用，优先浏览器登录</code
 <li>查询：<code>query-result --thread-id --run-id</code>，<code>task_id</code> 是这两个字段的 JSON 引用，可跨重启恢复。</li>
 <li>账号：<code>GET /providers/pippit</code> 读状态，<code>GET /providers/pippit/credits</code> 读余额。</li>
 <li>错误：CLI 缺失 → <code>503</code>；未登录 → <code>409</code>；上游失败 → <code>502</code>。</li>
+<li><strong>CLI 兼容（1.0.57+）</strong>：<code>query-result</code> 必须带 <code>--download-dir</code>，<code>generate-video</code> 必须显式</li>
+<p><code>--resolution</code>（默认补 720p）。结果优先使用 CLI 下载的 <code>output_path</code>（<code>download_url</code> 可能 返回 403）。<code>Seedance_2.5_draft</code> 的两阶段样片流程尚未接入，目录暂不提供该模型。</p>
 </ul>
 <h2 id="5-kling-provider">5. Kling Provider</h2>
 <p>两种后端，由 <code>VIDEOAGENT_KLING_BACKEND</code> 选择：</p>

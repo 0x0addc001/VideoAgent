@@ -87,11 +87,17 @@ VIDEOAGENT_DISABLED_MODELS=["kling-video-v2_5"]
 
 ### 2.3 模型发现
 
-启动时会调用百炼的 OpenAI 兼容 `/models`（当前返回 191 个模型）补充**图像模型**
+目录有三个来源：
+
+1. **静态目录**：准确的标签、能力与价格基线；
+2. **CLI 发现**：启动时运行 `pippit-tool-cli model` 和 `kling --quiet who_am_i`，
+   把 CLI 实际开放的模型（含新模型）并入目录，Pippit 的 draft 样片模型暂不纳入；
+3. **百炼发现**：调用 OpenAI 兼容 `/models`（当前返回 191 个模型）补充**图像模型**
 （如 `wan2.7-image`、`wan2.7-image-pro`）。`qwen-image-*`、`z-image-*` 走其他图像
 接口，暂未接入。该接口**不返回视频模型**，
-视频目录仍由本文件维护。发现结果缓存 10 分钟，失败时静默回退静态目录；
-`GET /providers/models` 合并两部分，前端无需改代码即可看到新模型。
+视频目录仍由本文件维护。发现结果缓存 10 分钟，任一来源失败都静默回退到已有目录；`GET /providers/models`
+合并三部分，前端无需改代码即可看到新模型。可用 `VIDEOAGENT_CLI_MODEL_DISCOVERY_ENABLED=false`
+关闭 CLI 发现。
 
 ## 3. Mock Provider
 
@@ -118,6 +124,9 @@ VIDEOAGENT_PIPPIT_ACCESS_KEY=      # 仅 CI 使用，优先浏览器登录
 - 查询：`query-result --thread-id --run-id`，`task_id` 是这两个字段的 JSON 引用，可跨重启恢复。
 - 账号：`GET /providers/pippit` 读状态，`GET /providers/pippit/credits` 读余额。
 - 错误：CLI 缺失 → `503`；未登录 → `409`；上游失败 → `502`。
+- **CLI 兼容（1.0.57+）**：`query-result` 必须带 `--download-dir`，`generate-video` 必须显式
+  `--resolution`（默认补 720p）。结果优先使用 CLI 下载的 `output_path`（`download_url` 可能
+  返回 403）。`Seedance_2.5_draft` 的两阶段样片流程尚未接入，目录暂不提供该模型。
 
 ## 5. Kling Provider
 
