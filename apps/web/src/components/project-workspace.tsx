@@ -776,6 +776,9 @@ export function workspaceCopy(locale: string) {
         defaultBadge: "默认",
         designatedBadge: "已指定",
         defaultHint: "默认使用第一个结果，点击其他结果可切换。",
+        designateAsset: "指定为参考",
+        openAsset: "打开",
+        deleteAsset: "删除",
         shareAccess: "协作权限",
         collaborationLink: "协作链接",
         titleLabel: "标题",
@@ -944,6 +947,9 @@ export function workspaceCopy(locale: string) {
         defaultBadge: "Default",
         designatedBadge: "Selected",
         defaultHint: "The first result is the default; click another result to switch.",
+        designateAsset: "Use as reference",
+        openAsset: "Open",
+        deleteAsset: "Delete",
         shareAccess: "Collaboration access",
         collaborationLink: "Collaboration link",
         titleLabel: "Title",
@@ -1393,78 +1399,153 @@ function AssetResultList({
   onOpen: (asset: Asset) => void;
   onSelect: (assetId: string | null) => void;
 }) {
+  const [menu, setMenu] = useState<{ asset: Asset; x: number; y: number } | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (!menu) return;
+    const close = () => setMenu(null);
+    const onKey = (event: KeyboardEvent) => {
+      if (event.key === "Escape") close();
+    };
+    window.addEventListener("pointerdown", close);
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("resize", close);
+    window.addEventListener("scroll", close, true);
+    return () => {
+      window.removeEventListener("pointerdown", close);
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("resize", close);
+      window.removeEventListener("scroll", close, true);
+    };
+  }, [menu]);
+
   if (assets.length === 0) return null;
   const fallbackId = assets[0]?.id;
   const effectiveSelectedId = selectedAssetId ?? fallbackId;
+
+  function closeMenu() {
+    setMenu(null);
+  }
+
   return (
-    <div className="space-y-1">
-      {assets.length > 1 && !selectedAssetId ? (
-        <p className="px-2 pb-1 text-[11px] text-amber-200/60">
-          {copy.defaultHint}
-        </p>
-      ) : null}
-      {assets.map((asset, index) => {
-        const designated = effectiveSelectedId === asset.id;
-        return (
+    <>
+      <div className="space-y-1">
+        {assets.length > 1 && !selectedAssetId ? (
+          <p className="px-2 pb-1 text-[11px] text-amber-200/60">
+            {copy.defaultHint}
+          </p>
+        ) : null}
+        {assets.map((asset, index) => {
+          const designated = effectiveSelectedId === asset.id;
+          return (
+            <div
+              className={cn(
+                "flex items-center gap-2 rounded-lg px-2 py-1.5",
+                designated
+                  ? "bg-[#1677ff]/[0.12] text-white"
+                  : "bg-white/[0.02] text-white/52",
+              )}
+              key={asset.id}
+              onContextMenu={(event) => {
+                event.preventDefault();
+                setMenu({ asset, x: event.clientX, y: event.clientY });
+              }}
+            >
+              <button
+                aria-label={`Set ${asset.filename} as the reference`}
+                aria-pressed={designated}
+                className="flex min-w-0 flex-1 items-center gap-2 text-left text-[12px] hover:text-white/82"
+                onClick={() => {
+                  onSelect(asset.id);
+                  onOpen(asset);
+                }}
+                type="button"
+              >
+                {asset.content_type.startsWith("video/") ? (
+                  <Film className="h-3.5 w-3.5 shrink-0 text-[#4facff]" />
+                ) : (
+                  <Image className="h-3.5 w-3.5 shrink-0 text-[#4facff]" />
+                )}
+                <span className="truncate">{asset.filename}</span>
+                <span className="shrink-0 text-[11px] text-white/28">
+                  @{asset.id.slice(0, 8)}
+                </span>
+                <span className="shrink-0 rounded-md border border-white/[0.1] px-1.5 py-0.5 text-[10px]">
+                  {selectedAssetId
+                    ? designated
+                      ? copy.designatedBadge
+                      : ""
+                    : index === 0
+                      ? copy.defaultBadge
+                      : ""}
+                </span>
+              </button>
+            </div>
+          );
+        })}
+      </div>
+      {menu ? (
         <div
-          className={cn(
-            "flex items-center gap-2 rounded-lg px-2 py-1.5",
-            designated
-              ? "bg-[#1677ff]/[0.12] text-white"
-              : "bg-white/[0.02] text-white/52",
-          )}
-          key={asset.id}
+          className="fixed z-50 min-w-44 rounded-xl border border-white/[0.12] bg-[#15120e] p-1 shadow-2xl"
+          onPointerDown={(event) => event.stopPropagation()}
+          style={{
+            left: Math.min(menu.x, window.innerWidth - 200),
+            top: Math.min(menu.y, window.innerHeight - 220),
+          }}
         >
           <button
-            aria-label={`Set ${asset.filename} as the reference`}
-            aria-pressed={designated}
-            className="flex min-w-0 flex-1 items-center gap-2 text-left text-[12px] hover:text-white/82"
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[12px] text-white/72 hover:bg-white/[0.06] hover:text-white"
             onClick={() => {
-              onSelect(asset.id);
-              onOpen(asset);
+              onSelect(menu.asset.id);
+              closeMenu();
             }}
             type="button"
           >
-            {asset.content_type.startsWith("video/") ? (
-              <Film className="h-3.5 w-3.5 shrink-0 text-[#4facff]" />
-            ) : (
-              <Image className="h-3.5 w-3.5 shrink-0 text-[#4facff]" />
-            )}
-            <span className="truncate">{asset.filename}</span>
-            <span className="shrink-0 text-[11px] text-white/28">
-              @{asset.id.slice(0, 8)}
-            </span>
-            <span className="shrink-0 rounded-md border border-white/[0.1] px-1.5 py-0.5 text-[10px]">
-              {selectedAssetId
-                ? designated
-                  ? copy.designatedBadge
-                  : ""
-                : index === 0
-                  ? copy.defaultBadge
-                  : ""}
-            </span>
+            {copy.designateAsset}
           </button>
           <button
-            aria-label={`Copy asset ID ${asset.id}`}
-            className="grid size-7 place-items-center rounded-md text-white/32 hover:bg-white/[0.04] hover:text-white"
-            onClick={() => void navigator.clipboard?.writeText(asset.id)}
-            title={asset.id}
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[12px] text-white/72 hover:bg-white/[0.06] hover:text-white"
+            onClick={() => {
+              onOpen(menu.asset);
+              closeMenu();
+            }}
             type="button"
           >
-            <FileCheck2 className="h-3.5 w-3.5" />
+            {copy.openAsset}
           </button>
           <button
-            aria-label={`Delete ${asset.filename}`}
-            className="grid size-7 place-items-center rounded-md text-white/32 hover:bg-red-400/10 hover:text-red-300"
-            onClick={() => onDelete(asset)}
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[12px] text-white/72 hover:bg-white/[0.06] hover:text-white"
+            onClick={() => {
+              void navigator.clipboard?.writeText(menu.asset.id);
+              closeMenu();
+            }}
             type="button"
           >
-            <Trash2 className="h-3.5 w-3.5" />
+            {copy.copyId}
+          </button>
+          <a
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[12px] text-white/72 hover:bg-white/[0.06] hover:text-white"
+            download={menu.asset.filename}
+            href={`/api/account/assets/${menu.asset.id}/content`}
+            onClick={closeMenu}
+          >
+            {copy.download}
+          </a>
+          <button
+            className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[12px] text-red-300/80 hover:bg-red-400/10 hover:text-red-300"
+            onClick={() => {
+              onDelete(menu.asset);
+              closeMenu();
+            }}
+            type="button"
+          >
+            {copy.deleteAsset}
           </button>
         </div>
-        );
-      })}
-    </div>
+      ) : null}
+    </>
   );
 }
 
