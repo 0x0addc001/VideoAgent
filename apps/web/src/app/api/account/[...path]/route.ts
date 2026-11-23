@@ -7,11 +7,14 @@ const ALLOWED_GET_PATHS = new Set([
   "auth/me",
   "credits",
   "providers/pippit/credits",
+  "providers/kling",
+  "providers/kling/connect",
   "skills",
   "assets",
   "hots",
   "workspace",
 ]);
+const ALLOWED_DELETE_PATHS = new Set(["providers/kling"]);
 const ALLOWED_POST_PATHS = new Set([
   "auth/logout",
   "projects",
@@ -33,6 +36,7 @@ function allowed(
     );
   }
   if (method === "POST") return ALLOWED_POST_PATHS.has(path);
+  if (method === "DELETE") return ALLOWED_DELETE_PATHS.has(path);
   if (method === "PUT") {
     const segments = path.split("/");
     return (

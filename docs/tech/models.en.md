@@ -91,6 +91,16 @@ estimate plus generation reuse the same `provider/model` so the model never swit
 silently. `GET /providers/models` also exposes each model's `modes`, `max_duration`,
 `ratios`, `max_references`, `supports_audio`, `credits_per_second` and `quality_tier`.
 
+### 2.3 Model discovery
+
+On startup the service calls Model Studio's OpenAI-compatible `/models` endpoint (191
+models at the time of writing) and adds the **image** models it exposes (for example
+`wan2.7-image`, `wan2.7-image-pro`, `z-image-turbo`; `qwen-image-*` uses a different image API
+and is not wired yet). That endpoint does **not** list video
+models, so the video catalogue stays curated here. Discovery results are cached for ten
+minutes and failures fall back to the static catalogue; `GET /providers/models` merges both
+so the UI picks up new models without code changes.
+
 ## 3. Mock provider
 
 Used for offline development, unit tests and Playwright E2E; it never bills anyone.
@@ -135,6 +145,21 @@ VIDEOAGENT_KLING_EXPECTED_USER_ID=    # pins the authorized China-region account
 - An unconnected account without fallback returns `409 KLING_NOT_CONNECTED`.
 - `kling who_am_i` and `kling account` provide read-only identity and credit checks.
 
+### 5.1 Connect MCP (OAuth)
+
+The MCP backend uses the **current user's** encrypted token, not a shared server credential:
+
+1. `GET /api/v1/providers/kling/connect` registers a client (or uses
+   `VIDEOAGENT_KLING_OAUTH_CLIENT_ID`), creates PKCE material and a single-use
+   `oauth_flows` row valid for ten minutes, then returns `authorization_url`.
+2. Complete the Kling consent in the browser. `GET /api/v1/providers/kling/callback?code&state`
+   validates the state and expiry, exchanges the code, encrypts the tokens into
+   `provider_connections` and redirects 303 back to the frontend.
+3. `GET /api/v1/providers/kling` reports connection state; `DELETE` disconnects.
+4. The admin Runtime card exposes the same flow through “Connect Kling account”.
+
+State is single-use; expired, replayed or mismatched requests return 400.
+
 ## 6. Wanx provider (Alibaba Cloud Model Studio / Tongyi Wanx)
 
 Pure HTTP with asynchronous tasks: submit returns a `task_id`, polling returns `video_url`.
@@ -158,6 +183,10 @@ VIDEOAGENT_WANX_TIMEOUT_SECONDS=300
 - **Model aliases**: `WANX_MODEL_ALIASES` maps labels such as `Wanx/Wan 2.6` to model ids.
 - Unit tests use `httpx.MockTransport` and cover submission, status mapping, error codes
   and local image encoding.
+
+Image models (`wan2.7-image`, `wan2.7-image-pro`, `wanx2.1-t2i-turbo`) use the asynchronous
+`/api/v1/services/aigc/text2image/image-synthesis` task and currently support **text-to-image**
+only; pick a Kling image model for reference-image generation.
 
 ## 7. Planner and vision review (LLM provider)
 

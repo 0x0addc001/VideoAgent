@@ -1,3 +1,4 @@
+import contextlib
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -32,6 +33,7 @@ from videoagent.middleware import CSRFMiddleware, RateLimitMiddleware
 from videoagent.providers.base import VideoProvider
 from videoagent.providers.factory import build_video_provider
 from videoagent.providers.oauth import build_kling_oauth_gateway
+from videoagent.services.model_discovery import refresh_discovered_models
 
 
 def create_app(
@@ -52,6 +54,9 @@ def create_app(
         )
         await database.create_schema()
         try:
+            with contextlib.suppress(Exception):
+                # Discovery is best-effort; keep the static catalogue on failure.
+                await refresh_discovered_models(resolved_settings)
             yield
         finally:
             await database.dispose()

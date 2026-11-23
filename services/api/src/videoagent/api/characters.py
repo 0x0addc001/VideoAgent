@@ -10,14 +10,11 @@ from videoagent.config import Settings
 from videoagent.errors import AppError
 from videoagent.models import Asset, Character, Project, Storyboard, User
 from videoagent.providers.base import CostEstimate
-from videoagent.providers.kling_cli import (
-    DEFAULT_KLING_IMAGE_MODEL,
-    KLING_IMAGE_MODELS,
-    KlingCLIError,
-    KlingCLIVideoProvider,
-)
+from videoagent.providers.kling_cli import KlingCLIError, KlingCLIVideoProvider
+from videoagent.providers.wanx_image import WanxImageError, WanxImageProvider
 from videoagent.schemas import AssetRead, CharacterGenerationApproval, ModelSelection
 from videoagent.services.credits import refund_credits, reserve_credits
+from videoagent.services.image_models import resolve_image_model
 from videoagent.services.media import (
     asset_file,
     asset_read,
@@ -29,23 +26,6 @@ from videoagent.services.storyboards import owned_project_or_404
 
 router = APIRouter(prefix="/characters", tags=["characters"])
 IMAGE_GENERATION_CREDITS = 2
-
-
-def image_model_for(payload: ModelSelection | None) -> str:
-    if payload and payload.provider not in {None, "kling"}:
-        raise AppError(
-            status_code=422,
-            code="IMAGE_PROVIDER_UNSUPPORTED",
-            message="The selected provider does not support image generation.",
-        )
-    model = payload.model if payload and payload.model else DEFAULT_KLING_IMAGE_MODEL
-    if model not in KLING_IMAGE_MODELS:
-        raise AppError(
-            status_code=422,
-            code="IMAGE_MODEL_UNSUPPORTED",
-            message="The selected model does not support image generation.",
-        )
-    return model
 
 
 async def owned_character_or_404(
@@ -81,7 +61,7 @@ async def estimate_character_image(
     payload: ModelSelection | None = None,
 ) -> CostEstimate:
     await owned_character_or_404(session, character_id, user.id)
-    image_model_for(payload)
+    provider_name, _ = resolve_image_model(payload, settings)
     if not await generation_enabled(session, settings):
         raise AppError(
             status_code=503,
@@ -89,7 +69,7 @@ async def estimate_character_image(
             message="Image generation is temporarily unavailable.",
         )
     return CostEstimate(
-        provider="mock" if settings.video_provider.lower() == "mock" else "kling",
+        provider="mock" if settings.video_provider.lower() == "mock" else provider_name,
         credits=IMAGE_GENERATION_CREDITS,
         duration_seconds=0,
     )
@@ -146,7 +126,7 @@ async def generate_character_image(
             code="GENERATION_APPROVAL_REQUIRED",
             message="Generation requires explicit approval.",
         )
-    model = image_model_for(payload)
+    provider_name, model = resolve_image_model(payload, settings)
     if not await generation_enabled(session, settings):
         raise AppError(
             status_code=503,
@@ -195,6 +175,17 @@ async def generate_character_image(
     try:
         if settings.video_provider.lower() == "mock":
             result_url = f"mock://character/{uuid4()}"
+        elif provider_name == "wanx":
+            result_url = await WanxImageProvider(
+                api_key=settings.wanx_api_key,
+                base_url=settings.wanx_base_url,
+                timeout_seconds=settings.wanx_timeout_seconds,
+            ).generate_image(
+                prompt=character.prompt_en,
+                generation_mode=payload.generation_mode,
+                reference_image_path=reference_path,
+                model=model,
+            )
         else:
             provider = KlingCLIVideoProvider(
                 command=settings.kling_cli_command,
@@ -227,7 +218,7 @@ async def generate_character_image(
         )
         if isinstance(exc, AppError):
             raise
-        message = str(exc)[:1200] if isinstance(exc, KlingCLIError) else ""
+        message = str(exc)[:1200] if isinstance(exc, (KlingCLIError, WanxImageError)) else ""
         raise AppError(
             status_code=502,
             code="PROVIDER_IMAGE_GENERATION_FAILED",

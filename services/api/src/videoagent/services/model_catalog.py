@@ -86,6 +86,28 @@ def _pippit(
     )
 
 
+def _wanx_image(
+    model: str,
+    label: str,
+    *,
+    refs: int = 0,
+    credits: int = 1,
+    tier: int = 2,
+) -> ModelOption:
+    return ModelOption(
+        "wanx",
+        model,
+        label,
+        IMAGE_MODE,
+        modes=("text_to_image", "image_to_image") if refs else ("text_to_image",),
+        max_duration=1,
+        ratios=(),
+        max_references=refs,
+        credits_per_second=credits,
+        quality_tier=tier,
+    )
+
+
 def _wanx(
     model: str,
     label: str,
@@ -147,6 +169,10 @@ IMAGE_MODELS: tuple[ModelOption, ...] = (
     ModelOption("kling", "kling-image-v3_0_omni", "Kling Image 3.0 Omni", IMAGE_MODE),
     ModelOption("kling", "kling-image-o1", "Kling Image O1", IMAGE_MODE),
     ModelOption("kling", "kling-image-v2_1", "Kling Image 2.1", IMAGE_MODE),
+    # Alibaba Cloud Model Studio image models
+    _wanx_image("wan2.7-image", "Wan 2.7 Image"),
+    _wanx_image("wan2.7-image-pro", "Wan 2.7 Image Pro", tier=3),
+    _wanx_image("wanx2.1-t2i-turbo", "Wanx 2.1 T2I Turbo"),
 )
 
 DEFAULT_MODELS: tuple[ModelOption, ...] = VIDEO_MODELS + IMAGE_MODELS
@@ -166,6 +192,15 @@ def model_catalog(settings: Settings | None = None) -> list[ModelOption]:
             if option.model not in disabled and option.display not in disabled
         ]
 
+    from videoagent.services.model_discovery import discovered_models
+
+    seen = {(option.provider, option.model) for option in options}
+    for discovered in discovered_models():
+        key = (discovered.provider, discovered.model)
+        if key not in seen:
+            options.append(discovered)
+            seen.add(key)
+
     options.extend(
         ModelOption(
             provider=extra.provider.strip().lower(),
@@ -184,6 +219,14 @@ def model_catalog(settings: Settings | None = None) -> list[ModelOption]:
         if extra.model.strip() and extra.label.strip()
     )
     return options
+
+
+def model_provider(model: str, settings: Settings | None = None) -> str:
+    """Return the provider that owns a model id, defaulting to Kling."""
+    for option in model_catalog(settings):
+        if option.model == model:
+            return option.provider
+    return "kling"
 
 
 def resolve_model_id(provider: str, value: str) -> str:

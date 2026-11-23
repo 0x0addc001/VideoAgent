@@ -30,9 +30,11 @@
 <a class="toc-link toc-level-2" href="#2-resolution-order">2. Resolution order</a>
 <a class="toc-link toc-level-3" href="#2-1-model-catalogue-and-ui-selection">2.1 Model catalogue and UI selection</a>
 <a class="toc-link toc-level-3" href="#2-2-auto-recommendation">2.2 Auto recommendation</a>
+<a class="toc-link toc-level-3" href="#2-3-model-discovery">2.3 Model discovery</a>
 <a class="toc-link toc-level-2" href="#3-mock-provider">3. Mock provider</a>
 <a class="toc-link toc-level-2" href="#4-pippit-provider">4. Pippit provider</a>
 <a class="toc-link toc-level-2" href="#5-kling-provider">5. Kling provider</a>
+<a class="toc-link toc-level-3" href="#5-1-connect-mcp-oauth">5.1 Connect MCP (OAuth)</a>
 <a class="toc-link toc-level-2" href="#6-wanx-provider-alibaba-cloud-model-studio-tongyi-wanx">6. Wanx provider (Alibaba Cloud Model Studio / Tongyi Wanx)</a>
 <a class="toc-link toc-level-2" href="#7-planner-and-vision-review-llm-provider">7. Planner and vision review (LLM provider)</a>
 <a class="toc-link toc-level-2" href="#8-media-storage">8. Media storage</a>
@@ -161,6 +163,8 @@ VIDEOAGENT_DISABLED_MODELS=[&quot;kling-video-v2_5&quot;]</code></pre>
 }</code></pre>
 <p>Reason codes: <code>ratio_native</code>, <code>duration_fits</code>, <code>references_supported</code>, <code>audio_supported</code>, <code>cheapest</code>, <code>highest_quality</code>, <code>mock_provider</code>; the UI localizes them.</p>
 <p>Endpoint: <code>POST /api/v1/shots/{shot_id}/model-recommendation</code>. Choosing “Auto” on the shot page refreshes the recommendation as duration, ratio, references or preference change, and estimate plus generation reuse the same <code>provider/model</code> so the model never switches silently. <code>GET /providers/models</code> also exposes each model's <code>modes</code>, <code>max_duration</code>, <code>ratios</code>, <code>max_references</code>, <code>supports_audio</code>, <code>credits_per_second</code> and <code>quality_tier</code>.</p>
+<h3 id="2-3-model-discovery">2.3 Model discovery</h3>
+<p>On startup the service calls Model Studio's OpenAI-compatible <code>/models</code> endpoint (191 models at the time of writing) and adds the <strong>image</strong> models it exposes (for example <code>wan2.7-image</code>, <code>wan2.7-image-pro</code>, <code>z-image-turbo</code>; <code>qwen-image-*</code> uses a different image API and is not wired yet). That endpoint does <strong>not</strong> list video models, so the video catalogue stays curated here. Discovery results are cached for ten minutes and failures fall back to the static catalogue; <code>GET /providers/models</code> merges both so the UI picks up new models without code changes.</p>
 <h2 id="3-mock-provider">3. Mock provider</h2>
 <p>Used for offline development, unit tests and Playwright E2E; it never bills anyone.</p>
 <ul>
@@ -196,6 +200,17 @@ VIDEOAGENT_KLING_EXPECTED_USER_ID=    # pins the authorized China-region account
 <li>An unconnected account without fallback returns <code>409 KLING_NOT_CONNECTED</code>.</li>
 <li><code>kling who_am_i</code> and <code>kling account</code> provide read-only identity and credit checks.</li>
 </ul>
+<h3 id="5-1-connect-mcp-oauth">5.1 Connect MCP (OAuth)</h3>
+<p>The MCP backend uses the <strong>current user's</strong> encrypted token, not a shared server credential:</p>
+<ol>
+<li><code>GET /api/v1/providers/kling/connect</code> registers a client (or uses</li>
+<p><code>VIDEOAGENT_KLING_OAUTH_CLIENT_ID</code>), creates PKCE material and a single-use <code>oauth_flows</code> row valid for ten minutes, then returns <code>authorization_url</code>.</p>
+<li>Complete the Kling consent in the browser. <code>GET /api/v1/providers/kling/callback?code&amp;state</code></li>
+<p>validates the state and expiry, exchanges the code, encrypts the tokens into <code>provider_connections</code> and redirects 303 back to the frontend.</p>
+<li><code>GET /api/v1/providers/kling</code> reports connection state; <code>DELETE</code> disconnects.</li>
+<li>The admin Runtime card exposes the same flow through “Connect Kling account”.</li>
+</ol>
+<p>State is single-use; expired, replayed or mismatched requests return 400.</p>
 <h2 id="6-wanx-provider-alibaba-cloud-model-studio-tongyi-wanx">6. Wanx provider (Alibaba Cloud Model Studio / Tongyi Wanx)</h2>
 <p>Pure HTTP with asynchronous tasks: submit returns a <code>task_id</code>, polling returns <code>video_url</code>.</p>
 <pre><code class="language-env">VIDEOAGENT_VIDEO_PROVIDER=wanx
@@ -216,6 +231,7 @@ VIDEOAGENT_WANX_TIMEOUT_SECONDS=300</code></pre>
 <li>Unit tests use <code>httpx.MockTransport</code> and cover submission, status mapping, error codes</li>
 <p>and local image encoding.</p>
 </ul>
+<p>Image models (<code>wan2.7-image</code>, <code>wan2.7-image-pro</code>, <code>wanx2.1-t2i-turbo</code>) use the asynchronous <code>/api/v1/services/aigc/text2image/image-synthesis</code> task and currently support <strong>text-to-image</strong> only; pick a Kling image model for reference-image generation.</p>
 <h2 id="7-planner-and-vision-review-llm-provider">7. Planner and vision review (LLM provider)</h2>
 <p>Both are OpenAI-compatible: switch vendors with <code>base_url</code>, <code>api_key</code> and <code>model</code>.</p>
 <pre><code class="language-env"># DeepSeek (default)

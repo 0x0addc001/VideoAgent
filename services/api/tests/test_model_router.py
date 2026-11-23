@@ -9,6 +9,12 @@ from videoagent.services.model_router import (
 )
 
 
+@pytest.fixture(autouse=True)
+def no_cli_on_path(monkeypatch):
+    """Keep routing tests hermetic even when the developer installed kling."""
+    monkeypatch.setattr("shutil.which", lambda command: None)
+
+
 def wanx_settings(**overrides: object) -> Settings:
     values: dict[str, object] = {
         "video_provider": "wanx",

@@ -85,6 +85,14 @@ VIDEOAGENT_DISABLED_MODELS=["kling-video-v2_5"]
 不会静默换模型。`GET /providers/models` 同时返回每个模型的 `modes`、`max_duration`、
 `ratios`、`max_references`、`supports_audio`、`credits_per_second`、`quality_tier`。
 
+### 2.3 模型发现
+
+启动时会调用百炼的 OpenAI 兼容 `/models`（当前返回 191 个模型）补充**图像模型**
+（如 `wan2.7-image`、`wan2.7-image-pro`、`z-image-turbo`；`qwen-image-*` 走另一套
+图像接口，暂未接入）。该接口**不返回视频模型**，
+视频目录仍由本文件维护。发现结果缓存 10 分钟，失败时静默回退静态目录；
+`GET /providers/models` 合并两部分，前端无需改代码即可看到新模型。
+
 ## 3. Mock Provider
 
 用于离线开发、单元测试和 Playwright E2E，不产生费用。
@@ -128,6 +136,20 @@ VIDEOAGENT_KLING_EXPECTED_USER_ID=    # 固定已授权的国内版账号
 - 未连接且不可降级时返回 `409 KLING_NOT_CONNECTED`。
 - 可用 `kling who_am_i` 与 `kling account` 做只读核对。
 
+### 5.1 连接 MCP（OAuth）
+
+MCP 后端使用**当前用户**的加密 token，不是服务端共享凭据：
+
+1. `GET /api/v1/providers/kling/connect`：动态注册客户端（或使用
+   `VIDEOAGENT_KLING_OAUTH_CLIENT_ID`）、生成 PKCE、写入 10 分钟有效的一次性
+   `oauth_flows`，返回 `authorization_url`。
+2. 浏览器打开该地址完成可灵授权，回调 `GET /api/v1/providers/kling/callback?code&state`：
+   校验 state/过期、交换 token、加密写入 `provider_connections`，然后 303 回到前端。
+3. `GET /api/v1/providers/kling` 查看连接状态，`DELETE` 断开连接。
+4. 管理后台 Runtime 卡片的「Connect Kling account」按钮已接同一流程。
+
+state 一次性使用；过期、重放或 provider 不匹配都会返回 400。
+
 ## 6. Wanx Provider（阿里云百炼 / 通义万相）
 
 纯 HTTP，异步任务：提交拿 `task_id`，轮询取 `video_url`。
@@ -150,6 +172,10 @@ VIDEOAGENT_WANX_TIMEOUT_SECONDS=300
 - **模型别名**：`WANX_MODEL_ALIASES` 把 `Wanx/Wan 2.6`、`Wanx/Wan 3.0 Prime` 等标签映射到
   模型 ID。
 - 单测使用 `httpx.MockTransport`，覆盖提交、状态映射、错误码和本地图片编码。
+
+图像模型（`wan2.7-image`、`wan2.7-image-pro`、`wanx2.1-t2i-turbo`）走
+`/api/v1/services/aigc/text2image/image-synthesis` 的异步任务，目前支持**文生图**；
+参考图生图请选择 Kling 图片模型。
 
 ## 7. 规划器与视觉评审（LLM Provider）
 

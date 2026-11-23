@@ -154,6 +154,27 @@ export function AdminDashboard() {
   const [accessDenied, setAccessDenied] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  async function connectKling() {
+    setBusyAction("kling-connect");
+    setError(null);
+    try {
+      const payload = await jsonRequest<{ authorization_url?: string }>(
+        "/providers/kling/connect",
+      );
+      if (payload.authorization_url) {
+        window.location.href = payload.authorization_url;
+      }
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : "Unable to start Kling authorization.",
+      );
+    } finally {
+      setBusyAction(null);
+    }
+  }
+
   async function load(query = userQuery) {
     setError(null);
     try {
@@ -472,6 +493,16 @@ export function AdminDashboard() {
                               ID {provider.kling.userId}
                             </span>
                           ) : null}
+                          {provider?.kling?.connected ? null : (
+                            <button
+                              className="mt-1 block text-sm text-[#4ba3ff] hover:underline disabled:opacity-40"
+                              disabled={busyAction === "kling-connect"}
+                              onClick={() => void connectKling()}
+                              type="button"
+                            >
+                              Connect Kling account
+                            </button>
+                          )}
                         </dd>
                       </div>
                       <div className="flex justify-between gap-4">

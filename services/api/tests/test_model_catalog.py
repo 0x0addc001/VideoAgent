@@ -51,3 +51,12 @@ def test_resolve_model_id_maps_labels_ids_and_display_names():
 @pytest.mark.unit
 def test_unknown_model_falls_back_to_the_raw_value():
     assert resolve_model_id("wanx", "wan-future") == "wan-future"
+
+
+@pytest.mark.unit
+def test_catalog_includes_alibaba_image_models():
+    options = {option.model: option for option in model_catalog()}
+
+    assert options["wan2.7-image"].provider == "wanx"
+    assert options["wan2.7-image"].kind == "image"
+    assert options["kling-image-v3_0"].provider == "kling"

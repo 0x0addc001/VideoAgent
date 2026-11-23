@@ -30,9 +30,11 @@
 <a class="toc-link toc-level-2" href="#2-选择与解析顺序">2. 选择与解析顺序</a>
 <a class="toc-link toc-level-3" href="#2-1-模型目录与前端选择">2.1 模型目录与前端选择</a>
 <a class="toc-link toc-level-3" href="#2-2-自动推荐-auto">2.2 自动推荐（Auto）</a>
+<a class="toc-link toc-level-3" href="#2-3-模型发现">2.3 模型发现</a>
 <a class="toc-link toc-level-2" href="#3-mock-provider">3. Mock Provider</a>
 <a class="toc-link toc-level-2" href="#4-pippit-provider">4. Pippit Provider</a>
 <a class="toc-link toc-level-2" href="#5-kling-provider">5. Kling Provider</a>
+<a class="toc-link toc-level-3" href="#5-1-连接-mcp-oauth">5.1 连接 MCP（OAuth）</a>
 <a class="toc-link toc-level-2" href="#6-wanx-provider-阿里云百炼-通义万相">6. Wanx Provider（阿里云百炼 / 通义万相）</a>
 <a class="toc-link toc-level-2" href="#7-规划器与视觉评审-llm-provider">7. 规划器与视觉评审（LLM Provider）</a>
 <a class="toc-link toc-level-2" href="#8-媒体存储">8. 媒体存储</a>
@@ -160,6 +162,8 @@ VIDEOAGENT_DISABLED_MODELS=[&quot;kling-video-v2_5&quot;]</code></pre>
 }</code></pre>
 <p>理由码：<code>ratio_native</code>、<code>duration_fits</code>、<code>references_supported</code>、<code>audio_supported</code>、 <code>cheapest</code>、<code>highest_quality</code>、<code>mock_provider</code>；前端按当前语言渲染。</p>
 <p>接口：<code>POST /api/v1/shots/{shot_id}/model-recommendation</code>。镜头页选择「自动推荐」后， 时长、比例、参考图或偏好变化会实时刷新推荐，估算与生成复用同一个 <code>provider/model</code>， 不会静默换模型。<code>GET /providers/models</code> 同时返回每个模型的 <code>modes</code>、<code>max_duration</code>、 <code>ratios</code>、<code>max_references</code>、<code>supports_audio</code>、<code>credits_per_second</code>、<code>quality_tier</code>。</p>
+<h3 id="2-3-模型发现">2.3 模型发现</h3>
+<p>启动时会调用百炼的 OpenAI 兼容 <code>/models</code>（当前返回 191 个模型）补充<strong>图像模型</strong> （如 <code>wan2.7-image</code>、<code>wan2.7-image-pro</code>、<code>z-image-turbo</code>；<code>qwen-image-*</code> 走另一套 图像接口，暂未接入）。该接口<strong>不返回视频模型</strong>， 视频目录仍由本文件维护。发现结果缓存 10 分钟，失败时静默回退静态目录； <code>GET /providers/models</code> 合并两部分，前端无需改代码即可看到新模型。</p>
 <h2 id="3-mock-provider">3. Mock Provider</h2>
 <p>用于离线开发、单元测试和 Playwright E2E，不产生费用。</p>
 <ul>
@@ -194,6 +198,17 @@ VIDEOAGENT_KLING_EXPECTED_USER_ID=    # 固定已授权的国内版账号</code>
 <li>未连接且不可降级时返回 <code>409 KLING_NOT_CONNECTED</code>。</li>
 <li>可用 <code>kling who_am_i</code> 与 <code>kling account</code> 做只读核对。</li>
 </ul>
+<h3 id="5-1-连接-mcp-oauth">5.1 连接 MCP（OAuth）</h3>
+<p>MCP 后端使用<strong>当前用户</strong>的加密 token，不是服务端共享凭据：</p>
+<ol>
+<li><code>GET /api/v1/providers/kling/connect</code>：动态注册客户端（或使用</li>
+<p><code>VIDEOAGENT_KLING_OAUTH_CLIENT_ID</code>）、生成 PKCE、写入 10 分钟有效的一次性 <code>oauth_flows</code>，返回 <code>authorization_url</code>。</p>
+<li>浏览器打开该地址完成可灵授权，回调 <code>GET /api/v1/providers/kling/callback?code&amp;state</code>：</li>
+<p>校验 state/过期、交换 token、加密写入 <code>provider_connections</code>，然后 303 回到前端。</p>
+<li><code>GET /api/v1/providers/kling</code> 查看连接状态，<code>DELETE</code> 断开连接。</li>
+<li>管理后台 Runtime 卡片的「Connect Kling account」按钮已接同一流程。</li>
+</ol>
+<p>state 一次性使用；过期、重放或 provider 不匹配都会返回 400。</p>
 <h2 id="6-wanx-provider-阿里云百炼-通义万相">6. Wanx Provider（阿里云百炼 / 通义万相）</h2>
 <p>纯 HTTP，异步任务：提交拿 <code>task_id</code>，轮询取 <code>video_url</code>。</p>
 <pre><code class="language-env">VIDEOAGENT_VIDEO_PROVIDER=wanx
@@ -213,6 +228,7 @@ VIDEOAGENT_WANX_TIMEOUT_SECONDS=300</code></pre>
 <p>模型 ID。</p>
 <li>单测使用 <code>httpx.MockTransport</code>，覆盖提交、状态映射、错误码和本地图片编码。</li>
 </ul>
+<p>图像模型（<code>wan2.7-image</code>、<code>wan2.7-image-pro</code>、<code>wanx2.1-t2i-turbo</code>）走 <code>/api/v1/services/aigc/text2image/image-synthesis</code> 的异步任务，目前支持<strong>文生图</strong>； 参考图生图请选择 Kling 图片模型。</p>
 <h2 id="7-规划器与视觉评审-llm-provider">7. 规划器与视觉评审（LLM Provider）</h2>
 <p>两者都是 OpenAI 兼容接口，改 <code>base_url</code> + <code>api_key</code> + <code>model</code> 即可切换厂商。</p>
 <pre><code class="language-env"># DeepSeek（默认）
