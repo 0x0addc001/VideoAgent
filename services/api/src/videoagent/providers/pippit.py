@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from videoagent.providers.base import CostEstimate, GenerationRequest, ProviderJob
+from videoagent.services.model_catalog import credits_for
 
 
 class PippitCLIError(RuntimeError):
@@ -156,7 +157,7 @@ class PippitVideoProvider:
         duration = min(30, max(4, request.duration_seconds))
         return CostEstimate(
             provider=self.name,
-            credits=duration,
+            credits=credits_for(self.name, request.model, duration),
             duration_seconds=duration,
         )
 

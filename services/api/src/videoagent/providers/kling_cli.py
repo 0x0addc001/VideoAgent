@@ -5,6 +5,7 @@ from collections.abc import Sequence
 from typing import Any
 
 from videoagent.providers.base import CostEstimate, GenerationRequest, JobStatus, ProviderJob
+from videoagent.services.model_catalog import credits_for
 
 KLING_IMAGE_MODELS = frozenset(
     {
@@ -116,7 +117,7 @@ class KlingCLIVideoProvider:
     async def estimate(self, request: GenerationRequest) -> CostEstimate:
         return CostEstimate(
             provider=self.name,
-            credits=max(1, request.duration_seconds),
+            credits=credits_for(self.name, request.model, request.duration_seconds),
             duration_seconds=request.duration_seconds,
         )
 

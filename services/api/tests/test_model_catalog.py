@@ -60,3 +60,13 @@ def test_catalog_includes_alibaba_image_models():
     assert options["wan2.7-image"].provider == "wanx"
     assert options["wan2.7-image"].kind == "image"
     assert options["kling-image-v3_0"].provider == "kling"
+
+
+@pytest.mark.unit
+def test_credits_for_uses_the_catalogue_per_second_rate():
+    from videoagent.services.model_catalog import credits_for
+
+    assert credits_for("kling", "kling-video-v4_0", 5) == 10
+    assert credits_for("kling", "kling-video-v4_0_flash", 5) == 5
+    assert credits_for("wanx", "wan2.6-t2v", 5) == 5
+    assert credits_for("pippit", None, 5) == 5

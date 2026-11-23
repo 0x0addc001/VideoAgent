@@ -227,6 +227,17 @@ def model_catalog(settings: Settings | None = None) -> list[ModelOption]:
     return options
 
 
+def credits_for(provider: str, model: str | None, duration_seconds: int) -> int:
+    """Internal credit price for one render, from the catalogue's per-second rate."""
+    rate = 1
+    if model:
+        for option in model_catalog():
+            if option.provider == provider and option.model == model:
+                rate = option.credits_per_second
+                break
+    return max(1, rate * max(1, duration_seconds))
+
+
 def model_provider(model: str, settings: Settings | None = None) -> str:
     """Return the provider that owns a model id, defaulting to Kling."""
     for option in model_catalog(settings):

@@ -31,6 +31,7 @@
 <a class="toc-link toc-level-3" href="#2-1-模型目录与前端选择">2.1 模型目录与前端选择</a>
 <a class="toc-link toc-level-3" href="#2-2-自动推荐-auto">2.2 自动推荐（Auto）</a>
 <a class="toc-link toc-level-3" href="#2-3-模型发现">2.3 模型发现</a>
+<a class="toc-link toc-level-3" href="#2-4-内部计价">2.4 内部计价</a>
 <a class="toc-link toc-level-2" href="#3-mock-provider">3. Mock Provider</a>
 <a class="toc-link toc-level-2" href="#4-pippit-provider">4. Pippit Provider</a>
 <a class="toc-link toc-level-2" href="#5-kling-provider">5. Kling Provider</a>
@@ -171,6 +172,9 @@ VIDEOAGENT_DISABLED_MODELS=[&quot;kling-video-v2_5&quot;]</code></pre>
 <li><strong>百炼发现</strong>：调用 OpenAI 兼容 <code>/models</code>（当前返回 191 个模型）补充<strong>图像模型</strong></li>
 <p>（如 <code>wan2.7-image</code>、<code>wan2.7-image-pro</code>）。<code>qwen-image-*</code>、<code>z-image-*</code> 走其他图像 接口，暂未接入。该接口<strong>不返回视频模型</strong>， 视频目录仍由本文件维护。发现结果缓存 10 分钟，任一来源失败都静默回退到已有目录；<code>GET /providers/models</code> 合并三部分，前端无需改代码即可看到新模型。可用 <code>VIDEOAGENT_CLI_MODEL_DISCOVERY_ENABLED=false</code> 关闭 CLI 发现。</p>
 </ol>
+<h3 id="2-4-内部计价">2.4 内部计价</h3>
+<p>目录里的 <code>credits_per_second</code> 是<strong>内部积分</strong>的分/秒单价：<code>estimate</code> 与自动推荐的 <code>estimated_credits</code> 都按它计算（例如 Kling 4.0 为 2 分/秒，5 秒估算 10 分；Seedance 2.5 为 1 分/秒）。未在目录中的模型回退为 1 分/秒。图片生成仍固定 2 分。</p>
+<p>注意：这只是用户侧配额，<strong>不是厂商实际计价</strong>——Pippit/Kling 各自的积分与百炼的按量费用 都没有折算进这张表，估算也不校验厂商余额。</p>
 <h2 id="3-mock-provider">3. Mock Provider</h2>
 <p>用于离线开发、单元测试和 Playwright E2E，不产生费用。</p>
 <ul>

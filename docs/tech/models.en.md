@@ -108,6 +108,17 @@ source failure falls back to the catalogue already available; `GET /providers/mo
 all three so the UI picks up new models without code changes. Set
 `VIDEOAGENT_CLI_MODEL_DISCOVERY_ENABLED=false` to disable CLI discovery.
 
+### 2.4 Internal pricing
+
+`credits_per_second` in the catalogue is the **internal** credit rate per second; both
+`estimate` and the router's `estimated_credits` use it (Kling 4.0 costs 2 credits/second, so
+a 5-second render estimates at 10; Seedance 2.5 is 1/second). Models missing from the
+catalogue fall back to 1/second. Image generation stays at a flat 2 credits.
+
+This is the user-facing quota, **not the vendor's invoice**: Pippit/Kling credits and
+Model Studio pay-per-use pricing are not converted here, and estimation does not check the
+vendor balance.
+
 ## 3. Mock provider
 
 Used for offline development, unit tests and Playwright E2E; it never bills anyone.

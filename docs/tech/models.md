@@ -99,6 +99,15 @@ VIDEOAGENT_DISABLED_MODELS=["kling-video-v2_5"]
 合并三部分，前端无需改代码即可看到新模型。可用 `VIDEOAGENT_CLI_MODEL_DISCOVERY_ENABLED=false`
 关闭 CLI 发现。
 
+### 2.4 内部计价
+
+目录里的 `credits_per_second` 是**内部积分**的分/秒单价：`estimate` 与自动推荐的
+`estimated_credits` 都按它计算（例如 Kling 4.0 为 2 分/秒，5 秒估算 10 分；Seedance 2.5 为
+1 分/秒）。未在目录中的模型回退为 1 分/秒。图片生成仍固定 2 分。
+
+注意：这只是用户侧配额，**不是厂商实际计价**——Pippit/Kling 各自的积分与百炼的按量费用
+都没有折算进这张表，估算也不校验厂商余额。
+
 ## 3. Mock Provider
 
 用于离线开发、单元测试和 Playwright E2E，不产生费用。

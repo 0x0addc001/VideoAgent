@@ -31,6 +31,7 @@
 <a class="toc-link toc-level-3" href="#2-1-model-catalogue-and-ui-selection">2.1 Model catalogue and UI selection</a>
 <a class="toc-link toc-level-3" href="#2-2-auto-recommendation">2.2 Auto recommendation</a>
 <a class="toc-link toc-level-3" href="#2-3-model-discovery">2.3 Model discovery</a>
+<a class="toc-link toc-level-3" href="#2-4-internal-pricing">2.4 Internal pricing</a>
 <a class="toc-link toc-level-2" href="#3-mock-provider">3. Mock provider</a>
 <a class="toc-link toc-level-2" href="#4-pippit-provider">4. Pippit provider</a>
 <a class="toc-link toc-level-2" href="#5-kling-provider">5. Kling provider</a>
@@ -172,6 +173,9 @@ VIDEOAGENT_DISABLED_MODELS=[&quot;kling-video-v2_5&quot;]</code></pre>
 <li><strong>Model Studio discovery</strong>: the OpenAI-compatible <code>/models</code> endpoint (191 models at the</li>
 <p>time of writing) adds the <strong>image</strong> models it exposes (for example <code>wan2.7-image</code>, <code>wan2.7-image-pro</code>). <code>qwen-image-*</code> and <code>z-image-*</code> use other image APIs and are not wired yet). That endpoint does <strong>not</strong> list video models, so the video catalogue stays curated here. Results are cached for ten minutes and any source failure falls back to the catalogue already available; <code>GET /providers/models</code> merges all three so the UI picks up new models without code changes. Set <code>VIDEOAGENT_CLI_MODEL_DISCOVERY_ENABLED=false</code> to disable CLI discovery.</p>
 </ol>
+<h3 id="2-4-internal-pricing">2.4 Internal pricing</h3>
+<p><code>credits_per_second</code> in the catalogue is the <strong>internal</strong> credit rate per second; both <code>estimate</code> and the router's <code>estimated_credits</code> use it (Kling 4.0 costs 2 credits/second, so a 5-second render estimates at 10; Seedance 2.5 is 1/second). Models missing from the catalogue fall back to 1/second. Image generation stays at a flat 2 credits.</p>
+<p>This is the user-facing quota, <strong>not the vendor's invoice</strong>: Pippit/Kling credits and Model Studio pay-per-use pricing are not converted here, and estimation does not check the vendor balance.</p>
 <h2 id="3-mock-provider">3. Mock provider</h2>
 <p>Used for offline development, unit tests and Playwright E2E; it never bills anyone.</p>
 <ul>

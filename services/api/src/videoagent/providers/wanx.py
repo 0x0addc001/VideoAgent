@@ -15,6 +15,7 @@ from typing import Any
 import httpx
 
 from videoagent.providers.base import CostEstimate, GenerationRequest, ProviderJob
+from videoagent.services.model_catalog import credits_for
 
 SUPPORTED_RATIOS = {"16:9", "9:16", "1:1", "4:3", "3:4"}
 DEFAULT_RATIO = "16:9"
@@ -91,7 +92,7 @@ class WanxVideoProvider:
         duration = min(15, max(2, request.duration_seconds))
         return CostEstimate(
             provider=self.name,
-            credits=max(1, duration),
+            credits=credits_for(self.name, request.model, duration),
             duration_seconds=duration,
         )
 
