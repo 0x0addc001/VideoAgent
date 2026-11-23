@@ -163,7 +163,7 @@ VIDEOAGENT_DISABLED_MODELS=[&quot;kling-video-v2_5&quot;]</code></pre>
 <p>理由码：<code>ratio_native</code>、<code>duration_fits</code>、<code>references_supported</code>、<code>audio_supported</code>、 <code>cheapest</code>、<code>highest_quality</code>、<code>mock_provider</code>；前端按当前语言渲染。</p>
 <p>接口：<code>POST /api/v1/shots/{shot_id}/model-recommendation</code>。镜头页选择「自动推荐」后， 时长、比例、参考图或偏好变化会实时刷新推荐，估算与生成复用同一个 <code>provider/model</code>， 不会静默换模型。<code>GET /providers/models</code> 同时返回每个模型的 <code>modes</code>、<code>max_duration</code>、 <code>ratios</code>、<code>max_references</code>、<code>supports_audio</code>、<code>credits_per_second</code>、<code>quality_tier</code>。</p>
 <h3 id="2-3-模型发现">2.3 模型发现</h3>
-<p>启动时会调用百炼的 OpenAI 兼容 <code>/models</code>（当前返回 191 个模型）补充<strong>图像模型</strong> （如 <code>wan2.7-image</code>、<code>wan2.7-image-pro</code>、<code>z-image-turbo</code>；<code>qwen-image-*</code> 走另一套 图像接口，暂未接入）。该接口<strong>不返回视频模型</strong>， 视频目录仍由本文件维护。发现结果缓存 10 分钟，失败时静默回退静态目录； <code>GET /providers/models</code> 合并两部分，前端无需改代码即可看到新模型。</p>
+<p>启动时会调用百炼的 OpenAI 兼容 <code>/models</code>（当前返回 191 个模型）补充<strong>图像模型</strong> （如 <code>wan2.7-image</code>、<code>wan2.7-image-pro</code>）。<code>qwen-image-*</code>、<code>z-image-*</code> 走其他图像 接口，暂未接入。该接口<strong>不返回视频模型</strong>， 视频目录仍由本文件维护。发现结果缓存 10 分钟，失败时静默回退静态目录； <code>GET /providers/models</code> 合并两部分，前端无需改代码即可看到新模型。</p>
 <h2 id="3-mock-provider">3. Mock Provider</h2>
 <p>用于离线开发、单元测试和 Playwright E2E，不产生费用。</p>
 <ul>
@@ -228,7 +228,7 @@ VIDEOAGENT_WANX_TIMEOUT_SECONDS=300</code></pre>
 <p>模型 ID。</p>
 <li>单测使用 <code>httpx.MockTransport</code>，覆盖提交、状态映射、错误码和本地图片编码。</li>
 </ul>
-<p>图像模型（<code>wan2.7-image</code>、<code>wan2.7-image-pro</code>、<code>wanx2.1-t2i-turbo</code>）走 <code>/api/v1/services/aigc/text2image/image-synthesis</code> 的异步任务，目前支持<strong>文生图</strong>； 参考图生图请选择 Kling 图片模型。</p>
+<p>图像模型分两套接口：<code>wan2.7-image</code> / <code>wan2.7-image-pro</code> 走同步的 <code>/api/v1/services/aigc/multimodal-generation/generation</code>；<code>wanx2.1-t2i-turbo</code> 走 <code>/api/v1/services/aigc/text2image/image-synthesis</code> 异步任务。两者目前都只支持<strong>文生图</strong>， 参考图生图请选择 Kling 图片模型。</p>
 <h2 id="7-规划器与视觉评审-llm-provider">7. 规划器与视觉评审（LLM Provider）</h2>
 <p>两者都是 OpenAI 兼容接口，改 <code>base_url</code> + <code>api_key</code> + <code>model</code> 即可切换厂商。</p>
 <pre><code class="language-env"># DeepSeek（默认）

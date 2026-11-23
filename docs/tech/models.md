@@ -88,8 +88,8 @@ VIDEOAGENT_DISABLED_MODELS=["kling-video-v2_5"]
 ### 2.3 模型发现
 
 启动时会调用百炼的 OpenAI 兼容 `/models`（当前返回 191 个模型）补充**图像模型**
-（如 `wan2.7-image`、`wan2.7-image-pro`、`z-image-turbo`；`qwen-image-*` 走另一套
-图像接口，暂未接入）。该接口**不返回视频模型**，
+（如 `wan2.7-image`、`wan2.7-image-pro`）。`qwen-image-*`、`z-image-*` 走其他图像
+接口，暂未接入。该接口**不返回视频模型**，
 视频目录仍由本文件维护。发现结果缓存 10 分钟，失败时静默回退静态目录；
 `GET /providers/models` 合并两部分，前端无需改代码即可看到新模型。
 
@@ -173,8 +173,9 @@ VIDEOAGENT_WANX_TIMEOUT_SECONDS=300
   模型 ID。
 - 单测使用 `httpx.MockTransport`，覆盖提交、状态映射、错误码和本地图片编码。
 
-图像模型（`wan2.7-image`、`wan2.7-image-pro`、`wanx2.1-t2i-turbo`）走
-`/api/v1/services/aigc/text2image/image-synthesis` 的异步任务，目前支持**文生图**；
+图像模型分两套接口：`wan2.7-image` / `wan2.7-image-pro` 走同步的
+`/api/v1/services/aigc/multimodal-generation/generation`；`wanx2.1-t2i-turbo` 走
+`/api/v1/services/aigc/text2image/image-synthesis` 异步任务。两者目前都只支持**文生图**，
 参考图生图请选择 Kling 图片模型。
 
 ## 7. 规划器与视觉评审（LLM Provider）

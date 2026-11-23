@@ -33,12 +33,19 @@ class WanxImageProvider:
         self._poll_interval = poll_interval
         self._transport = transport
 
-    async def _request(self, method: str, path: str, **kwargs: Any) -> dict[str, Any]:
+    async def _request(
+        self,
+        method: str,
+        path: str,
+        *,
+        async_header: bool = True,
+        **kwargs: Any,
+    ) -> dict[str, Any]:
         headers = {
             "Authorization": f"Bearer {self._api_key}",
             "Content-Type": "application/json",
         }
-        if method == "POST":
+        if method == "POST" and async_header:
             headers["X-DashScope-Async"] = "enable"
         try:
             async with httpx.AsyncClient(
@@ -82,6 +89,8 @@ class WanxImageProvider:
                 "pick a Kling image model for reference-image generation."
             )
         del reference_image_path
+        if model.startswith("wan2.7-image"):
+            return await self._generate_multimodal(model=model, prompt=prompt)
         submitted = await self._request(
             "POST",
             "/api/v1/services/aigc/text2image/image-synthesis",
@@ -111,3 +120,34 @@ class WanxImageProvider:
                 raise WanxImageError(f"DashScope image task {state.lower()}.")
             await asyncio.sleep(self._poll_interval)
         raise WanxImageError("DashScope image task timed out.")
+
+    async def _generate_multimodal(self, *, model: str, prompt: str) -> str:
+        """Wan 2.7 images use the synchronous multimodal-generation endpoint."""
+        payload = await self._request(
+            "POST",
+            "/api/v1/services/aigc/multimodal-generation/generation",
+            json={
+                "model": model,
+                "input": {
+                    "messages": [
+                        {
+                            "role": "user",
+                            "content": [{"text": prompt}],
+                        }
+                    ]
+                },
+                "parameters": {"size": "1024*1024", "n": 1, "watermark": False},
+            },
+            async_header=False,
+        )
+        output = payload.get("output") or {}
+        choices = output.get("choices") or []
+        if not choices or not isinstance(choices[0], dict):
+            raise WanxImageError("DashScope returned no image choices.")
+        content = (choices[0].get("message") or {}).get("content") or []
+        for item in content:
+            if isinstance(item, dict):
+                url = item.get("image") or item.get("url")
+                if isinstance(url, str) and url:
+                    return url
+        raise WanxImageError("DashScope returned no image URL.")

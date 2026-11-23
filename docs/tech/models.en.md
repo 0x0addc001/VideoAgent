@@ -95,8 +95,8 @@ silently. `GET /providers/models` also exposes each model's `modes`, `max_durati
 
 On startup the service calls Model Studio's OpenAI-compatible `/models` endpoint (191
 models at the time of writing) and adds the **image** models it exposes (for example
-`wan2.7-image`, `wan2.7-image-pro`, `z-image-turbo`; `qwen-image-*` uses a different image API
-and is not wired yet). That endpoint does **not** list video
+`wan2.7-image`, `wan2.7-image-pro`). `qwen-image-*` and `z-image-*` use other image APIs
+and are not wired yet). That endpoint does **not** list video
 models, so the video catalogue stays curated here. Discovery results are cached for ten
 minutes and failures fall back to the static catalogue; `GET /providers/models` merges both
 so the UI picks up new models without code changes.
@@ -184,9 +184,10 @@ VIDEOAGENT_WANX_TIMEOUT_SECONDS=300
 - Unit tests use `httpx.MockTransport` and cover submission, status mapping, error codes
   and local image encoding.
 
-Image models (`wan2.7-image`, `wan2.7-image-pro`, `wanx2.1-t2i-turbo`) use the asynchronous
-`/api/v1/services/aigc/text2image/image-synthesis` task and currently support **text-to-image**
-only; pick a Kling image model for reference-image generation.
+Image models use two endpoints: `wan2.7-image` / `wan2.7-image-pro` call the synchronous
+`/api/v1/services/aigc/multimodal-generation/generation`; `wanx2.1-t2i-turbo` uses the
+asynchronous `/api/v1/services/aigc/text2image/image-synthesis`. Both support **text-to-image**
+only today; pick a Kling image model for reference-image generation.
 
 ## 7. Planner and vision review (LLM provider)
 

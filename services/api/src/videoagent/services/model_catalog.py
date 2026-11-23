@@ -165,6 +165,7 @@ VIDEO_MODELS: tuple[ModelOption, ...] = (
 )
 
 IMAGE_MODELS: tuple[ModelOption, ...] = (
+    ModelOption("kling", "kling-image-v4_0", "Kling Image 4.0", IMAGE_MODE),
     ModelOption("kling", "kling-image-v3_0", "Kling Image 3.0", IMAGE_MODE),
     ModelOption("kling", "kling-image-v3_0_omni", "Kling Image 3.0 Omni", IMAGE_MODE),
     ModelOption("kling", "kling-image-o1", "Kling Image O1", IMAGE_MODE),

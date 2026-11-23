@@ -18,7 +18,7 @@ from videoagent.services.model_catalog import ModelOption
 CACHE_TTL_SECONDS = 600
 FAILURE_TTL_SECONDS = 60
 IMAGE_PREFIXES = ("wan", "z-image")
-IMAGE_EXCLUDE = ("qwen-image",)
+IMAGE_EXCLUDE = ("qwen-image", "z-image")
 
 _cache_expires = 0.0
 _cached_models: list[ModelOption] = []
