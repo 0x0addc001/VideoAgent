@@ -22,5 +22,10 @@ if [ ! -f .env ]; then
   echo "warning: $api_root/.env is missing; copy .env.example and fill in secrets" >&2
 fi
 
-uv sync --dev
-exec uv run uvicorn videoagent.main:app --port 8000
+extra=()
+if grep -qE '^VIDEOAGENT_MEDIA_STORAGE=oss' .env 2>/dev/null; then
+  extra=(--extra oss)
+fi
+
+uv sync --dev "${extra[@]}"
+exec uv run "${extra[@]}" uvicorn videoagent.main:app --port 8000

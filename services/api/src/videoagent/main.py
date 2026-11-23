@@ -2,8 +2,9 @@ import contextlib
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from videoagent.agent.graph import StoryboardAgent
 from videoagent.agent.planner import build_storyboard_planner
@@ -35,6 +36,7 @@ from videoagent.providers.factory import build_video_provider
 from videoagent.providers.oauth import build_kling_oauth_gateway
 from videoagent.services.cli_model_discovery import refresh_cli_models
 from videoagent.services.model_discovery import refresh_discovered_models
+from videoagent.services.storage import StorageError
 
 
 def create_app(
@@ -86,6 +88,21 @@ def create_app(
         allowed_origins=resolved_settings.allowed_origins,
     )
     application.add_exception_handler(AppError, app_error_handler)  # type: ignore[arg-type]
+
+    async def storage_error_handler(request: Request, exc: StorageError) -> JSONResponse:
+        return JSONResponse(
+            status_code=503,
+            content={
+                "error": {
+                    "code": "MEDIA_STORAGE_UNAVAILABLE",
+                    "message": str(exc),
+                    "details": {},
+                    "requestId": request.headers.get("x-request-id", "unknown"),
+                }
+            },
+        )
+
+    application.add_exception_handler(StorageError, storage_error_handler)  # type: ignore[arg-type]
     application.include_router(health_router, prefix=resolved_settings.api_prefix)
     application.include_router(auth_router, prefix=resolved_settings.api_prefix)
     application.include_router(admin_router, prefix=resolved_settings.api_prefix)

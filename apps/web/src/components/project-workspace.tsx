@@ -3286,9 +3286,12 @@ export function ProjectWorkspace({
     });
     if (!response.ok) {
       const body = (await response.json().catch(() => null)) as
-        | { error?: { message?: string } }
+        | { error?: { message?: string }; detail?: unknown }
         | null;
-      throw new Error(body?.error?.message || "generation-failed");
+      const detail = typeof body?.detail === "string" ? body.detail : "";
+      throw new Error(
+        body?.error?.message || detail || `HTTP ${response.status}`,
+      );
     }
     const job = (await response.json()) as GenerationJob;
     setStoryboard((current) =>
@@ -3641,9 +3644,12 @@ export function ProjectWorkspace({
       });
       if (!response.ok) {
         const body = (await response.json().catch(() => null)) as
-          | { error?: { message?: string } }
+          | { error?: { message?: string }; detail?: unknown }
           | null;
-        throw new Error(body?.error?.message || "scene-generation-failed");
+        const detail = typeof body?.detail === "string" ? body.detail : "";
+        throw new Error(
+          body?.error?.message || detail || `HTTP ${response.status}`,
+        );
       }
       const asset = (await response.json()) as Asset;
       setAssets((current) => [asset, ...current]);
@@ -3717,9 +3723,12 @@ export function ProjectWorkspace({
       );
       if (!response.ok) {
         const body = (await response.json().catch(() => null)) as
-          | { error?: { message?: string } }
+          | { error?: { message?: string }; detail?: unknown }
           | null;
-        throw new Error(body?.error?.message || "character-generation-failed");
+        const detail = typeof body?.detail === "string" ? body.detail : "";
+        throw new Error(
+          body?.error?.message || detail || `HTTP ${response.status}`,
+        );
       }
       const asset = (await response.json()) as Asset;
       setAssets((current) => [asset, ...current]);

@@ -1,3 +1,4 @@
+import logging
 from typing import Annotated
 from uuid import UUID, uuid4
 
@@ -22,8 +23,10 @@ from videoagent.services.media import (
     save_upload,
 )
 from videoagent.services.platform_settings import generation_enabled
+from videoagent.services.storage import StorageError, build_storage
 from videoagent.services.storyboards import owned_project_or_404
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/scenes", tags=["scenes"])
 IMAGE_GENERATION_CREDITS = 2
 
@@ -162,6 +165,15 @@ async def generate_scene_image(
                 message="The selected reference image file is unavailable.",
             )
         reference_path = str(path)
+    try:
+        build_storage(settings)
+    except StorageError as exc:
+        raise AppError(
+            status_code=503,
+            code="MEDIA_STORAGE_UNAVAILABLE",
+            message=f"Media storage is unavailable: {exc}",
+        ) from exc
+
     reservation_id = str(uuid4())
     await reserve_credits(
         session,
@@ -209,12 +221,15 @@ async def generate_scene_image(
         return asset_read(asset)
     except Exception as exc:
         await session.rollback()
-        await refund_credits(
-            session,
-            user_id=user.id,
-            reference_id=reservation_id,
-            settings=settings,
-        )
+        try:
+            await refund_credits(
+                session,
+                user_id=user.id,
+                reference_id=reservation_id,
+                settings=settings,
+            )
+        except Exception:  # noqa: BLE001 - never mask the generation error
+            logger.exception("credit refund failed for %s", reservation_id)
         if isinstance(exc, AppError):
             raise
         message = str(exc)[:1200] if isinstance(exc, (KlingCLIError, WanxImageError)) else ""
