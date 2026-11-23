@@ -1494,9 +1494,9 @@ function AssetResultList({
 
   return (
     <>
-      <div className="space-y-1">
+      <div className="flex flex-wrap gap-1">
         {assets.length > 1 && !selectedAssetId ? (
-          <p className="px-1 pb-1 text-[10px] leading-4 text-amber-200/60">
+          <p className="w-full px-1 pb-1 text-[10px] leading-4 text-amber-200/60">
             {copy.defaultHint}
           </p>
         ) : null}
@@ -1508,7 +1508,7 @@ function AssetResultList({
               aria-label={asset.filename}
               aria-pressed={designated}
               className={cn(
-                "group relative block w-full overflow-hidden rounded-lg border transition",
+                "group relative h-8 w-12 shrink-0 overflow-hidden rounded-md border transition",
                 designated
                   ? "border-emerald-400/70"
                   : "border-white/[0.06] hover:border-white/[0.18]",
@@ -1527,15 +1527,15 @@ function AssetResultList({
             >
               {asset.content_type.startsWith("video/") ? (
                 <video
-                  className="h-8 w-full bg-black/40 object-contain"
+                  className="h-full w-full object-cover"
                   muted
                   preload="metadata"
-                  src={source}
+                  src={`${source}#t=0.1`}
                 />
               ) : (
                 <img
                   alt={asset.filename}
-                  className="h-8 w-full bg-black/40 object-contain"
+                  className="h-full w-full object-cover"
                   loading="lazy"
                   src={source}
                 />
@@ -3382,6 +3382,28 @@ export function ProjectWorkspace({
     const reference = references.find((asset) =>
       asset.content_type.startsWith("image/"),
     );
+    const shotText = `${prompt} ${shot.description}`.toLowerCase();
+    const associatedIds = [
+      ...(storyboard?.characters ?? [])
+        .filter(
+          (entry) =>
+            (storyboard?.characters.length ?? 0) === 1 ||
+            (entry.name && shotText.includes(entry.name.toLowerCase())),
+        )
+        .map((entry) => selectedResourceAssets[`character:${entry.id}`]),
+      ...(storyboard?.scenes ?? [])
+        .filter(
+          (entry) =>
+            (storyboard?.scenes.length ?? 0) === 1 ||
+            (entry.name && shotText.includes(entry.name.toLowerCase())) ||
+            (entry.location &&
+              shotText.includes(entry.location.toLowerCase())),
+        )
+        .map((entry) => selectedResourceAssets[`scene:${entry.id}`]),
+    ].filter((id): id is string => Boolean(id));
+    const referenceIds = Array.from(
+      new Set([...associatedIds, ...references.map((asset) => asset.id)]),
+    );
     const response = await fetch(`${API_BASE_URL}/shots/${shot.id}/generate`, {
       method: "POST",
       credentials: "include",
@@ -3391,9 +3413,10 @@ export function ProjectWorkspace({
       },
       body: JSON.stringify({
         approved: true,
-        generation_mode: reference ? "image_to_video" : "text_to_video",
-        reference_asset_id: reference?.id ?? null,
-        reference_asset_ids: references.map((asset) => asset.id),
+        generation_mode:
+          referenceIds.length > 0 ? "image_to_video" : "text_to_video",
+        reference_asset_id: reference?.id ?? referenceIds[0] ?? null,
+        reference_asset_ids: referenceIds,
         task_type:
           shotTaskType === "auto"
             ? taskTypeForBrief(project?.brief ?? "")
@@ -4640,11 +4663,7 @@ export function ProjectWorkspace({
               {selectedCanvas.kind === "scene" && selectedScene ? (
                 <article className="mx-auto max-w-4xl px-6 py-8 sm:px-10">
                   <div className="rounded-2xl border border-white/[0.07] p-5">
-                    <div className="flex items-center gap-2 text-[12px] font-semibold text-[#7bc6ff]">
-                      <MapPin className="h-4 w-4" />
-                      {copy.scene}
-                    </div>
-                    <label className="mt-4 block text-[12px] text-white/38">
+                    <label className="block text-[12px] text-white/38">
                       <span>{copy.sceneName}</span>
                       <input
                         aria-label={copy.sceneName}

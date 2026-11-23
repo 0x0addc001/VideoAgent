@@ -17,6 +17,7 @@ from videoagent.models import (
     Storyboard,
 )
 from videoagent.schemas import CharacterInput, SceneInput, ShotInput
+from videoagent.services.naming import sanitize_name
 
 
 async def project_access_permission(
@@ -138,7 +139,10 @@ async def replace_storyboard(
         retained_character_ids: set[UUID] = set()
         used_character_names: set[str] = set()
         for index, character_data in enumerate(characters):
-            name = character_data.name.strip()
+            name = sanitize_name(
+                character_data.name,
+                description=character_data.description,
+            )
             if name.casefold() in used_character_names:
                 name = f"{name} · {index + 1}"
             used_character_names.add(name.casefold())
@@ -169,7 +173,10 @@ async def replace_storyboard(
         retained_scene_ids: set[UUID] = set()
         used_scene_names: set[str] = set()
         for index, scene_data in enumerate(scenes):
-            name = scene_data.name.strip()
+            name = sanitize_name(
+                scene_data.name,
+                location=scene_data.location,
+            )
             if name.casefold() in used_scene_names:
                 name = f"{name} · {index + 1}"
             used_scene_names.add(name.casefold())
