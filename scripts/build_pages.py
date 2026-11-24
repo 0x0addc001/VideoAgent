@@ -145,6 +145,13 @@ def markdown_to_html(markdown: str) -> tuple[str, list[TocEntry]]:
         line = lines[index]
         stripped = line.strip()
 
+        if stripped.startswith("<video") and stripped.endswith("</video>"):
+            flush_paragraph()
+            close_list()
+            output.append(stripped)
+            index += 1
+            continue
+
         if stripped.startswith("```"):
             flush_paragraph()
             close_list()

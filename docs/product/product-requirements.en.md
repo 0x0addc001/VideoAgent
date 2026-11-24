@@ -12,6 +12,11 @@ or production setting, generate controllable shots, review the result, and keep
 finished or in-progress work organized in one workspace.
 
 Every primary view is organized around a concrete creation, review, publishing,
+
+## Demo video
+
+<video controls preload="metadata" src="../media/videoagent-promo.mp4" style="max-width: 100%; border-radius: 12px;"></video>
+
 search, or asset-management task.
 
 ## 2. Target Users

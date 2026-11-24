@@ -184,6 +184,13 @@ signed out. The product frontend still starts signed out; the full
 application remains a Next.js/FastAPI deployment because Pages cannot run the
 API, provider CLIs, Celery, FFmpeg, or persistent media services.
 
+## Demo
+
+<video controls preload="metadata" src="docs/assets/videoagent-promo.mp4" style="max-width: 100%; border-radius: 12px;"></video>
+
+The same read-only demo client is published at
+[0x0addc001.github.io/VideoAgent](https://0x0addc001.github.io/VideoAgent/).
+
 ## Requirements
 
 - Python 3.12+

@@ -12,6 +12,11 @@ VideoAgent 帮助用户以导演身份完成视频创作：描述想法、选择
 
 每个主页面围绕明确的选择、创建、搜索、发布、评估或资产管理任务组织。
 
+
+## 演示视频
+
+<video controls preload="metadata" src="../media/videoagent-promo.mp4" style="max-width: 100%; border-radius: 12px;"></video>
+
 ## 2. 目标用户
 
 - 独立视频创作者。
