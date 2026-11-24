@@ -174,11 +174,12 @@ The repository separates product UI, reusable landing UI, backend control
 plane, Agent runtime, Provider adapters, release documentation, deployment
 infrastructure, and browser-level acceptance tests.
 
-The GitHub Pages homepage is a static build of the read-only demo workspace
-(`demo@videoagent.local`): a real frontend with the Procedures/Objects tree,
-inspector, characters, scenes, numbered takes, the final cut video and version
-history. Every item can be opened and inspected; editing stays disabled and no
-backend is required. The product frontend still starts signed out; the full
+The GitHub Pages homepage is a static build of the complete read-only demo
+client (`demo@videoagent.local`): Home, Projects/Storyboard, Assets, Videos,
+Skills and Docs navigation, the Procedures/Objects tree, inspector, Agent panel,
+an account menu, characters, scenes, numbered takes, the final cut video and
+version history. Every item can be opened and inspected; editing stays disabled
+and no backend is required. The product frontend still starts signed out; the full
 application remains a Next.js/FastAPI deployment because Pages cannot run the
 API, provider CLIs, Celery, FFmpeg, or persistent media services.
 
