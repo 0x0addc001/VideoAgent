@@ -12,7 +12,14 @@ Documentation includes matching editions in both languages.
 [Architecture](docs/tech/architecture.en.md) ·
 [APIs](docs/tech/api-reference.en.md)
 
-![VideoAgent home](docs/assets/readme-home.jpg)
+## Demo
+
+[![Watch the VideoAgent promo](docs/assets/videoagent-promo-poster.jpg)](docs/assets/videoagent-promo.mp4)
+
+<video controls preload="metadata" src="docs/assets/videoagent-promo.mp4" style="max-width: 100%; border-radius: 12px;"></video>
+
+The same read-only demo client is published at
+[0x0addc001.github.io/VideoAgent](https://0x0addc001.github.io/VideoAgent/).
 
 ## Current Product
 
@@ -40,6 +47,10 @@ Documentation includes matching editions in both languages.
   invites, provider status, runtime controls, and audit logs.
 
 ## Screenshots
+
+### Home
+
+![VideoAgent home](docs/assets/readme-home.jpg)
 
 ### Project workspace
 
@@ -180,18 +191,9 @@ Projects and Recents navigation, the Storyboard workspace, Assets/Agents panes,
 the Procedures/Objects tree, characters, scenes, numbered takes, the final cut
 video and version history. Every item can be opened and inspected; editing stays
 disabled and no backend is required. The product frontend itself still starts
-signed out. The product frontend still starts signed out; the full
-application remains a Next.js/FastAPI deployment because Pages cannot run the
-API, provider CLIs, Celery, FFmpeg, or persistent media services.
-
-## Demo
-
-[![Watch the VideoAgent promo](docs/assets/videoagent-promo-poster.jpg)](docs/assets/videoagent-promo.mp4)
-
-<video controls preload="metadata" src="docs/assets/videoagent-promo.mp4" style="max-width: 100%; border-radius: 12px;"></video>
-
-The same read-only demo client is published at
-[0x0addc001.github.io/VideoAgent](https://0x0addc001.github.io/VideoAgent/).
+signed out; the full application remains a Next.js/FastAPI deployment because
+Pages cannot run the API, provider CLIs, Celery, FFmpeg, or persistent media
+services.
 
 ## Requirements
 
