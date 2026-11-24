@@ -204,7 +204,13 @@ export function DemoShowcase({ locale }: { locale: string }) {
         {finalCut ? (
           <section className="space-y-3">
             <h2 className="text-lg font-semibold">{zh ? "成片" : "Final cut"}</h2>
-            <video className="w-full rounded-xl border border-white/10" controls src={fullContent(finalCut.id)} />
+            <video
+              className="w-full rounded-xl border border-white/10"
+              controls
+              poster={thumb(finalCut.id)}
+              preload="metadata"
+              src={fullContent(finalCut.id)}
+            />
           </section>
         ) : null}
 

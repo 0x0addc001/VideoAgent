@@ -471,6 +471,17 @@ async def get_job(
             gateway=gateway,
             allow_mock=False,
         )
+    elif job.provider == "pippit":
+        if provider.name != "pippit":
+            selected_provider = PippitVideoProvider(
+                command=settings.pippit_cli_command,
+                model=settings.pippit_video_model,
+                resolution=settings.pippit_video_resolution,
+                access_key=settings.pippit_access_key,
+                timeout_seconds=settings.pippit_timeout_seconds,
+            )
+        else:
+            selected_provider = provider
     elif job.provider == "wanx" and provider.name != "wanx":
         selected_provider = WanxVideoProvider(
             api_key=settings.wanx_api_key,

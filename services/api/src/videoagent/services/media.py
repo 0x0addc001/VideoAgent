@@ -459,8 +459,7 @@ async def export_project(
         soundtrack_asset = None
 
     durations = [await _duration(path, settings) for path in inputs]
-    transition = 0.35 if len(inputs) > 1 else 0.0
-    total_duration = max(1.0, sum(durations) - transition * (len(inputs) - 1))
+    total_duration = max(1.0, sum(durations))
     media_dir = Path(settings.media_dir).expanduser().resolve()  # noqa: ASYNC240
     created: list[Asset] = []
     cover_asset: Asset | None = None
@@ -471,7 +470,7 @@ async def export_project(
         filter_parts = [
             (
                 f"[{index}:v]scale={width}:{height}:force_original_aspect_ratio=decrease,"
-                f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30,"
+                f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1,settb=AVTB,fps=30,"
                 f"format=yuv420p,eq=contrast=1.02:saturation=1.04,"
                 f"setpts=PTS-STARTPTS[v{index}]"
             )
@@ -480,18 +479,11 @@ async def export_project(
         if len(inputs) == 1:
             video_label = "v0"
         else:
-            running = durations[0]
-            previous = "v0"
-            for index in range(1, len(inputs)):
-                offset = max(0.05, running - transition)
-                label = f"x{index}"
-                filter_parts.append(
-                    f"[{previous}][v{index}]xfade=transition=fade:duration={transition}:"
-                    f"offset={offset:.3f}[{label}]"
-                )
-                running += durations[index] - transition
-                previous = label
-            video_label = previous
+            joins = "".join(f"[v{index}]" for index in range(len(inputs)))
+            filter_parts.append(
+                f"{joins}concat=n={len(inputs)}:v=1:a=0[vconcat]"
+            )
+            video_label = "vconcat"
         if request.captions and request.captions.strip():
             subtitle_path = media_dir / f"captions-{uuid4().hex}.srt"
             await asyncio.to_thread(
