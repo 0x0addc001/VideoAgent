@@ -18,18 +18,19 @@ type Project = {
   id: string;
 };
 
+const base = process.env.NEXT_PUBLIC_DEMO_STATIC === "1" ? "/VideoAgent" : "";
 const videos = [
   {
-    src: "/media/vlog-hero.mp4",
-    poster: "/media/vlog-hero-poster.jpg",
+    src: `${base}/media/vlog-hero.mp4`,
+    poster: `${base}/media/vlog-hero-poster.jpg`,
   },
   {
-    src: "/media/vlog-hero-european.mp4",
-    poster: "/media/vlog-hero-european-poster.jpg",
+    src: `${base}/media/vlog-hero-european.mp4`,
+    poster: `${base}/media/vlog-hero-european-poster.jpg`,
   },
   {
-    src: "/media/vlog-hero-black.mp4",
-    poster: "/media/vlog-hero-black-poster.jpg",
+    src: `${base}/media/vlog-hero-black.mp4`,
+    poster: `${base}/media/vlog-hero-black-poster.jpg`,
   },
 ] as const;
 
@@ -89,7 +90,7 @@ export function AppLandingPage() {
     <>
       <LandingPage
       accountApiBase={process.env.NEXT_PUBLIC_DEMO_STATIC === "1" ? (process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api/account") : "/api/account"}
-      docsBase="/docs/"
+      docsBase={process.env.NEXT_PUBLIC_DEMO_STATIC === "1" ? "/VideoAgent/docs/" : "/docs/"}
       locale={locale}
       mode="app"
       onCreateProject={createProject}

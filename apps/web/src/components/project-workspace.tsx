@@ -284,6 +284,7 @@ type Asset = {
   checksum: string;
   permission: "private" | "public";
   content_url: string;
+  thumbnail_url?: string;
   created_at: string;
   updated_at: string;
 };
@@ -1489,7 +1490,10 @@ function AssetResultList({
             <a
               className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-[12px] text-white/72 hover:bg-white/[0.06] hover:text-white"
               download={menu.asset.filename}
-              href={`/api/account/assets/${menu.asset.id}/content`}
+              href={
+                menu.asset.content_url ??
+                `/api/account/assets/${menu.asset.id}/content`
+              }
               onClick={() => setMenu(null)}
             >
               {copy.download}
@@ -1519,7 +1523,8 @@ function AssetResultList({
         ) : null}
         {assets.map((asset, index) => {
           const designated = effectiveSelectedId === asset.id;
-          const source = `/api/account/assets/${asset.id}/content`;
+          const source =
+            asset.content_url ?? `/api/account/assets/${asset.id}/content`;
           return (
             <button
               aria-label={asset.filename}
@@ -1546,7 +1551,10 @@ function AssetResultList({
                 alt={asset.filename}
                 className="h-full w-full object-cover"
                 loading="lazy"
-                src={`/api/account/assets/${asset.id}/thumbnail`}
+                src={
+                  asset.thumbnail_url ??
+                  `/api/account/assets/${asset.id}/thumbnail`
+                }
               />
               {takeNumbers ? (
                 <span className="absolute bottom-0.5 left-0.5 rounded bg-black/65 px-1 text-[9px] leading-4 text-white/75">

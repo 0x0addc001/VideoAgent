@@ -4,11 +4,10 @@ import snapshot from "./snapshot.json";
 type Json = Record<string, unknown>;
 
 const DEMO_PROJECT = "demo-project";
-const BASE =
-  (typeof process !== "undefined" && process.env.NEXT_PUBLIC_DEMO_BASE) ||
-  (typeof window !== "undefined"
-    ? `${window.location.origin}${window.location.pathname.replace(/\/en\/?$/, "")}`
-    : "");
+const BASE_PATH =
+  (typeof process !== "undefined" && process.env.NEXT_PUBLIC_DEMO_BASE) || "";
+const ORIGIN = typeof window !== "undefined" ? window.location.origin : "";
+const BASE = `${ORIGIN}${BASE_PATH}`;
 
 function assetUrl(id: string, filename: string, contentType: string) {
   return contentType.startsWith("video/")
@@ -87,6 +86,7 @@ function assets() {
     checksum: "demo",
     permission: "private",
     content_url: assetUrl(asset.id, asset.filename, asset.content_type),
+    thumbnail_url: `${BASE}/demo/media/${asset.id}.jpg`,
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   }));

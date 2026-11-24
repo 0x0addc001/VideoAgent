@@ -19,7 +19,12 @@ export async function generateMetadata({
       ? "使用 AI 创作导演规划、生成、审核并合成视频。"
       : "Plan, generate, review, and assemble videos with an AI creative director.",
     icons: {
-      icon: [{ url: "/brand-mark.svg?v=13", type: "image/svg+xml" }],
+      icon: [
+        {
+          url: `${process.env.NEXT_PUBLIC_DEMO_STATIC === "1" ? "/VideoAgent" : ""}/brand-mark.svg?v=13`,
+          type: "image/svg+xml",
+        },
+      ],
     },
   };
 }
