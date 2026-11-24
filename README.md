@@ -174,9 +174,12 @@ The repository separates product UI, reusable landing UI, backend control
 plane, Agent runtime, Provider adapters, release documentation, deployment
 infrastructure, and browser-level acceptance tests.
 
-The GitHub Pages homepage is static. The full application remains a
-Next.js/FastAPI deployment because Pages cannot run the API, provider CLIs,
-Celery, FFmpeg, or persistent media services.
+The GitHub Pages homepage is a static snapshot of the read-only demo project
+(`demo@videoagent.local`), including characters, scenes, three numbered takes,
+the final cut and version history, so the completed flow can be reviewed
+without a backend. The product frontend still starts signed out; the full
+application remains a Next.js/FastAPI deployment because Pages cannot run the
+API, provider CLIs, Celery, FFmpeg, or persistent media services.
 
 ## Requirements
 

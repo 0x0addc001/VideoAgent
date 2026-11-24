@@ -1,0 +1,138 @@
+{
+  "project": {
+    "title": "创作一条关于在忙碌城市里寻找慢节奏清晨的自然 Vlog：使用连续手持视角、克制动作和环境声，最后落在平静的情绪上。",
+    "brief": "创作一条关于在忙碌城市里寻找慢节奏清晨的自然 Vlog：使用连续手持视角、克制动作和环境声，最后落在平静的情绪上。\n\nProduction settings: creator_vlog · Hook visual · 真实感 · 9:16 · 10s · 自动（按镜头推荐） · auto · Audio auto · Review auto"
+  },
+  "storyboard": {
+    "id": "a24bbb74-6e99-4cab-813b-2f7e66cef9bf",
+    "project_id": "75372968-b612-48d4-9ea0-0a85adc03665",
+    "version": 3,
+    "shots": [
+      {
+        "id": "5d6e76c2-a0ad-44e5-9aeb-d03411328dd5",
+        "index": 0,
+        "name": "清晨站台",
+        "description": "主角背影微俯，站在城市主干道与老胡同交汇的公交站台边。晨光斜切，将斑驳砖墙、停靠的电动自行车、远处模糊的玻璃幕墙写字楼投在地面形成冷暖交叠长影。一只麻雀突然掠过镜头左下角，飞向墙头一丛野蔷薇。",
+        "prompt_en": "Handheld POV shot, realistic vlog style, early morning in Beijing old city neighborhood: worn grey brick wall with peeling blue paint, parked e-bikes, soft golden sunlight casting long diagonal shadows, distant glass skyscrapers blurred in bokeh background, one sparrow flying left-to-right across lower frame, shallow depth of field, natural skin tones, film grain texture, 9:16 aspect ratio.",
+        "prompt_zh": "手持主观视角，纪实Vlog风格，北京老城区清晨：斑驳灰砖墙带剥落的蓝漆，停放的电动自行车，柔和金光投下斜长影子，远处玻璃幕墙写字楼虚化背景，一只麻雀从画面左下角飞向右上角，浅景深，自然肤色，胶片颗粒质感，9:16竖屏比例。",
+        "duration_seconds": 10,
+        "aspect_ratio": "9:16",
+        "generation_mode": "image_to_video",
+        "status": "completed"
+      },
+      {
+        "id": "3975773b-6ce1-4edd-a8af-68a0dd69f1f9",
+        "index": 1,
+        "name": "清晨巷",
+        "description": "镜头随主角缓步转入拱形青砖门洞。光影骤暗后渐亮——门洞尽头透出窄巷，两侧垂挂藤蔓与晾晒的素色棉布，在微风中极轻微摆动。一滴露珠自丝瓜藤尖坠落，未触地即被镜头微微下移避开，只留藤叶震颤余韵。",
+        "prompt_en": "Handheld POV walking through a traditional Beijing hutong archway: dim stone tunnel opening to sunlit narrow alley, climbing vines and hanging off-white cotton sheets gently swaying, dew drop falling from gourd vine tip (captured mid-air), subtle camera dip to avoid impact, soft directional light, muted green and cream palette, shallow focus on foreground vine texture, 9:16.",
+        "prompt_zh": "手持主观视角穿行北京胡同拱形门洞：幽暗石砌通道尽头透出阳光窄巷，两侧垂挂藤蔓与素白棉布床单，随微风轻颤；丝瓜藤尖一滴露珠坠落（悬停空中），镜头微沉避开落地瞬间，仅留藤叶震颤余韵；柔光定向照明，低饱和青绿与米白主调，前景藤蔓纹理浅焦，9:16竖屏。",
+        "duration_seconds": 10,
+        "aspect_ratio": "9:16",
+        "generation_mode": "image_to_video",
+        "status": "completed"
+      },
+      {
+        "id": "e790ab35-02d4-401a-baa2-17f58d4023b7",
+        "index": 2,
+        "name": "清晨公园",
+        "description": "镜头停驻于社区口袋公园长椅。主角缓缓坐下，双手轻放膝上，不触碰任何物体。椅背攀满常春藤，左侧银杏枝垂落，叶片在晨风中翻转反光。镜头以极慢速率微抬——从手背青筋、到衣袖褶皱、到呼吸起伏的胸口、最终定格于银杏叶背面脉络特写。最后一帧，叶脉随风轻颤，画面渐暗如闭眼。",
+        "prompt_en": "Handheld static POV at community pocket park bench: subject sits quietly, hands resting on knees, no movement, ivy-covered backrest, ginkgo branch with sunlit leaves overhead, extreme slow upward tilt from hand veins → sleeve crease → chest rise/fall → macro close-up of ginkgo leaf underside veins, gentle wind-induced tremor, warm diffused light, shallow depth, cinematic stillness, 9:16.",
+        "prompt_zh": "手持固定主观视角，社区口袋公园长椅：主角静坐不动，双手自然置于膝上，常春藤覆盖椅背，头顶银杏枝叶沐浴晨光；镜头以极慢速自下而上微抬——从手背青筋→衣袖褶皱→呼吸起伏的胸口→最终聚焦银杏叶背面叶脉特写；微风致叶脉轻颤，柔光漫射，浅景深，电影级静默感，9:16竖屏。",
+        "duration_seconds": 10,
+        "aspect_ratio": "9:16",
+        "generation_mode": "image_to_video",
+        "status": "completed"
+      }
+    ],
+    "characters": [
+      {
+        "id": "71370700-18a1-4baa-ae9d-6e6a671c8258",
+        "index": 0,
+        "name": "博主",
+        "description": "手持镜头中的博主，穿行在清晨城市街道，动作自然、情绪克制。",
+        "prompt_en": "Cinematic character portrait for Approve outline and build script, consistent identity, natural skin texture, production-ready costume and lighting",
+        "prompt_zh": "“Approve outline and build script”的电影感角色定妆照，稳定身份特征，自然肤质，成片级服装与灯光"
+      }
+    ],
+    "scenes": [
+      {
+        "id": "5e382b3d-df05-4f8e-af0d-18d148c797ae",
+        "index": 0,
+        "name": "电影感室内",
+        "description": "承载“Approve outline and build script”叙事的连续空间，包含可识别的环境层次、灯光和道具关系。",
+        "location": "电影感室内创作空间",
+        "prompt_en": "Cinematic environment plate for Approve outline and build script, consistent layout, production-ready lighting and set dressing",
+        "prompt_zh": "“Approve outline and build script”的电影感场景设定图，空间布局稳定，成片级灯光与陈设"
+      }
+    ],
+    "created_at": "2026-11-23T05:37:15.279824",
+    "updated_at": "2026-11-23T05:39:02.677506"
+  },
+  "assets": [
+    {
+      "id": "4670e965-ec5e-4eb4-b7db-9549ec82e775",
+      "kind": "generated",
+      "content_type": "image/png",
+      "filename": "character-71370700-18a1-4baa-ae9d-6e6a671c8258-4049720e4d444dae9ae3dfd775aa6e37.png",
+      "shot_id": null,
+      "thumb": "media/4670e965-ec5e-4eb4-b7db-9549ec82e775.jpg"
+    },
+    {
+      "id": "b7d53e9d-f4f7-420e-afba-71f6e200d933",
+      "kind": "generated",
+      "content_type": "image/png",
+      "filename": "scene-5e382b3d-df05-4f8e-af0d-18d148c797ae-2cf9bf11cfee4ce9932e1b353c8845af.png",
+      "shot_id": null,
+      "thumb": "media/b7d53e9d-f4f7-420e-afba-71f6e200d933.jpg"
+    },
+    {
+      "id": "4fbe08c7-7bd1-4cde-9eac-9489c74bc457",
+      "kind": "generated",
+      "content_type": "video/mp4",
+      "filename": "shot-5d6e76c2-a0ad-44e5-9aeb-d03411328dd5.mp4",
+      "shot_id": "5d6e76c2-a0ad-44e5-9aeb-d03411328dd5",
+      "thumb": "media/4fbe08c7-7bd1-4cde-9eac-9489c74bc457.jpg"
+    },
+    {
+      "id": "3684f7d1-d7b4-48de-aee7-fa9e24bbadd7",
+      "kind": "generated",
+      "content_type": "video/mp4",
+      "filename": "shot-3975773b-6ce1-4edd-a8af-68a0dd69f1f9.mp4",
+      "shot_id": "3975773b-6ce1-4edd-a8af-68a0dd69f1f9",
+      "thumb": "media/3684f7d1-d7b4-48de-aee7-fa9e24bbadd7.jpg"
+    },
+    {
+      "id": "0a5e4269-a0e5-42d7-8a91-2a911ab7d13e",
+      "kind": "generated",
+      "content_type": "video/mp4",
+      "filename": "shot-e790ab35-02d4-401a-baa2-17f58d4023b7.mp4",
+      "shot_id": "e790ab35-02d4-401a-baa2-17f58d4023b7",
+      "thumb": "media/0a5e4269-a0e5-42d7-8a91-2a911ab7d13e.jpg"
+    },
+    {
+      "id": "cb998929-0064-4da4-8bfc-d574ec3f7893",
+      "kind": "export",
+      "content_type": "video/mp4",
+      "filename": "创作一条关于在忙碌城市里寻找慢节奏清晨的自然 Vlog：使用连续手持视角、克制动作和环境声，最后落在平静的情绪上。-9x16.mp4",
+      "shot_id": null,
+      "thumb": "media/cb998929-0064-4da4-8bfc-d574ec3f7893.jpg"
+    },
+    {
+      "id": "95110508-0264-49a4-9c28-2e80f3519b59",
+      "kind": "cover",
+      "content_type": "image/jpeg",
+      "filename": "创作一条关于在忙碌城市里寻找慢节奏清晨的自然 Vlog：使用连续手持视角、克制动作和环境声，最后落在平静的情绪上。-cover.jpg",
+      "shot_id": null,
+      "thumb": "media/95110508-0264-49a4-9c28-2e80f3519b59.jpg"
+    }
+  ],
+  "versions": [
+    {
+      "id": "a158d745-e100-49ab-a6da-83e850aba36b",
+      "revision": 1,
+      "label": "Manual save",
+      "created_at": "2026-11-23T05:42:00.690465"
+    }
+  ]
+}
