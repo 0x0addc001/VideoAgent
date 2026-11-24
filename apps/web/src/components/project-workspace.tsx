@@ -745,6 +745,7 @@ export function workspaceCopy(locale: string) {
         uploadSceneImage: "上传场地图片",
         uploadShotReference: "上传镜头参考素材",
         results: "资产",
+        takes: "镜头条",
         saveCharacter: "保存角色",
         sceneName: "场地名称",
         sceneDescription: "场地描述",
@@ -917,6 +918,7 @@ export function workspaceCopy(locale: string) {
         uploadSceneImage: "Upload scene image",
         uploadShotReference: "Upload shot reference",
         results: "Assets",
+        takes: "Takes",
         saveCharacter: "Save character",
         sceneName: "Scene name",
         sceneDescription: "Scene description",
@@ -1405,6 +1407,7 @@ function AssetResultList({
   assets,
   copy,
   selectedAssetId,
+  takeNumbers = false,
   onDelete,
   onOpen,
   onSelect,
@@ -1412,6 +1415,7 @@ function AssetResultList({
   assets: Asset[];
   copy: ReturnType<typeof workspaceCopy>;
   selectedAssetId?: string;
+  takeNumbers?: boolean;
   onDelete: (asset: Asset) => void;
   onOpen: (asset: Asset) => void;
   onSelect: (assetId: string | null) => void;
@@ -1513,7 +1517,7 @@ function AssetResultList({
             {copy.defaultHint}
           </p>
         ) : null}
-        {assets.map((asset) => {
+        {assets.map((asset, index) => {
           const designated = effectiveSelectedId === asset.id;
           const source = `/api/account/assets/${asset.id}/content`;
           return (
@@ -1544,6 +1548,11 @@ function AssetResultList({
                 loading="lazy"
                 src={`/api/account/assets/${asset.id}/thumbnail`}
               />
+              {takeNumbers ? (
+                <span className="absolute bottom-0.5 left-0.5 rounded bg-black/65 px-1 text-[9px] leading-4 text-white/75">
+                  {index + 1}
+                </span>
+              ) : null}
               {designated ? (
                 <span className="absolute right-1 top-1 grid size-4 place-items-center rounded-full bg-emerald-500 text-[#08110a]">
                   <Check className="h-3 w-3" strokeWidth={3} />
@@ -1881,7 +1890,7 @@ function AssetsTree({
                       >
                         <Clapperboard className="h-4 w-4 shrink-0 text-[#6eb8ff]" />
                         <span
-                          className="truncate text-[11px] text-white/45"
+                          className="truncate text-[11px] font-medium text-white/85"
                           title={shot.description}
                         >
                           {shot.name || shortLabel(shot.description)}
@@ -1889,7 +1898,8 @@ function AssetsTree({
                       </button>
                       <div className="pl-6">
                         <AssetResultList
-  copy={copy}
+                          copy={copy}
+                          takeNumbers
                           assets={sourceAssets.filter(
                             (asset) => asset.shot_id === shot.id,
                           )}
@@ -2426,6 +2436,15 @@ export function ProjectWorkspace({
       active = false;
     };
   }, [assets, project, selectedCanvas]);
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") return;
+    if (window.matchMedia("(max-width: 1440px)").matches) {
+      setAssetsPanelCollapsed(true);
+      setAgentPanelCollapsed(true);
+      setHistoryCollapsed(true);
+    }
+  }, []);
 
   useEffect(() => {
     setHistoryCollapsed(
@@ -5147,10 +5166,11 @@ export function ProjectWorkspace({
                   </div>
                   <section className="mt-5 rounded-2xl border border-white/[0.07] p-4">
                     <p className="mb-3 text-[12px] font-semibold text-white/38">
-                      {copy.results}
+                      {copy.takes}
                     </p>
                     <AssetResultList
-  copy={copy}
+                      copy={copy}
+                      takeNumbers
                       assets={assets.filter(
                         (asset) =>
                           asset.shot_id === canvasShot.id &&
