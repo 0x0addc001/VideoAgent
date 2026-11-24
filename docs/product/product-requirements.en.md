@@ -15,7 +15,7 @@ Every primary view is organized around a concrete creation, review, publishing,
 
 ## Demo video
 
-<video controls preload="metadata" src="../media/videoagent-promo.mp4" style="max-width: 100%; border-radius: 12px;"></video>
+<iframe width="100%" height="480" src="https://www.youtube.com/embed/UF6rn-3OU0c" title="VideoAgent promo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="max-width: 100%; border: 0; border-radius: 12px; aspect-ratio: 16 / 9;"></iframe>
 
 search, or asset-management task.
 

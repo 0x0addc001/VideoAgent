@@ -15,7 +15,7 @@ VideoAgent 帮助用户以导演身份完成视频创作：描述想法、选择
 
 ## 演示视频
 
-<video controls preload="metadata" src="../media/videoagent-promo.mp4" style="max-width: 100%; border-radius: 12px;"></video>
+<iframe width="100%" height="480" src="https://www.youtube.com/embed/UF6rn-3OU0c" title="VideoAgent promo" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="max-width: 100%; border: 0; border-radius: 12px; aspect-ratio: 16 / 9;"></iframe>
 
 ## 2. 目标用户
 

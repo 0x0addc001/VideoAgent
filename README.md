@@ -14,9 +14,9 @@ Documentation includes matching editions in both languages.
 
 ## Demo
 
-[![Watch the VideoAgent promo](docs/assets/videoagent-promo-poster.jpg)](docs/assets/videoagent-promo.mp4)
+[![Watch the VideoAgent promo on YouTube](docs/assets/youtube-thumbnail.jpg)](https://youtu.be/UF6rn-3OU0c)
 
-<video controls preload="metadata" src="docs/assets/videoagent-promo.mp4" style="max-width: 100%; border-radius: 12px;"></video>
+**[▶ Watch on YouTube](https://youtu.be/UF6rn-3OU0c)** · [Direct MP4](docs/assets/videoagent-promo.mp4)
 
 The same read-only demo client is published at
 [0x0addc001.github.io/VideoAgent](https://0x0addc001.github.io/VideoAgent/).
