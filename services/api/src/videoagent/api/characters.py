@@ -129,6 +129,19 @@ async def generate_character_image(
             code="GENERATION_APPROVAL_REQUIRED",
             message="Generation requires explicit approval.",
         )
+    if (
+        not character.name.strip()
+        or not character.description.strip()
+        or not character.prompt_en.strip()
+    ):
+        raise AppError(
+            status_code=409,
+            code="SCRIPT_DEFINITION_REQUIRED",
+            message=(
+                "Define the character's name, description and prompt before "
+                "generating an image."
+            ),
+        )
     provider_name, model = resolve_image_model(payload, settings)
     if not await generation_enabled(session, settings):
         raise AppError(

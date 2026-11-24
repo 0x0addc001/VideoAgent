@@ -388,9 +388,14 @@ The shared Landing UI owns:
 - An IDE-style canvas modeled on a software project: `Procedures` are the build
   pipeline (`Configs`, `Interfaces`, `Implementations`), `Objects` are the typed
   runtime entities (`Characters`, `Scenes`, `Shots`, `FinalCuts`), and every
-  render is a call that produces an immutable take. An independent `Versions`
-  history panel, the selected editor document or asset, and the
-  approval-driven Agents panel complete the layout.
+  render is a call that produces an immutable take. A **take** is one rendered
+  clip for one Shot (an attempt and its result); a **version** is an immutable
+  snapshot of the whole Storyboard (closer to a commit than to a clip). In film
+  terms, `Procedures` is the production pipeline (`Configs` = project settings,
+  `Interfaces` = approved outline/contract, `Implementations` = script), while
+  `Objects` are the typed entities a shoot works with (Character, Scene, Shot,
+  FinalCut). An independent `Versions` history panel, the selected editor
+  document or asset, and the approval-driven Agents panel complete the layout.
 - The Assets and Agents side panels can collapse to labeled rails. Their widths
   use responsive clamped proportions so they remain usable across desktop sizes.
 - `Procedures` contains editable `Configs`, `Interfaces`, and `Implementations`.

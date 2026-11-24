@@ -553,8 +553,11 @@ cancelled
 - 项目工作区采用 IDE 式布局：把视频项目当作一个软件工程，`Procedures` 是构建管线
   （`Configs`、`Interfaces`、`Implementations`），`Objects` 是带类型的运行时实体
   （`Characters`、`Scenes`、`Shots`、`FinalCuts`），每次生成都是一次调用并产出不可变
-  的 take；可压缩历史导航、独立 `Versions` 历史面板、中央编辑画布和右侧审批式 Agent
-  共同组成工作区。
+  的 take。**Take** 是某个 Shot 的一次生成结果（一条可比较、可替换的片子）；**Version**
+  是整个 Storyboard 的不可变快照（更接近 Git commit，而不是一条片子）。用影视语言说，
+  `Procedures` 是制作流程（`Configs` = 项目配置，`Interfaces` = 已批准大纲/契约，
+  `Implementations` = 剧本实现），`Objects` 是拍摄时打交道的实体（角色、场景、镜头、成片）。
+  可压缩历史导航、独立 `Versions` 历史面板、中央编辑画布和右侧审批式 Agent 共同组成工作区。
 - Assets 与 Agent 侧栏可折叠为带标签的窄轨；展开宽度使用响应式比例，适配不同桌面尺寸。
 - `Procedures` 包含可编辑的 `Configs`、`Interfaces`、`Implementations`；`Objects`
   包含 `Characters`、`Scenes`、`Shots` 和 `FinalCuts`。`Versions` 不是对象目录，

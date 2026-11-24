@@ -1,4 +1,8 @@
-"""Generate short, human-readable names for storyboard objects."""
+"""Generate short, human-readable names for storyboard objects.
+
+Names and descriptions are authored by the script/storyboard stage before any
+image exists; never derive them from generated assets or thumbnails.
+"""
 
 from __future__ import annotations
 

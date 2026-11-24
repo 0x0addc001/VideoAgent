@@ -129,6 +129,15 @@ async def generate_scene_image(
             code="GENERATION_APPROVAL_REQUIRED",
             message="Generation requires explicit approval.",
         )
+    if not scene.name.strip() or not scene.description.strip() or not scene.prompt_en.strip():
+        raise AppError(
+            status_code=409,
+            code="SCRIPT_DEFINITION_REQUIRED",
+            message=(
+                "Define the scene's name, description and prompt before "
+                "generating an image."
+            ),
+        )
     provider_name, model = resolve_image_model(payload, settings)
     if not await generation_enabled(session, settings):
         raise AppError(
