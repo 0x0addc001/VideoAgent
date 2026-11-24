@@ -12,7 +12,7 @@ Documentation includes matching editions in both languages.
 [Architecture](docs/tech/architecture.en.md) ·
 [APIs](docs/tech/api-reference.en.md)
 
-![VideoAgent home](docs/assets/readme-home.png)
+![VideoAgent home](docs/assets/readme-home.jpg)
 
 ## Current Product
 
@@ -46,14 +46,14 @@ Documentation includes matching editions in both languages.
 The workspace combines project history, Direction/Vision resources, a Shot
 editor, sharing controls, and the observable Agent trace.
 
-![VideoAgent project workspace](docs/assets/readme-workspace.png)
+![VideoAgent project workspace](docs/assets/readme-workspace.jpg)
 
 ### Documentation
 
 Documentation is rendered inside the product. The static project homepage uses
 the same generated documentation pages.
 
-![VideoAgent documentation](docs/assets/readme-docs.png)
+![VideoAgent documentation](docs/assets/readme-docs.jpg)
 
 ## Agent Runtime
 
