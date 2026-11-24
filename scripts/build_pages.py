@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import html
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -309,17 +310,58 @@ def build_static_demo() -> None:
     shutil.copytree(demo_source, OUTPUT / "demo", dirs_exist_ok=True)
 
 
-def main() -> None:
-    node = shutil.which("node")
-    vite = ROOT / "apps" / "landing" / "node_modules" / "vite" / "bin" / "vite.js"
-    if node is None or not vite.exists():
-        raise RuntimeError("Node.js and the workspace Vite dependency are required")
 
-    subprocess.run(
-        [node, str(vite), "build"],
-        cwd=ROOT / "apps" / "landing",
-        check=True,
+def build_static_client() -> None:
+    """Export the real Next client with the static demo API and no server routes."""
+    web = ROOT / "apps" / "web"
+    app = web / "src" / "app"
+    api_dir = app / "api"
+    collab_dir = app / "[locale]" / "collaboration"
+    moved: list[tuple[Path, Path]] = []
+    try:
+        if api_dir.exists():
+            target = ROOT / ".pages-tmp" / "api"
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(api_dir), str(target))
+            moved.append((api_dir, target))
+        if collab_dir.exists():
+            target = ROOT / ".pages-tmp" / "collaboration"
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.move(str(collab_dir), str(target))
+            moved.append((collab_dir, target))
+        env = {
+            **os.environ,
+            "NEXT_STATIC_EXPORT": "1",
+            "NEXT_PUBLIC_DEMO_STATIC": "1",
+            "NEXT_PUBLIC_API_BASE_URL": "https://mock.videoagent.local/api",
+            "NEXT_PUBLIC_DEMO_BASE": "/VideoAgent",
+        }
+        subprocess.run(
+            ["pnpm", "exec", "next", "build"],
+            cwd=web,
+            env=env,
+            check=True,
+        )
+    finally:
+        for original, target in moved:
+            if target.exists():
+                shutil.move(str(target), str(original))
+        shutil.rmtree(ROOT / ".pages-tmp", ignore_errors=True)
+
+    if OUTPUT.exists():
+        shutil.rmtree(OUTPUT)
+    shutil.copytree(web / "out", OUTPUT)
+    (OUTPUT / "index.html").write_text(
+        '<!doctype html><meta charset="utf-8">'
+        '<meta http-equiv="refresh" content="0; url=./en/">'
+        '<title>VideoAgent</title>'
+        '<p><a href="./en/">Open the VideoAgent demo</a></p>',
+        encoding="utf-8",
     )
+
+
+def main() -> None:
+    build_static_client()
     build_static_demo()
     docs_output = OUTPUT / "docs"
     docs_output.mkdir(parents=True, exist_ok=True)

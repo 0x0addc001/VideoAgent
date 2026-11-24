@@ -661,7 +661,7 @@ describe("ProjectWorkspace", () => {
     expect(screen.queryByRole("button", { name: "Generation" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Shots" })).toBeVisible();
     expect(screen.getByRole("button", { name: "Shot 1" })).toBeVisible();
-    expect(screen.getByRole("button", { name: "FinalCuts" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "Final Cuts" })).toBeVisible();
     expect(screen.getByText("Versions")).toBeVisible();
     expect(screen.getByText(/v1 · Director approved/)).toBeVisible();
     expect(

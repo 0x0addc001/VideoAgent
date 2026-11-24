@@ -1,5 +1,8 @@
 "use client";
 
+import "@/demo/mock-api";
+import { useEffect } from "react";
+
 import {
   LandingPage,
   landingContent,
@@ -35,6 +38,13 @@ export function AppLandingPage() {
   const pathname = usePathname();
   const locale = useLocale() as LandingLocale;
   const content = landingContent[locale];
+
+  useEffect(() => {
+    if (process.env.NEXT_PUBLIC_DEMO_STATIC !== "1") return;
+    if (!window.location.hash) {
+      window.location.hash = "conversation/demo-project";
+    }
+  }, []);
 
   async function createProject(draft: LandingProjectDraft) {
     const title =
@@ -78,7 +88,7 @@ export function AppLandingPage() {
   return (
     <>
       <LandingPage
-      accountApiBase="/api/account"
+      accountApiBase={process.env.NEXT_PUBLIC_DEMO_STATIC === "1" ? (process.env.NEXT_PUBLIC_API_BASE_URL ?? "/api/account") : "/api/account"}
       docsBase="/docs/"
       locale={locale}
       mode="app"

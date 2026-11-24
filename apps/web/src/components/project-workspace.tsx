@@ -825,7 +825,7 @@ export function workspaceCopy(locale: string) {
         character: "Characters",
         scene: "Scenes",
         scenes: "Scenes",
-        finalCuts: "FinalCuts",
+        finalCuts: "Final Cuts",
         location: "Scene location",
         versions: "Versions",
         savedAt: "Saved at",
