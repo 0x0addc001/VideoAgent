@@ -18,7 +18,7 @@ Documentation includes matching editions in both languages.
 
 - Agent-led directing workflow for editable settings, outline, script,
   characters, scenes, shots, final cuts, and delivery.
-- IDE-style project workspace with Direction and Vision resource trees.
+- IDE-style project workspace with Procedures and Objects resource trees.
 - Characters and Scenes own editable descriptions and uploaded references.
 - Shots open one combined Description and Generation page with upload,
   reference-image, and direct-generation modes.
@@ -175,7 +175,7 @@ plane, Agent runtime, Provider adapters, release documentation, deployment
 infrastructure, and browser-level acceptance tests.
 
 The GitHub Pages homepage is the real Next client exported statically with a
-demo API (`demo@videoagent.local`): Agents, Skills, Videos, Assets, Docs,
+demo API (`demo@videoagent.com`): Agents, Skills, Videos, Assets, Docs,
 Projects and Recents navigation, the Storyboard workspace, Assets/Agents panes,
 the Procedures/Objects tree, characters, scenes, numbered takes, the final cut
 video and version history. Every item can be opened and inspected; editing stays
@@ -185,6 +185,8 @@ application remains a Next.js/FastAPI deployment because Pages cannot run the
 API, provider CLIs, Celery, FFmpeg, or persistent media services.
 
 ## Demo
+
+[![Watch the VideoAgent promo](docs/assets/videoagent-promo-poster.jpg)](docs/assets/videoagent-promo.mp4)
 
 <video controls preload="metadata" src="docs/assets/videoagent-promo.mp4" style="max-width: 100%; border-radius: 12px;"></video>
 

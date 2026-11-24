@@ -340,7 +340,7 @@ def build_static_client() -> None:
             **os.environ,
             "NEXT_STATIC_EXPORT": "1",
             "NEXT_PUBLIC_DEMO_STATIC": "1",
-            "NEXT_PUBLIC_API_BASE_URL": "https://mock.videoagent.local/api",
+            "NEXT_PUBLIC_API_BASE_URL": "https://mock.videoagent.com/api",
             "NEXT_PUBLIC_DEMO_BASE": "/VideoAgent",
         }
         subprocess.run(

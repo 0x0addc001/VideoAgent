@@ -126,7 +126,7 @@ const messages = {
 };
 
 function respond(path: string, method: string): Json {
-  if (path === "auth/me") return { email: "demo@videoagent.local" };
+  if (path === "auth/me") return { email: "demo@videoagent.com" };
   if (path === "credits") return { credits: 500 };
   if (path === "skills") return { items: [] };
   if (path === "hots") return { items: [] };
@@ -165,7 +165,7 @@ function respond(path: string, method: string): Json {
 export function installDemoApi() {
   if (typeof window === "undefined") return;
   const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
-  if (!apiBase.startsWith("https://mock.videoagent.local")) return;
+  if (!apiBase.startsWith("https://mock.videoagent.com")) return;
   const original = window.fetch.bind(window);
   if ((window as unknown as { __demoFetch?: boolean }).__demoFetch) return;
   (window as unknown as { __demoFetch?: boolean }).__demoFetch = true;

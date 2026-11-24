@@ -2208,7 +2208,7 @@ export function LandingPage({
         <div className="nav-brand-row" data-testid="workspace-header-history">
           <a
             className="brand"
-            href={mode === "app" ? `/${locale}` : "./"}
+            href="./"
             aria-label={locale === "zh-CN" ? "视频小秘首页" : "VideoAgent home"}
           >
             <BrandMark />

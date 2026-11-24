@@ -1980,10 +1980,20 @@ function AssetsTree({
                       }
                       type="button"
                     >
-                      <span className="h-8 w-12 shrink-0 overflow-hidden rounded-md border border-white/[0.08] bg-black/40">
+                      <span className="flex min-w-0 flex-1 flex-col gap-1">
+                        <span className="flex items-center gap-2">
+                          <Film className="h-3.5 w-3.5 shrink-0 text-[#4facff]" />
+                          <span className="truncate">{asset.filename}</span>
+                          <time
+                            className="ml-auto shrink-0 text-white/28"
+                            dateTime={asset.created_at}
+                          >
+                            {asset.created_at.slice(0, 10)}
+                          </time>
+                        </span>
                         <img
                           alt=""
-                          className="h-full w-full object-cover"
+                          className="h-12 w-20 rounded-md border border-white/[0.08] bg-black/40 object-cover"
                           loading="lazy"
                           src={
                             asset.thumbnail_url ??
@@ -1991,14 +2001,6 @@ function AssetsTree({
                           }
                         />
                       </span>
-                      <Film className="h-3.5 w-3.5 shrink-0 text-[#4facff]" />
-                      <span className="truncate">{asset.filename}</span>
-                      <time
-                        className="ml-auto shrink-0 text-white/28"
-                        dateTime={asset.created_at}
-                      >
-                        {asset.created_at.slice(0, 10)}
-                      </time>
                     </button>
                   ))}
                 </div>
