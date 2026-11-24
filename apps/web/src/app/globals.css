@@ -279,8 +279,8 @@ select {
 
 @media (min-width: 1280px) {
   .workspace-grid {
-    --assets-pane-width: 25vw;
-    --agent-pane-width: 25vw;
+    --assets-pane-width: clamp(220px, 18vw, 300px);
+    --agent-pane-width: clamp(280px, 22vw, 360px);
     grid-template-columns:
       var(--assets-pane-width)
       minmax(0, 1fr)

@@ -2447,6 +2447,12 @@ export function ProjectWorkspace({
   }, []);
 
   useEffect(() => {
+    if (selectedCanvas.kind !== "document") return;
+    setAgentPanelCollapsed(true);
+    setHistoryCollapsed(true);
+  }, [selectedCanvas]);
+
+  useEffect(() => {
     setHistoryCollapsed(
       window.localStorage.getItem("videoagent.workspace.history-collapsed") === "1",
     );
@@ -4224,12 +4230,12 @@ export function ProjectWorkspace({
                 ? "58px"
                 : assetsPaneWidth
                   ? `${assetsPaneWidth}px`
-                  : "25vw",
+                  : "clamp(220px, 18vw, 300px)",
               "--agent-pane-width": agentPanelCollapsed
                 ? "58px"
                 : agentPaneWidth
                   ? `${agentPaneWidth}px`
-                  : "25vw",
+                  : "clamp(280px, 22vw, 360px)",
             } as CSSProperties
           }
         >
