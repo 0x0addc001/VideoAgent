@@ -64,8 +64,8 @@ const SHOT_NAMES: Record<string, string> = {
 function englishFilename(asset: (typeof snapshot.assets)[number]) {
   if (asset.kind === "export") return "morning-vlog-final-cut-9x16.mp4";
   if (asset.kind === "cover") return "morning-vlog-cover.jpg";
-  if (asset.filename.startsWith("character-")) return "vlogger-reference.png";
-  if (asset.filename.startsWith("scene-")) return "cinematic-interior.png";
+  if (asset.filename.startsWith("character-")) return asset.filename;
+  if (asset.filename.startsWith("scene-")) return asset.filename;
   if (asset.shot_id) {
     const shot = snapshot.storyboard?.shots.find((item) => item.id === asset.shot_id);
     const slug = SHOT_NAMES[shot?.name ?? ""] ?? "shot";

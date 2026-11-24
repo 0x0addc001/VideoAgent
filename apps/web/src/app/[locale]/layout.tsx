@@ -49,7 +49,7 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale}>
-      <body>
+      <body className={process.env.NEXT_PUBLIC_DEMO_STATIC === "1" ? "demo-static" : undefined}>
         <NextIntlClientProvider messages={messages}>{children}</NextIntlClientProvider>
       </body>
     </html>

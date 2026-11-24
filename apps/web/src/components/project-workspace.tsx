@@ -1980,7 +1980,18 @@ function AssetsTree({
                       }
                       type="button"
                     >
-                      <Film className="h-3.5 w-3.5 text-[#4facff]" />
+                      <span className="h-8 w-12 shrink-0 overflow-hidden rounded-md border border-white/[0.08] bg-black/40">
+                        <img
+                          alt=""
+                          className="h-full w-full object-cover"
+                          loading="lazy"
+                          src={
+                            asset.thumbnail_url ??
+                            `/api/account/assets/${asset.id}/thumbnail`
+                          }
+                        />
+                      </span>
+                      <Film className="h-3.5 w-3.5 shrink-0 text-[#4facff]" />
                       <span className="truncate">{asset.filename}</span>
                       <time
                         className="ml-auto shrink-0 text-white/28"

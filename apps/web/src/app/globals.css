@@ -337,3 +337,6 @@ select {
   background-clip: padding-box;
 }
 
+
+.demo-static .project-workspace-shell { background: #080807; backdrop-filter: none; }
+.demo-static .project-workspace-shell::before { display: none; }

@@ -51,7 +51,7 @@
         "index": 0,
         "name": "Vlogger",
         "description": "A handheld Vlog host moving through quiet morning streets, with natural movement and restrained emotion.",
-        "prompt_en": "Cinematic character portrait for Approve outline and build script, consistent identity, natural skin texture, production-ready costume and lighting",
+        "prompt_en": "Cinematic character portrait of a Vlogger walking through quiet morning streets, consistent identity, natural skin texture, production-ready wardrobe and lighting.",
         "prompt_zh": "“Approve outline and build script”的电影感角色定妆照，稳定身份特征，自然肤质，成片级服装与灯光"
       }
     ],
@@ -62,7 +62,7 @@
         "name": "Cinematic interior",
         "description": "A continuous morning space with readable environment layers, practical light and reusable set dressing.",
         "location": "Cinematic interior studio",
-        "prompt_en": "Cinematic environment plate for Approve outline and build script, consistent layout, production-ready lighting and set dressing",
+        "prompt_en": "Cinematic environment plate for a quiet morning interior, consistent layout, production-ready lighting and set dressing.",
         "prompt_zh": "“Approve outline and build script”的电影感场景设定图，空间布局稳定，成片级灯光与陈设"
       }
     ],
