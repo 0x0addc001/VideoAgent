@@ -76,7 +76,8 @@ export function AppLandingPage() {
   }
 
   return (
-    <LandingPage
+    <>
+      <LandingPage
       accountApiBase="/api/account"
       docsBase="/docs/"
       locale={locale}
@@ -94,7 +95,14 @@ export function AppLandingPage() {
           projectId={projectId}
         />
       )}
-      videos={videos}
-    />
+        videos={videos}
+      />
+      <a
+        className="fixed bottom-5 right-5 z-50 rounded-full border border-emerald-400/30 bg-[#0d1a12]/90 px-4 py-2 text-[12px] font-medium text-emerald-200 shadow-lg backdrop-blur hover:border-emerald-300/60"
+        href={`/${locale}/demo`}
+      >
+        {locale.startsWith("zh") ? "只读示例" : "Read-only demo"}
+      </a>
+    </>
   );
 }

@@ -13,6 +13,7 @@ const ALLOWED_GET_PATHS = new Set([
   "assets",
   "hots",
   "workspace",
+  "demo/project",
 ]);
 const ALLOWED_DELETE_PATHS = new Set(["providers/kling"]);
 const ALLOWED_POST_PATHS = new Set([
@@ -33,6 +34,8 @@ function allowed(
       ALLOWED_GET_PATHS.has(path) ||
       (path.startsWith("hots/") && path.endsWith("/video")) ||
       (path.startsWith("assets/") &&
+        (path.endsWith("/content") || path.endsWith("/thumbnail"))) ||
+      (path.startsWith("demo/assets/") &&
         (path.endsWith("/content") || path.endsWith("/thumbnail")))
     );
   }
