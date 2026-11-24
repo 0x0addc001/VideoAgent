@@ -187,18 +187,18 @@ video_agent/agent_handoff</code></pre>
 </ul>
 <h3 id="7-1-project-workspace-and-delivery">7.1 Project Workspace and Delivery</h3>
 <ul>
-<li>The resource tree has two object groups: <code>Directions</code> contains editable</li>
-<p>Settings, Outlines, and Scripts; <code>Visions</code> contains Characters, Scenes, Shots, and <code>FinalCuts</code>. <code>Versions</code> is a separate Storyboard snapshot history, not an object directory.</p>
+<li>The resource tree has two object groups: <code>Procedures</code> contains editable</li>
+<p>Configs, Interfaces, and Implementations; <code>Objects</code> contains Characters, Scenes, Shots, and <code>FinalCuts</code>. <code>Versions</code> is a separate Storyboard snapshot history, not an object directory.</p>
 <li>The canvas header shows the latest saved time, then <code>Save</code>, then <code>Share</code>.</li>
 <p>Saving creates an immutable snapshot of the complete Storyboard, Characters, Scenes, and Shots.</p>
 <li>Version history shows revision and save time, and supports</li>
 <p>restore. Restored content is marked unsaved until saved again.</p>
-<li>Settings combines production attributes and extracted Agent-director clues in</li>
+<li>The Configs view combines production attributes and extracted Agent-director clues in</li>
 <p>one <code>Attribute / Value</code> table. Q&amp;A is reduced to semantic keys and values; approval messages are not treated as attributes.</p>
-<li>The English workspace does not render raw Chinese dialogue as Settings values.</li>
+<li>The English workspace does not render raw Chinese dialogue as config values.</li>
 <p>Recognized Chinese directing terms are normalized to English, while uncertain input is omitted. Long briefs are split into duration, format, product, opening, development, ending, tone, visual style, and lighting attributes instead of being stored as <code>Creative brief</code> or <code>Director direction</code>.</p>
-<li>The approval loop fills Settings from the brief, conversation, and option</li>
-<p>choices. Once the direction is sufficient, Agents produce Outlines and Scripts and create reusable Character and Scene objects before organizing Shots.</p>
+<li>The approval loop fills Configs from the brief, conversation, and option</li>
+<p>choices. Once the direction is sufficient, Agents produce Interfaces and Implementations and create reusable Character and Scene objects before organizing Shots.</p>
 <li>Shot estimation and generation require at least one defined Character and one</li>
 <p>defined Scene, so every Shot is organized against reusable production objects.</p>
 <li>Characters and Scenes own their uploaded references. Each object directory</li>
@@ -211,12 +211,12 @@ video_agent/agent_handoff</code></pre>
 <p>display a Skill or MCP tool as executed when the Agent has not called it.</p>
 <li>Final Cut provides optional publish-time visual review. Users choose a</li>
 <p>configured vision evaluator and metrics such as character consistency, style consistency, prompt alignment, and temporal stability.</p>
-<li>Settings, Outlines, Scripts, Characters, Scenes, Shots, and version metadata</li>
+<li>Configs, Interfaces, Implementations, Characters, Scenes, Shots, and version metadata</li>
 <p>remain editable or inspectable in place.</p>
 <li>Uploads receive a stable asset ID and append <code>@&lt;asset-id&gt;</code> to the active</li>
 <p>Prompt. Shots and Characters infer reference generation from that ID.</p>
-<li>Shot, Character, and Scene results are grouped under their resource directory. Each</li>
-<p>result supports final-selection checkbox, ID copy, preview, and deletion.</p>
+<li>Shot, Character, and Scene results are grouped under their resource directory.</li>
+<p>Clicking a result designates it as the reference; right-click opens a menu with open, copy ID, download, and delete.</p>
 <li>Navigation, Assets, Canvas, and Agents default to equal desktop widths and</li>
 <p>provide draggable separators.</p>
 <li>Character and shot Generation pages support an uploaded image, reference-image</li>

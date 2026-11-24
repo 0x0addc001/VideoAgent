@@ -25,6 +25,14 @@ GENERIC_NAMES = {
 CJK_LIMIT = 5
 WORD_LIMIT = 2
 CHARACTER_KEYWORDS = (
+    "vlogger",
+    "vlog",
+    "博主",
+    "up主",
+    "主播",
+    "旅行者",
+    "游客",
+    "行人",
     "黑人",
     "白人",
     "亚裔",
@@ -80,6 +88,8 @@ def is_generic(name: str | None) -> bool:
 
 def character_label(*texts: str) -> str:
     sample = " ".join(text for text in texts if text).casefold()
+    if "vlog" in sample or "博主" in sample or "up主" in sample:
+        return "博主" if CJK_PATTERN.search(sample) else "Vlogger"
     for keyword in CHARACTER_KEYWORDS:
         if keyword.casefold() in sample:
             return compact_name(keyword)
@@ -158,19 +168,12 @@ PLACE_ALIASES = (
 
 def derive_shot_name(description: str) -> str:
     text = (description or "").casefold()
-    if "establishing" in text or "建立" in text:
-        return "开场"
-    if "detail" in text or "细节" in text:
-        return "细节"
-    if "closing" in text or "收尾" in text:
-        return "收尾"
     time = next((label for key, label in TIME_ALIASES if key in text), "")
     place = next((label for key, label in PLACE_ALIASES if key in text), "")
-    if time and place:
-        return f"{time}·{place}"
-    if time:
-        return time
-    if place:
-        return place
-    first_clause = re.split(r"[，。！？,.!?]", description or "")[0]
-    return compact_name(first_clause) or "镜头"
+    if not time:
+        time = "清晨" if "晨" in text else "白天"
+    if not place:
+        place = "室内"
+    if CJK_PATTERN.search(time + place):
+        return f"{time}{place}"
+    return f"{time} {place}"

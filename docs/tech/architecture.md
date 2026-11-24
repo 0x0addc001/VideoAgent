@@ -550,16 +550,19 @@ cancelled
 - `Assets`：通过 Video 与 Skill 两个内部分页切换，支持搜索；Video 卡片悬浮静音播放，Skill 卡片不显示封面；卡片只展示权限和 `yyyy-mm-dd` 编辑时间。
 - Assets 展示当前用户真实发布的 Videos 和 Skill；点击卡片打开详情，视频详情可直接播放。
 - `Docs`：按 PRD、策略、Arch、API、Model、Dev、Test、Ops 展示中英文文档，支持全文搜索。
-- 项目工作区采用 IDE 式布局：可压缩历史导航、`Directions` / `Visions`
-  资源树、独立 `Versions` 历史面板、中央编辑画布和右侧审批式 Agent。
+- 项目工作区采用 IDE 式布局：把视频项目当作一个软件工程，`Procedures` 是构建管线
+  （`Configs`、`Interfaces`、`Implementations`），`Objects` 是带类型的运行时实体
+  （`Characters`、`Scenes`、`Shots`、`FinalCuts`），每次生成都是一次调用并产出不可变
+  的 take；可压缩历史导航、独立 `Versions` 历史面板、中央编辑画布和右侧审批式 Agent
+  共同组成工作区。
 - Assets 与 Agent 侧栏可折叠为带标签的窄轨；展开宽度使用响应式比例，适配不同桌面尺寸。
-- `Directions` 包含可编辑的 `Settings`、`Outlines`、`Scripts`；`Visions`
+- `Procedures` 包含可编辑的 `Configs`、`Interfaces`、`Implementations`；`Objects`
   包含 `Characters`、`Scenes`、`Shots` 和 `FinalCuts`。`Versions` 不是对象目录，
   而是 Storyboard 快照历史，支持查看和回滚。Character 与 Scene 各自承接参考图，
   每个 Shot 使用一个合并页面；空目录不显示等待文案。
 - 画布标题栏显示最近保存时间，并提供 `Save` 与 `Share`；保存生成不可变快照，
   回滚将当前内容恢复为快照中的 Storyboard。
-- Settings 从对话中提炼 `属性 / 值`，不直接展示原始问答或批准消息。
+- Configs 从对话中提炼 `属性 / 值`，不直接展示原始问答或批准消息。
 - 属性抽取先排除语言纠错等元指令，再识别结构化的时长、形式、产品、开场、发展、结尾、
   基调和视觉方向；英文界面对可识别的中文术语做英文归一化，翻译不确定的内容不展示。
 - Shot、Character 与 Scene 页面可直接编辑描述和 Prompt；上传素材自动追加
@@ -594,7 +597,7 @@ History | Assets | Canvas | Agent
 镜头生成在“可生成”审批完成前保持禁用，镜头检查器会直接提示需要先在 Agent 中批准。
 
 中央编辑区使用自己的紧凑面板栏，不设置页面级项目标题栏；标题和场记板图标固定为
-`Storyboard`，不随 Settings、文档、角色、镜头或素材变化，Share 固定在面板栏最右侧。
+`Storyboard`，不随 Configs、文档、角色、镜头或素材变化，Share 固定在面板栏最右侧。
 
 只有本次新返回的 Agent 回复执行一次流式显示；历史消息和已完成回复直接静态展示，折叠再展开不会重新播放。
 

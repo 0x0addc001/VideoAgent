@@ -173,8 +173,8 @@ Assets contains the current user's finished and in-progress work.
 
 ### 7.1 Project Workspace and Delivery
 
-- The resource tree has two object groups: `Directions` contains editable
-  Settings, Outlines, and Scripts; `Visions` contains Characters, Scenes,
+- The resource tree has two object groups: `Procedures` contains editable
+  Configs, Interfaces, and Implementations; `Objects` contains Characters, Scenes,
   Shots, and `FinalCuts`. `Versions` is a separate Storyboard snapshot history,
   not an object directory.
 - The canvas header shows the latest saved time, then `Save`, then `Share`.
@@ -182,16 +182,16 @@ Assets contains the current user's finished and in-progress work.
   Scenes, and Shots.
 - Version history shows revision and save time, and supports
   restore. Restored content is marked unsaved until saved again.
-- Settings combines production attributes and extracted Agent-director clues in
+- The Configs view combines production attributes and extracted Agent-director clues in
   one `Attribute / Value` table. Q&A is reduced to semantic keys and values;
   approval messages are not treated as attributes.
-- The English workspace does not render raw Chinese dialogue as Settings values.
+- The English workspace does not render raw Chinese dialogue as config values.
   Recognized Chinese directing terms are normalized to English, while uncertain
   input is omitted. Long briefs are split into duration, format, product,
   opening, development, ending, tone, visual style, and lighting attributes
   instead of being stored as `Creative brief` or `Director direction`.
-- The approval loop fills Settings from the brief, conversation, and option
-  choices. Once the direction is sufficient, Agents produce Outlines and Scripts
+- The approval loop fills Configs from the brief, conversation, and option
+  choices. Once the direction is sufficient, Agents produce Interfaces and Implementations
   and create reusable Character and Scene objects before organizing Shots.
 - Shot estimation and generation require at least one defined Character and one
   defined Scene, so every Shot is organized against reusable production objects.
@@ -207,12 +207,13 @@ Assets contains the current user's finished and in-progress work.
 - Final Cut provides optional publish-time visual review. Users choose a
   configured vision evaluator and metrics such as character consistency, style
   consistency, prompt alignment, and temporal stability.
-- Settings, Outlines, Scripts, Characters, Scenes, Shots, and version metadata
+- Configs, Interfaces, Implementations, Characters, Scenes, Shots, and version metadata
   remain editable or inspectable in place.
 - Uploads receive a stable asset ID and append `@<asset-id>` to the active
   Prompt. Shots and Characters infer reference generation from that ID.
-- Shot, Character, and Scene results are grouped under their resource directory. Each
-  result supports final-selection checkbox, ID copy, preview, and deletion.
+- Shot, Character, and Scene results are grouped under their resource directory.
+  Clicking a result designates it as the reference; right-click opens a menu with
+  open, copy ID, download, and delete.
 - Navigation, Assets, Canvas, and Agents default to equal desktop widths and
   provide draggable separators.
 - Character and shot Generation pages support an uploaded image, reference-image

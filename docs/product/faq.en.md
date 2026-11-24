@@ -545,7 +545,7 @@ Provider switching never happens silently after a paid task has been accepted.
 
 Planning-model choice belongs to the same task-routing rule, but the current
 deployment exposes the planner configured by the administrator. If multiple
-planning models are configured, the selector should live in Settings and show
+planning models are configured, the selector should live in Configs and show
 their reasoning, context, latency, and price trade-offs. Generated content from
 one model is never described as if another model produced it.
 

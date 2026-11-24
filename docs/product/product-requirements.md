@@ -144,20 +144,20 @@ Assets 展示当前用户的成品和半成品。
 
 ### 7.1 项目工作区与交付
 
-- 资源树包含 `Directions` 与 `Visions` 两个对象区域：前者管理可编辑的
-  `Settings`、`Outlines` 和 `Scripts`；后者管理 `Characters`、`Scenes`、`Shots`
+- 资源树包含 `Procedures` 与 `Objects` 两个对象区域：前者管理可编辑的
+  `Configs`、`Interfaces` 和 `Implementations`；后者管理 `Characters`、`Scenes`、`Shots`
   和 `FinalCuts`。`Versions` 是独立的故事板快照历史，不作为对象目录。
 - 画布标题栏依次展示最近保存时间、`Save` 和 `Share`。保存会创建包含完整
   Storyboard、Characters、Scenes 和 Shots 的不可变快照。
 - Versions 历史显示版本号和保存时间，并支持回滚；回滚后的当前内容
   标记为尚未保存，直到用户再次保存。
-- Settings 将制作属性与从 Agent-导演对话中提取的关键线索合并为 `属性 / 值` 表；
+- Configs 将制作属性与从 Agent-导演对话中提取的关键线索合并为 `属性 / 值` 表；
   Q&A 会提炼成语义要素和值，批准类消息不作为属性。
 - 英文界面不会直接展示中文对话原文；可识别的中文创作术语会归一化为英文，无法可靠
   翻译的对话不进入属性表。长 Brief 会拆成时长、形式、产品、开场、发展、结尾、基调、
   视觉风格和光线等细粒度属性，而不是整体显示为 `Creative brief` 或 `Director direction`。
-- 审批循环持续从创作 Brief、对话和选项回答中填充 Settings；信息充分后生成
-  Outlines 和 Scripts，并创建可复用的 Character 与 Scene 对象，再组织 Shot。
+- 审批循环持续从创作 Brief、对话和选项回答中填充 Configs；信息充分后生成
+  Interfaces 和 Implementations，并创建可复用的 Character 与 Scene 对象，再组织 Shot。
 - 镜头估算与生成要求至少存在一个 Character 和一个 Scene，确保分镜建立在可复用制作对象上。
 - Character 与 Scene 各自承接上传和选用的参考图；Scene 保留实际地点属性。
 - Character 与 Scene 页面均支持文生图、图生图，并提供任务级图片模型选择。
@@ -166,11 +166,11 @@ Assets 展示当前用户的成品和半成品。
 - 执行轨迹只展示已经发生或正在发生的行为，不得把未实际调用的 Skill 或 MCP 工具显示为已执行。
 - Final Cut 提供可选的发布前视觉评估。用户选择已配置的视觉模型和指标，例如人物一致性、
   风格一致性、提示词匹配和时序稳定性。
-- Settings、Outlines、Scripts、Characters、Scenes、Shots 和版本元数据均可就地编辑或查看。
+- Configs、Interfaces、Implementations、Characters、Scenes、Shots 和版本元数据均可就地编辑或查看。
 - 上传文件会获得稳定素材 ID，并自动把 `@<asset-id>` 写入当前 Prompt；
   Shot 与 Character 根据该 ID 自动选择参考生成模式。
-- Shot、Character 与 Scene 的上传/生成结果排列在对应资源目录下，支持最终选用勾选、
-  复制 ID、预览和删除。
+- Shot、Character 与 Scene 的上传/生成结果排列在对应资源目录下；点击即指定为参考图，
+  右键菜单提供打开、复制 ID、下载和删除。
 - 桌面端导航、Assets、Canvas 和 Agent 默认等宽，并提供可拖拽分隔条。
 - 角色与镜头的生成页支持上传图片、参考图生成或直接文字生成，具体模式取决于所选模型能力；生成内容可下载。
 - Shot 参考可组合有顺序的图片、视频和音频素材，数量上限遵循所选模型声明。

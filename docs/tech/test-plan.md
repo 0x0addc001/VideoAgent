@@ -134,7 +134,7 @@ Wanx 测试使用 `httpx.MockTransport` 覆盖异步提交、状态映射、错�
 - 历史导航展示 Projects 与 Recents，项目目录支持创建、重命名、删除和拖拽收纳。
 - 将 Recent 拖入项目目录后关系持久化，Recent 列表移除该项，并在目录内以缩进子项显示。
 - 点击历史对话只更新 URL 哈希并复用已挂载的应用外壳，不触发页面级导航。
-- 工作区资源树提供同级的 `Directions`、`Visions` 和 `Versions`，不再显示
+- 工作区资源树提供同级的 `Procedures`、`Objects` 和 `Versions`，不再显示
   Storyboard、Media、Exports。Projects、Recents 及其对话项保持纯文本。
 - Character 与 Scene 各自承接描述和上传参考图；每个 Shot 直接打开合并页面，目录行不使用容器框。
   空目录不显示等待文案。
@@ -144,7 +144,7 @@ Wanx 测试使用 `httpx.MockTransport` 覆盖异步提交、状态映射、错�
 - 上传素材会把 `@<asset-id>` 追加到当前 Prompt；生成时根据该 ID 自动选择参考模式。
 - Shot 可覆盖任务类型、音频和分辨率，并在生成请求中保留 Prompt 内多个
   `@asset-id` 的出现顺序。
-- 上传和生成结果位于对应目录，支持最终选用、复制 ID、预览和删除。
+- 上传和生成结果位于对应目录，点击指定参考图，右键菜单提供打开、复制 ID、下载和删除。
 - 桌面端四栏默认等宽并支持拖拽调整；头像下拉包含语言、通知和积分，语言选项纵向排列；
   账号操作带图标，齿轮位于头像行内部。
 - 浏览器标题统一为 `VideoAgent`；管理后台运行环境标签为 `Pippit China`。
@@ -172,7 +172,7 @@ Wanx 测试使用 `httpx.MockTransport` 覆盖异步提交、状态映射、错�
 - Character 与 Scene 生成页支持上传、参考图生图和文字生图；生成图片持久化为
   可下载的项目资产。
 - Storyboard 可以保存不可变版本快照；历史列表显示版本号与时间，回滚恢复完整内容。
-- 回滚保持相同索引的 Shot ID，资源树把导出结果归入 `Visions / FinalCuts`。
+- 回滚保持相同索引的 Shot ID，资源树把导出结果归入 `Objects / FinalCuts`。
 - 已有成片可调整 21:9、16:9、9:16、1:1、配乐/配音和逐行字幕，并生成新版本。
 - Skill 发布表单包含用途、执行规范、质量门禁、启动提示词和输入输出契约。
 - AI 优化按钮能把粗略想法整理为结构化 Skill，保存后从服务端恢复。

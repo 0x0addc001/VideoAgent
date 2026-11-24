@@ -604,12 +604,12 @@ query-result</code></pre>
 <p>organization. Both groups are visible before sign-in and when empty.</p>
 <li>Project folders expose the disclosure control before a blue folder icon.</li>
 <p>Filed conversations move out of Recents and render as indented children of their project folder.</p>
-<li>An IDE-style canvas with <code>Directions</code> and <code>Visions</code> object trees, an</li>
-<p>independent <code>Versions</code> history panel, the selected editor document or asset, and the approval-driven Agents panel.</p>
+<li>An IDE-style canvas modeled on a software project: <code>Procedures</code> are the build</li>
+<p>pipeline (<code>Configs</code>, <code>Interfaces</code>, <code>Implementations</code>), <code>Objects</code> are the typed runtime entities (<code>Characters</code>, <code>Scenes</code>, <code>Shots</code>, <code>FinalCuts</code>), and every render is a call that produces an immutable take. An independent <code>Versions</code> history panel, the selected editor document or asset, and the approval-driven Agents panel complete the layout.</p>
 <li>The Assets and Agents side panels can collapse to labeled rails. Their widths</li>
 <p>use responsive clamped proportions so they remain usable across desktop sizes.</p>
-<li><code>Directions</code> contains editable <code>Settings</code>, <code>Outlines</code>, and <code>Scripts</code>.</li>
-<p><code>Visions</code> contains <code>Characters</code>, <code>Scenes</code>, <code>Shots</code>, and <code>FinalCuts</code>. <code>Versions</code> is Storyboard snapshot history rather than an object directory. Characters and Scenes own their uploaded references; each Shot opens one combined page.</p>
+<li><code>Procedures</code> contains editable <code>Configs</code>, <code>Interfaces</code>, and <code>Implementations</code>.</li>
+<p><code>Objects</code> contains <code>Characters</code>, <code>Scenes</code>, <code>Shots</code>, and <code>FinalCuts</code>. <code>Versions</code> is Storyboard snapshot history rather than an object directory. Characters and Scenes own their uploaded references; each Shot opens one combined page.</p>
 <li>The canvas header shows the latest saved time, <code>Save</code>, and <code>Share</code>. Saving</li>
 <p>creates an immutable snapshot; restore replaces the current Storyboard with the snapshot content.</p>
 <li>Skill Studio persists reusable Skills with a stable namespace, instructions,</li>
@@ -628,7 +628,7 @@ query-result</code></pre>
 <p>it does not change with the selected resource. Share stays aligned at its far right.</p>
 <li>Final Cut review is separate from readiness. Users choose a configured vision</li>
 <p>evaluator and metrics for character consistency, style consistency, prompt alignment, or temporal stability.</p>
-<li>Settings derives semantic attributes from conversation instead of showing raw</li>
+<li>The Configs view derives semantic attributes from conversation instead of showing raw</li>
 <p>Q&amp;A or approval decisions as values.</p>
 <li>Attribute extraction excludes language-correction meta instructions and derives</li>
 <p>duration, format, product, opening, development, ending, tone, visual style, and lighting separately. Recognized Chinese terms are normalized to English; uncertain translations are omitted from the English attribute table.</p>

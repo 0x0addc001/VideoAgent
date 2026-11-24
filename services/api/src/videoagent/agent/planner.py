@@ -98,7 +98,7 @@ class LocalStoryboardPlanner:
         ).strip()
         shots = [
             ShotInput(
-                name="开场" if chinese else "Opening",
+                name="清晨室内" if chinese else "Morning interior",
                 description="电影感建立镜头" if chinese else "Cinematic establishing shot",
                 prompt_en=opening_prompt,
                 prompt_zh=(
@@ -111,7 +111,7 @@ class LocalStoryboardPlanner:
                 generation_mode="text_to_video",
             ),
             ShotInput(
-                name="细节" if chinese else "Detail",
+                name="白天街道" if chinese else "Day street",
                 description="产品细节镜头" if chinese else "Product detail shot",
                 prompt_en=(
                     f"Macro product detail shot for {subject}, controlled push-in, "
@@ -123,7 +123,7 @@ class LocalStoryboardPlanner:
                 generation_mode="text_to_video",
             ),
             ShotInput(
-                name="收尾" if chinese else "Closing",
+                name="傍晚室内" if chinese else "Evening interior",
                 description="品牌收尾镜头" if chinese else "Hero closing shot",
                 prompt_en=(
                     f"Hero closing shot for {subject}, elegant camera movement, "
@@ -140,9 +140,11 @@ class LocalStoryboardPlanner:
             f"角色定妆照：{subject}" if chinese else "",
         )
         character_description = (
-            f"故事的核心人物，围绕“{subject}”展开。"
+            f"画面中的主要人物，出现在“{subject}”的场景里，保持自然动作与稳定形象。"
             if chinese
-            else f"The central character whose story revolves around {subject}."
+            else (
+                f"The on-screen subject of {subject}, with a consistent look and natural movement."
+            )
         )
         characters = [
             CharacterInput(
@@ -287,8 +289,8 @@ class OpenAIStoryboardPlanner:
             "Give every Character and Scene a short name in the brief's language "
             "(at most 5 Chinese characters or 2 English words) that describes the "
             "subject, such as 黑人, 咖啡师 or 清晨街道. Never use 主角, 主场景, random "
-            "personal names, or a sentence. Give every Shot a concise name of the "
-            "form time + place, such as 清晨·街道 or 夜里·屋顶. "
+            "personal names, or a sentence. Give every Shot a name made of time + "
+            "place concatenated without punctuation, such as 清晨路上 or 夜里街上. "
             "Also define one to three recurring characters with distinct names, "
             "descriptions, and reusable English image prompts when characters are "
             "relevant to the brief. "

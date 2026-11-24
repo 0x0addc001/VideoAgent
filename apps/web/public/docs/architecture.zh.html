@@ -1041,14 +1041,14 @@ cancelled</code></pre>
 <li><code>Assets</code>：通过 Video 与 Skill 两个内部分页切换，支持搜索；Video 卡片悬浮静音播放，Skill 卡片不显示封面；卡片只展示权限和 <code>yyyy-mm-dd</code> 编辑时间。</li>
 <li>Assets 展示当前用户真实发布的 Videos 和 Skill；点击卡片打开详情，视频详情可直接播放。</li>
 <li><code>Docs</code>：按 PRD、策略、Arch、API、Model、Dev、Test、Ops 展示中英文文档，支持全文搜索。</li>
-<li>项目工作区采用 IDE 式布局：可压缩历史导航、<code>Directions</code> / <code>Visions</code></li>
-<p>资源树、独立 <code>Versions</code> 历史面板、中央编辑画布和右侧审批式 Agent。</p>
+<li>项目工作区采用 IDE 式布局：把视频项目当作一个软件工程，<code>Procedures</code> 是构建管线</li>
+<p>（<code>Configs</code>、<code>Interfaces</code>、<code>Implementations</code>），<code>Objects</code> 是带类型的运行时实体 （<code>Characters</code>、<code>Scenes</code>、<code>Shots</code>、<code>FinalCuts</code>），每次生成都是一次调用并产出不可变 的 take；可压缩历史导航、独立 <code>Versions</code> 历史面板、中央编辑画布和右侧审批式 Agent 共同组成工作区。</p>
 <li>Assets 与 Agent 侧栏可折叠为带标签的窄轨；展开宽度使用响应式比例，适配不同桌面尺寸。</li>
-<li><code>Directions</code> 包含可编辑的 <code>Settings</code>、<code>Outlines</code>、<code>Scripts</code>；<code>Visions</code></li>
+<li><code>Procedures</code> 包含可编辑的 <code>Configs</code>、<code>Interfaces</code>、<code>Implementations</code>；<code>Objects</code></li>
 <p>包含 <code>Characters</code>、<code>Scenes</code>、<code>Shots</code> 和 <code>FinalCuts</code>。<code>Versions</code> 不是对象目录， 而是 Storyboard 快照历史，支持查看和回滚。Character 与 Scene 各自承接参考图， 每个 Shot 使用一个合并页面；空目录不显示等待文案。</p>
 <li>画布标题栏显示最近保存时间，并提供 <code>Save</code> 与 <code>Share</code>；保存生成不可变快照，</li>
 <p>回滚将当前内容恢复为快照中的 Storyboard。</p>
-<li>Settings 从对话中提炼 <code>属性 / 值</code>，不直接展示原始问答或批准消息。</li>
+<li>Configs 从对话中提炼 <code>属性 / 值</code>，不直接展示原始问答或批准消息。</li>
 <li>属性抽取先排除语言纠错等元指令，再识别结构化的时长、形式、产品、开场、发展、结尾、</li>
 <p>基调和视觉方向；英文界面对可识别的中文术语做英文归一化，翻译不确定的内容不展示。</p>
 <li>Shot、Character 与 Scene 页面可直接编辑描述和 Prompt；上传素材自动追加</li>
@@ -1069,7 +1069,7 @@ cancelled</code></pre>
 <pre><code class="language-text">History | Assets | Canvas | Agent</code></pre>
 <p>历史导航支持压缩，Recent 对话可拖入项目目录，也可拖回全部对话列表。Agent 按“整体设定 → 分集/分镜大纲 → 逐场剧本 → 可生成”推进；每一步都必须由用户 批准，调整与自定义意见不会跳过当前阶段。</p>
 <p>镜头生成在“可生成”审批完成前保持禁用，镜头检查器会直接提示需要先在 Agent 中批准。</p>
-<p>中央编辑区使用自己的紧凑面板栏，不设置页面级项目标题栏；标题和场记板图标固定为 <code>Storyboard</code>，不随 Settings、文档、角色、镜头或素材变化，Share 固定在面板栏最右侧。</p>
+<p>中央编辑区使用自己的紧凑面板栏，不设置页面级项目标题栏；标题和场记板图标固定为 <code>Storyboard</code>，不随 Configs、文档、角色、镜头或素材变化，Share 固定在面板栏最右侧。</p>
 <p>只有本次新返回的 Agent 回复执行一次流式显示；历史消息和已完成回复直接静态展示，折叠再展开不会重新播放。</p>
 <p>Assets、中央编辑区和 Agent 的滚动条与 Projects、Recents 使用同一套细蓝色样式。</p>
 <p>Docs 使用导航栏右侧的完整内容区域，不与固定导航重叠；内嵌文档沿用全局视频背景。 每次进入 Docs 默认打开 PRD；搜索框位于文档区域顶部，文档目录位于搜索框下方和阅读区 左侧，默认宽度继承展开状态的导航宽度，可独立拖拽调整，也可收起为图标栏。</p>

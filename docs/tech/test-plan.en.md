@@ -147,12 +147,12 @@ Component tests cover:
   item from Recents, and renders it as an indented folder child.
 - Selecting a conversation updates only the URL hash and preserves the mounted
   application shell; no document navigation occurs.
-- The workspace tree exposes peer `Directions`, `Visions`, and `Versions`
+- The workspace tree exposes peer `Procedures`, `Objects`, and `Versions`
   groups; legacy Storyboard, Media, and Exports groups are absent. Projects,
   Recents, and their conversation items remain text-only.
 - Characters and Scenes own their descriptions and uploaded references; each
   Shot opens one combined page. Empty directories do not render waiting copy.
-- Settings renders Q&A as question-answer attribute rows without the retired
+- The Configs view renders Q&A as question-answer attribute rows without the retired
   lower stage cards.
 - Settings extracts semantic `Attribute / Value` clues and excludes approval
   decisions instead of rendering raw Q&A text.
@@ -163,7 +163,7 @@ Component tests cover:
 - Shots may override task type, audio, and resolution, and requests preserve
   the Prompt order of multiple `@asset-id` references.
 - Uploaded and generated results appear under their directory with a persisted
-  final-selection checkbox, copy-ID, preview, and delete action.
+  click-to-designate, a right-click menu (open, copy ID, download, delete), preview.
 - Desktop panes default to equal widths and expose draggable separators.
 - The profile popover contains an inline Languages row with vertically stacked
   options plus notifications and credits above the avatar and username trigger;
@@ -177,7 +177,7 @@ Component tests cover:
   generation, with generated images stored as downloadable project assets.
 - Storyboard snapshots are immutable and support listing and restore.
 - Restore preserves the Shot ID at the same index, and exported results live
-  under `Visions / FinalCuts`.
+  under `Objects / FinalCuts`.
 - Final Cut review is available only for exported assets, lets the user choose a
   configured vision evaluator and consistency metrics, and is unavailable when
   no evaluator is configured.

@@ -385,13 +385,16 @@ The shared Landing UI owns:
 - Project folders expose the disclosure control before a blue folder icon.
   Filed conversations move out of Recents and render as indented children of
   their project folder.
-- An IDE-style canvas with `Directions` and `Visions` object trees, an
-  independent `Versions` history panel, the selected editor document or asset,
-  and the approval-driven Agents panel.
+- An IDE-style canvas modeled on a software project: `Procedures` are the build
+  pipeline (`Configs`, `Interfaces`, `Implementations`), `Objects` are the typed
+  runtime entities (`Characters`, `Scenes`, `Shots`, `FinalCuts`), and every
+  render is a call that produces an immutable take. An independent `Versions`
+  history panel, the selected editor document or asset, and the
+  approval-driven Agents panel complete the layout.
 - The Assets and Agents side panels can collapse to labeled rails. Their widths
   use responsive clamped proportions so they remain usable across desktop sizes.
-- `Directions` contains editable `Settings`, `Outlines`, and `Scripts`.
-  `Visions` contains `Characters`, `Scenes`, `Shots`, and `FinalCuts`.
+- `Procedures` contains editable `Configs`, `Interfaces`, and `Implementations`.
+  `Objects` contains `Characters`, `Scenes`, `Shots`, and `FinalCuts`.
   `Versions` is Storyboard snapshot history rather than an object directory.
   Characters and Scenes own their uploaded references; each Shot opens one
   combined page.
@@ -420,7 +423,7 @@ The shared Landing UI owns:
 - Final Cut review is separate from readiness. Users choose a configured vision
   evaluator and metrics for character consistency, style consistency, prompt
   alignment, or temporal stability.
-- Settings derives semantic attributes from conversation instead of showing raw
+- The Configs view derives semantic attributes from conversation instead of showing raw
   Q&A or approval decisions as values.
 - Attribute extraction excludes language-correction meta instructions and derives
   duration, format, product, opening, development, ending, tone, visual style,
